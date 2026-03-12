@@ -6,7 +6,8 @@
 
 ## Architectuur Overview
 
-TeamReel gebruikt een **4-laags media architectuur** die opslag scheidt van business logica en video processing:
+TeamReel gebruikt een **4-laags media architectuur** die opslag scheidt van business logica en video processing.
+Daarboven zit **Laag 5: Content Generation** — zie [media-templates.md](media-templates.md).
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

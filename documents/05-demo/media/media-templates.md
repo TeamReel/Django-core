@@ -9,7 +9,7 @@
 
 ## 1. Positie in de Media Architectuur
 
-Dit document beschrijft **Laag 4 — Content Generation**: de templates en pipelines die visuele output produceren. De output (PNG/MP4) wordt opgeslagen via de [Media Architectuur](media-architecture.md):
+Dit document beschrijft **Laag 5 — Content Generation**: de templates en pipelines die visuele output produceren. De output (PNG/MP4) wordt opgeslagen via de [Media Architectuur](media-architecture.md) (Laag 1–4):
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐

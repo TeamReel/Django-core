@@ -41,6 +41,8 @@ Complete documentation for the TeamReel web application — frontend design syst
 | [features/member-asset-save-flow.md](features/member-asset-save-flow.md) | Asset save flow + stale closure fix pattern |
 | [features/members-batch-actions.md](features/members-batch-actions.md) | Batch operations on members + RBAC mapping |
 | [features/seeding-guide.md](features/seeding-guide.md) | Idempotent seeding patterns + FK dependency order |
+| [features/credits-transactions.md](features/credits-transactions.md) | Credits & Transactions — 3-tier balance, signed ledger, GenerationCreditService |
+| [features/active-context.md](features/active-context.md) | UserActiveContext — 8-FK navigation state, cascade resolution, context-switcher |
 
 ### Media & AI Pipeline
 
@@ -91,12 +93,14 @@ Complete documentation for the TeamReel web application — frontend design syst
 │   ├── mobile-app-blueprint.md
 │   ├── refactoring-status.md
 │   └── code-conventions.md
-├── features/                 # Features & architecture (5 docs)
+├── features/                 # Features & architecture (7 docs)
 │   ├── application-architecture.md
 │   ├── generation-queue.md
 │   ├── member-asset-save-flow.md
 │   ├── members-batch-actions.md
-│   └── seeding-guide.md
+│   ├── seeding-guide.md
+│   ├── credits-transactions.md
+│   └── active-context.md
 ├── media/                    # Media & AI pipeline (6 docs)
 │   ├── media-architecture.md
 │   ├── media-templates.md
@@ -121,7 +125,7 @@ Complete documentation for the TeamReel web application — frontend design syst
 ## Regenerating Auto-Generated Docs
 
 ```powershell
-$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@maglev.proxy.rlwy.net:32345/railway"
 python scripts/generate_demo_docs.py
 ```
 
@@ -144,6 +148,7 @@ Archived docs in [archive/](archive/) — implemented plans, superseded data dum
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 4.4.0 | 2026-03-12 | Data docs regenerated (maglev DB), credits-transactions + active-context feature docs, Laag 5 alignment fixed, infra apps expanded |
 | 4.3.0 | 2026-03-12 | Deep audit: phantom models fixed, 33 apps/40 ViewSets/~35 tasks verified, seeding-guide→features/, frontend-integration→archive/, stale markers |
 | 4.2.0 | 2026-03-12 | Docs-hygiene: dead code verwijderd, metrics 179→276 CSS Modules, xrefs fixed, plans/features gereorganiseerd |
 | 4.1.0 | 2026-03-12 | Added refactoring-status.md, updated metrics post-hardening+hygiene |

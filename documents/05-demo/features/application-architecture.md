@@ -101,12 +101,12 @@ Organisation (federation: KNVB, DFB, etc.)
 | **common** | Shared utilities, health check |
 | **core** | Core utilities shared across apps |
 | **tasks** | Celery task framework — base classes, monitoring |
-| **i18n_preferences** | User/org language + timezone preferences |
-| **rtc_websockets** | Real-time WebSocket infrastructure |
+| **i18n_preferences** | Hierarchical language/locale/timezone preferences (user → org → global fallback). Middleware auto-activates per request. Models: uses `settings.Setting` |
+| **rtc_websockets** | Django Channels WebSocket infra — authenticated connections, channel subscriptions (user/org/project), presence tracking, rate limiting, Redis channel layer. Models: `WebSocketConnection`, `RealtimeMessage`, `PresenceStatus` |
 | **web_ui** | Server-rendered HTML pages |
-| **scaffolding** | CLI & code scaffolding tooling |
-| **constitution_engine** | Platform governance rules engine |
-| **security_baseline** | Security rules compliance |
+| **scaffolding** | CLI code generator (`django-core-scaffold`) — scaffolds apps/modules via Jinja2 templates, atomic generation with rollback, conflict detection, constitutional naming validation |
+| **constitution_engine** | Standalone static analysis engine — runs mypy, Ruff, test coverage, custom rules via plugin pipeline. No Django models (pure Python dataclasses). Outputs: console, JSON, GitHub Actions annotations |
+| **security_baseline** | Security enforcement via registry of declarative rules (Django settings, sessions, CSRF, headers, passwords). Mapped to OWASP ASVS references. Integrates with constitution_engine as plugin. API: rules viewer + ASVS coverage |
 
 ---
 

@@ -1,10 +1,8 @@
 # Database Schema
 
-> ⚠️ **STALE** — Auto-generated 2026-02-04. Ontbreekt: `GenerationJob`, `rtc_websockets` models, recente migraties. Moet opnieuw gegenereerd worden vanuit productie-DB.
+> Auto-generated: 2026-03-12 10:04:14
 
-> Auto-generated: 2026-02-04 20:26:45
-
-**Database**: postgresql (switchback.proxy.rlwy.net)
+**Database**: postgresql (maglev.proxy.rlwy.net)
 
 ## FK Relationship Summary
 
@@ -128,6 +126,11 @@
 | projects.ProjectMembershipPromotion | `project` | projects.Project |
 | projects.ProjectMembershipPromotion | `target_user` | accounts.User |
 | projects.ProjectMembershipPromotion | `requested_by` | accounts.User |
+| rtc_websockets.ActivityEvent | `actor_user` | accounts.User |
+| rtc_websockets.PresenceStatus | `user` | accounts.User |
+| rtc_websockets.RealtimeMessage | `sender_user` | accounts.User |
+| rtc_websockets.WebSocketConnection | `user` | accounts.User |
+| search.SearchEntry | `content_type` | contenttypes.ContentType |
 | settings.FeatureFlag | `user` | accounts.User |
 | settings.FeatureFlag | `organisation` | organisations.Organisation |
 | settings.FeatureFlag | `project` | projects.Project |
@@ -153,6 +156,24 @@
 | transactions.UsageEvent | `user` | accounts.User |
 | transactions.UsageEvent | `organization` | organisations.Organisation |
 | transactions.UsageEvent | `project` | projects.Project |
+| video.PlatformExport | `preset` | video.VideoPreset |
+| video.VideoJob | `project` | projects.Project |
+| video.VideoJob | `created_by` | accounts.User |
+| video.VideoJob | `input_file` | files.FileAsset |
+| video.VideoJob | `output_file` | files.FileAsset |
+| video.VideoJob | `preset` | video.VideoPreset |
+| video.VideoJob | `platform_export` | video.PlatformExport |
+| video.VideoJob | `workflow_instance` | workflows.WorkflowInstance |
+| video.VideoOverlay | `job` | video.VideoJob |
+| video.VideoOverlay | `asset_file` | files.FileAsset |
+| workflows.ProjectPermissionOverride | `project` | projects.Project |
+| workflows.ProjectPermissionOverride | `workflow` | workflows.WorkflowTemplate |
+| workflows.TransitionHistory | `instance` | workflows.WorkflowInstance |
+| workflows.TransitionHistory | `actor` | accounts.User |
+| workflows.WorkflowInstance | `workflow` | workflows.WorkflowTemplate |
+| workflows.WorkflowInstance | `project` | projects.Project |
+| workflows.WorkflowInstance | `content_type` | contenttypes.ContentType |
+| workflows.WorkflowInstance | `created_by` | accounts.User |
 
 ---
 
@@ -245,6 +266,9 @@
 | `media_items` | ForeignKey | Yes | `medialib_items` |
 | `media_tags` | ForeignKey | Yes | `medialib_tags` |
 | `media_collections` | ForeignKey | Yes | `medialib_collections` |
+| `workflow_instances` | ForeignKey | Yes | `workflow_instances` |
+| `workflow_permissions` | ForeignKey | Yes | `project_permission_overrides` |
+| `video_jobs` | ForeignKey | Yes | `video_jobs` |
 | `id` | BigAutoField | No | - |
 | `organisation` | ForeignKey | No | `organisations_organisation` |
 | `creator` | ForeignKey | No | `accounts_user` |
@@ -257,6 +281,7 @@
 | `updated_at` | DateTimeField | No | - |
 | `archived_at` | DateTimeField | Yes | - |
 | `parent_project` | ForeignKey | Yes | `projects_project` |
+| `team_type` | CharField | No | - |
 | `sport` | ForeignKey | Yes | `sport_configuration_sport` |
 | `metadata` | JSONField | No | - |
 
@@ -338,6 +363,7 @@
 | `project` | ForeignKey | Yes | `projects_project` |
 | `parent_period` | ForeignKey | Yes | `activities_period` |
 | `sport` | ForeignKey | Yes | `sport_configuration_sport` |
+| `period_type` | CharField | No | - |
 | `name` | CharField | No | - |
 | `description` | TextField | No | - |
 | `start_date` | DateField | No | - |
@@ -457,8 +483,11 @@
 | `mediaitem` | ForeignKey | Yes | `medialib_items` |
 | `collection` | ForeignKey | Yes | `medialib_collections` |
 | `mediaitemrelation` | ForeignKey | Yes | `medialib_relations` |
+| `transitions` | ForeignKey | Yes | `transition_history` |
+| `created_workflows` | ForeignKey | Yes | `workflow_instances` |
 | `userrecent_set` | ForeignKey | Yes | `navigation_userrecent` |
 | `userfavorite_set` | ForeignKey | Yes | `navigation_userfavorite` |
+| `video_jobs` | ForeignKey | Yes | `video_jobs` |
 | `id` | BigAutoField | No | - |
 | `email` | CharField | No | - |
 | `password` | CharField | No | - |
@@ -707,6 +736,9 @@
 | `brand_assets` | ForeignKey | Yes | `branding_brandasset` |
 | `mediaitem` | ForeignKey | Yes | `medialib_items` |
 | `mediathumbnail` | ForeignKey | Yes | `medialib_thumbnails` |
+| `video_jobs_as_source` | ForeignKey | Yes | `video_jobs` |
+| `video_jobs_as_output` | ForeignKey | Yes | `video_jobs` |
+| `video_overlays` | ForeignKey | Yes | `video_overlays` |
 | `id` | UUIDField | No | - |
 | `organization` | ForeignKey | No | `organisations_organisation` |
 | `uploaded_by` | ForeignKey | Yes | `accounts_user` |
@@ -764,8 +796,192 @@
 | `profile` | ForeignKey | No | `branding_brandprofile` |
 | `file` | ForeignKey | No | `files_fileasset` |
 | `asset_type` | CharField | No | - |
+| `label` | CharField | No | - |
 | `alt_text` | CharField | No | - |
 | `is_active` | BooleanField | No | - |
+| `created_at` | DateTimeField | No | - |
+| `updated_at` | DateTimeField | No | - |
+
+### generative
+
+#### GenerationTemplate
+- Table: `generative_template`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `child_versions` | ForeignKey | Yes | `generative_template` |
+| `requests` | ForeignKey | Yes | `generative_request` |
+| `id` | BigAutoField | No | - |
+| `organisation` | ForeignKey | No | `organisations_organisation` |
+| `name` | CharField | No | - |
+| `slug` | SlugField | No | - |
+| `version` | CharField | No | - |
+| `parent_template` | ForeignKey | Yes | `generative_template` |
+| `is_latest` | BooleanField | No | - |
+| `description` | TextField | No | - |
+| `template_type` | CharField | No | - |
+| `template_subtype` | CharField | No | - |
+| `input_schema` | JSONField | No | - |
+| `pipeline_config` | JSONField | No | - |
+| `retention_days` | PositiveIntegerField | Yes | - |
+| `is_active` | BooleanField | No | - |
+| `created_at` | DateTimeField | No | - |
+| `updated_at` | DateTimeField | No | - |
+| `created_by` | ForeignKey | No | `accounts_user` |
+
+#### GenerationRequest
+- Table: `generative_request`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `output` | OneToOneField | Yes | `generative_output` |
+| `mediaitem` | ForeignKey | Yes | `medialib_items` |
+| `id` | BigAutoField | No | - |
+| `template` | ForeignKey | No | `generative_template` |
+| `template_version` | CharField | No | - |
+| `requester` | ForeignKey | No | `accounts_user` |
+| `project` | ForeignKey | Yes | `projects_project` |
+| `status` | CharField | No | - |
+| `input_data` | JSONField | No | - |
+| `retry_count` | PositiveIntegerField | No | - |
+| `error_category` | CharField | Yes | - |
+| `error_message` | TextField | No | - |
+| `estimated_cost` | DecimalField | No | - |
+| `actual_cost` | DecimalField | Yes | - |
+| `transaction_id` | BigIntegerField | Yes | - |
+| `metadata` | JSONField | No | - |
+| `created_at` | DateTimeField | No | - |
+| `started_at` | DateTimeField | Yes | - |
+| `completed_at` | DateTimeField | Yes | - |
+
+#### GenerationOutput
+- Table: `generative_output`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `request` | OneToOneField | No | `generative_request` |
+| `output_type` | CharField | No | - |
+| `file_id` | UUIDField | Yes | - |
+| `text_content` | TextField | No | - |
+| `metadata` | JSONField | No | - |
+| `expires_at` | DateTimeField | Yes | - |
+| `created_at` | DateTimeField | No | - |
+
+#### GenerationJob
+- Table: `generative_job`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `id` | BigAutoField | No | - |
+| `task_id` | UUIDField | No | - |
+| `template_id` | CharField | No | - |
+| `label` | CharField | No | - |
+| `output_type` | CharField | No | - |
+| `output_asset_type` | CharField | No | - |
+| `project_id` | CharField | Yes | - |
+| `membership_id` | CharField | Yes | - |
+| `created_by_id` | IntegerField | Yes | - |
+| `status` | CharField | No | - |
+| `progress` | PositiveSmallIntegerField | No | - |
+| `error_message` | TextField | No | - |
+| `approval_status` | CharField | Yes | - |
+| `reviewed_by_id` | IntegerField | Yes | - |
+| `reviewed_at` | DateTimeField | Yes | - |
+| `output_url` | TextField | No | - |
+| `output_variants` | JSONField | No | - |
+| `created_at` | DateTimeField | No | - |
+| `updated_at` | DateTimeField | No | - |
+| `completed_at` | DateTimeField | Yes | - |
+
+### video
+
+#### VideoJob
+- Table: `video_jobs`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `overlays` | ForeignKey | Yes | `video_overlays` |
+| `id` | UUIDField | No | - |
+| `project` | ForeignKey | No | `projects_project` |
+| `created_by` | ForeignKey | Yes | `accounts_user` |
+| `job_type` | CharField | No | - |
+| `status` | CharField | No | - |
+| `progress_percent` | IntegerField | No | - |
+| `input_file` | ForeignKey | Yes | `files_fileasset` |
+| `output_file` | ForeignKey | Yes | `files_fileasset` |
+| `preset` | ForeignKey | Yes | `video_presets` |
+| `platform_export` | ForeignKey | Yes | `video_platform_exports` |
+| `workflow_instance` | ForeignKey | Yes | `workflow_instances` |
+| `config` | JSONField | No | - |
+| `metadata` | JSONField | No | - |
+| `error_message` | TextField | No | - |
+| `error_code` | CharField | No | - |
+| `retry_count` | IntegerField | No | - |
+| `started_at` | DateTimeField | Yes | - |
+| `completed_at` | DateTimeField | Yes | - |
+| `created_at` | DateTimeField | No | - |
+| `updated_at` | DateTimeField | No | - |
+
+#### VideoOverlay
+- Table: `video_overlays`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `id` | UUIDField | No | - |
+| `job` | ForeignKey | No | `video_jobs` |
+| `overlay_type` | CharField | No | - |
+| `position` | CharField | No | - |
+| `position_x` | IntegerField | Yes | - |
+| `position_y` | IntegerField | Yes | - |
+| `padding_percent` | IntegerField | No | - |
+| `opacity` | FloatField | No | - |
+| `start_time` | FloatField | Yes | - |
+| `end_time` | FloatField | Yes | - |
+| `z_index` | IntegerField | No | - |
+| `content` | JSONField | No | - |
+| `asset_file` | ForeignKey | Yes | `files_fileasset` |
+| `created_at` | DateTimeField | No | - |
+
+#### PlatformExport
+- Table: `video_platform_exports`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `jobs` | ForeignKey | Yes | `video_jobs` |
+| `id` | UUIDField | No | - |
+| `platform` | CharField | No | - |
+| `name` | CharField | No | - |
+| `aspect_ratio` | CharField | No | - |
+| `max_duration_seconds` | IntegerField | Yes | - |
+| `max_file_size_mb` | IntegerField | Yes | - |
+| `resolution` | CharField | No | - |
+| `preset` | ForeignKey | No | `video_presets` |
+| `crop_strategy` | CharField | No | - |
+| `recommended` | BooleanField | No | - |
+| `is_active` | BooleanField | No | - |
+| `created_at` | DateTimeField | No | - |
+| `updated_at` | DateTimeField | No | - |
+
+#### VideoPreset
+- Table: `video_presets`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `jobs` | ForeignKey | Yes | `video_jobs` |
+| `platform_exports` | ForeignKey | Yes | `video_platform_exports` |
+| `id` | UUIDField | No | - |
+| `name` | CharField | No | - |
+| `description` | TextField | No | - |
+| `output_format` | CharField | No | - |
+| `video_codec` | CharField | No | - |
+| `audio_codec` | CharField | No | - |
+| `resolution` | CharField | No | - |
+| `bitrate_video` | CharField | No | - |
+| `bitrate_audio` | CharField | No | - |
+| `framerate` | IntegerField | Yes | - |
+| `crf` | IntegerField | Yes | - |
+| `extra_params` | JSONField | No | - |
+| `is_system` | BooleanField | No | - |
 | `created_at` | DateTimeField | No | - |
 | `updated_at` | DateTimeField | No | - |
 
@@ -979,6 +1195,74 @@
 | `created_at` | DateTimeField | No | - |
 | `updated_at` | DateTimeField | No | - |
 
+### workflows
+
+#### TransitionHistory
+- Table: `transition_history`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `id` | BigAutoField | No | - |
+| `instance` | ForeignKey | No | `workflow_instances` |
+| `from_state` | CharField | No | - |
+| `to_state` | CharField | No | - |
+| `action` | CharField | No | - |
+| `actor` | ForeignKey | Yes | `accounts_user` |
+| `comment` | TextField | No | - |
+| `task_id` | UUIDField | Yes | - |
+| `context_snapshot` | JSONField | No | - |
+| `created_at` | DateTimeField | No | - |
+
+#### WorkflowInstance
+- Table: `workflow_instances`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `history` | ForeignKey | Yes | `transition_history` |
+| `video_jobs` | ForeignKey | Yes | `video_jobs` |
+| `id` | BigAutoField | No | - |
+| `workflow` | ForeignKey | No | `workflow_templates` |
+| `workflow_snapshot` | JSONField | No | - |
+| `project` | ForeignKey | No | `projects_project` |
+| `content_type` | ForeignKey | No | `django_content_type` |
+| `object_id` | CharField | No | - |
+| `current_state` | CharField | No | - |
+| `context` | JSONField | No | - |
+| `version` | IntegerField | No | - |
+| `created_by` | ForeignKey | Yes | `accounts_user` |
+| `created_at` | DateTimeField | No | - |
+| `updated_at` | DateTimeField | No | - |
+| `content_object` | GenericForeignKey | No | - |
+
+#### ProjectPermissionOverride
+- Table: `project_permission_overrides`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `id` | BigAutoField | No | - |
+| `project` | ForeignKey | No | `projects_project` |
+| `workflow` | ForeignKey | No | `workflow_templates` |
+| `action_name` | CharField | No | - |
+| `required_roles` | JSONField | No | - |
+| `created_at` | DateTimeField | No | - |
+| `updated_at` | DateTimeField | No | - |
+
+#### WorkflowTemplate
+- Table: `workflow_templates`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `instances` | ForeignKey | Yes | `workflow_instances` |
+| `permission_overrides` | ForeignKey | Yes | `project_permission_overrides` |
+| `id` | BigAutoField | No | - |
+| `name` | CharField | No | - |
+| `description` | TextField | No | - |
+| `version` | CharField | No | - |
+| `definition` | JSONField | No | - |
+| `is_active` | BooleanField | No | - |
+| `created_at` | DateTimeField | No | - |
+| `updated_at` | DateTimeField | No | - |
+
 ### notifications
 
 #### DeliveryAttempt
@@ -1142,69 +1426,107 @@
 | `order` | PositiveIntegerField | No | - |
 | `content_object` | GenericForeignKey | No | - |
 
-### scaffolding
+### observability
 
-### generative
-
-#### GenerationTemplate
-- Table: `generative_template`
+#### SystemMetric
+- Table: `observability_systemmetric`
 
 | Field | Type | Nullable | FK Target |
 |-------|------|----------|-----------|
-| `child_versions` | ForeignKey | Yes | `generative_template` |
-| `requests` | ForeignKey | Yes | `generative_request` |
-| `id` | BigAutoField | No | - |
-| `organisation` | ForeignKey | No | `organisations_organisation` |
-| `name` | CharField | No | - |
-| `slug` | SlugField | No | - |
-| `version` | CharField | No | - |
-| `parent_template` | ForeignKey | Yes | `generative_template` |
-| `is_latest` | BooleanField | No | - |
-| `description` | TextField | No | - |
-| `input_schema` | JSONField | No | - |
-| `pipeline_config` | JSONField | No | - |
-| `retention_days` | PositiveIntegerField | Yes | - |
-| `is_active` | BooleanField | No | - |
+| `id` | UUIDField | No | - |
+| `timestamp` | DateTimeField | No | - |
+| `metric_type` | CharField | No | - |
+| `value` | FloatField | No | - |
+| `metadata` | JSONField | No | - |
+
+### rtc_websockets
+
+#### WebSocketConnection
+- Table: `realtime_websocket_connection`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `connection_id` | UUIDField | No | - |
+| `user` | ForeignKey | No | `accounts_user` |
+| `channel_name` | CharField | No | - |
+| `authenticated_at` | DateTimeField | No | - |
+| `last_heartbeat` | DateTimeField | No | - |
+| `message_count` | PositiveIntegerField | No | - |
+| `auth_method` | CharField | No | - |
+| `client_info` | JSONField | No | - |
 | `created_at` | DateTimeField | No | - |
 | `updated_at` | DateTimeField | No | - |
-| `created_by` | ForeignKey | No | `accounts_user` |
 
-#### GenerationRequest
-- Table: `generative_request`
+#### RealtimeMessage
+- Table: `realtime_message`
 
 | Field | Type | Nullable | FK Target |
 |-------|------|----------|-----------|
-| `output` | OneToOneField | Yes | `generative_output` |
-| `mediaitem` | ForeignKey | Yes | `medialib_items` |
+| `message_id` | UUIDField | No | - |
+| `message_type` | CharField | No | - |
+| `scope_type` | CharField | No | - |
+| `scope_id` | UUIDField | No | - |
+| `sender_user` | ForeignKey | No | `accounts_user` |
+| `content` | JSONField | No | - |
+| `created_at` | DateTimeField | No | - |
+| `delivered_at` | DateTimeField | Yes | - |
+| `retry_count` | PositiveSmallIntegerField | No | - |
+
+#### PresenceStatus
+- Table: `realtime_presence_status`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
 | `id` | BigAutoField | No | - |
-| `template` | ForeignKey | No | `generative_template` |
-| `template_version` | CharField | No | - |
-| `requester` | ForeignKey | No | `accounts_user` |
-| `project` | ForeignKey | Yes | `projects_project` |
+| `user` | ForeignKey | No | `accounts_user` |
 | `status` | CharField | No | - |
-| `input_data` | JSONField | No | - |
-| `retry_count` | PositiveIntegerField | No | - |
-| `error_category` | CharField | Yes | - |
-| `error_message` | TextField | No | - |
-| `estimated_cost` | DecimalField | No | - |
-| `actual_cost` | DecimalField | Yes | - |
-| `transaction_id` | BigIntegerField | Yes | - |
-| `metadata` | JSONField | No | - |
-| `created_at` | DateTimeField | No | - |
-| `started_at` | DateTimeField | Yes | - |
-| `completed_at` | DateTimeField | Yes | - |
+| `last_seen` | DateTimeField | No | - |
+| `current_location` | CharField | Yes | - |
+| `organization_id` | UUIDField | No | - |
+| `project_id` | UUIDField | Yes | - |
+| `updated_at` | DateTimeField | No | - |
 
-#### GenerationOutput
-- Table: `generative_output`
+#### ActivityEvent
+- Table: `realtime_activity_event`
 
 | Field | Type | Nullable | FK Target |
 |-------|------|----------|-----------|
-| `request` | OneToOneField | No | `generative_request` |
-| `output_type` | CharField | No | - |
-| `file_id` | UUIDField | Yes | - |
-| `text_content` | TextField | No | - |
+| `event_id` | UUIDField | No | - |
+| `actor_user` | ForeignKey | No | `accounts_user` |
+| `action_type` | CharField | No | - |
+| `resource_type` | CharField | No | - |
+| `resource_id` | UUIDField | No | - |
+| `organization_id` | UUIDField | No | - |
+| `project_id` | UUIDField | Yes | - |
+| `occurred_at` | DateTimeField | No | - |
 | `metadata` | JSONField | No | - |
-| `expires_at` | DateTimeField | Yes | - |
-| `created_at` | DateTimeField | No | - |
+
+### i18n_preferences
+
+### constitution_engine
+
+### security_baseline
+
+### search
+
+#### SearchEntry
+- Table: `search_searchentry`
+
+| Field | Type | Nullable | FK Target |
+|-------|------|----------|-----------|
+| `id` | UUIDField | No | - |
+| `content_type` | ForeignKey | No | `django_content_type` |
+| `object_id` | CharField | No | - |
+| `search_vector` | SearchVectorField | No | - |
+| `body_text` | TextField | No | - |
+| `title` | CharField | No | - |
+| `description` | TextField | No | - |
+| `image_url` | CharField | Yes | - |
+| `url` | CharField | No | - |
+| `language` | CharField | No | - |
+| `last_updated` | DateTimeField | No | - |
+| `content_object` | GenericForeignKey | No | - |
+
+### scaffolding
 
 ### tasks

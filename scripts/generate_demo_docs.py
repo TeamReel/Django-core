@@ -3,9 +3,9 @@
 Generate comprehensive database state documentation.
 
 Outputs:
-- documents/05-demo/state/counts.md (model counts with status)
-- documents/05-demo/state/hierarchy.md (org→club→team→season tree)
-- documents/05-demo/schema/tables.md (table structure + FK relations)
+- documents/05-demo/data/counts.md (model counts with status)
+- documents/05-demo/data/hierarchy-compact.md (org→club→team→season tree)
+- documents/05-demo/data/tables.md (table structure + FK relations)
 
 Usage:
     # Local (SQLite)
@@ -57,7 +57,7 @@ def generate_counts():
     output_lines.append("| App | Model | Count | Status |")
     output_lines.append("|-----|-------|-------|--------|")
 
-    # All Django apps to include (comprehensive list)
+    # All Django apps to include (comprehensive list — 33 apps)
     core_apps = [
         # Core domain
         "organisations",
@@ -71,22 +71,32 @@ def generate_counts():
         "medialib",
         "files",
         "branding",
+        # Generative AI
+        "generative",
+        # Video processing
+        "video",
         # Credits & transactions
         "credits",
         "transactions",
         # Templates & settings
         "settings",
         "sport_configuration",
+        # Workflows & approvals
+        "workflows",
         # Notifications & audit
         "notifications",
         "contextual_notifications",
         "audit",
         # Navigation & UI
         "navigation",
+        # Platform infrastructure
+        "observability",
+        "rtc_websockets",
+        "i18n_preferences",
+        "constitution_engine",
+        "security_baseline",
+        "search",
         "scaffolding",
-        # Generative AI
-        "generative",
-        # Tasks & background
         "tasks",
     ]
 
@@ -112,7 +122,8 @@ def generate_counts():
     output_lines.append("")
     output_lines.append("**Legend**: 🟢 OK (3+) | 🟡 THIN (1-2) | 🔴 EMPTY (0)")
 
-    output_path = "documents/05-demo/state/counts.md"
+    output_path = "documents/05-demo/data/counts.md"
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(output_lines))
     print(f"✅ Generated: {output_path}")
@@ -191,7 +202,8 @@ def generate_hierarchy():
         output_lines.append("python scripts/seed_organisations.py")
         output_lines.append("```")
 
-    output_path = "documents/05-demo/state/hierarchy.md"
+    output_path = "documents/05-demo/data/hierarchy-compact.md"
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(output_lines))
     print(f"✅ Generated: {output_path}")
@@ -210,7 +222,7 @@ def generate_schema():
     output_lines.append(f"**Database**: {vendor} ({host})")
     output_lines.append("")
 
-    # All Django apps (comprehensive list)
+    # All Django apps (comprehensive list — 33 apps)
     all_apps = [
         # Core domain
         "organisations",
@@ -224,22 +236,32 @@ def generate_schema():
         "medialib",
         "files",
         "branding",
+        # Generative AI
+        "generative",
+        # Video processing
+        "video",
         # Credits & transactions
         "credits",
         "transactions",
         # Templates & settings
         "settings",
         "sport_configuration",
+        # Workflows & approvals
+        "workflows",
         # Notifications & audit
         "notifications",
         "contextual_notifications",
         "audit",
         # Navigation & UI
         "navigation",
+        # Platform infrastructure
+        "observability",
+        "rtc_websockets",
+        "i18n_preferences",
+        "constitution_engine",
+        "security_baseline",
+        "search",
         "scaffolding",
-        # Generative AI
-        "generative",
-        # Tasks & background
         "tasks",
     ]
 
@@ -306,7 +328,8 @@ def generate_schema():
             output_lines.append("⚠️ App not found")
             output_lines.append("")
 
-    output_path = "documents/05-demo/schema/tables.md"
+    output_path = "documents/05-demo/data/tables.md"
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(output_lines))
     print(f"✅ Generated: {output_path}")
@@ -327,9 +350,9 @@ def main():
 
     print()
     print("✅ All documentation generated!")
-    print("   - documents/05-demo/state/counts.md")
-    print("   - documents/05-demo/state/hierarchy.md")
-    print("   - documents/05-demo/schema/tables.md")
+    print("   - documents/05-demo/data/counts.md")
+    print("   - documents/05-demo/data/hierarchy-compact.md")
+    print("   - documents/05-demo/data/tables.md")
 
 
 if __name__ == "__main__":
