@@ -212,7 +212,7 @@ export const MemberDetailPage: React.FC = () => {
                 <select
                   value={member.id}
                   onChange={(e) => {
-                    navigate(routes.orgMemberDetailLegacy({ orgId: orgSlug!, memberId: e.target.value }));
+                    navigate(routes.orgMemberDetail({ orgId: orgSlug!, memberId: e.target.value }));
                   }}
                   className={styles.breadcrumbSelect}
                 >

@@ -273,3 +273,14 @@ export function OrganisationDetailRedirect() {
   const orgSlugOrId = String(id || '').trim();
   return <Navigate to={`${routes.orgDetail({ orgId: orgSlugOrId })}${location.search || ''}`} replace />;
 }
+
+/**
+ * Catch-all redirect: strips the `/organisations` prefix and preserves the rest.
+ * Used as `<Route path="/organisations/*" element={<StripOrganisationsPrefix />} />`
+ * so that legacy `/organisations/…` URLs redirect to their canonical `/ …` equivalents.
+ */
+export function StripOrganisationsPrefix() {
+  const location = useLocation();
+  const newPath = location.pathname.replace(/^\/organisations/, '') || '/';
+  return <Navigate to={`${newPath}${location.search}${location.hash}`} replace />;
+}

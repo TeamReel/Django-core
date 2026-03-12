@@ -74,21 +74,23 @@ export const routes = {
   orgHierarchy: (p: { orgId: string }) =>
     `/${seg(p.orgId)}?tab=hierarchy`,
 
-  // Legacy /organisations/... prefix (for back-compat in components not yet migrated)
+  // /organisations/... helpers — exception routes that remain at this prefix (R2)
+  /** @deprecated Use routes.orgDetail() — URL now redirects via wildcard */
   orgDetailLegacy: (p: { orgId: string }) =>
-    `/organisations/${seg(p.orgId)}`,
-  orgProjectsLegacy: (p: { orgId: string }) =>
+    `/${seg(p.orgId)}`,
+  orgProjects: (p: { orgId: string }) =>
     `/organisations/${seg(p.orgId)}/projects`,
+  /** @deprecated Use routes.club() or routes.projectDetail() */
   orgProjectDetailLegacy: (p: { orgId: string; projectId: string }) =>
-    `/organisations/${seg(p.orgId)}/projects/${seg(p.projectId)}`,
-  orgProjectCreateLegacy: (p: { orgId: string }) =>
+    `/${seg(p.orgId)}/projects/${seg(p.projectId)}`,
+  orgProjectCreate: (p: { orgId: string }) =>
     `/organisations/${seg(p.orgId)}/projects/create`,
-  orgProjectEditLegacy: (p: { orgId: string; projectId: string }) =>
+  orgProjectEdit: (p: { orgId: string; projectId: string }) =>
     `/organisations/${seg(p.orgId)}/projects/${seg(p.projectId)}/edit`,
-  orgMemberDetailLegacy: (p: { orgId: string; memberId: string }) =>
+  orgMemberDetail: (p: { orgId: string; memberId: string }) =>
     `/organisations/${seg(p.orgId)}/members/${seg(p.memberId)}`,
-  orgCreateLegacy: () => '/organisations/create' as const,
-  orgEditLegacy: (p: { orgId: string }) =>
+  orgCreate: () => '/organisations/create' as const,
+  orgEdit: (p: { orgId: string }) =>
     `/organisations/${seg(p.orgId)}/edit`,
 
   // ── Hierarchy (canonical vanity URLs) ────────────────────────────

@@ -109,7 +109,7 @@ export const UserActions: React.FC<UserActionsProps> = ({
         <button
           onClick={() => {
             if (isMembership && (orgIdParam || context.organisation)) {
-              navigate(`${routes.orgMemberDetailLegacy({ orgId: String(orgIdParam || context.organisation?.slug || ''), memberId: String(item.id) })}?action=edit`);
+              navigate(`${routes.orgMemberDetail({ orgId: String(orgIdParam || context.organisation?.slug || ''), memberId: String(item.id) })}?action=edit`);
             } else {
               handleEditClick(item);
             }

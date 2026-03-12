@@ -148,42 +148,42 @@ describe('routes', () => {
     });
   });
 
-  // ── Legacy /organisations/ prefix routes ───────────────────────────
-  describe('legacy /organisations/ routes', () => {
-    it('orgDetailLegacy', () => {
-      expect(routes.orgDetailLegacy({ orgId: 'knvb' })).toBe('/organisations/knvb');
+  // ── /organisations/ prefix routes (R2: canonical or exception) ───────
+  describe('/organisations/ prefix routes', () => {
+    it('orgDetailLegacy — now generates canonical URL', () => {
+      expect(routes.orgDetailLegacy({ orgId: 'knvb' })).toBe('/knvb');
     });
 
-    it('orgProjectsLegacy', () => {
-      expect(routes.orgProjectsLegacy({ orgId: 'knvb' })).toBe('/organisations/knvb/projects');
+    it('orgProjects', () => {
+      expect(routes.orgProjects({ orgId: 'knvb' })).toBe('/organisations/knvb/projects');
     });
 
-    it('orgProjectDetailLegacy', () => {
+    it('orgProjectDetailLegacy — now generates canonical URL', () => {
       expect(routes.orgProjectDetailLegacy({ orgId: 'knvb', projectId: 'fc-utrecht' }))
-        .toBe('/organisations/knvb/projects/fc-utrecht');
+        .toBe('/knvb/projects/fc-utrecht');
     });
 
-    it('orgProjectCreateLegacy', () => {
-      expect(routes.orgProjectCreateLegacy({ orgId: 'knvb' }))
+    it('orgProjectCreate', () => {
+      expect(routes.orgProjectCreate({ orgId: 'knvb' }))
         .toBe('/organisations/knvb/projects/create');
     });
 
-    it('orgProjectEditLegacy', () => {
-      expect(routes.orgProjectEditLegacy({ orgId: 'knvb', projectId: 'fc-utrecht' }))
+    it('orgProjectEdit', () => {
+      expect(routes.orgProjectEdit({ orgId: 'knvb', projectId: 'fc-utrecht' }))
         .toBe('/organisations/knvb/projects/fc-utrecht/edit');
     });
 
-    it('orgMemberDetailLegacy', () => {
-      expect(routes.orgMemberDetailLegacy({ orgId: 'knvb', memberId: '123' }))
+    it('orgMemberDetail', () => {
+      expect(routes.orgMemberDetail({ orgId: 'knvb', memberId: '123' }))
         .toBe('/organisations/knvb/members/123');
     });
 
-    it('orgCreateLegacy', () => {
-      expect(routes.orgCreateLegacy()).toBe('/organisations/create');
+    it('orgCreate', () => {
+      expect(routes.orgCreate()).toBe('/organisations/create');
     });
 
-    it('orgEditLegacy', () => {
-      expect(routes.orgEditLegacy({ orgId: 'knvb' })).toBe('/organisations/knvb/edit');
+    it('orgEdit', () => {
+      expect(routes.orgEdit({ orgId: 'knvb' })).toBe('/organisations/knvb/edit');
     });
   });
 

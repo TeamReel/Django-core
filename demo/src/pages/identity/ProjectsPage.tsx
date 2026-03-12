@@ -69,7 +69,7 @@ export const ProjectsPage: React.FC = () => {
                 if (currentOrgSlug) {
                   if (!value) { navigate('/projects'); return; }
                   const match = orgNavigationIndex.find(o => String(o.id) === String(value));
-                  if (match?.slug) navigate(routes.orgProjectsLegacy({ orgId: match.slug }));
+                  if (match?.slug) navigate(routes.orgProjects({ orgId: match.slug }));
                 }
               }}
               selectedClubId={selectedClubId}
@@ -87,7 +87,7 @@ export const ProjectsPage: React.FC = () => {
             {(!currentOrgSlug || (currentOrgSlug && userCanCreateProject)) && (
               <Button variant="primary" size="md"
                 onClick={() => {
-                  if (currentOrgSlug) navigate(routes.orgProjectCreateLegacy({ orgId: String(resolvedOrg?.slug || currentOrgId || '') }));
+                  if (currentOrgSlug) navigate(routes.orgProjectCreate({ orgId: String(resolvedOrg?.slug || currentOrgId || '') }));
                   else setIsOrgSelectionModalOpen(true);
                 }}>
                 Create Project
@@ -144,7 +144,7 @@ export const ProjectsPage: React.FC = () => {
             <div className="flex-col gap-8">
               {organisations.map(org => (
                 <button key={org.id}
-                  onClick={() => { setIsOrgSelectionModalOpen(false); navigate(routes.orgProjectCreateLegacy({ orgId: org.slug })); }}
+                  onClick={() => { setIsOrgSelectionModalOpen(false); navigate(routes.orgProjectCreate({ orgId: org.slug })); }}
                   className={styles.orgSelectButton}>
                   <div className="fw-500">{org.name}</div>
                   {org.description && <div className={`fs-12 mt-4 ${styles.orgDescription}`}>{org.description}</div>}

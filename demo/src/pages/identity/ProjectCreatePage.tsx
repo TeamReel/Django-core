@@ -131,7 +131,7 @@ export const ProjectCreatePage: React.FC = () => {
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => navigate(routes.orgProjectsLegacy({ orgId: resolvedOrg?.slug || currentOrgId! }))}
+                onClick={() => navigate(routes.orgProjects({ orgId: resolvedOrg?.slug || currentOrgId! }))}
               >
                 Cancel
               </Button>

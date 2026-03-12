@@ -1,6 +1,6 @@
 # Navigation Architecture — Roadmap
 
-**Status:** 🔄 Actief (0/10 fases done)
+**Status:** 🔄 Actief (1/10 fases done)
 **Aangemaakt:** 2026-03-12
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)

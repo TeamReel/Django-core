@@ -56,7 +56,7 @@ export const CREATE_MENU_ITEMS = [
   { label: 'Season', path: routes.directory({ tab: 'seasons' }), hint: 'Go to seasons list' },
   { label: 'Team', path: routes.directory({ tab: 'teams' }), hint: 'Go to teams list' },
   { label: 'Club', path: routes.directory({ tab: 'clubs' }), hint: 'Go to clubs list' },
-  { label: 'Federation', path: routes.orgCreateLegacy(), hint: 'Create a new federation' },
+  { label: 'Federation', path: routes.orgCreate(), hint: 'Create a new federation' },
 ] as const;
 
 /* ─── Pure helpers ──────────────────────────────────────────── */
