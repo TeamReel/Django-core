@@ -96,7 +96,7 @@ Beyond the 15 UI primitives, larger shared components live in `demo/src/componen
 | **TopNavbar** | Top bar with search, org switcher, user menu |
 | **MobileBottomNav** | Fixed bottom navigation on mobile |
 | **SearchBar** | Global search with keyboard shortcuts |
-| **QuickCreateFAB** | Floating action button for quick content creation |
+| **QuickActions** | Quick content creation actions (integrated in MobileBottomNav) |
 | **MobileFilterSheet** | Bottom sheet for filter selection on mobile |
 | **SwipeableCard** | Touch-enabled card with swipe actions |
 | **OfflineBanner** | Connection status indicator |

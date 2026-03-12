@@ -110,7 +110,7 @@ The `safe-bottom-nav` class accounts for the `MobileBottomNav` fixed at the bott
 `SwipeableCard` and `MobileFilterSheet` support horizontal swipe gestures:
 
 ```tsx
-// useSwipeGesture hook handles:
+// Swipe logic is inline in SwipeableCard.tsx:
 // - Touch start/move/end tracking
 // - Threshold detection (>50% of width)
 // - Spring-back animation on cancel
@@ -163,7 +163,7 @@ Active containers:
 | **MobileBottomNav** | Fixed 5-item navigation bar |
 | **MobileFilterSheet** | Bottom sheet for filter selection (swipe-to-dismiss) |
 | **SwipeableCard** | Card with swipe gesture actions |
-| **QuickCreateFAB** | Floating action button (bottom-right corner) |
+| **QuickActions** | Quick create actions (integrated in MobileBottomNav **+** button) |
 | **OfflineBanner** | Connection status toast at screen top |
 
 ## Responsive Utility Classes
