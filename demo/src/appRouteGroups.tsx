@@ -7,21 +7,11 @@ import {
 } from './components/PermissionGuards';
 
 import {
-  TeamSeasonsRedirect,
-  ProjectSeasonRedirect,
-  TeamSeasonRedirect,
-  SeasonSquadRedirect,
-  ProjectCompetitionRedirect,
-  TeamCompetitionRedirect,
-  CompetitionMatchesRedirect,
-  CompetitionUsersRedirect,
-  TeamMatchRedirect,
+  LegacyDirectoryRedirect,
   ClubDetailRedirect,
   TeamDetailRedirect,
-  LegacyDirectoryRedirect,
-  OrgHierarchyRedirect,
-  OrgProjectsRedirect,
   StripOrganisationsPrefix,
+  HierarchyRedirect,
 } from './appRedirects';
 
 import {
@@ -100,47 +90,31 @@ import {
 
 // ─── Hierarchy routes ────────────────────────────────────────────────────────
 // Project, team, season, competition, match URL patterns
-// (canonical + /organisations/ prefix + back-compat with /seasons segment)
+// Canonical routes render pages; legacy patterns use HierarchyRedirect
 
 export function getHierarchyRoutes(): React.ReactNode[] {
   return [
-    // ── Project hierarchy: /:orgId/projects/* ──
+    // ── Project hierarchy: /:orgId/projects/* (canonical pages) ──
     <Route key="h-proj-seasons" path="/:orgId/projects/:projectId/seasons" element={<ProtectedRoute><ProjectSeasonsPage /></ProtectedRoute>} />,
     <Route key="h-proj-season" path="/:orgId/projects/:projectId/:seasonId" element={<ProtectedRoute><ProjectHierarchySeasonRedirectPage /></ProtectedRoute>} />,
     <Route key="h-proj-comp" path="/:orgId/projects/:projectId/:seasonId/:competitionId" element={<ProtectedRoute><ProjectHierarchyCompetitionRedirectPage /></ProtectedRoute>} />,
     <Route key="h-proj-match" path="/:orgId/projects/:projectId/:seasonId/:competitionId/:matchId" element={<ProtectedRoute><ProjectHierarchyMatchRedirectPage /></ProtectedRoute>} />,
-    <Route key="h-proj-team-seasons" path="/:orgId/projects/:clubId/teams/:projectId/seasons" element={<ProtectedRoute><TeamSeasonsRedirect /></ProtectedRoute>} />,
-    <Route key="h-proj-season-legacy" path="/:orgId/projects/:projectId/seasons/:seasonId" element={<ProtectedRoute><ProjectSeasonRedirect /></ProtectedRoute>} />,
-    <Route key="h-proj-team-season-legacy" path="/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId" element={<ProtectedRoute><TeamSeasonRedirect /></ProtectedRoute>} />,
-    <Route key="h-proj-squad" path="/:orgId/projects/:projectId/seasons/:seasonId/squad" element={<ProtectedRoute><SeasonSquadRedirect /></ProtectedRoute>} />,
-    <Route key="h-proj-team-squad" path="/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/squad" element={<ProtectedRoute><SeasonSquadRedirect /></ProtectedRoute>} />,
-    <Route key="h-proj-comp-legacy" path="/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId" element={<ProtectedRoute><ProjectCompetitionRedirect /></ProtectedRoute>} />,
-    <Route key="h-proj-team-comp-legacy" path="/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId" element={<ProtectedRoute><TeamCompetitionRedirect /></ProtectedRoute>} />,
-    <Route key="h-proj-comp-matches" path="/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId/matches" element={<ProtectedRoute><CompetitionMatchesRedirect /></ProtectedRoute>} />,
-    <Route key="h-proj-team-comp-matches" path="/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId/matches" element={<ProtectedRoute><CompetitionMatchesRedirect /></ProtectedRoute>} />,
-    <Route key="h-proj-comp-match" path="/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId/matches/:matchId" element={<ProtectedRoute><ProjectHierarchyMatchRedirectPage /></ProtectedRoute>} />,
-    <Route key="h-proj-team-comp-match" path="/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId/matches/:matchId" element={<ProtectedRoute><TeamMatchRedirect /></ProtectedRoute>} />,
-    <Route key="h-proj-comp-squad" path="/:orgId/projects/:projectId/seasons/:seasonId/competitions/:competitionId/squad" element={<ProtectedRoute><CompetitionUsersRedirect /></ProtectedRoute>} />,
-    <Route key="h-proj-team-comp-squad" path="/:orgId/projects/:clubId/teams/:projectId/seasons/:seasonId/competitions/:competitionId/squad" element={<ProtectedRoute><CompetitionUsersRedirect /></ProtectedRoute>} />,
 
-    // ── /organisations/ prefix routes eliminated in R2 — handled by wildcard ──
+    // ── Legacy project hierarchy (with /seasons/, /competitions/, /squad, etc.) — R3 consolidated ──
+    <Route key="h-proj-legacy-catch" path="/:orgId/projects/:clubId/teams/*" element={<ProtectedRoute><HierarchyRedirect /></ProtectedRoute>} />,
+    <Route key="h-proj-seasons-legacy-catch" path="/:orgId/projects/:projectId/seasons/:seasonId/*" element={<ProtectedRoute><HierarchyRedirect /></ProtectedRoute>} />,
+    <Route key="h-proj-season-legacy" path="/:orgId/projects/:projectId/seasons/:seasonId" element={<ProtectedRoute><HierarchyRedirect /></ProtectedRoute>} />,
 
     // ── Canonical vanity hierarchy: /:orgId/:clubId/:projectId/* ──
     <Route key="h-vanity-team" path="/:orgId/:clubId/:projectId" element={<ProtectedRoute><TeamDetailPage /></ProtectedRoute>} />,
-    <Route key="h-vanity-team-seasons" path="/:orgId/:clubId/:projectId/seasons" element={<ProtectedRoute><TeamSeasonsRedirect /></ProtectedRoute>} />,
     <Route key="h-vanity-season" path="/:orgId/:clubId/:projectId/:seasonId" element={<ProtectedRoute><SeasonDetailPage /></ProtectedRoute>} />,
     <Route key="h-vanity-member" path="/:orgId/:clubId/:projectId/:seasonId/members/:memberId" element={<ProtectedRoute><ProjectSeasonMemberDetailPage /></ProtectedRoute>} />,
-    <Route key="h-vanity-comp" path="/:orgId/:clubId/:projectId/:seasonId/:competitionId" element={<ProtectedRoute><TeamCompetitionRedirect /></ProtectedRoute>} />,
     <Route key="h-vanity-match" path="/:orgId/:clubId/:projectId/:seasonId/:competitionId/:matchId" element={<ProtectedRoute><MatchDetailPage /></ProtectedRoute>} />,
 
-    // ── /organisations/ vanity prefix routes eliminated in R2 — handled by wildcard ──
-
-    // ── Back-compat: vanity routes with explicit /seasons segment ──
-    <Route key="h-bc-season" path="/:orgId/:clubId/:projectId/seasons/:seasonId" element={<ProtectedRoute><TeamSeasonRedirect /></ProtectedRoute>} />,
-    <Route key="h-bc-member" path="/:orgId/:clubId/:projectId/seasons/:seasonId/members/:memberId" element={<ProtectedRoute><ProjectSeasonMemberDetailPage /></ProtectedRoute>} />,
-    <Route key="h-bc-comp" path="/:orgId/:clubId/:projectId/seasons/:seasonId/:competitionId" element={<ProtectedRoute><TeamCompetitionRedirect /></ProtectedRoute>} />,
-    <Route key="h-bc-match" path="/:orgId/:clubId/:projectId/seasons/:seasonId/:competitionId/:matchId" element={<ProtectedRoute><TeamMatchRedirect /></ProtectedRoute>} />,
-    // ── /organisations/ back-compat prefix routes eliminated in R2 — handled by wildcard ──
+    // ── Legacy vanity (trailing /seasons, /squad, explicit /seasons/ segment, 5-seg competition) — R3 consolidated ──
+    <Route key="h-vanity-seasons" path="/:orgId/:clubId/:projectId/seasons" element={<ProtectedRoute><HierarchyRedirect /></ProtectedRoute>} />,
+    <Route key="h-vanity-comp" path="/:orgId/:clubId/:projectId/:seasonId/:competitionId" element={<ProtectedRoute><HierarchyRedirect /></ProtectedRoute>} />,
+    <Route key="h-bc-seasons-catch" path="/:orgId/:clubId/:projectId/seasons/*" element={<ProtectedRoute><HierarchyRedirect /></ProtectedRoute>} />,
   ];
 }
 
@@ -162,7 +136,7 @@ export function getIdentityRoutes(): React.ReactNode[] {
     <Route key="i-ctx-competitions" path="/:orgId/competitions" element={<ProtectedRoute><OrgCompetitionsPage /></ProtectedRoute>} />,
     <Route key="i-ctx-matches" path="/:orgId/matches" element={<ProtectedRoute><OrgMatchesPage /></ProtectedRoute>} />,
     <Route key="i-ctx-users" path="/:orgId/users" element={<ProtectedRoute><OrgUsersPage /></ProtectedRoute>} />,
-    <Route key="i-ctx-hierarchy" path="/:orgId/hierarchy" element={<ProtectedRoute><OrgHierarchyRedirect /></ProtectedRoute>} />,
+    <Route key="i-ctx-hierarchy" path="/:orgId/hierarchy" element={<ProtectedRoute><HierarchyRedirect /></ProtectedRoute>} />,
 
     // Org detail (canonical)
     <Route key="i-org-detail" path="/:id" element={<ProtectedRoute><OrganisationDetailPage /></ProtectedRoute>} />,
@@ -171,8 +145,7 @@ export function getIdentityRoutes(): React.ReactNode[] {
     <Route key="i-org-member" path="/organisations/:id/members/:memberId" element={<ProtectedRoute><MemberDetailPage /></ProtectedRoute>} />,
     <Route key="i-org-edit" path="/organisations/:id/edit" element={<ProtectedRoute><OrganisationEditPage /></ProtectedRoute>} />,
 
-    // Projects
-    <Route key="i-org-projects" path="/organisations/:orgId/projects" element={<ProtectedRoute><OrgProjectsRedirect /></ProtectedRoute>} />,
+    // Projects — /organisations/:orgId/projects handled by wildcard (R2)
     <Route key="i-org-proj-create" path="/organisations/:orgId/projects/create" element={<ProtectedRoute><ProjectCreatePage /></ProtectedRoute>} />,
     <Route key="i-org-proj-edit" path="/organisations/:orgId/projects/:projectId/edit" element={<ProtectedRoute><ProjectEditPage /></ProtectedRoute>} />,
     <Route key="i-proj-detail" path="/:orgId/projects/:projectId" element={<ProtectedRoute><ClubDetailRedirect /></ProtectedRoute>} />,
