@@ -4,6 +4,7 @@ import { Alert } from '@django-core/design-system';
 import {
   Eye, Pencil, Trash2, Check, MoreHorizontal,
 } from 'lucide-react';
+import { ShareButton } from '../../components/ShareButton';
 import MobileTabBar from '../../components/MobileTabBar';
 import { isSeasonPeriod } from '../../providers/SeasonProvider';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
@@ -86,6 +87,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 <Pencil size={16} />
               </button>
             )}
+
+            {/* Share link */}
+            <ShareButton compact />
 
             {/* Overflow menu — View + Delete */}
             <div className={s.overflowWrap} ref={overflowRef}>

@@ -3,6 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import {
   Eye, Pencil, Trash2, Check, ArrowLeft, MoreHorizontal,
 } from 'lucide-react';
+import { ShareButton } from '../../components/ShareButton';
 import { MatchOverviewTab, MatchContentTab, MatchLineupTab } from './match-detail';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import MatchEditModal from '../identity/MatchEditModal';
@@ -137,6 +138,9 @@ export default function HierarchyMatchDetailPage() {
                 <Pencil size={16} />
               </button>
             )}
+
+            {/* Share + QR (match pages benefit from QR for match-day posters) */}
+            <ShareButton showQR compact />
 
             {/* Overflow menu — View + Delete */}
             <div className={styles.overflowWrap} ref={overflowRef}>

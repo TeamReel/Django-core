@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Check, Pencil, Eye, Trash2, MoreHorizontal,
 } from 'lucide-react';
+import { ShareButton } from '../../components/ShareButton';
 import { Organisation } from '../../types';
 import MobileTabBar from '../../components/MobileTabBar';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
@@ -104,6 +105,9 @@ export const OrganisationDetailPage: React.FC = () => {
                 <Pencil size={16} />
               </button>
             )}
+
+            {/* Share link */}
+            <ShareButton compact />
 
             <div className={s.overflowWrap} ref={overflowRef}>
               <button type="button" className={s.iconBtn} onClick={() => setOverflowOpen((v) => !v)} title="Meer">

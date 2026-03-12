@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Check, Pencil, Eye, Trash2, MoreHorizontal,
 } from 'lucide-react';
+import { ShareButton } from '../../components/ShareButton';
 
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 
@@ -147,6 +148,9 @@ export default function ClubOrganisationDetailPage() {
                 <Pencil size={16} />
               </button>
             )}
+
+            {/* Share link */}
+            <ShareButton compact />
 
             <div className={s.overflowWrap} ref={overflowRef}>
               <button type="button" className={s.iconBtn} onClick={() => setOverflowOpen((v) => !v)} title="Meer">

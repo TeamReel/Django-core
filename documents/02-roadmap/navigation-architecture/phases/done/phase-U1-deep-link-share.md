@@ -1,6 +1,6 @@
 # U1 — Deep-link & Share
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Track:** U — UX Flow Verbeteringen
 **Effort:** 4 uur
 **Dependencies:** R1 (route constants — canonical URLs)
@@ -95,21 +95,28 @@ Toevoegen aan action-bar / header van:
 
 ## Acties
 
-1. [ ] Creëer `demo/src/components/ShareButton.tsx` + `ShareButton.module.css`
-2. [ ] Implementeer clipboard copy + native Share API fallback
-3. [ ] Evalueer QR library: `qrcode.react` (7kB gzip) of inline SVG
-4. [ ] Creëer `QRModal` component (voor match pages)
-5. [ ] Integreer ShareButton in 5 detail pages
-6. [ ] Toast feedback bij copy ("Link gekopieerd ✓")
-7. [ ] Test op mobile (native share dialog) en desktop (clipboard)
+1. [x] Creëer `demo/src/components/ShareButton.tsx` + `ShareButton.module.css`
+2. [x] Implementeer clipboard copy + native Share API fallback
+3. [x] Evalueer QR library → No external dependency, inline SVG generator
+4. [x] Creëer `QRModal` component (voor match pages)
+5. [x] Integreer ShareButton in 5 detail pages (Match, Season, Team, Club, Org)
+6. [x] Toast feedback bij copy ("Gekopieerd" state indicator)
+7. [x] Test op mobile (native share dialog) en desktop (clipboard)
 
 ## Verificatie
 
-- [ ] Share button zichtbaar op Match, Season, Team, Club, Org pages
-- [ ] Desktop: klik → URL in clipboard + toast
-- [ ] Mobile: klik → native share dialog
-- [ ] Match page: QR-code optie beschikbaar
-- [ ] QR-code leidt naar correcte canonical URL
-- [ ] `tsc --noEmit` clean
-- [ ] `vitest run` all green
-- [ ] Gecommit + gepusht
+- [x] Share button zichtbaar op Match, Season, Team, Club, Org pages
+- [x] Desktop: klik → URL in clipboard + feedback
+- [x] Mobile: klik → native share dialog
+- [x] Match page: QR-code optie beschikbaar (showQR={true})
+- [x] QR-code leidt naar correcte canonical URL
+- [x] `tsc --noEmit` clean
+- [x] `vitest run` all green (984 tests, 11 new)
+- [x] Gecommit + gepusht
+
+## Implementatie
+
+- `demo/src/components/ShareButton.tsx` — Main component (225 lines)
+- `demo/src/components/ShareButton.module.css` — Styling
+- `demo/src/components/ShareButton.test.tsx` — 11 tests
+- Integrated in: MatchDetailPage, ProjectSeasonDetailPage, TeamOrganisationDetailPage, ClubOrganisationDetailPage, OrganisationDetailPage

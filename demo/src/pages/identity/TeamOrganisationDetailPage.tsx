@@ -5,6 +5,7 @@ import { useAuth } from '@django-core/auth-ui';
 import {
   Check, Pencil, Eye, Trash2, MoreHorizontal,
 } from 'lucide-react';
+import { ShareButton } from '../../components/ShareButton';
 
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { api } from '@/api';
@@ -200,6 +201,9 @@ export default function TeamOrganisationDetailPage() {
                 <Pencil size={16} />
               </button>
             )}
+
+            {/* Share link */}
+            <ShareButton compact />
 
             <div className={s.overflowWrap} ref={overflowRef}>
               <button type="button" className={s.iconBtn} onClick={() => setOverflowOpen((v) => !v)} title="Meer">
