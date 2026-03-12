@@ -20,6 +20,7 @@ import { SmartActionsCard } from '../components/dashboard/SmartActionsCard';
 import { useUserRole } from '../components/PermissionGuards';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 import { useCreditBalance } from '../hooks/useCreditBalance';
+import { usePreloadRoutes } from '../hooks/usePreloadRoutes';
 import styles from './DashboardPage.module.css';
 
 export default function DashboardPage() {
@@ -29,6 +30,13 @@ export default function DashboardPage() {
   const org = context.organisation;
   const project = context.project;
   const hasProjectContext = !!project;
+
+  // Preload likely next destinations from dashboard
+  usePreloadRoutes([
+    () => import('./identity/DirectoryPage'),
+    () => import('./identity/SeasonDetailPage'),
+    () => import('./activities/MatchDetailWrapper'),
+  ]);
 
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(
     org?.slug,

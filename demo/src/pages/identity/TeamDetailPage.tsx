@@ -4,6 +4,7 @@ import { Navigate, useLocation, useParams } from 'react-router-dom';
 import TeamOrganisationDetailPage from './TeamOrganisationDetailPage';
 import { organisationsApi, projectsApi } from '../../api';
 import { unwrapEnvelope } from '../../utils/apiEnvelope';
+import { usePreloadRoutes } from '../../hooks/usePreloadRoutes';
 
 type Project = {
   id: string;
@@ -29,6 +30,11 @@ export default function TeamDetailPage() {
   const orgSlugOrId = String(orgId || '').trim();
   const clubSlugOrId = String(clubId || '').trim();
   const teamSlugOrId = String(projectId || '').trim();
+
+  // Preload likely next destination: Season detail
+  usePreloadRoutes([
+    () => import('./SeasonDetailPage'),
+  ]);
 
   const shouldResolveClub = useMemo(() => looksLikeIdentifier(clubSlugOrId), [clubSlugOrId]);
 
