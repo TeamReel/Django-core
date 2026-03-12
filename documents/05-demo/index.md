@@ -1,7 +1,7 @@
 # TeamReel Web Application — Documentation
 
-**Last Updated:** 2026-03-04
-**Status:** v4.0
+**Last Updated:** 2026-03-12
+**Status:** v4.1
 
 ---
 
@@ -29,6 +29,7 @@ Complete documentation for the TeamReel web application — frontend design syst
 | [frontend-design/component-library.md](frontend-design/component-library.md) | 15 UI primitives catalog, usage patterns |
 | [frontend-design/mobile-patterns.md](frontend-design/mobile-patterns.md) | Touch targets, gestures, safe areas, responsive layouts |
 | [frontend-design/code-conventions.md](frontend-design/code-conventions.md) | Quality gates, review checklist, current metrics |
+| [frontend-design/refactoring-status.md](frontend-design/refactoring-status.md) | **Refactoring eindstatus** — 6 roadmaps, 69 fases, alle metrieken |
 
 ### Features & Architecture
 
@@ -146,6 +147,7 @@ Archived docs in [archive/](archive/) — implemented plans, superseded data dum
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 4.1.0 | 2026-03-12 | Added refactoring-status.md, updated metrics post-hardening+hygiene |
 | 4.0.0 | 2026-03-04 | Reorganized: 7 root files → 2, merged schema+seeding+state → data/, added features/ |
 | 3.0.0 | 2026-03-04 | Added frontend-design/ (6 docs), archived 6 obsolete plans |
 | 2.0.0 | 2026-02-04 | Complete restructure: README, glossary, schema/, seeding/, state/ |

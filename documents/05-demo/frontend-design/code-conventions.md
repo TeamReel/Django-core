@@ -201,14 +201,21 @@ Before merging any frontend PR:
 
 ---
 
-## Current Metrics (2026-03-04)
+## Current Metrics (2026-03-12)
 
 | Metric | Value | Target | Status |
 |--------|-------|--------|--------|
-| CSS Modules | 179 | 30+ | ✅ Exceeded |
-| Inline styles | 417 (all dynamic) | < 500 | ✅ Met |
+| CSS Modules | 277 | 30+ | ✅ Exceeded |
+| Inline styles | ~417 (all dynamic) | < 500 | ✅ Met |
 | Design tokens | 110 primitive + semantic | — | ✅ Complete |
 | Utility classes | ~230 | — | ✅ Complete |
 | UI primitives | 15 | 15 | ✅ Met |
 | TSX files > 500 lines | 0 | 0 | ✅ Met |
+| TSX files > 400 lines | 2 | < 5 | ✅ Met |
 | Global CSS files > 500 lines | 0 | 0 | ✅ Met |
+| Test files | 187 | — | ✅ |
+| Tests passing | 892/892 | 100% | ✅ |
+| TypeScript errors | 0 | 0 | ✅ |
+| ESLint errors | 0 | 0 | ✅ |
+
+> Volledige refactoring-analyse: [refactoring-status.md](refactoring-status.md)
