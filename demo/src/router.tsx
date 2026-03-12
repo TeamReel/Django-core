@@ -1,11 +1,32 @@
-import React, { Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import MainLayout from './layouts/MainLayout';
+/**
+ * router.tsx — Data Router configuration using createBrowserRouter
+ *
+ * R4 Migration from BrowserRouter to Data Router API.
+ * Uses createRoutesFromElements bridge for incremental migration.
+ *
+ * Benefits:
+ * - Route loaders for data pre-fetching
+ * - Route-level errorElement
+ * - Pending UI with useNavigation
+ * - Nested layouts with Outlet
+ * - Typed params via useParams
+ *
+ * @see https://reactrouter.com/en/main/routers/create-browser-router
+ */
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
-import { SkeletonDashboard } from './components/Skeleton';
-import { ProtectedRoute } from './components/PermissionGuards';
 
-// Critical pages (eager load for first-paint performance)
+import AppShell from './layouts/AppShell';
+import MainLayout from './layouts/MainLayout';
+import { ProtectedRoute } from './components/PermissionGuards';
+import RouteErrorBoundary from './components/RouteErrorBoundary';
+
+// Critical pages (eager load)
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -31,34 +52,34 @@ import {
   AIStudioPage,
 } from './appLazyImports';
 
-// Route groups
+// Route groups (legacy bridge — will be replaced with nested children)
 import { getHierarchyRoutes, getIdentityRoutes, getAdminRoutes } from './appRouteGroups';
 
 // =============================================================================
-// App — thin routing shell
-// All redirect components live in appRedirects.tsx
-// All lazy imports live in appLazyImports.ts
-// Route groups (hierarchy, identity, admin) live in appRouteGroups.tsx
+// Auth-aware root redirect
 // =============================================================================
 
-export default function App() {
+function RootRedirect() {
   const { user } = useAuth();
+  return user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
+}
 
-  return (
-    <Suspense fallback={<SkeletonDashboard />}>
-    <Routes>
-      {/* Redirect root based on auth state */}
-      <Route
-        path="/"
-        element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />}
-      />
+// =============================================================================
+// Router configuration using createRoutesFromElements bridge
+// =============================================================================
+
+export const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route element={<AppShell />} errorElement={<RouteErrorBoundary />}>
+      {/* Root redirect based on auth state */}
+      <Route path="/" element={<RootRedirect />} />
 
       {/* Public routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Protected routes */}
-      <Route element={<MainLayout />}>
+      {/* Protected routes with MainLayout */}
+      <Route element={<MainLayout />} errorElement={<RouteErrorBoundary />}>
         {/* ── Core navigation ── */}
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/recents" element={<ProtectedRoute><RecentsPage /></ProtectedRoute>} />
@@ -87,7 +108,7 @@ export default function App() {
         <Route path="/studio/videos" element={<Navigate to="/approvals?tab=video" replace />} />
         <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
 
-        {/* ── Route groups ── */}
+        {/* ── Route groups (bridge: spread legacy patterns) ── */}
         {getHierarchyRoutes()}
         {getIdentityRoutes()}
         {getAdminRoutes()}
@@ -97,7 +118,6 @@ export default function App() {
         <Route path="/404" element={<NotFoundPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
-    </Routes>
-    </Suspense>
-  );
-}
+    </Route>
+  )
+);
