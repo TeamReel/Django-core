@@ -3,20 +3,14 @@
  */
 import { useMemo } from 'react';
 import { Home } from 'lucide-react';
-import {
-  navGroups,
-  checkIsNonAppRoute,
-  isItemActive as checkItemActive,
-  isGroupActive as checkGroupActive,
-  type NavGroup,
-} from '../topNavbarHelpers';
+import { checkIsNonAppRoute } from '../topNavbarHelpers';
 
 export function useTopNavbarDerived(
   pathname: string,
   myCreditsBalance: string | null,
-  isAdmin: boolean,
-  isSystemAdmin: boolean,
-  isOrgAdmin: boolean,
+  _isAdmin: boolean,
+  _isSystemAdmin: boolean,
+  _isOrgAdmin: boolean,
 ) {
   const isNonAppRoute = checkIsNonAppRoute(pathname);
   const showBreadcrumbs = !isNonAppRoute;
@@ -48,33 +42,13 @@ export function useTopNavbarDerived(
     return `Credits: ${String(myCreditsBalance)}`;
   }, [myCreditsBalance]);
 
-  const navGroupsWithApp = useMemo(() => [...navGroups], []);
-
-  const filteredNavGroups = useMemo(() => {
-    return navGroupsWithApp.map(group => {
-      const items = group.items.filter(item => {
-        if (group.id === 'admin') return isAdmin;
-        if (['/credits', '/audit', '/users'].includes(item.path)) return isSystemAdmin || isOrgAdmin;
-        if (['/docs', '/deployment'].includes(item.path)) return isAdmin;
-        return true;
-      });
-      return { ...group, items };
-    }).filter(group => group.items.length > 0);
-  }, [navGroupsWithApp, isAdmin, isSystemAdmin, isOrgAdmin]);
-
   const dashboardItem = { path: '/dashboard', label: 'Dashboard', icon: Home };
-
-  const isItemActiveFn = (path: string): boolean => checkItemActive(pathname, path);
-  const isGroupActiveFn = (group: NavGroup): boolean => checkGroupActive(pathname, group);
 
   return {
     showBreadcrumbs,
     formattedCredits,
     creditsBadgeColor,
     creditsTooltip,
-    filteredNavGroups,
     dashboardItem,
-    isItemActive: isItemActiveFn,
-    isGroupActive: isGroupActiveFn,
   };
 }

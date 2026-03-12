@@ -2,56 +2,9 @@
  * TopNavbar mobile overlay sections — extracted from TopNavbar.tsx
  */
 
-import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
-import { AppIcon } from './AppIcon';
-import ProfileAvatarDropdown from './ProfileAvatarDropdown';
 import { SearchBar } from './SearchBar';
 import s from './TopNavbar.module.css';
-import type { NavGroup, NavItem } from './topNavbarHelpers';
-
-interface MobileMenuOverlayProps {
-  dashboardItem: NavItem;
-  filteredNavGroups: NavGroup[];
-  isItemActive: (path: string) => boolean;
-  user: boolean;
-}
-
-export function MobileMenuOverlay({ dashboardItem, filteredNavGroups, isItemActive, user }: MobileMenuOverlayProps) {
-  return (
-    <div className={s.mobileOverlay}>
-      <Link
-        to={dashboardItem.path}
-        className={s.mobileDashLink}
-        data-active={isItemActive(dashboardItem.path)}
-      >
-        <AppIcon icon={dashboardItem.icon!} size={16} />
-        <span>{dashboardItem.label}</span>
-      </Link>
-      {filteredNavGroups.map(group => (
-        <div key={group.id} className="mb-16">
-          <div className={s.mobileGroupLabel}>{group.label}</div>
-          {group.items.map(item => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={s.mobileGroupItem}
-              data-active={isItemActive(item.path)}
-            >
-              {item.icon && <AppIcon icon={item.icon} size={16} />}
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </div>
-      ))}
-      {user && (
-        <div className="border-top mt-16 p-16">
-          <ProfileAvatarDropdown />
-        </div>
-      )}
-    </div>
-  );
-}
 
 interface MobileSearchOverlayProps {
   onClose: () => void;

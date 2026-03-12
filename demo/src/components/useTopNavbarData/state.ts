@@ -23,7 +23,6 @@ export function useTopNavbarState(quickReviewOpen: boolean) {
   const { isSystemAdmin, isLandAdmin, isOrgAdmin, hasOrgRole } = useUserRole();
 
   // ── UI state ──
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState<LanguageCode>('EN');
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
@@ -40,12 +39,9 @@ export function useTopNavbarState(quickReviewOpen: boolean) {
   const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
   const [notificationsList, setNotificationsList] = useState<NotificationItem[]>([]);
   const [creditsModalOpen, setCreditsModalOpen] = useState(false);
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   // ── Refs ──
   const createMenuRef = useRef<HTMLDivElement | null>(null);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isDropdownHoveredRef = useRef(false);
 
   // ── Quick-review jobs ──
   const { jobs: allAiJobs, refresh: refreshAiJobs } = useGenerationJobs({
@@ -75,7 +71,6 @@ export function useTopNavbarState(quickReviewOpen: boolean) {
     currentThemeMode, orgIdForMyBalance, currentUserId,
 
     // UI state
-    openDropdown, setOpenDropdown,
     mobileMenuOpen, setMobileMenuOpen,
     language, setLanguage,
     languageMenuOpen, setLanguageMenuOpen,
@@ -92,10 +87,9 @@ export function useTopNavbarState(quickReviewOpen: boolean) {
     notificationsModalOpen, setNotificationsModalOpen,
     notificationsList, setNotificationsList,
     creditsModalOpen, setCreditsModalOpen,
-    isTouchDevice, setIsTouchDevice,
 
     // Refs
-    createMenuRef, closeTimerRef, isDropdownHoveredRef,
+    createMenuRef,
 
     // Jobs
     pendingReviewJobs, inProgressJobs, refreshAiJobs,

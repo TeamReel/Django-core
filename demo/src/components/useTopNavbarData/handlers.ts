@@ -1,7 +1,7 @@
 /**
  * Event handlers for useTopNavbarData hook
  */
-import { useCallback, type MutableRefObject, type Dispatch, type SetStateAction } from 'react';
+import { useCallback } from 'react';
 import type { GenerationJob } from '../../hooks/useGenerationJobs';
 import type { QueueCounts } from '../../hooks/useQueueCounts';
 import { reviewJob } from '../../hooks/useGenerationJobs';
@@ -10,9 +10,6 @@ import type { LanguageCode } from './types';
 import { logger } from '@/utils/logger';
 
 interface UseTopNavbarHandlersParams {
-  isTouchDevice: boolean;
-  closeTimerRef: MutableRefObject<ReturnType<typeof setTimeout> | null>;
-  isDropdownHoveredRef: MutableRefObject<boolean>;
   pendingReviewJobs: GenerationJob[];
   quickReviewIdx: number;
   quickReviewBusy: boolean;
@@ -20,7 +17,6 @@ interface UseTopNavbarHandlersParams {
   queueCounts: QueueCounts;
   mode: string;
   setTheme: (config: Record<string, unknown>) => void;
-  setOpenDropdown: Dispatch<SetStateAction<string | null>>;
   setLanguage: (lang: LanguageCode) => void;
   setLanguageMenuOpen: (open: boolean) => void;
   setQueueModalTab: (tab: 'review' | 'in-progress') => void;
@@ -34,52 +30,12 @@ interface UseTopNavbarHandlersParams {
 
 export function useTopNavbarHandlers(params: UseTopNavbarHandlersParams) {
   const {
-    isTouchDevice, closeTimerRef, isDropdownHoveredRef,
     pendingReviewJobs, quickReviewIdx, quickReviewBusy, selectedVariantIdxs,
-    queueCounts, mode, setTheme, setOpenDropdown, setLanguage,
+    queueCounts, mode, setTheme, setLanguage,
     setLanguageMenuOpen, setQueueModalTab, setQuickReviewIdx,
     setSelectedVariantIdxs, setQuickReviewOpen, setQuickReviewBusy,
     setPhotoCompositeFollowUp, refreshAiJobs,
   } = params;
-
-  const handleMouseEnterTrigger = useCallback((groupId: string) => {
-    if (isTouchDevice) return;
-    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
-    setOpenDropdown(groupId);
-  }, [isTouchDevice, closeTimerRef, setOpenDropdown]);
-
-  const handleMouseLeaveTrigger = useCallback((_groupId: string) => {
-    if (isTouchDevice) return;
-    if (isDropdownHoveredRef.current) return;
-    closeTimerRef.current = setTimeout(() => { setOpenDropdown(null); }, 300);
-  }, [isTouchDevice, closeTimerRef, isDropdownHoveredRef, setOpenDropdown]);
-
-  const handleMouseEnterDropdown = useCallback((_groupId: string) => {
-    if (isTouchDevice) return;
-    isDropdownHoveredRef.current = true;
-    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
-  }, [isTouchDevice, closeTimerRef, isDropdownHoveredRef]);
-
-  const handleMouseLeaveDropdown = useCallback((_groupId: string) => {
-    if (isTouchDevice) return;
-    isDropdownHoveredRef.current = false;
-    closeTimerRef.current = setTimeout(() => { setOpenDropdown(null); }, 200);
-  }, [isTouchDevice, closeTimerRef, isDropdownHoveredRef, setOpenDropdown]);
-
-  const handleClickTrigger = useCallback((groupId: string, e: React.MouseEvent) => {
-    if (!isTouchDevice) return;
-    e.preventDefault();
-    setOpenDropdown((prev: string | null) => prev === groupId ? null : groupId);
-  }, [isTouchDevice, setOpenDropdown]);
-
-  const handleKeyDown = useCallback((groupId: string, e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      setOpenDropdown((prev: string | null) => prev === groupId ? null : groupId);
-    } else if (e.key === 'Escape') {
-      setOpenDropdown(null);
-    }
-  }, [setOpenDropdown]);
 
   const handleLanguageChange = useCallback((lang: LanguageCode) => {
     setLanguage(lang);
@@ -134,12 +90,6 @@ export function useTopNavbarHandlers(params: UseTopNavbarHandlersParams) {
   }, [pendingReviewJobs, quickReviewIdx, quickReviewBusy, selectedVariantIdxs, refreshAiJobs, setQuickReviewBusy, setSelectedVariantIdxs, setQuickReviewIdx, setQuickReviewOpen, setPhotoCompositeFollowUp]);
 
   return {
-    handleMouseEnterTrigger,
-    handleMouseLeaveTrigger,
-    handleMouseEnterDropdown,
-    handleMouseLeaveDropdown,
-    handleClickTrigger,
-    handleKeyDown,
     handleLanguageChange,
     toggleTheme,
     openQuickReview,

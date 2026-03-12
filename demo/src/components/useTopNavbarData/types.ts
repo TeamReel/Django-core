@@ -6,7 +6,15 @@ import type { Location, NavigateFunction } from 'react-router-dom';
 import type { User } from '@django-core/auth-ui';
 import type { QueueCounts } from '../../hooks/useQueueCounts';
 import type { GenerationJob } from '../../hooks/useGenerationJobs';
-import type { NavGroup, NavItem, PhotoCompositeFollowUpInfo } from '../topNavbarHelpers';
+import type { PhotoCompositeFollowUpInfo } from '../topNavbarHelpers';
+import type { LucideIcon } from 'lucide-react';
+
+/** Dashboard nav item type */
+export interface DashboardNavItem {
+  path: string;
+  label: string;
+  icon: LucideIcon;
+}
 
 export interface UseTopNavbarDataReturn {
   // Auth / roles
@@ -25,19 +33,8 @@ export interface UseTopNavbarDataReturn {
   // Theme
   currentThemeMode: string;
   toggleTheme: () => void;
-  // Dropdown / mega-menu
-  openDropdown: string | null;
-  setOpenDropdown: React.Dispatch<React.SetStateAction<string | null>>;
-  filteredNavGroups: NavGroup[];
-  dashboardItem: NavItem;
-  isItemActive: (path: string) => boolean;
-  isGroupActive: (group: NavGroup) => boolean;
-  handleMouseEnterTrigger: (groupId: string) => void;
-  handleMouseLeaveTrigger: (groupId: string) => void;
-  handleMouseEnterDropdown: (groupId: string) => void;
-  handleMouseLeaveDropdown: (groupId: string) => void;
-  handleClickTrigger: (groupId: string, e: React.MouseEvent) => void;
-  handleKeyDown: (groupId: string, e: React.KeyboardEvent) => void;
+  // Dashboard item
+  dashboardItem: DashboardNavItem;
   // Mobile
   mobileMenuOpen: boolean;
   setMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;

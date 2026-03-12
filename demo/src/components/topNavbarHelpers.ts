@@ -1,20 +1,6 @@
-import type { LucideIcon } from 'lucide-react';
 import { routes } from '../routes';
 
 /* ─── Types ─────────────────────────────────────────────────── */
-
-export interface NavGroup {
-  id: string;
-  label: string;
-  items: NavItem[];
-}
-
-export interface NavItem {
-  path: string;
-  label: string;
-  description?: string;
-  icon?: LucideIcon;
-}
 
 export interface NotificationResponse {
   count: number;
@@ -46,8 +32,6 @@ export interface TopNavbarProps {
 
 /* ─── Constants ─────────────────────────────────────────────── */
 
-export const navGroups: NavGroup[] = [];
-
 export const CREATE_MENU_ITEMS = [
   { label: 'Content Library', path: routes.content(), hint: 'Create content for match/season' },
   { label: 'AI Studio', path: '/studio/create', hint: 'Generate content (AI)' },
@@ -60,13 +44,6 @@ export const CREATE_MENU_ITEMS = [
 ] as const;
 
 /* ─── Pure helpers ──────────────────────────────────────────── */
-
-/** Docker-style mega-menu column count based on item count */
-export function getColumnCount(itemCount: number): number {
-  if (itemCount <= 6) return 1;
-  if (itemCount <= 14) return 2;
-  return 3;
-}
 
 export function isPlatformRoute(pathname: string): boolean {
   return (
@@ -114,12 +91,4 @@ export function checkIsNonAppRoute(pathname: string): boolean {
     pathname.startsWith('/register') ||
     isPlatformRoute(pathname)
   );
-}
-
-export function isItemActive(pathname: string, itemPath: string): boolean {
-  return pathname === itemPath || pathname.startsWith(`${itemPath}/`);
-}
-
-export function isGroupActive(pathname: string, group: NavGroup): boolean {
-  return group.items.some(item => isItemActive(pathname, item.path));
 }

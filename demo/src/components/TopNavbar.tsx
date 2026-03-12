@@ -20,7 +20,7 @@ import { SearchBar } from './SearchBar';
 import Breadcrumbs from './Breadcrumbs';
 import CommandPalette from './CommandPalette';
 import { useTopNavbarData } from './useTopNavbarData';
-import { getColumnCount, CREATE_MENU_ITEMS, type TopNavbarProps } from './topNavbarHelpers';
+import { CREATE_MENU_ITEMS, type TopNavbarProps } from './topNavbarHelpers';
 import { useBackNavigation } from '../providers/BackNavigationProvider';
 import {
   NavbarPhotoCompositeFollowUpModal,
@@ -28,7 +28,7 @@ import {
   NavbarNotificationsModal,
   NavbarCreditsModal,
 } from './NavbarModals';
-import { MobileMenuOverlay, MobileSearchOverlay, NAV_INLINE_STYLES } from './TopNavbarMobile';
+import { MobileSearchOverlay, NAV_INLINE_STYLES } from './TopNavbarMobile';
 
 const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, onOpenSearchRef }: TopNavbarProps) {
   const d = useTopNavbarData(onOpenSearchRef);
@@ -87,66 +87,6 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
 
             {/* Breadcrumbs */}
             {d.showBreadcrumbs ? <Breadcrumbs /> : null}
-
-            {/* Group triggers */}
-            {d.filteredNavGroups.map(group => {
-              const isActive = d.isGroupActive(group);
-              const isOpen = d.openDropdown === group.id;
-
-              return (
-                <div key={group.id} className={`nav-dropdown-container ${s.dropdownContainer}`}>
-                  <button
-                    onClick={(e) => d.handleClickTrigger(group.id, e)}
-                    onKeyDown={(e) => d.handleKeyDown(group.id, e)}
-                    onMouseEnter={() => d.handleMouseEnterTrigger(group.id)}
-                    onMouseLeave={() => d.handleMouseLeaveTrigger(group.id)}
-                    aria-haspopup="menu"
-                    aria-expanded={isOpen}
-                    aria-controls="mega-menu-panel"
-                    className={s.groupTrigger}
-                    data-active={isActive}
-                    data-open={isOpen}
-                  >
-                    <span>{group.label}</span>
-                    <AppIcon icon={isOpen ? ChevronUp : ChevronDown} size={12} />
-                  </button>
-
-                  {/* Mega Menu Panel */}
-                  {isOpen && (
-                    <div
-                      id={`mega-menu-panel-${group.id}`}
-                      role="menu"
-                      onMouseEnter={() => d.handleMouseEnterDropdown(group.id)}
-                      onMouseLeave={() => d.handleMouseLeaveDropdown(group.id)}
-                      className={s.megaPanel}
-                    >
-                      <div className={s.megaPanelInner}>
-                        <div className={`grid ${s.megaGrid}`} style={{
-                          gridTemplateColumns: `repeat(${getColumnCount(group.items.length)}, minmax(0, 1fr))`,
-                        }}>
-                          {group.items.map((item) => (
-                            <Link
-                              key={item.path}
-                              to={item.path}
-                              role="menuitem"
-                              onClick={() => d.setOpenDropdown(null)}
-                              className={s.megaItem}
-                              data-active={d.isItemActive(item.path)}
-                            >
-                              {item.icon && <span className={s.megaItemIcon}><AppIcon icon={item.icon} size={16} /></span>}
-                              <div className={s.megaItemTextWrap}>
-                                <span className={s.megaItemLabel}>{item.label}</span>
-                                {item.description && <span className={s.megaItemDescription}>{item.description}</span>}
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
           </div>
 
           {/* Right: User controls */}
@@ -322,16 +262,6 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
 
         <style>{NAV_INLINE_STYLES}</style>
       </nav>
-
-      {/* Mobile menu overlay */}
-      {d.mobileMenuOpen && (
-        <MobileMenuOverlay
-          dashboardItem={d.dashboardItem}
-          filteredNavGroups={d.filteredNavGroups}
-          isItemActive={d.isItemActive}
-          user={Boolean(d.user)}
-        />
-      )}
 
       {/* ── Mobile Search Overlay ── */}
       {mobileSearchOpen && (
