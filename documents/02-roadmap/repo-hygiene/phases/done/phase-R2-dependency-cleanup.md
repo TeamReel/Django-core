@@ -1,6 +1,6 @@
 # R2 — Dependency Cleanup
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 30 min
 **Scope:** Verwijder ongebruikte dependencies, corrigeer plaatsing
 
@@ -31,11 +31,12 @@ Clean up `demo/package.json`: verwijder 4 ongebruikte packages, verplaats 1 pack
 
 ## Verificatie
 
-- [ ] `react-select` niet meer in package.json
-- [ ] `chart.js` + `react-chartjs-2` niet meer in package.json
-- [ ] `@vanilla-extract/*` niet meer in package.json
-- [ ] `react-window` in `dependencies` (niet devDependencies)
-- [ ] `pnpm install` succesvol
-- [ ] `tsc --noEmit` clean
-- [ ] `vitest run` all green
-- [ ] Gecommit + gepusht
+- [x] `react-select` niet meer in package.json
+- [x] `chart.js` + `react-chartjs-2` niet meer in package.json
+- [x] `@vanilla-extract/*` behouden (nodig voor design-system package)
+- [x] `react-window` in `dependencies` (niet devDependencies)
+- [x] CreditsChart + ObservabilityCharts gemigreerd van chart.js → recharts
+- [x] `pnpm install` succesvol
+- [x] `tsc --noEmit` clean
+- [x] `vitest run` all green (187 files, 892 tests)
+- [x] Gecommit + gepusht

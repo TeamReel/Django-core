@@ -1,17 +1,15 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from 'recharts';
 import Skeleton from './Skeleton';
-import { LazyChartBoundary } from './LazyChartBoundary';
-import type { ChartData, ChartOptions, CreditsTransaction } from '../types/chart';
-
-// Lazy load Chart.js components to keep them out of the main bundle
-const Line = lazy(async () => {
-  const { Chart, registerables } = await import('chart.js');
-  const { Line } = await import('react-chartjs-2');
-
-  Chart.register(...registerables);
-
-  return { default: Line };
-});
+import type { CreditsTransaction } from '../types/chart';
 
 interface CreditsChartProps {
   transactions: CreditsTransaction[];
@@ -19,124 +17,70 @@ interface CreditsChartProps {
 }
 
 /**
- * Credits usage chart component with lazy-loaded Chart.js
+ * Credits usage chart component using Recharts
  *
- * Visualizes 30-day credit usage trends using a line chart.
- * Respects F07 theme colors and is code-split from main bundle.
+ * Visualizes 30-day credit usage trends using an area chart.
+ * Respects F07 theme colors.
  */
 export const CreditsChart: React.FC<CreditsChartProps> = ({
   transactions,
   className = ''
 }) => {
-  const [chartData, setChartData] = useState<ChartData | null>(null);
-  const [chartOptions, setChartOptions] = useState<ChartOptions | null>(null);
+  const chartData = useMemo(() => {
+    const days = 30;
+    const today = new Date();
+    const data: Array<{ date: string; usage: number }> = [];
 
-  useEffect(() => {
-    const generateChartData = () => {
-      // Generate last 30 days of data
-      const days = 30;
-      const today = new Date();
-      const labels: string[] = [];
-      const dailyUsage: number[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
 
-      // Create date labels for last 30 days
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-      }
+      const dayStart = new Date(date);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(date);
+      dayEnd.setHours(23, 59, 59, 999);
 
-      // Calculate daily usage from transactions
-      for (let i = 0; i < days; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - (days - 1 - i));
+      const dayUsage = transactions
+        .filter(tx => {
+          const txDate = new Date(tx.date);
+          return tx.type === 'usage' && txDate >= dayStart && txDate <= dayEnd;
+        })
+        .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
 
-        const dayStart = new Date(date);
-        dayStart.setHours(0, 0, 0, 0);
+      data.push({
+        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        usage: dayUsage,
+      });
+    }
 
-        const dayEnd = new Date(date);
-        dayEnd.setHours(23, 59, 59, 999);
-
-        const dayUsage = transactions
-          .filter(tx => {
-            const txDate = new Date(tx.date);
-            return tx.type === 'usage' &&
-                   txDate >= dayStart &&
-                   txDate <= dayEnd;
-          })
-          .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
-
-        dailyUsage.push(dayUsage);
-      }
-
-      // Get theme colors
-      const style = getComputedStyle(document.documentElement);
-      const primaryColor = style.getPropertyValue('--color-accent-500') || 'var(--color-blue-500)';
-      const backgroundColor = primaryColor + '20'; // Add transparency
-
-      const data: ChartData = {
-        labels,
-        datasets: [
-          {
-            label: 'Daily Credit Usage',
-            data: dailyUsage,
-            borderColor: primaryColor,
-            backgroundColor: backgroundColor,
-            fill: true,
-            tension: 0.3,
-            pointBackgroundColor: primaryColor,
-            pointBorderColor: 'var(--color-white, #fff)',
-          },
-        ],
-      };
-
-      const options: ChartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false,
-          },
-          title: {
-            display: false,
-          },
-        },
-        scales: {
-          x: {
-            display: true,
-            grid: {
-              display: false,
-            },
-          },
-          y: {
-            display: true,
-            beginAtZero: true,
-            grid: {
-              display: true,
-            },
-          },
-        },
-      };
-
-      setChartData(data);
-      setChartOptions(options);
-    };
-
-    generateChartData();
+    return data;
   }, [transactions]);
 
-  if (!chartData || !chartOptions) {
+  if (chartData.length === 0) {
     return <Skeleton variant="card" width="100%" height="256px" />;
   }
 
   return (
-    <LazyChartBoundary>
-      <div
-        className={`h-64 ${className}`}
-        data-testid="credits-chart-container"
-      >
-        <Line data={chartData} options={chartOptions} />
-      </div>
-    </LazyChartBoundary>
+    <div
+      className={`h-64 ${className}`}
+      data-testid="credits-chart-container"
+    >
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+          <YAxis allowDecimals={false} />
+          <Tooltip />
+          <Area
+            type="monotone"
+            dataKey="usage"
+            name="Daily Credit Usage"
+            stroke="var(--color-accent-500, #3b82f6)"
+            fill="var(--color-accent-500, #3b82f6)"
+            fillOpacity={0.12}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
   );
 };

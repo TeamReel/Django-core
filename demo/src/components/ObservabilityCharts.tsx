@@ -1,35 +1,21 @@
-import React, { lazy, useEffect, useState } from 'react';
-import { LazyChartBoundary } from './LazyChartBoundary';
+import React, { useMemo } from 'react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from 'recharts';
 import Skeleton from './Skeleton';
-import type { ChartData, ChartOptions, ObservabilityMetrics } from '../types/chart';
-
-// Lazy load Chart.js components
-const Line = lazy(async () => {
-  const { Chart, registerables } = await import('chart.js');
-  const { Line } = await import('react-chartjs-2');
-
-  Chart.register(...registerables);
-
-  return { default: Line };
-});
-
-const Bar = lazy(async () => {
-  const { Chart, registerables } = await import('chart.js');
-  const { Bar } = await import('react-chartjs-2');
-
-  Chart.register(...registerables);
-
-  return { default: Bar };
-});
-
-const Doughnut = lazy(async () => {
-  const { Chart, registerables } = await import('chart.js');
-  const { Doughnut } = await import('react-chartjs-2');
-
-  Chart.register(...registerables);
-
-  return { default: Doughnut };
-});
+import type { ObservabilityMetrics } from '../types/chart';
 
 interface ObservabilityChartsProps {
   metricsHistory: ObservabilityMetrics[];
@@ -38,177 +24,55 @@ interface ObservabilityChartsProps {
 }
 
 /**
- * Observability charts component with lazy-loaded Chart.js
+ * Observability charts component using Recharts
  *
  * Renders three charts:
  * 1. Response time trends (line chart)
  * 2. Error rates (bar chart)
- * 3. Active connections (gauge-style doughnut)
+ * 3. Active connections (pie/gauge chart)
  */
 export const ObservabilityCharts: React.FC<ObservabilityChartsProps> = ({
   metricsHistory,
   currentMetrics,
   className = ''
 }) => {
-  const [responseTimeData, setResponseTimeData] = useState<ChartData | null>(null);
-  const [errorRateData, setErrorRateData] = useState<ChartData | null>(null);
-  const [connectionsData, setConnectionsData] = useState<ChartData | null>(null);
-  const [chartOptions, setChartOptions] = useState<{
-    line: ChartOptions;
-    bar: ChartOptions;
-    doughnut: ChartOptions;
-  } | null>(null);
-
-  useEffect(() => {
-    const generateChartData = () => {
-      // Get theme colors
-      const style = getComputedStyle(document.documentElement);
-      const primaryColor = style.getPropertyValue('--color-accent-500') || 'var(--color-blue-500)';
-      const successColor = style.getPropertyValue('--color-success-500') || 'var(--color-green-400)';
-      const warningColor = style.getPropertyValue('--color-warning-500') || 'var(--color-amber-400)';
-      const errorColor = style.getPropertyValue('--color-error-500') || 'var(--color-red-500)';
-
-      // Prepare time labels from the last 10 data points
-      const labels = metricsHistory.slice(-10).map((_, index) => {
-        const now = new Date();
-        const minutesAgo = (9 - index) * 0.5; // 30-second intervals = 0.5 minutes
-        const time = new Date(now.getTime() - minutesAgo * 60000);
-        return time.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        });
-      });
-
-      // Response time line chart data
-      const responseTimeChart: ChartData = {
-        labels,
-        datasets: [
-          {
-            label: 'P99',
-            data: metricsHistory.slice(-10).map(m => m.responseTime.p99),
-            borderColor: errorColor,
-            backgroundColor: errorColor + '20',
-            fill: false,
-            tension: 0.3,
-          },
-          {
-            label: 'P95',
-            data: metricsHistory.slice(-10).map(m => m.responseTime.p95),
-            borderColor: warningColor,
-            backgroundColor: warningColor + '20',
-            fill: false,
-            tension: 0.3,
-          },
-          {
-            label: 'P50 (Median)',
-            data: metricsHistory.slice(-10).map(m => m.responseTime.p50),
-            borderColor: successColor,
-            backgroundColor: successColor + '20',
-            fill: false,
-            tension: 0.3,
-          },
-        ],
+  const responseTimeData = useMemo(() => {
+    return metricsHistory.slice(-10).map((m, index) => {
+      const now = new Date();
+      const minutesAgo = (9 - index) * 0.5;
+      const time = new Date(now.getTime() - minutesAgo * 60000);
+      return {
+        time: time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        p50: m.responseTime.p50,
+        p95: m.responseTime.p95,
+        p99: m.responseTime.p99,
       };
+    });
+  }, [metricsHistory]);
 
-      // Error rate bar chart data
-      const errorChart: ChartData = {
-        labels: ['4xx Errors', '5xx Errors'],
-        datasets: [
-          {
-            label: 'Error Rate (%)',
-            data: [
-              currentMetrics?.errorRate || 0,
-              (currentMetrics?.errorRate || 0) * 0.2, // Simulate 5xx being ~20% of total errors
-            ],
-            backgroundColor: [warningColor, errorColor],
-          },
-        ],
-      };
+  const errorRateData = useMemo(() => [
+    { name: '4xx Errors', rate: currentMetrics?.errorRate ?? 0 },
+    { name: '5xx Errors', rate: (currentMetrics?.errorRate ?? 0) * 0.2 },
+  ], [currentMetrics]);
 
-      // Active connections gauge-style data
-      const maxConnections = 1000; // Assume max capacity
-      const activeConnections = currentMetrics?.activeConnections || 0;
-      const remainingConnections = maxConnections - activeConnections;
+  const connectionsData = useMemo(() => {
+    const maxConnections = 1000;
+    const active = currentMetrics?.activeConnections ?? 0;
+    return [
+      { name: 'Active', value: active },
+      { name: 'Available', value: maxConnections - active },
+    ];
+  }, [currentMetrics]);
 
-      const connectionsChart: ChartData = {
-        labels: ['Active', 'Available'],
-        datasets: [
-          {
-            label: 'Connections',
-            data: [activeConnections, remainingConnections],
-            backgroundColor: [
-              activeConnections > maxConnections * 0.8 ? errorColor :
-              activeConnections > maxConnections * 0.6 ? warningColor :
-              primaryColor,
-              '#e5e7eb', // Gray for available
-            ],
-          },
-        ],
-      };
+  const connectionsFill = useMemo(() => {
+    const active = currentMetrics?.activeConnections ?? 0;
+    const color = active > 800 ? 'var(--color-error-500, #ef4444)' :
+                  active > 600 ? 'var(--color-warning-500, #f59e0b)' :
+                  'var(--color-accent-500, #3b82f6)';
+    return [color, '#e5e7eb'];
+  }, [currentMetrics]);
 
-      // Chart options
-      const lineOptions: ChartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top',
-          },
-        },
-        scales: {
-          x: {
-            display: true,
-            grid: { display: false },
-          },
-          y: {
-            display: true,
-            beginAtZero: true,
-            grid: { display: true },
-          },
-        },
-      };
-
-      const barOptions: ChartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-        },
-        scales: {
-          x: { display: true, grid: { display: false } },
-          y: { display: true, beginAtZero: true, grid: { display: true } },
-        },
-      };
-
-      const doughnutOptions: ChartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: true,
-            position: 'bottom',
-          },
-        },
-      };
-
-      setResponseTimeData(responseTimeChart);
-      setErrorRateData(errorChart);
-      setConnectionsData(connectionsChart);
-      setChartOptions({
-        line: lineOptions,
-        bar: barOptions,
-        doughnut: doughnutOptions,
-      });
-    };
-
-    if (metricsHistory.length > 0 || currentMetrics) {
-      generateChartData();
-    }
-  }, [metricsHistory, currentMetrics]);
-
-  if (!responseTimeData || !errorRateData || !connectionsData || !chartOptions) {
+  if (metricsHistory.length === 0 && !currentMetrics) {
     return <Skeleton variant="card" width="100%" height="300px" />;
   }
 
@@ -217,31 +81,63 @@ export const ObservabilityCharts: React.FC<ObservabilityChartsProps> = ({
       {/* Response Time Trends */}
       <div className="lg:col-span-2">
         <h4 className="text-md font-semibold mb-3">Response Time Trends</h4>
-        <LazyChartBoundary>
-          <div className="h-64" data-testid="observability-response-time-chart">
-            <Line data={responseTimeData} options={chartOptions.line} />
-          </div>
-        </LazyChartBoundary>
+        <div className="h-64" data-testid="observability-response-time-chart">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={responseTimeData}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="time" tick={{ fontSize: 11 }} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="p99" name="P99" stroke="var(--color-error-500, #ef4444)" dot={false} />
+              <Line type="monotone" dataKey="p95" name="P95" stroke="var(--color-warning-500, #f59e0b)" dot={false} />
+              <Line type="monotone" dataKey="p50" name="P50 (Median)" stroke="var(--color-success-500, #22c55e)" dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Active Connections Gauge */}
       <div>
         <h4 className="text-md font-semibold mb-3">Active Connections</h4>
-        <LazyChartBoundary>
-          <div className="h-64" data-testid="observability-connections-chart">
-            <Doughnut data={connectionsData} options={chartOptions.doughnut} />
-          </div>
-        </LazyChartBoundary>
+        <div className="h-64" data-testid="observability-connections-chart">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={connectionsData}
+                dataKey="value"
+                innerRadius="60%"
+                outerRadius="80%"
+                paddingAngle={2}
+              >
+                {connectionsData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={connectionsFill[index]} />
+                ))}
+              </Pie>
+              <Legend />
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Error Rates */}
       <div className="lg:col-span-3">
         <h4 className="text-md font-semibold mb-3">Current Error Rates</h4>
-        <LazyChartBoundary>
-          <div className="h-48" data-testid="observability-error-rate-chart">
-            <Bar data={errorRateData} options={chartOptions.bar} />
-          </div>
-        </LazyChartBoundary>
+        <div className="h-48" data-testid="observability-error-rate-chart">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={errorRateData}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="rate" name="Error Rate (%)">
+                <Cell fill="var(--color-warning-500, #f59e0b)" />
+                <Cell fill="var(--color-error-500, #ef4444)" />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   );
