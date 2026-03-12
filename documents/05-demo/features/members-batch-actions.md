@@ -125,9 +125,16 @@ Dit volgt de bestaande logica uit `sync_rbac_for_membership()`:
 
 ## Technische Details
 
-### Component: `UsersList.tsx`
+### Component: `MemberBatchActionModal` + `useMemberBatchAction` hook
 
-**Nieuwe state:**
+Batch-logica is geïsoleerd in dedicated bestanden (gerefactored uit `UsersList.tsx`):
+
+- `pages/identity/MemberBatchActionModal.tsx` — UI component
+- `pages/identity/useMemberBatchAction.ts` — State + API logica
+- `pages/identity/memberBatchAction.types.ts` — Type definities
+- `pages/identity/memberBatchAction.styles.ts` — Styling
+
+**Hook state (`useMemberBatchAction`):**
 - `selectedIds: Set<string>` — geselecteerde user IDs
 - `batchUpdating: boolean` — loading state
 - `batchConfirm: { action, role?, teamId?, teamName? } | null` — confirmation modal state

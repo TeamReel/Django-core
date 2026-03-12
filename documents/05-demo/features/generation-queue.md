@@ -123,14 +123,20 @@ De browser push-toestemming wordt de eerste keer dat de gebruiker de AI Queue ta
 | `created_at` | DateTimeField | Aanmaaktijd |
 | `updated_at` | DateTimeField | Laatste wijziging |
 | `completed_at` | DateTimeField | Tijdstip van voltooiing |
+| `approval_status` | CharField | `pending_review` / `approved` / `rejected` |
+| `reviewed_by_id` | IntegerField | User die de review heeft uitgevoerd |
+| `reviewed_at` | DateTimeField | Tijdstip van review |
+| `output_url` | URLField | Persisted output URL |
+| `output_variants` | JSONField | Alle output-varianten (resoluties, formats) |
 
 ### Statussen
 
 | Status | Betekenis |
-|--------|-----------|
+|--------|----------|
 | `queued` | Aangemaakt, Celery-taak nog niet gestart |
 | `waiting` | Wacht op semaphore (parallellimiet bereikt) |
 | `processing` | Celery verwerkt actief |
+| `retrying` | Automatische retry na tijdelijke fout |
 | `completed` | Succesvol afgerond |
 | `failed` | Fout opgetreden |
 | `cancelled` | Door gebruiker geannuleerd |

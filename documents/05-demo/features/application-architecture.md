@@ -22,11 +22,11 @@ TeamReel is an AI-powered content platform for amateur sports clubs. It generate
 ┌───────────────────────▼─────────────────────────────────────────┐
 │                      Backend API                                │
 │  Django 5 + DRF  (Railway)                                      │
-│  /api/v1/  — 37 ViewSets, ~67 models                           │
+│  /api/v1/  — ~50 ViewSets, ~68 models                           │
 ├─────────────────────────────────────────────────────────────────┤
-│  Celery Workers (3 queues)                                      │
+│  Celery Workers (4 queues, 3 workers)                           │
 │  celery-worker · video-worker · worker-ai                       │
-│  ~25 background tasks                                           │
+│  ~34 background tasks                                           │
 ├──────────┬──────────────┬───────────────────────────────────────┤
 │ PostgreSQL│    Redis     │         Amazon S3                    │
 │ (Railway) │  (Railway)   │  FileAsset storage                  │
@@ -48,7 +48,7 @@ Organisation (federation: KNVB, DFB, etc.)
 
 ---
 
-## Backend Apps (33 in `src/`)
+## Backend Apps (27 Django apps + 6 infrastructure packages in `src/`)
 
 ### Core Platform
 
