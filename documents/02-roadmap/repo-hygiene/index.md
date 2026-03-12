@@ -1,6 +1,6 @@
 # Repo Hygiene — Roadmap
 
-**Status:** 🔨 In Progress (4/5 fases done)
+**Status:** ✅ Done (5/5 fases done)
 **Aangemaakt:** 2026-03-12
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -34,11 +34,11 @@ Na 5 afgeronde roadmaps is de **code quality** uitstekend (ESLint zero, 892 test
 
 | Fase | Naam | Scope | Target | Effort |
 |------|------|-------|--------|--------|
-| **R1** | Frontend Debris | 20 temp/debug files in `demo/` verwijderen | 0 debris in demo/ | 30 min |
-| **R2** | Dependency Cleanup | 5 unused deps weg, 1 dep verplaatsen | 0 unused deps | 30 min |
-| **R3** | Root Script Purge | 17 tracked + 7 untracked one-off scripts weg | 0 scripts in root | 30 min |
-| **R4** | Gitignore & Binary Assets | 82 binary files untracken, .gitignore updaten | 0 binaries tracked | 30 min |
-| **R5** | Hook Barrel & Patterns | Barrel export + module pattern consistency | Consistent patterns | 1 uur |
+| **R1** ✅ | Frontend Debris | 20 temp/debug files in `demo/` verwijderen | 0 debris in demo/ | 30 min |
+| **R2** ✅ | Dependency Cleanup | 5 unused deps weg, 1 dep verplaatsen | 0 unused deps | 30 min |
+| **R3** ✅ | Root Script Purge | 17 tracked + 7 untracked one-off scripts weg | 0 scripts in root | 30 min |
+| **R4** ✅ | Gitignore & Binary Assets | 82 binary files untracken, .gitignore updaten | 0 binaries tracked | 30 min |
+| **R5** ✅ | Hook Barrel & Patterns | Barrel export + module pattern consistency | Consistent patterns | 1 uur |
 
 ---
 
