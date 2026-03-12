@@ -1,6 +1,6 @@
 # Repo Hygiene — Roadmap
 
-**Status:** 🔲 Todo (0/5 fases done)
+**Status:** � In Progress (1/5 fases done)
 **Aangemaakt:** 2026-03-12
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)

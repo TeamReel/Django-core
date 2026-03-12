@@ -1,6 +1,6 @@
 # R1 — Frontend Debris
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 30 min
 **Scope:** Verwijder temp/debug files uit `demo/`
 
@@ -35,8 +35,8 @@ Verwijder 19 tracked bestanden in `demo/` die overblijfselen zijn van eerdere re
 
 ## Verificatie
 
-- [ ] 20 bestanden verwijderd uit git
-- [ ] `.gitignore` bijgewerkt met `demo/test-results/`
-- [ ] `tsc --noEmit` clean
-- [ ] `vitest run` all green
-- [ ] Gecommit + gepusht
+- [x] 20 bestanden verwijderd uit git
+- [x] `.gitignore` bijgewerkt met `demo/test-results/`
+- [x] `tsc --noEmit` clean
+- [x] `vitest run` all green (187 files, 892 tests)
+- [x] Gecommit + gepusht
