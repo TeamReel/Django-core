@@ -34,7 +34,7 @@ De TeamReel frontend codebase heeft 6 opeenvolgende refactoring-roadmaps doorlop
 |---------|--------|
 | Productie-bestanden (`.ts`/`.tsx`) | 832 |
 | Test-bestanden (`.test.ts`/`.test.tsx`) | 187 |
-| CSS Modules (`.module.css`) | 277 |
+| CSS Modules (`.module.css`) | 276 |
 | Productie LOC | 119.918 |
 | Test LOC | 11.036 |
 | Totaal LOC | 130.954 |

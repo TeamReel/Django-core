@@ -1,6 +1,6 @@
 # Code Conventions & Quality Gates
 
-> Last updated: 2026-03-04
+> Last updated: 2026-03-12
 
 ## Purpose
 
@@ -205,7 +205,7 @@ Before merging any frontend PR:
 
 | Metric | Value | Target | Status |
 |--------|-------|--------|--------|
-| CSS Modules | 277 | 30+ | ✅ Exceeded |
+| CSS Modules | 276 | 30+ | ✅ Exceeded |
 | Inline styles | ~417 (all dynamic) | < 500 | ✅ Met |
 | Design tokens | 110 primitive + semantic | — | ✅ Complete |
 | Utility classes | ~230 | — | ✅ Complete |

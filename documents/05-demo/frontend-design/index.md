@@ -1,6 +1,6 @@
 # Frontend Design System
 
-> Last updated: 2026-03-04
+> Last updated: 2026-03-12
 
 ## Purpose
 
@@ -33,7 +33,7 @@ This documentation defines TeamReel's frontend design system — the tokens, com
 │  UI Prims    │  Shared      │  Page-specific                │
 │  (15)        │  Components  │  Components                   │
 ├──────────────┴──────────────┴───────────────────────────────┤
-│                   CSS Modules (179)                          │
+│                   CSS Modules (276)                          │
 │  Component-scoped styles, token-driven                      │
 ├─────────────────────────────────────────────────────────────┤
 │  Utility Classes (~230)     │  Layouts + Responsive         │
@@ -91,15 +91,17 @@ Everything else → CSS Module with tokens
 
 ---
 
-## Current Health (2026-03-04)
+## Current Health (2026-03-12)
 
 | Metric | Value | Status |
 |--------|-------|--------|
 | Design tokens | 110 primitive + semantic | ✅ |
-| CSS Modules | 179 | ✅ |
+| CSS Modules | 276 | ✅ |
 | Utility classes | ~230 | ✅ |
 | UI primitives | 15 | ✅ |
-| Inline styles | 417 (all dynamic) | ✅ |
+| Inline styles | ~417 (all dynamic) | ✅ |
 | Files > 500 lines | 0 | ✅ |
+| Test files / tests | 187 / 892 | ✅ |
+| TypeScript errors | 0 | ✅ |
 | Themes | Light + Dark | ✅ |
 | Touch targets (44px) | Enforced | ✅ |

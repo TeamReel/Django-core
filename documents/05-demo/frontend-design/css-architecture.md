@@ -1,6 +1,6 @@
 # CSS Architecture
 
-> Last updated: 2026-03-04
+> Last updated: 2026-03-12
 
 ## Overview
 
@@ -187,7 +187,7 @@ Easing: `--ease-default`, `--ease-in`, `--ease-out`, `--ease-in-out`.
 
 ## CSS Modules
 
-**179 modules** across the codebase. Every component and page gets its own `*.module.css`.
+**276 modules** across the codebase. Every component and page gets its own `*.module.css`.
 
 ### Naming Convention
 
@@ -219,8 +219,9 @@ ComponentName.tsx            →  uses className={styles.root}
 
 | Area | Count | Notes |
 |------|-------|-------|
-| `components/` | ~45 | Shared UI components (Sidebar, TopNavbar, SearchBar, etc.) |
-| `pages/` | ~134 | Page-specific styles |
+| `components/` | ~87 | Shared UI components (Sidebar, TopNavbar, SearchBar, wizards, etc.) |
+| `pages/` | ~187 | Page-specific styles |
+| other (layouts, styles) | ~2 | Layout shells |
 
 ---
 
