@@ -36,7 +36,8 @@ Organisation (KNVB, DFB, etc.)
     └── Project (Team: "Ajax 1")
         └── Period (Season: "2024/2025")
             └── Period (Competition: "Eredivisie")
-                └── Match, MatchTemplate, Roster, etc.
+                └── Activity (match, training, event)
+                     └── ActivityParticipation → ProjectMembership
 ```
 
 ### 2. Check FK Dependencies
@@ -59,7 +60,7 @@ obj, created = MyModel.objects.update_or_create(
 MyModel.objects.create(natural_key="unique-identifier", field="value")
 ```
 
-See [data/seeding-guide.md](data/seeding-guide.md) for full patterns.
+See [features/seeding-guide.md](features/seeding-guide.md) for full patterns.
 
 ### 4. Test Against Real Data
 
@@ -91,7 +92,7 @@ python manage.py shell
 
 ### Organisation
 
-A football governing body (bond/federation).
+A top-level entity — typically a football federation (KNVB, DFB) but can represent any sporting organisation or club.
 
 | Name | Country | Code |
 |------|---------|------|
@@ -145,7 +146,7 @@ Organisation
 | Project (Team) | `slug` + `parent_project` |
 | Period (Season) | `slug` + `project` |
 | Period (Competition) | `slug` + `parent_period` |
-| Match | `external_id` OR `home+away+scheduled_at` |
+| Activity | `external_id` OR `slug` + `period` |
 | User | `email` |
 
 ### External IDs

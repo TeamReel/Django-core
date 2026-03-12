@@ -256,6 +256,6 @@ Alle services rebuilden automatisch bij elke push naar `main`.
 ## Gerelateerde documentatie
 
 - [Video Processing Pipeline](../media/rvm-alpha-pipeline.md) — RVM, MOV alpha, MP4 preview
-- [AI Generation Queue](../generation-queue.md) — GenerationJob lifecycle
+- [AI Generation Queue](../features/generation-queue.md) — GenerationJob lifecycle
 - [Media Architecture](../media/media-architecture.md) — 4-laags media opslag
 - [Volledige operations docs](../../07-operations/railway-integration.md) — Platform-agnostische deployment guide

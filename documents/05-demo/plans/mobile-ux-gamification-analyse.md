@@ -3,6 +3,8 @@
 > **Datum:** 27 februari 2026
 > **Status:** Analyse & Aanbevelingen
 > **Auteur:** AI-analyse op basis van codebase audit
+>
+> ⚠️ **Deels stale:** Sectie 2 (Huidige staat) is achterhaald — skeletons zijn toegevoegd (18 componenten), grote bestanden zijn opgesplitst (<500 regels), safe-area-inset is geïmplementeerd. Gamification-aanbevelingen (sectie 4+) blijven geldig.
 
 ---
 

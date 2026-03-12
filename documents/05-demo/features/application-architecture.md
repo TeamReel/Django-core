@@ -1,6 +1,6 @@
 # TeamReel Application Architecture
 
-> Last updated: 2026-03-04
+> Last updated: 2026-03-12
 
 ## Overview
 
@@ -22,11 +22,11 @@ TeamReel is an AI-powered content platform for amateur sports clubs. It generate
 ┌───────────────────────▼─────────────────────────────────────────┐
 │                      Backend API                                │
 │  Django 5 + DRF  (Railway)                                      │
-│  /api/v1/  — ~50 ViewSets, ~68 models                           │
+│  /api/v1/  — 40 ViewSets, 67 models                           │
 ├─────────────────────────────────────────────────────────────────┤
 │  Celery Workers (4 queues, 3 workers)                           │
 │  celery-worker · video-worker · worker-ai                       │
-│  ~34 background tasks                                           │
+│  ~35 background tasks                                           │
 ├──────────┬──────────────┬───────────────────────────────────────┤
 │ PostgreSQL│    Redis     │         Amazon S3                    │
 │ (Railway) │  (Railway)   │  FileAsset storage                  │
@@ -48,7 +48,7 @@ Organisation (federation: KNVB, DFB, etc.)
 
 ---
 
-## Backend Apps (27 Django apps + 6 infrastructure packages in `src/`)
+## Backend Apps (33 Django apps in `src/`)
 
 ### Core Platform
 
@@ -78,7 +78,7 @@ Organisation (federation: KNVB, DFB, etc.)
 | **notifications** | Notification delivery with channels + retry | `Notification`, `NotificationType`, `DeliveryAttempt` |
 | **contextual_notifications** | Smart routing with per-user preferences | `RoutingRule`, `NotificationPreference` |
 | **workflows** | State machine for approval flows | `WorkflowTemplate`, `WorkflowInstance`, `TransitionHistory` |
-| **navigation** | User navigation state (recents + favorites) | `Recent`, `Favorite` |
+| **navigation** | User navigation state (recents + favorites) | `UserRecent`, `UserFavorite` |
 
 ### Platform Services
 
@@ -114,7 +114,7 @@ Organisation (federation: KNVB, DFB, etc.)
 
 All APIs under `/api/v1/`, authenticated via JWT (`SimpleJWT`).
 
-**37 ViewSets** organized by domain:
+**40 ViewSets** organized by domain:
 
 | Domain | Endpoints | Key operations |
 |--------|-----------|----------------|
@@ -142,7 +142,7 @@ All APIs under `/api/v1/`, authenticated via JWT (`SimpleJWT`).
 
 ## Background Processing (Celery)
 
-Three worker queues on Railway:
+Four queues on Railway, served by three workers:
 
 | Worker | Queue | Tasks |
 |--------|-------|-------|
@@ -150,7 +150,7 @@ Three worker queues on Railway:
 | **video-worker** | video | FFmpeg transcode, compose, thumbnail, lineup |
 | **worker-ai** | ai | AI generation, content generation |
 
-### Key task categories (~25 tasks)
+### Key task categories (~35 tasks)
 
 | Category | Tasks | Examples |
 |----------|-------|---------|
