@@ -125,7 +125,7 @@ No backend Django app required
   - `ContentGenerationModal.tsx` (4800 lines) — needs step-based code splitting
   - Gallery grid with 50+ items — needs virtualization (`react-window`)
 
-**Related Analysis:** See `documents/05-demo/mobile-ux-gamification-analyse.md` for full mobile UX analysis.
+**Related Analysis:** See `documents/05-demo/plans/mobile-ux-gamification-analyse.md` for full mobile UX analysis.
 
 ---
 

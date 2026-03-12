@@ -128,7 +128,7 @@ Frontend: Demo page + reusable components (ProgressRing, StreakBadge, Leaderboar
 - All animations respect `prefers-reduced-motion`
 - Dark mode compatible via CSS variables
 
-**Related Analysis:** See `documents/05-demo/mobile-ux-gamification-analyse.md` for full UX analysis and roadmap context.
+**Related Analysis:** See `documents/05-demo/plans/mobile-ux-gamification-analyse.md` for full UX analysis and roadmap context.
 
 ---
 

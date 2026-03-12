@@ -117,12 +117,14 @@ The `safe-bottom-nav` class accounts for the `MobileBottomNav` fixed at the bott
 // - Haptic feedback on threshold cross
 ```
 
-### Pull-to-refresh
+### Pull-to-refresh (planned)
 
-Available on `DashboardPage`, `ApprovalsPage`, `VideoQueuePage`:
+> **Status:** Not yet implemented. Listed as future enhancement.
+
+Intended for `DashboardPage`, `ApprovalsPage`, `VideoQueuePage`:
 
 ```tsx
-// usePullToRefresh hook handles:
+// Planned: usePullToRefresh hook
 // - Vertical pull detection (>60px threshold)
 // - Loading spinner animation
 // - Data refetch callback

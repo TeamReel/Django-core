@@ -1,6 +1,6 @@
 # Docs Hygiene — Roadmap
 
-**Status:** 🔨 In Progress (2/4 fases done)
+**Status:** 🔨 In Progress (3/4 fases done)
 **Aangemaakt:** 2026-03-12
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
