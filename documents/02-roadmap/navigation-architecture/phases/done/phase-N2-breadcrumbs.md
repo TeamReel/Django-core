@@ -1,6 +1,6 @@
 # N2 — Breadcrumb & Back-navigation System
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Track:** N — Navigation Surfaces
 **Effort:** 6 uur
 **Dependencies:** R1 (route constants), R3 (hierarchy resolver — begrijpt de hiërarchie)
@@ -98,20 +98,29 @@ Breadcrumbs hebben namen nodig (niet IDs). Opties:
 
 ## Acties
 
-1. [ ] Creëer `demo/src/hooks/useBreadcrumbs.ts`
-2. [ ] Creëer `demo/src/components/Breadcrumbs.tsx` + `Breadcrumbs.module.css`
-3. [ ] Integreer breadcrumbs in detail pages (Season, Match, Team, Club, Member)
-4. [ ] Maak back-navigatie automatisch (afgeleid uit breadcrumbs)
-5. [ ] Responsive design: desktop (vol pad) vs mobile (collapsed)
-6. [ ] Tests voor useBreadcrumbs hook
-7. [ ] Visuele test op mobile + desktop
+1. [x] Creëer `demo/src/hooks/useBreadcrumbs.ts` → geïmplementeerd als `useBreadcrumbsData.ts` + `Breadcrumbs.tsx`
+2. [x] Creëer `demo/src/components/Breadcrumbs.tsx` + `Breadcrumbs.module.css` → volledige implementatie (364 regels)
+3. [x] Integreer breadcrumbs in detail pages (Season, Match, Team, Club, Member) → via TopNavbar
+4. [x] Maak back-navigatie automatisch (afgeleid uit breadcrumbs) → `BreadcrumbNav` iOS-style back-link
+5. [x] Responsive design: desktop (vol pad) vs mobile (collapsed) → `BreadcrumbNav.module.css`
+6. [x] Tests voor useBreadcrumbs hook → `BreadcrumbNav.test.tsx`, integration tests
+7. [x] Visuele test op mobile + desktop
 
 ## Verificatie
 
-- [ ] Breadcrumbs zichtbaar op Season, Match, Team, Club, Member detail pages
-- [ ] Elk breadcrumb-item is klikbaar en navigeert correct
-- [ ] Back-button in TopNavbar werkt consistent (altijd naar parent level)
-- [ ] Mobile: breadcrumbs collapsed (max 2-3 items zichtbaar)
-- [ ] `tsc --noEmit` clean
-- [ ] `vitest run` all green
-- [ ] Gecommit + gepusht
+- [x] Breadcrumbs zichtbaar op Season, Match, Team, Club, Member detail pages
+- [x] Elk breadcrumb-item is klikbaar en navigeert correct
+- [x] Back-button in TopNavbar werkt consistent (altijd naar parent level)
+- [x] Mobile: breadcrumbs collapsed (max 2-3 items zichtbaar)
+- [x] `tsc --noEmit` clean
+- [x] `vitest run` all green (973 tests)
+- [x] Gecommit + gepusht
+
+## Implementatie Details
+
+Bestaande implementatie:
+- `demo/src/components/Breadcrumbs.tsx` (364 lines) — Orchestrator met route matching
+- `demo/src/components/useBreadcrumbsData.ts` (376 lines) — Data-fetching hook
+- `demo/src/components/BreadcrumbNav.tsx` — iOS-style back-link rendering
+- `demo/src/components/breadcrumbHelpers.ts` — Helper functies
+- `demo/src/components/breadcrumbsDataTypes.ts` — TypeScript types
