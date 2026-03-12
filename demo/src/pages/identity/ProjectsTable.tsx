@@ -7,6 +7,7 @@ import { Table } from '../../shims/design-system';
 import { Project } from '../../types';
 import { canEditProject, canDeleteProject } from '../../utils/permissions';
 import type { useProjectsPageData } from './useProjectsPageData';
+import { routes } from '../../routes';
 import styles from './ProjectsTable.module.css';
 
 type Data = ReturnType<typeof useProjectsPageData>;
@@ -91,10 +92,10 @@ export function ProjectsTable({ d }: { d: Data }) {
             return (
               <tr key={project.id}>
                 <td>
-                  <a href={`/organisations/${projectOrgSlug}/projects/${project.slug || project.id}`}
+                  <a href={routes.orgProjectDetailLegacy({ orgId: String(projectOrgSlug || ''), projectId: String(project.slug || project.id) })}
                     className="text-blue-600 hover:underline fs-sm"
                     data-testid={`project-name-${project.id}`}
-                    onClick={(e) => { e.preventDefault(); navigate(`/organisations/${projectOrgSlug}/projects/${project.slug || project.id}`); }}>
+                    onClick={(e) => { e.preventDefault(); navigate(routes.orgProjectDetailLegacy({ orgId: String(projectOrgSlug || ''), projectId: String(project.slug || project.id) })); }}>
                     {project.name}
                   </a>
                 </td>

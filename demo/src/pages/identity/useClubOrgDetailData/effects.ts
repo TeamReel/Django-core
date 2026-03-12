@@ -14,6 +14,7 @@ import {
   type Organisation, type Project, type Period, type OverviewMember,
 } from '../clubOrgDetailHelpers';
 import type { RawMemberApiItem } from './types';
+import { routes } from '../../../routes';
 
 interface UseClubOrgEffectsParams {
   orgSlugOrId: string;
@@ -275,7 +276,7 @@ export function useClubOrgEffects({
     if (!slug || slug === orgSlugOrId) return;
     const clubKey = String(club?.slug || clubSlugOrId || '').trim();
     if (!clubKey) return;
-    navigate(`/${encodeURIComponent(slug)}/${encodeURIComponent(clubKey)}${locationSearch || ''}`, { replace: true });
+    navigate(`${routes.club({ orgId: slug, clubId: clubKey })}${locationSearch || ''}`, { replace: true });
   }, [club, clubSlugOrId, locationSearch, navigate, org?.slug, orgSlugOrId, resolvedOrgSlug, shouldResolveOrg]);
 
   // Resolve club UUID -> slug URL
@@ -284,6 +285,6 @@ export function useClubOrgEffects({
     if (!shouldResolveClub) return;
     const slug = String(club?.slug || '').trim();
     if (!slug || slug === clubSlugOrId) return;
-    navigate(`/${encodeURIComponent(String(org?.slug || orgSlugOrId))}/${encodeURIComponent(slug)}${locationSearch || ''}`, { replace: true });
+    navigate(`${routes.club({ orgId: String(org?.slug || orgSlugOrId), clubId: slug })}${locationSearch || ''}`, { replace: true });
   }, [club, clubSlugOrId, locationSearch, navigate, org, orgSlugOrId, shouldResolveClub]);
 }

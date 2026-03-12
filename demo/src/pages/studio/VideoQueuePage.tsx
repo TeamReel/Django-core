@@ -11,6 +11,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { PullToRefresh } from '@django-core/design-system';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PageContent, PageHeader } from '@django-core/page-templates';
+import { routes } from '../../routes';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   useVideoJobs,
@@ -181,7 +182,7 @@ export default function VideoQueuePage() {
   const filter: FilterStatus = (['all', 'queued', 'processing', 'completed', 'failed', 'cancelled'] as const).includes(rawTab as FilterStatus)
     ? (rawTab as FilterStatus)
     : 'all';
-  const setFilter = (f: FilterStatus) => navigate(`/studio/videos?tab=${f}`, { replace: true });
+  const setFilter = (f: FilterStatus) => navigate(routes.studioVideos({ tab: f }), { replace: true });
 
   const { jobs, loading, error, refresh, cancelJob, retryJob } = useVideoJobs({
     projectId: projectId || null,

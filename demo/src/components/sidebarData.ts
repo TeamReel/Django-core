@@ -4,6 +4,7 @@ import {
   Users, Library, Sparkles, Settings, Activity, Palette,
   BookOpen, Folder, ClipboardCheck, GitBranch,
 } from 'lucide-react';
+import { routes } from '../routes';
 
 export interface NavItem {
   path: string;
@@ -26,8 +27,8 @@ export const NAV_CONFIG: NavSection[] = [
     title: 'OVERVIEW',
     visibility: 'everyone',
     items: [
-      { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, visibility: 'everyone' },
-      { path: '/directory', label: 'Directory', icon: Folder, visibility: 'superadmin' },
+      { path: routes.dashboard(), label: 'Dashboard', icon: LayoutDashboard, visibility: 'everyone' },
+      { path: routes.directory(), label: 'Directory', icon: Folder, visibility: 'superadmin' },
     ],
   },
   {
@@ -41,9 +42,9 @@ export const NAV_CONFIG: NavSection[] = [
     title: 'CONTENT',
     visibility: 'everyone',
     items: [
-      { path: '/studio', label: 'Gallery', icon: Sparkles, visibility: 'everyone' },
-      { path: '/medialib', label: 'Media Library', icon: Library, visibility: 'everyone' },
-      { path: '/approvals', label: 'Queue', icon: ClipboardCheck, visibility: 'everyone' },
+      { path: routes.studio(), label: 'Gallery', icon: Sparkles, visibility: 'everyone' },
+      { path: routes.medialib(), label: 'Media Library', icon: Library, visibility: 'everyone' },
+      { path: routes.approvals(), label: 'Queue', icon: ClipboardCheck, visibility: 'everyone' },
     ],
   },
   {
@@ -51,11 +52,11 @@ export const NAV_CONFIG: NavSection[] = [
     title: 'SETTINGS',
     visibility: 'everyone',
     items: [
-      { path: '/preferences?tab=profile', label: 'Preferences', icon: Settings, visibility: 'everyone' },
-      { path: '/content-templates', label: 'Templates', icon: Palette, visibility: 'superadmin' },
-      { path: '/workflow-templates', label: 'Workflows', icon: GitBranch, visibility: 'superadmin' },
-      { path: '/permissions', label: 'Organisation', icon: Users, visibility: 'superadmin' },
-      { path: '/health', label: 'Platform', icon: Activity, visibility: 'superadmin' },
+      { path: routes.preferences({ tab: 'profile' }), label: 'Preferences', icon: Settings, visibility: 'everyone' },
+      { path: routes.contentTemplates(), label: 'Templates', icon: Palette, visibility: 'superadmin' },
+      { path: routes.workflowTemplates(), label: 'Workflows', icon: GitBranch, visibility: 'superadmin' },
+      { path: routes.permissions(), label: 'Organisation', icon: Users, visibility: 'superadmin' },
+      { path: routes.health(), label: 'Platform', icon: Activity, visibility: 'superadmin' },
     ],
   },
   {
@@ -64,7 +65,7 @@ export const NAV_CONFIG: NavSection[] = [
     visibility: 'everyone',
     bottom: true,
     items: [
-      { path: '/docs', label: 'User Guide', icon: BookOpen, visibility: 'everyone' },
+      { path: routes.docs(), label: 'User Guide', icon: BookOpen, visibility: 'everyone' },
     ],
   },
 ];

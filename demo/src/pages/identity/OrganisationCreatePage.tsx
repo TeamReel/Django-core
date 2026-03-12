@@ -12,6 +12,7 @@ import {
 } from '../../shims/page-templates';
 import { organisationsApi } from '../../api';
 import styles from './OrganisationCreatePage.module.css';
+import { routes } from '../../routes';
 import { logger } from '@/utils/logger';
 
 /**
@@ -35,7 +36,7 @@ export const OrganisationCreatePage: React.FC = () => {
       const newOrg = await organisationsApi.create({ name, description } as Partial<import('../../types/api').OrganisationDetail>);
       // Navigate to the new organisation's dashboard
       if (newOrg?.slug || newOrg?.id) {
-        navigate(`/organisations/${newOrg.slug || newOrg.id}`);
+        navigate(routes.orgDetailLegacy({ orgId: newOrg.slug || newOrg.id }));
       } else {
         // Fallback if ID is missing
         navigate('/federations');

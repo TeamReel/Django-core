@@ -10,6 +10,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { BreadcrumbContextSwitcher, type BreadcrumbSwitcherOption } from '@django-core/page-templates';
 import { useBreadcrumbsData } from './useBreadcrumbsData';
 import { BreadcrumbNav, type BreadcrumbItem } from './BreadcrumbNav';
+import { routes } from '../routes';
 
 export default function Breadcrumbs() {
   const location = useLocation();
@@ -109,7 +110,7 @@ export default function Breadcrumbs() {
     userDetailUserId: String(userDetailMatch?.params?.userId || '').trim(),
   });
 
-  const orgPath = orgSlug ? `/${orgSlug}` : '/dashboard';
+  const orgPath = orgSlug ? routes.orgDetail({ orgId: orgSlug }) : routes.dashboard();
 
   // ═══════════════════════════════════════════
   // User detail route
@@ -124,14 +125,14 @@ export default function Breadcrumbs() {
       options.push({ id: currentUserId, label: `User ${currentUserId}` });
     }
     const handleUserSwitch = (option: BreadcrumbSwitcherOption) => {
-      navigate(`/users/${encodeURIComponent(String(option.id || '').trim())}${location.search || ''}`);
+      navigate(`${routes.userDetail({ userId: String(option.id || '').trim() })}${location.search || ''}`);
     };
     return (
       <BreadcrumbNav items={[
-        { label: 'Dashboard', path: '/dashboard' },
-        ...(!isStandaloneUserRoute && ctxOrgKey ? [{ label: ctxOrgName || ctxOrgKey, path: `/${ctxOrgKey}` }] : []),
-        { label: 'Users', path: '/users' },
-        { label: <BreadcrumbContextSwitcher currentId={currentUserId} options={options} onSelect={handleUserSwitch} hasDropdown={!data.loadingUsers && options.length > 1} type="user" current />, path: `/users/${currentUserId}` },
+        { label: 'Dashboard', path: routes.dashboard() },
+        ...(!isStandaloneUserRoute && ctxOrgKey ? [{ label: ctxOrgName || ctxOrgKey, path: routes.orgDetail({ orgId: ctxOrgKey }) }] : []),
+        { label: 'Users', path: routes.users() },
+        { label: <BreadcrumbContextSwitcher currentId={currentUserId} options={options} onSelect={handleUserSwitch} hasDropdown={!data.loadingUsers && options.length > 1} type="user" current />, path: routes.userDetail({ userId: currentUserId }) },
       ]} />
     );
   }
@@ -149,11 +150,11 @@ export default function Breadcrumbs() {
       (organisations || []).find((o) => String(o?.id || '') === String(context?.organisation?.id || ''));
     const currentId = String(resolvedCurrent?.id || context?.organisation?.id || orgSubpage.orgId || '').trim();
     const handleOrgSwitch = (option: BreadcrumbSwitcherOption) => {
-      navigate(`/${String(option.slug || option.id)}${location.search || ''}`);
+      navigate(`${routes.orgDetail({ orgId: String(option.slug || option.id) })}${location.search || ''}`);
     };
     return (
       <BreadcrumbNav items={[
-        { label: 'Dashboard', path: '/dashboard' },
+        { label: 'Dashboard', path: routes.dashboard() },
         { label: <BreadcrumbContextSwitcher currentId={currentId || String(orgSubpage.orgId)} options={options} onSelect={handleOrgSwitch} hasDropdown={options.length > 1} type="organisation" current />, path: `/${encodeURIComponent(orgSubpage.orgId)}` },
       ]} />
     );
@@ -169,11 +170,11 @@ export default function Breadcrumbs() {
     const resolvedCurrent = orgFromList || (organisations || []).find((o) => String(o?.id || '') === String(context?.organisation?.id || ''));
     const currentId = String(resolvedCurrent?.id || context?.organisation?.id || orgParam || orgSlug || '').trim();
     const handleOrgSwitch = (option: BreadcrumbSwitcherOption) => {
-      navigate(`/${String(option.slug || option.id)}${location.search || ''}`);
+      navigate(`${routes.orgDetail({ orgId: String(option.slug || option.id) })}${location.search || ''}`);
     };
     return (
       <BreadcrumbNav items={[
-        { label: 'Dashboard', path: '/dashboard' },
+        { label: 'Dashboard', path: routes.dashboard() },
         { label: <BreadcrumbContextSwitcher currentId={currentId || String(orgParam || orgSlug || '')} options={options} onSelect={handleOrgSwitch} hasDropdown={options.length > 1} type="organisation" current />, path: `/${orgParam || orgSlug}` },
       ]} />
     );
@@ -183,11 +184,11 @@ export default function Breadcrumbs() {
   // Club / Team detail pages
   // ═══════════════════════════════════════════
   if (isClubDetail || isTeamDetail) {
-    const items: BreadcrumbItem[] = [{ label: 'Dashboard', path: '/dashboard' }];
+    const items: BreadcrumbItem[] = [{ label: 'Dashboard', path: routes.dashboard() }];
     if (orgSlug) items.push({ label: context?.organisation?.name || orgSlug, path: orgPath });
 
     if (isTeamDetail) {
-      if (clubSlugOrId) items.push({ label: clubName || clubSlugOrId, path: `/${orgSlug}/${clubSlugOrId}` });
+      if (clubSlugOrId) items.push({ label: clubName || clubSlugOrId, path: routes.club({ orgId: orgSlug, clubId: clubSlugOrId }) });
       const currentTeamId = String(teamSlugOrId || '').trim();
       if (currentTeamId) {
         const options = [...data.teamOptions];
@@ -195,11 +196,11 @@ export default function Breadcrumbs() {
           options.push({ id: currentTeamId, slug: currentTeamId, label: teamName || currentTeamId });
         }
         const handleTeamSwitch = (option: BreadcrumbSwitcherOption) => {
-          navigate(`/${orgSlug}/${clubSlugOrId}/${String(option.slug || option.id)}${location.search || ''}`);
+          navigate(`${routes.team({ orgId: orgSlug || '', clubId: clubSlugOrId || '', projectId: String(option.slug || option.id) })}${location.search || ''}`);
         };
         items.push({
           label: <BreadcrumbContextSwitcher currentId={currentTeamId} options={options} onSelect={handleTeamSwitch} hasDropdown={!data.loadingTeams && options.length > 1} type="project" current />,
-          path: `/${orgSlug}/${clubSlugOrId}/${currentTeamId}`,
+          path: routes.team({ orgId: orgSlug || '', clubId: clubSlugOrId || '', projectId: currentTeamId }),
         });
       }
       return <BreadcrumbNav items={items} />;
@@ -213,11 +214,11 @@ export default function Breadcrumbs() {
         options.push({ id: currentClubId, slug: currentClubId, label: clubName || currentClubId });
       }
       const handleClubSwitch = (option: BreadcrumbSwitcherOption) => {
-        navigate(`/${orgSlug}/${String(option.slug || option.id)}${location.search || ''}`);
+        navigate(`${routes.club({ orgId: orgSlug, clubId: String(option.slug || option.id) })}${location.search || ''}`);
       };
       items.push({
         label: <BreadcrumbContextSwitcher currentId={currentClubId} options={options} onSelect={handleClubSwitch} hasDropdown={options.length > 1} type="project" current />,
-        path: `/${orgSlug}/${currentClubId}`,
+        path: routes.club({ orgId: orgSlug, clubId: currentClubId }),
       });
     }
     return <BreadcrumbNav items={items} />;
@@ -226,11 +227,11 @@ export default function Breadcrumbs() {
   // ═══════════════════════════════════════════
   // Hierarchy pages (season → competition → member → match)
   // ═══════════════════════════════════════════
-  const items: BreadcrumbItem[] = [{ label: 'Dashboard', path: '/dashboard' }];
+  const items: BreadcrumbItem[] = [{ label: 'Dashboard', path: routes.dashboard() }];
 
   if (orgSlug) items.push({ label: context?.organisation?.name || orgSlug, path: orgPath });
-  if (effectiveClubSlugOrId) items.push({ label: effectiveClubName || effectiveClubSlugOrId, path: `/${orgSlug}/${effectiveClubSlugOrId}` });
-  if (effectiveTeamSlugOrId) items.push({ label: effectiveTeamName || effectiveTeamSlugOrId, path: `/${orgSlug}/${effectiveClubSlugOrId}/${effectiveTeamSlugOrId}` });
+  if (effectiveClubSlugOrId) items.push({ label: effectiveClubName || effectiveClubSlugOrId, path: routes.club({ orgId: orgSlug || '', clubId: effectiveClubSlugOrId }) });
+  if (effectiveTeamSlugOrId) items.push({ label: effectiveTeamName || effectiveTeamSlugOrId, path: routes.team({ orgId: orgSlug || '', clubId: effectiveClubSlugOrId || '', projectId: effectiveTeamSlugOrId }) });
 
   // Level 3: Season
   if (effectiveSeasonSlugOrId) {

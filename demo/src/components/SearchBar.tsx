@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSearch, useDebounce, type GroupedSearchResults, type SearchResult } from '../hooks/useSearch';
 import { sanitizeHighlight } from '../utils/sanitize';
+import { routes } from '../routes';
 import styles from './SearchBar.module.css';
 
 interface SearchBarProps {
@@ -54,14 +55,14 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
 
   const handleViewAll = (category: string) => {
     setIsOpen(false);
-    navigate(`/search?q=${encodeURIComponent(query)}&types=${category}`);
+    navigate(routes.search({ q: query, types: category }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       setIsOpen(false);
-      navigate(`/search?q=${encodeURIComponent(query)}`);
+      navigate(routes.search({ q: query }));
     }
   };
 

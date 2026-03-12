@@ -6,6 +6,7 @@ import { api } from '../../api/client';
 import { logger } from '@/utils/logger';
 import { type User } from './useUsersData';
 import type { UserRowItem, TableContext } from './UsersTable.types';
+import { routes } from '../../routes';
 import styles from './UsersTable.module.css';
 
 interface UserActionsProps {
@@ -108,7 +109,7 @@ export const UserActions: React.FC<UserActionsProps> = ({
         <button
           onClick={() => {
             if (isMembership && (orgIdParam || context.organisation)) {
-              navigate(`/organisations/${orgIdParam || context.organisation?.slug}/members/${item.id}?action=edit`);
+              navigate(`${routes.orgMemberDetailLegacy({ orgId: String(orgIdParam || context.organisation?.slug || ''), memberId: String(item.id) })}?action=edit`);
             } else {
               handleEditClick(item);
             }

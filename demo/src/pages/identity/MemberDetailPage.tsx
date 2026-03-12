@@ -15,6 +15,7 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { SkeletonDetailPage } from '../../components/Skeleton';
 import { api } from '@/api';
+import { routes } from '../../routes';
 import { logger } from '@/utils/logger';
 import styles from './MemberDetailPage.module.css';
 
@@ -158,7 +159,7 @@ export const MemberDetailPage: React.FC = () => {
           />
           <PageContent>
             <Alert variant="error">{error || 'Member not found'}</Alert>
-            <Button variant="secondary" onClick={() => navigate(`/organisations/${orgSlug}`)}>
+            <Button variant="secondary" onClick={() => navigate(routes.orgDetailLegacy({ orgId: orgSlug! }))}>
                 Back to Organisation
             </Button>
           </PageContent>
@@ -211,7 +212,7 @@ export const MemberDetailPage: React.FC = () => {
                 <select
                   value={member.id}
                   onChange={(e) => {
-                    navigate(`/organisations/${orgSlug}/members/${e.target.value}`);
+                    navigate(routes.orgMemberDetailLegacy({ orgId: orgSlug!, memberId: e.target.value }));
                   }}
                   className={styles.breadcrumbSelect}
                 >
@@ -225,7 +226,7 @@ export const MemberDetailPage: React.FC = () => {
           ]}
           actions={
             <div className={styles.actions}>
-                <Button variant="secondary" onClick={() => navigate(`/organisations/${orgSlug}`)}>
+                <Button variant="secondary" onClick={() => navigate(routes.orgDetailLegacy({ orgId: orgSlug! }))}>
                     Back
                 </Button>
                 {!isEditing && (

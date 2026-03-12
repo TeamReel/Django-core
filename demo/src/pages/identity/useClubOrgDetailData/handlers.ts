@@ -7,6 +7,7 @@ import { useCallback } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import type { BreadcrumbSwitcherOption } from '@django-core/page-templates';
 import type { Organisation } from '../clubOrgDetailHelpers';
+import { routes } from '../../../routes';
 
 interface UseClubOrgHandlersParams {
   org: Organisation | null;
@@ -36,7 +37,7 @@ export function useClubOrgHandlers({
   const handleClubSwitch = useCallback((option: BreadcrumbSwitcherOption) => {
     const orgKey = String(org?.slug || orgSlugOrId || '').trim();
     if (!orgKey) return;
-    navigate(`/${encodeURIComponent(orgKey)}/${encodeURIComponent(String(option.slug || option.id))}${locationSearch || ''}`);
+    navigate(`${routes.club({ orgId: orgKey, clubId: String(option.slug || option.id) })}${locationSearch || ''}`);
   }, [org?.slug, orgSlugOrId, locationSearch, navigate]);
 
   return {

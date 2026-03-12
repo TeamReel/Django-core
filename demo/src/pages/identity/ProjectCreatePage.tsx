@@ -16,6 +16,7 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 import { organisationsApi } from '../../api';
+import { routes } from '../../routes';
 
 export const ProjectCreatePage: React.FC = () => {
   const navigate = useNavigate();
@@ -59,7 +60,7 @@ export const ProjectCreatePage: React.FC = () => {
         description,
         organisation_id: currentOrgId,
       });
-      navigate(`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}`);
+      navigate(routes.orgProjectDetailLegacy({ orgId: currentOrgSlug!, projectId: String(project.slug || project.id) }));
     } catch (err) {
       logger.error('An error occurred', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -130,7 +131,7 @@ export const ProjectCreatePage: React.FC = () => {
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => navigate(`/organisations/${resolvedOrg?.slug || currentOrgId}/projects`)}
+                onClick={() => navigate(routes.orgProjectsLegacy({ orgId: resolvedOrg?.slug || currentOrgId! }))}
               >
                 Cancel
               </Button>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
+import { routes } from '../../../routes';
 import { isNumericId, isUuid } from './useTeamsListData';
 import type { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import styles from './TeamsListTable.module.css';
@@ -67,9 +68,9 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
                   <td className="dir-td-text">
                     {resolved.orgSlugOrId ? (
                       <a
-                        href={`/organisations/${resolved.orgSlugOrId}`}
+                        href={routes.orgDetailLegacy({ orgId: String(resolved.orgSlugOrId) })}
                         className="text-blue-600 hover:underline"
-                        onClick={(e) => { e.preventDefault(); navigate(`/organisations/${resolved.orgSlugOrId}`); }}
+                        onClick={(e) => { e.preventDefault(); navigate(routes.orgDetailLegacy({ orgId: String(resolved.orgSlugOrId) })); }}
                       >
                         {typeof team.organisation === 'object' ? team.organisation?.name || '-' : '-'}
                       </a>
@@ -81,9 +82,9 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
                   <td className="dir-td-text">
                     {resolved.orgSlugOrId && resolved.clubSlugOrId ? (
                       <a
-                        href={`/${resolved.orgSlugOrId}/${resolved.clubSlugOrId}`}
+                        href={routes.club({ orgId: String(resolved.orgSlugOrId), clubId: String(resolved.clubSlugOrId) })}
                         className="text-blue-600 hover:underline"
-                        onClick={(e) => { e.preventDefault(); navigate(`/${resolved.orgSlugOrId}/${resolved.clubSlugOrId}`); }}
+                        onClick={(e) => { e.preventDefault(); navigate(routes.club({ orgId: String(resolved.orgSlugOrId), clubId: String(resolved.clubSlugOrId) })); }}
                       >
                         {resolved.clubName}
                       </a>
@@ -94,9 +95,9 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
                 <td className="dir-td-text">
                   {resolved.orgSlugOrId && resolved.clubSlugOrId ? (
                     <a
-                      href={`/${resolved.orgSlugOrId}/${resolved.clubSlugOrId}/${resolved.teamSlugOrId}`}
+                      href={routes.team({ orgId: String(resolved.orgSlugOrId), clubId: String(resolved.clubSlugOrId), projectId: String(resolved.teamSlugOrId) })}
                       className="text-blue-600 hover:underline"
-                      onClick={(e) => { e.preventDefault(); navigate(`/${resolved.orgSlugOrId}/${resolved.clubSlugOrId}/${resolved.teamSlugOrId}`); }}
+                      onClick={(e) => { e.preventDefault(); navigate(routes.team({ orgId: String(resolved.orgSlugOrId), clubId: String(resolved.clubSlugOrId), projectId: String(resolved.teamSlugOrId) })); }}
                     >
                       {team.name}
                     </a>

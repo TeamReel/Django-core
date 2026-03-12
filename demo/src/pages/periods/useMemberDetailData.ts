@@ -18,6 +18,7 @@ import { useSeasonContext } from '../../providers/SeasonProvider';
 import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
 import { unwrapEnvelope as unwrap } from '../../types/season';
 import { projectsApi } from '../../api';
+import { routes } from '../../routes';
 import { UUID_RE, getUserDisplayName, mergeAssetsIntoMetadata } from './memberDetailUtils';
 import type { AssetVariantsMap, MembershipRecord } from './memberDetailUtils';
 import type { MemberMediaForm } from '../../constants/mediaSlots';
@@ -211,10 +212,10 @@ export function useMemberDetailData(): MemberDetailData {
   // ── Breadcrumbs ──
   const breadcrumbs = useMemo(() => {
     const orgCrumb = org
-      ? { label: org.name, onClick: () => navigate(`/organisations/${org.slug || org.id}`) }
+      ? { label: org.name, onClick: () => navigate(routes.orgDetailLegacy({ orgId: org.slug || org.id })) }
       : { label: 'Federation' };
     const clubCrumb = isTeamRoute && club
-      ? { label: club.name, onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${club.slug || club.id}`) }
+      ? { label: club.name, onClick: () => navigate(routes.orgProjectDetailLegacy({ orgId: orgSlugOrId, projectId: club.slug || club.id })) }
       : null;
     const teamCrumb = project
       ? {

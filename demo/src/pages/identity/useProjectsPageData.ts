@@ -11,6 +11,7 @@ import { canCreateProject, canEditProject, canDeleteProject } from '../../utils/
 import { logger } from '@/utils/logger';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { OrganisationOption, ProjectOption } from '../work/WorkFilterBar';
+import { routes } from '../../routes';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { api } from '../../api';
 
@@ -299,7 +300,7 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
   const breadcrumbItems = currentOrgId ? [
     { label: 'Dashboard', onClick: () => navigate('/dashboard') },
     { label: 'Federations', onClick: () => navigate('/federations') },
-    { label: orgName || 'Federation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || currentOrgId}`) },
+    { label: orgName || 'Federation', onClick: () => navigate(routes.orgDetailLegacy({ orgId: String(resolvedOrg?.slug || currentOrgId) })) },
     { label: 'Clubs & Teams', current: true },
   ] : [
     { label: 'Dashboard', onClick: () => navigate('/dashboard') },

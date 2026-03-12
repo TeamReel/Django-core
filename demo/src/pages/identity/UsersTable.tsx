@@ -5,6 +5,7 @@ import React from 'react';
 import { Badge } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import styles from './UsersTable.module.css';
+import { routes } from '../../routes';
 import type { UserProject, UserRowItem, UsersTableProps, UserRowProps } from './UsersTable.types';
 import { UserActions } from './UsersTableActions';
 
@@ -125,7 +126,7 @@ const UserRow: React.FC<UserRowProps & { item: UserRowItem }> = ({
       <td>
         <div
           className={`fw-500 fs-sm cursor-pointer ${styles.userNameLink}`}
-          onClick={() => navigate(`/users/${user.id}`)}
+          onClick={() => navigate(routes.userDetail({ userId: user.id }))}
         >
           {user.first_name} {user.last_name}
         </div>

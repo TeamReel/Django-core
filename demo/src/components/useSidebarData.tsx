@@ -21,6 +21,7 @@ import { useResolvedAppContext } from './useResolvedAppContext';
 import { useSidebarRecents } from './useSidebarRecents';
 import { buildPanelBConfig } from './sidebarPanelBConfig';
 import type { PanelBResult } from './sidebarPanelBWork';
+import { routes } from '../routes';
 
 /* ------------------------------------------------------------------ */
 /*  Return type                                                        */
@@ -156,27 +157,27 @@ export function useSidebarData(): UseSidebarDataReturn {
             return next ? `${base}?${next}` : base;
         };
 
-        const federationPath = orgId ? `/${orgId}` : '/dashboard';
-        const directoryPath = '/directory';
-        const clubsIndexPath = orgId ? `/${orgId}/clubs` : directoryPath;
-        const teamsIndexPath = orgId ? `/${orgId}/teams` : directoryPath;
-        const seasonsIndexPath = orgId ? `/${orgId}/seasons` : directoryPath;
-        const competitionsIndexPath = orgId ? `/${orgId}/competitions` : directoryPath;
-        const matchesIndexPath = orgId ? `/${orgId}/matches` : directoryPath;
+        const federationPath = orgId ? routes.orgDetail({ orgId }) : routes.dashboard();
+        const directoryPath = routes.directory();
+        const clubsIndexPath = orgId ? routes.orgClubs({ orgId }) : directoryPath;
+        const teamsIndexPath = orgId ? routes.orgTeams({ orgId }) : directoryPath;
+        const seasonsIndexPath = orgId ? routes.orgSeasons({ orgId }) : directoryPath;
+        const competitionsIndexPath = orgId ? routes.orgCompetitions({ orgId }) : directoryPath;
+        const matchesIndexPath = orgId ? routes.orgMatches({ orgId }) : directoryPath;
 
-        const clubPath = orgId && clubSlug ? `/${orgId}/${clubSlug}` : clubsIndexPath;
-        const teamPath = orgId && clubSlug && teamSlug ? `/${orgId}/${clubSlug}/${teamSlug}` : teamsIndexPath;
+        const clubPath = orgId && clubSlug ? routes.club({ orgId, clubId: clubSlug }) : clubsIndexPath;
+        const teamPath = orgId && clubSlug && teamSlug ? routes.team({ orgId, clubId: clubSlug, projectId: teamSlug }) : teamsIndexPath;
 
         const teamSeasonsPath = orgId && clubSlug && teamSlug
-            ? `/${orgId}/${clubSlug}/${teamSlug}/seasons`
+            ? routes.teamSeasons({ orgId, clubId: clubSlug, projectId: teamSlug })
             : seasonsIndexPath;
 
         const seasonPath = orgId && clubSlug && teamSlug && seasonKey
-            ? `/${orgId}/${clubSlug}/${teamSlug}/${seasonKey}`
+            ? routes.season({ orgId, clubId: clubSlug, projectId: teamSlug, seasonId: seasonKey })
             : teamSeasonsPath;
 
         const competitionDetailPath = orgId && clubSlug && teamSlug && seasonKey && competitionKey
-            ? `/${orgId}/${clubSlug}/${teamSlug}/${seasonKey}/${competitionKey}`
+            ? routes.competition({ orgId, clubId: clubSlug, projectId: teamSlug, seasonId: seasonKey, competitionId: competitionKey })
             : '';
 
         const competitionPath = competitionDetailPath
@@ -184,7 +185,7 @@ export function useSidebarData(): UseSidebarDataReturn {
             : (orgId && clubSlug && teamSlug && seasonKey ? withTab(seasonPath, 'competitions') : competitionsIndexPath);
 
         const matchDetailPath = orgId && clubSlug && teamSlug && seasonKey && competitionKey && matchKey
-            ? `/${orgId}/${clubSlug}/${teamSlug}/${seasonKey}/${competitionKey}/${matchKey}`
+            ? routes.match({ orgId, clubId: clubSlug, projectId: teamSlug, seasonId: seasonKey, competitionId: competitionKey, matchId: matchKey })
             : '';
 
         const matchPath = matchDetailPath
@@ -192,12 +193,12 @@ export function useSidebarData(): UseSidebarDataReturn {
             : (competitionDetailPath ? withTab(competitionDetailPath, 'matches') : (seasonKey ? withTab(seasonPath, 'matches') : matchesIndexPath));
 
         const memberDetailPath = orgId && clubSlug && teamSlug && seasonKey && membershipId
-            ? `${seasonPath}/${membershipId}`
+            ? routes.member({ orgId, clubId: clubSlug, projectId: teamSlug, seasonId: seasonKey, memberId: membershipId })
             : '';
 
         const memberPath = memberDetailPath
             ? memberDetailPath
-            : (seasonKey ? withTab(seasonPath, 'squad') : '/directory?tab=users');
+            : (seasonKey ? withTab(seasonPath, 'squad') : routes.directory({ tab: 'users' }));
 
         const currentUserId = String(user?.id || '').trim();
 
@@ -209,7 +210,7 @@ export function useSidebarData(): UseSidebarDataReturn {
             { label: 'Competition', path: competitionPath, icon: Trophy, visibility: 'everyone' as const },
             { label: 'Match', path: matchPath, icon: Timer, visibility: 'everyone' as const },
             { label: 'Member', path: memberPath, icon: Users, visibility: 'everyone' as const },
-            ...(currentUserId ? [{ label: 'User', path: `/users/${encodeURIComponent(currentUserId)}`, icon: Users, visibility: 'superadmin' as const }] : []),
+            ...(currentUserId ? [{ label: 'User', path: routes.userDetail({ userId: currentUserId }), icon: Users, visibility: 'superadmin' as const }] : []),
         ];
     }, [location.pathname, orgSlug, clubName, teamName, resolvedAppContext, user]);
 

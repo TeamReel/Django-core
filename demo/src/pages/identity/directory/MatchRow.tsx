@@ -5,6 +5,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@django-core/design-system';
 import { periodPathKey } from '../../../utils/periodPath';
+import { routes } from '../../../routes';
 import { resolveRowContext } from '../../../utils/directoryHelpers';
 import type { Activity, Period, RowContextConfig } from '../../../utils/directoryHelpers';
 
@@ -67,9 +68,9 @@ export const MatchRow: React.FC<MatchRowProps> = ({
         <td className="hide-mobile dir-td-text">
           {row.orgId ? (
             <a
-              href={`/organisations/${row.orgSlug}`}
+              href={routes.orgDetailLegacy({ orgId: row.orgSlug! })}
               className="text-blue-600 hover:underline"
-              onClick={(e) => { e.preventDefault(); navigate(`/organisations/${row.orgSlug}`); }}
+              onClick={(e) => { e.preventDefault(); navigate(routes.orgDetailLegacy({ orgId: row.orgSlug! })); }}
             >
               {row.orgName}
             </a>
@@ -80,9 +81,9 @@ export const MatchRow: React.FC<MatchRowProps> = ({
         <td className="hide-mobile dir-td-text">
           {row.clubId ? (
             <a
-              href={`/${row.orgSlug}/${row.clubSlug}`}
+              href={routes.club({ orgId: row.orgSlug!, clubId: row.clubSlug! })}
               className="text-blue-600 hover:underline"
-              onClick={(e) => { e.preventDefault(); navigate(`/${row.orgSlug}/${row.clubSlug}`); }}
+              onClick={(e) => { e.preventDefault(); navigate(routes.club({ orgId: row.orgSlug!, clubId: row.clubSlug! })); }}
             >
               {row.clubName}
             </a>

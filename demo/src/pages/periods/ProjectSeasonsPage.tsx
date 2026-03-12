@@ -7,6 +7,7 @@ import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { api } from '@/api';
 import { periodPathKey } from '../../utils/periodPath';
+import { routes } from '../../routes';
 import styles from './ProjectSeasonsPage.module.css';
 
 type Period = {
@@ -64,16 +65,16 @@ export const ProjectSeasonsPage: React.FC = () => {
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
       { label: 'Federations', onClick: () => navigate('/federations') },
-      { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
+      { label: org?.name || 'Federation', onClick: () => navigate(routes.orgDetailLegacy({ orgId: orgSlugOrId })) },
       {
         label: 'Clubs',
-        onClick: () => navigate(`/clubs?org_id=${encodeURIComponent(String(orgSlugOrId))}`),
+        onClick: () => navigate(routes.clubs({ orgId: String(orgSlugOrId) })),
       },
       ...(isTeamRoute
         ? [
             {
               label: club?.name || 'Club',
-              onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+              onClick: () => navigate(routes.orgProjectDetailLegacy({ orgId: orgSlugOrId, projectId: clubSlugOrId })),
             },
             {
               label: 'Teams',

@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
+import { routes } from '../routes';
 
 /* ─── Types ─────────────────────────────────────────────────── */
 
@@ -48,14 +49,14 @@ export interface TopNavbarProps {
 export const navGroups: NavGroup[] = [];
 
 export const CREATE_MENU_ITEMS = [
-  { label: 'Content Library', path: '/content', hint: 'Create content for match/season' },
+  { label: 'Content Library', path: routes.content(), hint: 'Create content for match/season' },
   { label: 'AI Studio', path: '/studio/create', hint: 'Generate content (AI)' },
-  { label: 'Match', path: '/directory?tab=matches&create=match', hint: 'Create a new match' },
-  { label: 'Competition', path: '/directory?tab=competitions', hint: 'Go to competitions list' },
-  { label: 'Season', path: '/directory?tab=seasons', hint: 'Go to seasons list' },
-  { label: 'Team', path: '/directory?tab=teams', hint: 'Go to teams list' },
-  { label: 'Club', path: '/directory?tab=clubs', hint: 'Go to clubs list' },
-  { label: 'Federation', path: '/organisations/create', hint: 'Create a new federation' },
+  { label: 'Match', path: routes.directory({ tab: 'matches' }) + '&create=match', hint: 'Create a new match' },
+  { label: 'Competition', path: routes.directory({ tab: 'competitions' }), hint: 'Go to competitions list' },
+  { label: 'Season', path: routes.directory({ tab: 'seasons' }), hint: 'Go to seasons list' },
+  { label: 'Team', path: routes.directory({ tab: 'teams' }), hint: 'Go to teams list' },
+  { label: 'Club', path: routes.directory({ tab: 'clubs' }), hint: 'Go to clubs list' },
+  { label: 'Federation', path: routes.orgCreateLegacy(), hint: 'Create a new federation' },
 ] as const;
 
 /* ─── Pure helpers ──────────────────────────────────────────── */

@@ -4,6 +4,7 @@ import { Card, Badge, Button } from '@django-core/design-system';
 import { useActivities, Activity } from '../../hooks/useActivities';
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
 import { SkeletonList } from '../Skeleton';
+import { routes } from '../../routes';
 import styles from './ActivityFeed.module.css';
 
 interface ActivityFeedProps {
@@ -217,8 +218,8 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                 onClick={() => {
                   // Navigate to search for this match, since we don't have match_id
                   // TODO: Link directly to match when activity has match_id
-                  const searchQuery = encodeURIComponent(activity.title.replace(/^(vs |@ )/, ''));
-                  navigate(`/search?q=${searchQuery}`);
+                  const searchQuery = activity.title.replace(/^(vs |@ )/, '');
+                  navigate(routes.search({ q: searchQuery }));
                 }}
               />
             ))

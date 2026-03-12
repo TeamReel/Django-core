@@ -16,6 +16,7 @@ import OrganisationDetailModal from '../OrganisationDetailModal';
 import OrganisationEditModal from '../OrganisationEditModal';
 import OrganisationCreateModal from '../OrganisationCreateModal';
 import { api } from '@/api';
+import { routes } from '../../../routes';
 import { logger } from '@/utils/logger';
 import { useSports } from '../../../hooks/useSports';
 import type { Organisation } from '../../../types';
@@ -223,7 +224,7 @@ export const FederationsList: React.FC = () => {
                         <td className="dir-td-text">
                           <span
                             className={`cursor-pointer ${styles.orgLink}`}
-                            onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
+                            onClick={() => navigate(routes.orgDetailLegacy({ orgId: org.slug || org.id }))}
                           >
                             {org.name}
                           </span>

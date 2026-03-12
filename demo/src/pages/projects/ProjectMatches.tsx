@@ -4,6 +4,7 @@ import { Table } from '@/shims/design-system';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import SmartEmptyState from '../../components/SmartEmptyState';
+import { routes } from '../../routes';
 import { logger } from '@/utils/logger';
 
 
@@ -145,7 +146,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
                    </Badge>
                 </td>
                  <td className="text-right">
-                   <Button size="sm" variant="secondary" onClick={() => navigate(`/matches/${match.slug || match.id}`)}>View</Button>
+                   <Button size="sm" variant="secondary" onClick={() => navigate(routes.matchById({ matchId: match.slug || match.id }))}>View</Button>
                  </td>
               </tr>
             );

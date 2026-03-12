@@ -4,6 +4,7 @@
 import React from 'react';
 import { Button } from '@django-core/design-system';
 import type { ProjectOption } from './useUsersData';
+import { routes } from '../../routes';
 import styles from './UsersFilterBar.module.css';
 
 export interface UsersFilterState {
@@ -59,7 +60,7 @@ export const UsersFilterBar: React.FC<UsersFilterBarProps> = ({
 }) => (
   <div className="flex-row gap-10 flex-wrap">
     {orgIdParam && (
-      <Button variant="secondary" onClick={() => navigate(`/organisations/${orgIdParam}`)}>
+      <Button variant="secondary" onClick={() => navigate(routes.orgDetailLegacy({ orgId: orgIdParam! }))}>
         Back to Organisation
       </Button>
     )}

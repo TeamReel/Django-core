@@ -26,6 +26,7 @@ import { TeamHierarchyTab } from './TeamHierarchyTab';
 import { TeamSelectieTab } from './TeamSelectieTab';
 import { TeamMediaTab } from './TeamMediaTab';
 import s from './TeamOrganisationDetailPage.module.css';
+import { routes } from '../../routes';
 
 export default function TeamOrganisationDetailPage() {
   const navigate = useNavigate();
@@ -334,7 +335,7 @@ export default function TeamOrganisationDetailPage() {
               } : undefined}
               showAdminLink={!isPlayer}
               onAdminLinkClick={!isPlayer ? () => {
-                navigate(`/${orgKeyForRoutes}/${clubKeyForRoutes}/${teamKeyForRoutes}/directory`);
+                navigate(`${routes.team({ orgId: orgKeyForRoutes, clubId: clubKeyForRoutes, projectId: teamKeyForRoutes })}/directory`);
               } : undefined}
               apiBaseUrl={apiBaseUrl}
               teamId={teamIdForDirectoryLists}

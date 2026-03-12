@@ -1,9 +1,11 @@
 import React from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { routes } from './routes';
 
 // =============================================================================
 // Redirect components for legacy / back-compat URL patterns.
 // Extracted from App.tsx — each maps an old URL to a canonical one.
+// All URL construction uses routes.ts helpers.
 // =============================================================================
 
 export function LegacyDirectoryRedirect({ tab }: { tab: string }) {
@@ -18,22 +20,22 @@ export function LegacyOrgContextRedirect({ section }: { section: string }) {
   const { orgId } = useParams<{ orgId: string }>();
   const orgKey = String(orgId || '').trim();
   const s = String(section || '').trim().toLowerCase();
-  if (!orgKey || !s) return <Navigate to="/directory?tab=federations" replace />;
+  if (!orgKey || !s) return <Navigate to={routes.directory({ tab: 'federations' })} replace />;
   return <Navigate to={`/${encodeURIComponent(orgKey)}/${encodeURIComponent(s)}`} replace />;
 }
 
 export function OrgHierarchyRedirect() {
   const { orgId } = useParams<{ orgId: string }>();
   const orgKey = String(orgId || '').trim();
-  if (!orgKey) return <Navigate to="/directory?tab=federations" replace />;
-  return <Navigate to={`/${encodeURIComponent(orgKey)}?tab=hierarchy`} replace />;
+  if (!orgKey) return <Navigate to={routes.directory({ tab: 'federations' })} replace />;
+  return <Navigate to={routes.orgHierarchy({ orgId: orgKey })} replace />;
 }
 
 export function OrgProjectsRedirect() {
   const { orgId } = useParams<{ orgId: string }>();
   return (
     <Navigate
-      to={`/directory?tab=clubs&org_id=${encodeURIComponent(String(orgId || ''))}`}
+      to={routes.directory({ tab: 'clubs', orgId: String(orgId || '') })}
       replace
     />
   );
@@ -52,11 +54,11 @@ export function SeasonSquadRedirect() {
   const seasonKeyOrId = String(seasonId || '').trim();
   const clubSlugOrId = String(clubId || '').trim();
 
-  const basePath = clubSlugOrId
-    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/${seasonKeyOrId}`
-    : `/${orgSlugOrId}/projects/${projectSlugOrId}/${seasonKeyOrId}`;
+  const to = clubSlugOrId
+    ? routes.seasonWithTab({ orgId: orgSlugOrId, clubId: clubSlugOrId, projectId: projectSlugOrId, seasonId: seasonKeyOrId, tab: 'squad' })
+    : `${routes.projectSeason({ orgId: orgSlugOrId, projectId: projectSlugOrId, seasonId: seasonKeyOrId })}?tab=squad`;
 
-  return <Navigate to={`${basePath}?tab=squad`} replace />;
+  return <Navigate to={to} replace />;
 }
 
 export function CompetitionMatchesRedirect() {
@@ -77,8 +79,8 @@ export function CompetitionMatchesRedirect() {
   const clubSlugOrId = String(clubId || '').trim();
 
   const basePath = clubSlugOrId
-    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/${seasonKeyOrId}/${competitionKeyOrId}`
-    : `/${orgSlugOrId}/projects/${projectSlugOrId}/${seasonKeyOrId}/${competitionKeyOrId}`;
+    ? routes.competition({ orgId: orgSlugOrId, clubId: clubSlugOrId, projectId: projectSlugOrId, seasonId: seasonKeyOrId, competitionId: competitionKeyOrId })
+    : routes.projectCompetition({ orgId: orgSlugOrId, projectId: projectSlugOrId, seasonId: seasonKeyOrId, competitionId: competitionKeyOrId });
 
   const nextSearchParams = new URLSearchParams(location.search);
   nextSearchParams.set('tab', 'matches');
@@ -103,8 +105,8 @@ export function CompetitionUsersRedirect() {
 
   const location = useLocation();
   const basePath = clubSlugOrId
-    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/${seasonKeyOrId}/${competitionKeyOrId}`
-    : `/${orgSlugOrId}/projects/${projectSlugOrId}/${seasonKeyOrId}/${competitionKeyOrId}`;
+    ? routes.competition({ orgId: orgSlugOrId, clubId: clubSlugOrId, projectId: projectSlugOrId, seasonId: seasonKeyOrId, competitionId: competitionKeyOrId })
+    : routes.projectCompetition({ orgId: orgSlugOrId, projectId: projectSlugOrId, seasonId: seasonKeyOrId, competitionId: competitionKeyOrId });
 
   const nextSearchParams = new URLSearchParams(location.search);
   nextSearchParams.set('tab', 'users');
@@ -117,7 +119,7 @@ export function ClubDetailRedirect() {
   const location = useLocation();
   const orgSlugOrId = String(orgId || '').trim();
   const projectSlugOrId = String(projectId || '').trim();
-  return <Navigate to={`/${orgSlugOrId}/${projectSlugOrId}${location.search || ''}`} replace />;
+  return <Navigate to={`${routes.club({ orgId: orgSlugOrId, clubId: projectSlugOrId })}${location.search || ''}`} replace />;
 }
 
 export function TeamDetailRedirect() {
@@ -128,7 +130,7 @@ export function TeamDetailRedirect() {
   const projectSlugOrId = String(projectId || '').trim();
   return (
     <Navigate
-      to={`/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}${location.search || ''}`}
+      to={`${routes.team({ orgId: orgSlugOrId, clubId: clubSlugOrId, projectId: projectSlugOrId })}${location.search || ''}`}
       replace
     />
   );
@@ -145,7 +147,7 @@ export function TeamSeasonsRedirect() {
   const nextSearch = nextSearchParams.toString();
   return (
     <Navigate
-      to={`/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}${nextSearch ? `?${nextSearch}` : ''}`}
+      to={`${routes.team({ orgId: orgSlugOrId, clubId: clubSlugOrId, projectId: projectSlugOrId })}${nextSearch ? `?${nextSearch}` : ''}`}
       replace
     />
   );
@@ -165,7 +167,7 @@ export function TeamSeasonRedirect() {
   const seasonKeyOrId = String(seasonId || '').trim();
   return (
     <Navigate
-      to={`/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/${seasonKeyOrId}${location.search || ''}`}
+      to={`${routes.season({ orgId: orgSlugOrId, clubId: clubSlugOrId, projectId: projectSlugOrId, seasonId: seasonKeyOrId })}${location.search || ''}`}
       replace
     />
   );
@@ -177,7 +179,7 @@ export function ProjectSeasonRedirect() {
   const orgSlugOrId = String(orgId || '').trim();
   const projectSlugOrId = String(projectId || '').trim();
   const seasonKeyOrId = String(seasonId || '').trim();
-  return <Navigate to={`/${orgSlugOrId}/projects/${projectSlugOrId}/${seasonKeyOrId}${location.search || ''}`} replace />;
+  return <Navigate to={`${routes.projectSeason({ orgId: orgSlugOrId, projectId: projectSlugOrId, seasonId: seasonKeyOrId })}${location.search || ''}`} replace />;
 }
 
 export function ProjectCompetitionRedirect() {
@@ -194,7 +196,7 @@ export function ProjectCompetitionRedirect() {
   const competitionKeyOrId = String(competitionId || '').trim();
   return (
     <Navigate
-      to={`/${orgSlugOrId}/projects/${projectSlugOrId}/${seasonKeyOrId}/${competitionKeyOrId}${location.search || ''}`}
+      to={`${routes.projectCompetition({ orgId: orgSlugOrId, projectId: projectSlugOrId, seasonId: seasonKeyOrId, competitionId: competitionKeyOrId })}${location.search || ''}`}
       replace
     />
   );
@@ -216,7 +218,7 @@ export function ProjectMatchRedirect() {
   const matchKeyOrId = String(matchId || '').trim();
   return (
     <Navigate
-      to={`/${orgSlugOrId}/projects/${projectSlugOrId}/${seasonKeyOrId}/${competitionKeyOrId}/${matchKeyOrId}${location.search || ''}`}
+      to={`${routes.projectMatch({ orgId: orgSlugOrId, projectId: projectSlugOrId, seasonId: seasonKeyOrId, competitionId: competitionKeyOrId, matchId: matchKeyOrId })}${location.search || ''}`}
       replace
     />
   );
@@ -235,7 +237,7 @@ export function TeamCompetitionRedirect() {
   const seasonKeyOrId = String(seasonId || '').trim();
   return (
     <Navigate
-      to={`/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/${seasonKeyOrId}?tab=competitions`}
+      to={routes.seasonWithTab({ orgId: orgSlugOrId, clubId: clubSlugOrId, projectId: projectSlugOrId, seasonId: seasonKeyOrId, tab: 'competitions' })}
       replace
     />
   );
@@ -259,7 +261,7 @@ export function TeamMatchRedirect() {
   const matchKeyOrId = String(matchId || '').trim();
   return (
     <Navigate
-      to={`/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/${seasonKeyOrId}/${competitionKeyOrId}/${matchKeyOrId}${location.search || ''}`}
+      to={`${routes.match({ orgId: orgSlugOrId, clubId: clubSlugOrId, projectId: projectSlugOrId, seasonId: seasonKeyOrId, competitionId: competitionKeyOrId, matchId: matchKeyOrId })}${location.search || ''}`}
       replace
     />
   );
@@ -269,5 +271,5 @@ export function OrganisationDetailRedirect() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const orgSlugOrId = String(id || '').trim();
-  return <Navigate to={`/${orgSlugOrId}${location.search || ''}`} replace />;
+  return <Navigate to={`${routes.orgDetail({ orgId: orgSlugOrId })}${location.search || ''}`} replace />;
 }

@@ -7,6 +7,7 @@ import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
 import ProjectCreateModal from '../ProjectCreateModal';
 import { useClubsData } from './useClubsData';
+import { routes } from '../../../routes';
 import type { ProjectOption } from '../../work/WorkFilterBar';
 import styles from './ClubsList.module.css';
 import dp from './DirectoryPremium.module.css';
@@ -183,11 +184,11 @@ function ClubRow({ club, d }: { club: ClubRecord; d: HookData }) {
         <td className="dir-td-text">
           {orgSlugOrId ? (
             <a
-              href={`/organisations/${orgSlugOrId}`}
+              href={routes.orgDetailLegacy({ orgId: String(orgSlugOrId) })}
               className="text-blue-600 hover:underline"
               onClick={(e) => {
                 e.preventDefault();
-                d.navigate(`/organisations/${orgSlugOrId}`);
+                d.navigate(routes.orgDetailLegacy({ orgId: String(orgSlugOrId) }));
               }}
             >
               {org?.name || 'Federation'}
@@ -199,11 +200,11 @@ function ClubRow({ club, d }: { club: ClubRecord; d: HookData }) {
       )}
       <td className="dir-td-text">
         <a
-          href={`/${orgSlugOrId}/${clubSlugOrId}`}
+          href={routes.club({ orgId: String(orgSlugOrId), clubId: String(clubSlugOrId) })}
           className="text-blue-600 hover:underline"
           onClick={(e) => {
             e.preventDefault();
-            d.navigate(`/${orgSlugOrId}/${clubSlugOrId}`);
+            d.navigate(routes.club({ orgId: String(orgSlugOrId), clubId: String(clubSlugOrId) }));
           }}
         >
           {club.name}

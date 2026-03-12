@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { periodPathKey } from '../../../utils/periodPath';
 import { Badge } from '@django-core/design-system';
+import { routes } from '../../../routes';
 import PeriodDetailModal from '../PeriodDetailModal';
 import PeriodEditModal from '../PeriodEditModal';
 import PeriodCreateModal from '../PeriodCreateModal';
@@ -115,11 +116,11 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                           <td className="dir-td-text">
                             {row.orgSlug ? (
                               <a
-                                href={`/organisations/${row.orgSlug}`}
+                                href={routes.orgDetailLegacy({ orgId: row.orgSlug! })}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(`/organisations/${row.orgSlug}`);
+                                  navigate(routes.orgDetailLegacy({ orgId: row.orgSlug! }));
                                 }}
                               >
                                 {row.orgName}
@@ -133,11 +134,11 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                           <td className="dir-td-text">
                             {row.clubSlug && row.orgSlug ? (
                               <a
-                                href={`/${row.orgSlug}/${row.clubSlug}`}
+                                href={routes.club({ orgId: row.orgSlug!, clubId: row.clubSlug! })}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(`/${row.orgSlug}/${row.clubSlug}`);
+                                  navigate(routes.club({ orgId: row.orgSlug!, clubId: row.clubSlug! }));
                                 }}
                               >
                                 {row.clubName}

@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelection } from '../../hooks/useAppSelection';
+import { routes } from '../../routes';
 import { useUserRole } from '../../components/PermissionGuards';
 import styles from './GalleryCreateContentButton.module.css';
 
@@ -72,7 +73,7 @@ export function GalleryCreateContentButton() {
                   key={ct.key}
                   onClick={() => {
                     setShowModal(false);
-                    navigate(`/matches/${matchId}?tab=content`);
+                    navigate(routes.matchWithTab({ matchId, tab: 'content' }));
                   }}
                   className={`flex-row gap-12 w-full cursor-pointer text-left border ${styles.typeBtn}`}
                 >

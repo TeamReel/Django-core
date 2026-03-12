@@ -17,6 +17,7 @@ import { SkeletonDetailPage } from '../../components/Skeleton';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 import { api, organisationsApi, projectsApi } from '../../api';
+import { routes } from '../../routes';
 import { logger } from '@/utils/logger';
 import { Project } from '../../types';
 
@@ -116,7 +117,7 @@ export const ProjectEditPage: React.FC = () => {
 
       // Navigate back to project detail page
       const nextSlug = slug || currentProjectSlug;
-      navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${nextSlug}`);
+      navigate(routes.orgProjectDetailLegacy({ orgId: resolvedOrg?.slug || resolvedOrg?.id!, projectId: nextSlug }));
     } catch (err) {
       logger.error('Failed to save project', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -160,7 +161,7 @@ export const ProjectEditPage: React.FC = () => {
                 onSelect={handleProjectSwitch}
               />
             ),
-            onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${projectId}`),
+            onClick: () => navigate(routes.orgProjectDetailLegacy({ orgId: resolvedOrg?.slug || resolvedOrg?.id!, projectId: projectId! })),
           },
           { label: 'Edit', current: true },
         ]}
@@ -240,7 +241,7 @@ export const ProjectEditPage: React.FC = () => {
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${projectId}`)}
+                onClick={() => navigate(routes.orgProjectDetailLegacy({ orgId: resolvedOrg?.slug || resolvedOrg?.id!, projectId: projectId! }))}
               >
                 Cancel
               </Button>

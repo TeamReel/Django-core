@@ -16,6 +16,7 @@ import SmartEmptyState from '../../components/SmartEmptyState';
 import { Table } from '../../shims/design-system';
 import PeriodEditModal from '../identity/PeriodEditModal';
 import { periodPathKey } from '../../utils/periodPath';
+import { routes } from '../../routes';
 
 import { useSquadPageData } from './useSquadPageData';
 import { MembershipEditModal, readFunctionalRolesFromMembership } from './MembershipEditModal';
@@ -26,11 +27,11 @@ export default function ProjectSeasonSquadPage() {
 
   const breadcrumbs = useMemo(() => {
     const orgCrumb = d.organisation
-      ? { label: d.organisation.name, onClick: () => d.navigate(`/organisations/${d.organisation!.slug || d.organisation!.id}`) }
+      ? { label: d.organisation.name, onClick: () => d.navigate(routes.orgDetailLegacy({ orgId: d.organisation!.slug || d.organisation!.id })) }
       : { label: 'Federation' };
 
     const clubCrumb = d.clubProject
-      ? { label: d.clubProject.name, onClick: () => d.navigate(`/organisations/${d.orgSlugOrId}/projects/${d.clubProject!.slug || d.clubProject!.id}`) }
+      ? { label: d.clubProject.name, onClick: () => d.navigate(routes.orgProjectDetailLegacy({ orgId: d.orgSlugOrId, projectId: d.clubProject!.slug || d.clubProject!.id })) }
       : null;
 
     const projectCrumb = d.project
@@ -192,7 +193,7 @@ export default function ProjectSeasonSquadPage() {
                             <tr key={String(membershipId || user.id)}>
                               <td className="detail-td-text">
                                 {userId ? (
-                                  <Link to={`/users/${userId}`} className={`text-blue-600 hover:underline ${styles.noUnderline}`}>{name}</Link>
+                                  <Link to={routes.userDetail({ userId: String(userId) })} className={`text-blue-600 hover:underline ${styles.noUnderline}`}>{name}</Link>
                                 ) : name}
                               </td>
                               <td className="detail-td-text">{email}</td>
@@ -211,7 +212,7 @@ export default function ProjectSeasonSquadPage() {
                               <td className="detail-td">
                                 <div className="detail-actions">
                                   {userId ? (
-                                    <button onClick={() => d.navigate(`/users/${userId}`)} className="action-btn action-btn-primary">View</button>
+                                    <button onClick={() => d.navigate(routes.userDetail({ userId: String(userId) }))} className="action-btn action-btn-primary">View</button>
                                   ) : <span className="text-muted">—</span>}
                                   {d.userCanEditProject && (
                                     <button onClick={() => { d.setSelectedMembership(m); d.setIsMembershipEditModalOpen(true); }} className="action-btn action-btn-warning">Edit</button>

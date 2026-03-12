@@ -8,6 +8,7 @@ import { api } from '../../../api';
 import { useUsersState } from './state';
 import { useUsersFetchers } from './fetchers';
 import { normalizeRole, mapMembershipRoleToDisplayRole } from './helpers';
+import { routes } from '../../../routes';
 import type { UseUsersDataReturn, User, UserListEntry, UserProjectRef } from './types';
 
 export type { UseUsersDataReturn, User, UserListEntry, UserProjectRef, OrganisationOption, ProjectOption } from './types';
@@ -126,7 +127,7 @@ export function useUsersData(): UseUsersDataReturn {
     breadcrumbs.push({ label: 'Federations', onClick: () => state.navigate('/federations') });
     breadcrumbs.push({
       label: (state.myOrganisations.find(o => o.slug === state.orgIdParam || o.id === state.orgIdParam) || state.context.organisation)?.name || 'Federation',
-      onClick: () => state.navigate(`/organisations/${state.orgIdParam}`),
+      onClick: () => state.navigate(routes.orgDetailLegacy({ orgId: state.orgIdParam! })),
     });
     breadcrumbs.push({ label: 'Users', current: true });
   } else {

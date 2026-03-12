@@ -18,6 +18,7 @@ import AppShell from '../../components/AppShell';
 import { Organisation } from '../../types';
 import type { OrganisationDetail } from '../../types/api';
 import { organisationsApi } from '../../api';
+import { routes } from '../../routes';
 import styles from './OrganisationEditPage.module.css';
 
 /**
@@ -87,7 +88,7 @@ export const OrganisationEditPage: React.FC = () => {
         is_active: isActive,
       } as Partial<OrganisationDetail>);
       const slugOrId = updated?.slug || updated?.id || resolvedOrg?.slug || id;
-      navigate(`/organisations/${slugOrId}`);
+      navigate(routes.orgDetailLegacy({ orgId: String(slugOrId) }));
     } catch (err: unknown) {
       logger.error('Failed to update organisation', err);
       setError(err instanceof Error ? err.message : 'Failed to update organisation');
@@ -128,7 +129,7 @@ export const OrganisationEditPage: React.FC = () => {
                 onSelect={handleOrganisationSwitch}
               />
             ),
-            onClick: () => navigate(`/organisations/${resolvedOrg?.slug || id}`),
+            onClick: () => navigate(routes.orgDetailLegacy({ orgId: resolvedOrg?.slug || id! })),
           },
           { label: 'Edit', current: true },
         ]}
@@ -189,7 +190,7 @@ export const OrganisationEditPage: React.FC = () => {
               <Button type="submit" variant="primary" disabled={saving}>
                 {saving ? 'Saving...' : 'Save Changes'}
               </Button>
-              <Button type="button" variant="secondary" onClick={() => navigate(`/organisations/${id}`)} disabled={saving}>
+              <Button type="button" variant="secondary" onClick={() => navigate(routes.orgDetailLegacy({ orgId: id! }))} disabled={saving}>
                 Cancel
               </Button>
             </div>

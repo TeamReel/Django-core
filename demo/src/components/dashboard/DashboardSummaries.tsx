@@ -15,6 +15,7 @@ import { api } from '@/api';
 import { useCreditBalance } from '../../hooks/useCreditBalance';
 import { useQueueCounts } from '../../hooks/useQueueCounts';
 import type { Organisation } from '../../types';
+import { routes } from '../../routes';
 import styles from './DashboardSummaries.module.css';
 
 /* ── Squad Readiness ──────────────────────────────────────────────── */
@@ -49,7 +50,7 @@ export const SquadReadinessCard: React.FC = () => {
     if (project) {
       navigate(`/teams/${project.slug || project.id}/squad`);
     } else if (org) {
-      navigate(`/organisations/${org.slug}`);
+      navigate(routes.orgDetailLegacy({ orgId: org.slug || '' }));
     } else {
       navigate('/');
     }
@@ -181,7 +182,7 @@ export const UpcomingMatchesCard: React.FC = () => {
               <div
                 key={m.id}
                 className={styles.matchItem}
-                onClick={() => navigate(`/matches/${m.slug || m.id}`)}
+                onClick={() => navigate(routes.matchById({ matchId: m.slug || m.id }))}
               >
                 <div className={styles.matchDate}>
                   <span className={styles.matchDay}>{d.getDate()}</span>
@@ -299,7 +300,7 @@ export const OrgStatsCard: React.FC = () => {
   return (
     <div
       className={`${styles.summaryCard} ${styles.tallCard}`}
-      onClick={() => navigate(`/organisations/${org.slug}`)}
+      onClick={() => navigate(routes.orgDetailLegacy({ orgId: org.slug || '' }))}
       role="button"
       tabIndex={0}
     >

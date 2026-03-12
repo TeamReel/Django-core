@@ -14,6 +14,7 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { api } from '@/api';
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
+import { routes } from '../../routes';
 import styles from './ActiveMatchCard.module.css';
 
 /* ── Types ──────────────────────────────────────────────────────────── */
@@ -145,7 +146,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   return (
     <div
       className={`${styles.card} ${styles[matchState || '']}`}
-      onClick={() => navigate(`/matches/${match.slug || match.id}`, { state: { from: 'dashboard' } })}
+      onClick={() => navigate(routes.matchById({ matchId: match.slug || match.id }), { state: { from: 'dashboard' } })}
       role="button"
       tabIndex={0}
     >
@@ -212,7 +213,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
           className={styles.actionBtn}
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/matches/${match.slug || match.id}`, { state: { from: 'dashboard' } });
+            navigate(routes.matchById({ matchId: match.slug || match.id }), { state: { from: 'dashboard' } });
           }}
         >
           {matchState === 'upcoming' ? (

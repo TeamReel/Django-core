@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@django-core/design-system';
 import { periodPathKey } from '../../../utils/periodPath';
+import { routes } from '../../../routes';
 
 import {
   isPeriodActive,
@@ -129,11 +130,11 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                           <td className="dir-td-text">
                             {row.orgId ? (
                               <a
-                                href={`/organisations/${row.orgSlug}`}
+                                href={routes.orgDetailLegacy({ orgId: row.orgSlug! })}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(`/organisations/${row.orgSlug}`);
+                                  navigate(routes.orgDetailLegacy({ orgId: row.orgSlug! }));
                                 }}
                               >
                                 {row.orgName}
@@ -145,11 +146,11 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                           <td className="dir-td-text">
                             {row.clubId ? (
                               <a
-                                href={`/${row.orgSlug}/${row.clubSlug}`}
+                                href={routes.club({ orgId: row.orgSlug!, clubId: row.clubSlug! })}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(`/${row.orgSlug}/${row.clubSlug}`);
+                                  navigate(routes.club({ orgId: row.orgSlug!, clubId: row.clubSlug! }));
                                 }}
                               >
                                 {row.clubName}

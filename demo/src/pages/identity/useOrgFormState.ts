@@ -14,6 +14,7 @@ import {
 } from '../../utils/permissions';
 import { useOrgModals } from './useOrgModals';
 import { useOrgFilters } from './useOrgFilters';
+import { routes } from '../../routes';
 
 // ─── Hook: all state, context, permissions, breadcrumbs ──────────────────────
 
@@ -106,7 +107,7 @@ export function useOrgFormState() {
   });
 
   const handleOrganisationSwitch = (option: { id: string; label: string; slug?: string }) => {
-    navigate(`/${option.slug || option.id}${location.search || ''}`);
+    navigate(`${routes.orgDetail({ orgId: option.slug || option.id })}${location.search || ''}`);
   };
 
   return {

@@ -25,6 +25,7 @@ import OrganisationDetailModal from './OrganisationDetailModal';
 import OrganisationEditModal from './OrganisationEditModal';
 import OrganisationCreateModal from './OrganisationCreateModal';
 import { api } from '@/api';
+import { routes } from '../../routes';
 import { logger } from '@/utils/logger';
 
 /**
@@ -244,7 +245,7 @@ export const OrganisationsPage: React.FC = () => {
                     <td>
                       <span
                         className={`cursor-pointer ${styles.orgNameLink}`}
-                        onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
+                        onClick={() => navigate(routes.orgDetailLegacy({ orgId: org.slug || org.id }))}
                       >
                         {org.name}
                       </span>

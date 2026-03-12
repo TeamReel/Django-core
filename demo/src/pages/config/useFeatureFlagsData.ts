@@ -8,6 +8,7 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { routes } from '../../routes';
 import { useAuth } from '@django-core/auth-ui';
 import { useBreadcrumbContextSwitcher } from '@django-core/page-templates';
 import { logger } from '@/utils/logger';
@@ -110,7 +111,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
 
     if (currentOrgId) {
       const orgSlug = organisations.find(o => String(o.id) === currentOrgId)?.slug || currentOrgId;
-      navigate(`/organisations/${orgSlug}?tab=settings`);
+      navigate(`${routes.orgDetailLegacy({ orgId: orgSlug })}?tab=settings`);
     } else {
       setApiError('Feature flags management requires superadmin access. Please contact your administrator.');
       setLoading(false);

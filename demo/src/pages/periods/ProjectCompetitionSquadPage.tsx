@@ -5,6 +5,7 @@ import { PageContent, PageHeader } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
 import { api } from '@/api';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
+import { routes } from '../../routes';
 import styles from './ProjectCompetitionSquadPage.module.css';
 import { logger } from '@/utils/logger';
 
@@ -65,12 +66,12 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
   const breadcrumbs = useMemo(
     () => [
       { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-      { label: org?.name || 'Federation', onClick: () => navigate(`/organisations/${orgSlugOrId}`) },
+      { label: org?.name || 'Federation', onClick: () => navigate(routes.orgDetailLegacy({ orgId: orgSlugOrId })) },
       ...(isTeamRoute
         ? [
             {
               label: club?.name || 'Club',
-              onClick: () => navigate(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}`),
+              onClick: () => navigate(routes.orgProjectDetailLegacy({ orgId: orgSlugOrId, projectId: clubSlugOrId })),
             },
             { label: project?.name || 'Team', onClick: () => navigate(projectDetailPath) },
           ]

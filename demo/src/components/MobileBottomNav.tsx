@@ -18,6 +18,7 @@ import { getActiveContext, ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeC
 import { useAppSelection } from '../hooks/useAppSelection';
 import { useHapticFeedback } from '../hooks/useHapticFeedback';
 import { useCreateContext } from '../hooks/useCreateContext';
+import { routes } from '../routes';
 import CreateWizard from './CreateWizard';
 import type { CreateFlowType } from './CreateWizard/CreateWizardContext';
 import styles from './MobileBottomNav.module.css';
@@ -66,33 +67,33 @@ const MobileBottomNav = memo(function MobileBottomNav() {
 
   // ── Path resolution ─────────────────────────────────────────────────
   const teamPath = orgSlug && clubSlugOrId && teamSlugOrId
-    ? `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}`
+    ? routes.team({ orgId: orgSlug, clubId: clubSlugOrId, projectId: teamSlugOrId })
     : orgSlug && clubSlugOrId
-      ? `/${orgSlug}/${clubSlugOrId}`
-      : '/dashboard';
+      ? routes.club({ orgId: orgSlug, clubId: clubSlugOrId })
+      : routes.dashboard();
 
   // Season tab: active season under the current team, or fallback to team page
-  const seasonPath = activeSeasonSlug && teamPath !== '/dashboard'
-    ? `${teamPath}/${activeSeasonSlug}`
+  const seasonPath = activeSeasonSlug && teamPath !== routes.dashboard()
+    ? `${teamPath}/${encodeURIComponent(activeSeasonSlug)}`
     : teamPath;
 
   // Dynamic label: "Team" when on the team page itself, "Season" when deeper
   const isOnTeamPage = (() => {
     const segs = location.pathname.split('/').filter(Boolean);
-    if (teamPath !== '/dashboard' && location.pathname === teamPath) return true;
+    if (teamPath !== routes.dashboard() && location.pathname === teamPath) return true;
     // Exactly 3 segments = org/club/team (no season)
-    if (segs.length === 3 && teamPath !== '/dashboard') return true;
+    if (segs.length === 3 && teamPath !== routes.dashboard()) return true;
     return false;
   })();
   const hierarchyLabel = isOnTeamPage ? 'Team' : 'Season';
 
   // ── Tab definitions (excluding center + button) ─────────────────────
   const tabs = [
-    { id: 'home', icon: Home, label: 'Home', path: '/dashboard' },
+    { id: 'home', icon: Home, label: 'Home', path: routes.dashboard() },
     { id: 'season', icon: CalendarDays, label: hierarchyLabel, path: seasonPath },
     // center + button is rendered separately
-    { id: 'gallery', icon: Images, label: 'Gallery', path: '/studio' },
-    { id: 'profile', icon: UserCircle, label: 'Profile', path: '/profile' },
+    { id: 'gallery', icon: Images, label: 'Gallery', path: routes.studio() },
+    { id: 'profile', icon: UserCircle, label: 'Profile', path: routes.profile() },
   ];
 
   /** Reserved top-level paths that are NOT hierarchy (org/club/team/…) routes */
@@ -122,7 +123,7 @@ const MobileBottomNav = memo(function MobileBottomNav() {
 
     if (tab.id === 'season') {
       // Primary: teamPath resolved from useAppSelection
-      if (teamPath !== '/dashboard') {
+      if (teamPath !== routes.dashboard()) {
         return currentPath === teamPath || currentPath.startsWith(teamPath + '/');
       }
       // Fallback for cold deeplinks: detect vanity hierarchy paths before useAppSelection resolves

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
 import { formatRelativeTime, getDateUrgency } from '../utils/relativeTime';
+import { routes } from '../routes';
 import { SkeletonList } from './Skeleton';
 import SmartEmptyState from './SmartEmptyState';
 import { Zap, Calendar, MapPin, ChevronRight } from 'lucide-react';
@@ -101,7 +102,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
          return (
             <div
                key={match.id}
-               onClick={() => navigate(`/matches/${match.slug || match.id}`)}
+               onClick={() => navigate(routes.matchById({ matchId: match.slug || match.id }))}
                className={`p-16 bg-surface rounded-12 border mb-12 flex-between text-primary cursor-pointer ${styles.matchCard}`}
             >
                <div className="flex-1">
@@ -133,7 +134,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
                    variant="primary"
                    onClick={(e) => {
                      e.stopPropagation();
-                     navigate(`/matches/${match.slug || match.id}?tab=content`);
+                     navigate(routes.matchWithTab({ matchId: match.slug || match.id, tab: 'content' }));
                    }}
                    className="flex-row gap-4 py-8 px-12"
                  >

@@ -9,6 +9,7 @@ import { useUserRole } from '../../components/PermissionGuards';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { logger } from '@/utils/logger';
 import { api } from '../../api';
+import { routes } from '../../routes';
 
 import {
   type Organisation,
@@ -206,7 +207,7 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
     if (!orgKey || !desiredClubKey || !desiredTeamKey) return;
 
     navigate(
-      `/${encodeURIComponent(orgKey)}/${encodeURIComponent(desiredClubKey)}/${encodeURIComponent(desiredTeamKey)}${location.search || ''}`,
+      `${routes.team({ orgId: orgKey, clubId: desiredClubKey, projectId: desiredTeamKey })}${location.search || ''}`,
       { replace: true },
     );
   }, [club, clubSlugOrId, location.search, navigate, org, orgSlugOrId, shouldResolveClub, shouldResolveTeam, team, teamSlugOrId]);
@@ -220,7 +221,7 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
     const clubKey = String(club?.slug || clubSlugOrId || '').trim();
     const teamKey = String(team?.slug || teamSlugOrId || '').trim();
     if (!clubKey || !teamKey) return;
-    navigate(`/${encodeURIComponent(slug)}/${encodeURIComponent(clubKey)}/${encodeURIComponent(teamKey)}${location.search || ''}`, {
+    navigate(`${routes.team({ orgId: slug, clubId: clubKey, projectId: teamKey })}${location.search || ''}`, {
       replace: true,
     });
   }, [club, clubSlugOrId, location.search, navigate, org?.slug, orgSlugOrId, resolvedOrgSlug, shouldResolveOrg, team, teamSlugOrId]);
