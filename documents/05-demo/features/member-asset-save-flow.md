@@ -169,3 +169,11 @@ python manage.py repair_member_assets --from-id <UUID> --to-id <UUID> --commit
 | `demo/src/hooks/useAssetGeneration.ts` | `submit()`, polling, `acceptVariant()` |
 | `src/projects/management/commands/repair_member_assets.py` | Management command voor data-reparatie |
 | `scripts/repair_member_assets.py` | Django shell helper script (alternatief) |
+
+---
+
+## Gerelateerde docs
+
+- [generative-pipeline.md](generative-pipeline.md) — AI asset generation pipeline
+- [branding-tokens.md](branding-tokens.md) — Brand assets gebruikt bij generatie
+- [project-hierarchy.md](project-hierarchy.md) — ProjectMembership metadata structuur

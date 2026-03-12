@@ -287,3 +287,11 @@ python manage.py seed_myapp --dry-run
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0.0 | 2026-02-04 | Initial guide |
+
+---
+
+## Gerelateerde docs
+
+- [application-architecture.md](application-architecture.md) — Overzicht alle apps en models
+- [project-hierarchy.md](project-hierarchy.md) — Project/club/team structuur
+- [../data/tables.md](../data/tables.md) — Database schema + FK relaties

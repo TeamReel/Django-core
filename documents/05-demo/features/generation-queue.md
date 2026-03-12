@@ -281,3 +281,11 @@ Tabel `generative_job` is aanwezig in productie.
 2. **Geen automatische opruiming** — oude jobs worden niet automatisch verwijderd. Dit kan later via een dagelijkse cron worden toegevoegd (vergelijkbaar met de `retention_days` logica in GenerationRequest).
 3. **Geen re-run knop** — mislukte jobs kunnen niet direct opnieuw worden gestart via de UI.
 4. **Geen per-project filtering in de UI** — de hook ondersteunt `project_id` als parameter, maar de ApprovalsPage toont momenteel alle jobs van de ingelogde gebruiker.
+
+---
+
+## Gerelateerde docs
+
+- [generative-pipeline.md](generative-pipeline.md) — Volledige generative engine (executors, provider cascade, asset pipeline)
+- [credits-transactions.md](credits-transactions.md) — Credit reserve/settle bij generatie
+- [video-processing.md](video-processing.md) — Video pipeline (downstream van generatie)

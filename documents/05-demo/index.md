@@ -141,7 +141,7 @@ Complete documentation for the TeamReel web application — frontend design syst
 ## Regenerating Auto-Generated Docs
 
 ```powershell
-$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@maglev.proxy.rlwy.net:32345/railway"
+$env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
 python scripts/generate_demo_docs.py
 ```
 
@@ -164,8 +164,8 @@ Archived docs in [archive/](archive/) — implemented plans, superseded data dum
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 4.5.0 | 2026-03-12 | 8 new feature docs: generative pipeline, video processing, notifications, branding, workflows, projects, RBAC, content templates |
-| 4.4.0 | 2026-03-12 | Data docs regenerated (maglev DB), credits-transactions + active-context feature docs, Laag 5 alignment fixed, infra apps expanded |
+| 4.5.0 | 2026-03-12 | 8 new feature docs, data docs regenerated from switchback (production), cross-refs added to all docs, broken links fixed |
+| 4.4.0 | 2026-03-12 | Data docs regenerated, credits-transactions + active-context feature docs, Laag 5 alignment fixed, infra apps expanded |
 | 4.3.0 | 2026-03-12 | Deep audit: phantom models fixed, 33 apps/40 ViewSets/~35 tasks verified, seeding-guide→features/, frontend-integration→archive/, stale markers |
 | 4.2.0 | 2026-03-12 | Docs-hygiene: dead code verwijderd, metrics 179→276 CSS Modules, xrefs fixed, plans/features gereorganiseerd |
 | 4.1.0 | 2026-03-12 | Added refactoring-status.md, updated metrics post-hardening+hygiene |
