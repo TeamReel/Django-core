@@ -3,7 +3,7 @@
 > Compleet overzicht van alle beschikbare AI-modellen per provider, hun pricing, token-schattingen en configuratie.
 > Doel: Makkelijk schakelen tussen modellen en begrijpen wat elk model kost.
 >
-> Last updated: 2026-02-22
+> Last updated: 2026-03-12
 > Gerelateerd: [ai-providers.md](ai-providers.md) | [media-templates.md](media-templates.md)
 
 ---
@@ -136,8 +136,8 @@ Pika 2.2 biedt geen model-selectie — het endpoint bepaalt het model. Resolutie
 
 | Model | ID | Duur | Resolutie | Prijs | Status |
 |-------|-----|------|-----------|-------|--------|
-| **Veo 3.1 Fast** | `veo-3.1-fast-generate-preview` | 4-8s | 720p/1080p | $0.15/video | ✅ **Huidig** |
-| **Veo 3.1 Standard** | `veo-3.1-generate-preview` | 4-8s | 720p-4K | $0.40/video | 🔶 Preview |
+| **Veo 3.1 Fast** | `veo-3.1-fast` | 4-8s | 720p/1080p | $0.15/video | ✅ **Huidig** |
+| **Veo 3.1 Standard** | `veo-3.1-generate` | 4-8s | 720p-4K | $0.60/video | ✅ Actief |
 | **Veo 3 Fast** | `veo-3.0-fast-generate-001` | 4-8s | 720p/1080p | $0.15/video | ✅ Stable |
 | **Veo 3 Standard** | `veo-3.0-generate-001` | 4-8s | 720p/1080p | $0.40/video | ✅ Stable |
 | **Veo 2** | `veo-2.0-generate-001` | 4-8s | 720p | $0.35/video | ⚠️ Legacy |
@@ -304,16 +304,16 @@ MODEL_REGISTRY = {
     },
     "veo": {
         "veo-3.1-fast": {
-            "model_id": "veo-3.1-fast-generate-preview",
+            "model_id": "veo-3.1-fast",
             "type": "video",
             "cost_per_video_usd": 0.15,
             "label": "Veo 3.1 Fast",
             "tier": "standard",
         },
         "veo-3.1": {
-            "model_id": "veo-3.1-generate-preview",
+            "model_id": "veo-3.1-generate",
             "type": "video",
-            "cost_per_video_usd": 0.40,
+            "cost_per_video_usd": 0.60,
             "label": "Veo 3.1 Standard",
             "tier": "premium",
         },

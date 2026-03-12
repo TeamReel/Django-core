@@ -2,7 +2,7 @@
 
 > Alle AI-providers die TeamReel gebruikt voor media-generatie: modellen, configuratie, kosten en integratie.
 >
-> Last updated: 2026-07-15
+> Last updated: 2026-03-12
 > Gerelateerd: [media-architecture.md](media-architecture.md) | [media-templates.md](media-templates.md)
 
 ---
@@ -60,7 +60,7 @@ TeamReel gebruikt een **provider-agnostisch pipeline model** voor AI-generatie. 
 | **MiniMax/Hailuo** | Video | `video-01` | `httpx` (raw) | `MINIMAX_API_KEY` + `MINIMAX_GROUP_ID` | ~$0.10/5s clip | ✅ Primary |
 | **Runway Gen** | Video | `gen4_turbo` / `gen4.5` | `runwayml` | `RUNWAYML_API_SECRET` | 5 credits/sec (~$0.05/sec) | ✅ Actief |
 | **Pika 2.2** | Video | `pika-2.2` | `fal-client` | `FAL_KEY` | $0.20/5s 720p, $0.45/5s 1080p | ✅ Actief |
-| **Google Veo** | Video | `veo-3.1` | `google-genai` | `GOOGLE_API_KEY` | Gratis (preview) | ⚠️ Fallback |
+| **Google Veo** | Video | `veo-3.1-fast` / `veo-3.1-generate` | `google-genai` | `GOOGLE_API_KEY` | $0.15–$0.60/video | ⚠️ Fallback |
 
 ---
 
@@ -211,7 +211,7 @@ Image-to-video: fal-ai/pika/v2.2/image-to-video
 | Eigenschap | Waarde |
 |------------|--------|
 | **Type** | Image-to-video |
-| **Model** | `veo-3.1` |
+| **Model** | `veo-3.1-fast` (standaard) / `veo-3.1-generate` (HQ) |
 | **SDK** | `google-genai>=1.0.0` |
 | **Auth** | `GOOGLE_API_KEY` (zelfde als Gemini) |
 | **Output** | MP4 |
@@ -382,7 +382,7 @@ Om een nieuwe video-provider toe te voegen (bijv. Kling, Luma):
 | 1080p content | **Pika** | Native 1080p, goede T2V kwaliteit |
 | Budget-vriendelijk | **MiniMax** | Laagste kosten per clip |
 | Text-to-video | **Pika** of **Runway** (gen4.5) | MiniMax I2V-focused |
-| Fallback/test | **Veo** | Gratis maar onbetrouwbaar |
+| Fallback/test | **Veo** | $0.15–$0.60 maar onbetrouwbaar voor portretten |
 
 ### Kostenmatrix (per 5s clip)
 
@@ -391,4 +391,4 @@ Om een nieuwe video-provider toe te voegen (bijv. Kling, Luma):
 | MiniMax | ~$0.10 | N/A |
 | Runway | ~$0.25 (5 credits) | ~$0.50 (10 credits) |
 | Pika | $0.20 | $0.45 |
-| Veo | Gratis (preview) | Gratis (preview) |
+| Veo | $0.15 (Fast) | $0.60 (Standard HQ) |

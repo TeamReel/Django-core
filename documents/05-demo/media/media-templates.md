@@ -14,6 +14,7 @@ Dit document beschrijft **Laag 4 — Content Generation**: de templates en pipel
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  Laag 5: Content Generation (DIT DOCUMENT)                      │
+│  (Bovenop de 4-laags media architectuur)                         │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
 │  │ MediaTemplate │  │ ContentType  │  │ SportConfig          │  │
 │  │ (lineup,      │  │ (lineup,     │  │ (football, hockey,   │  │

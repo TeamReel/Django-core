@@ -2,8 +2,10 @@
 
 > Hoe de lineup video en lineup flyer stap-voor-stap worden opgebouwd: welke bestanden, welke assets, welke pipeline.
 >
-> Last updated: 2026-02-19
+> Last updated: 2026-03-12
 > Gerelateerd: [media-architecture.md](media-architecture.md) · [media-templates.md](media-templates.md)
+>
+> **Scope:** Dit document beschrijft specifiek de lineup pipeline. Andere video services (goal celebrations, match flyers, team posters, then-vs-now) volgen vergelijkbare patronen maar zijn hier niet gedocumenteerd.
 
 ---
 

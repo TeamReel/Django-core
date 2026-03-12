@@ -1,7 +1,9 @@
 # Railway Services — TeamReel Productie
 
-**Last Updated:** 2026-02-23
+**Last Updated:** 2026-03-12
 **Status:** Live — 6 services + 2 managed datastores
+
+> **Note:** 4 Celery queues (`default`, `video_fast`, `video_slow`, `ai_generation`) verdeeld over 3 workers. `docker-compose.prod.yml` definieert slechts 1 celery worker — de 3-worker splitsing is Railway-specifiek (Procfile-based).
 
 ---
 
