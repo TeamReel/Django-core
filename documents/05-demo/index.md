@@ -1,7 +1,7 @@
 # TeamReel Web Application — Documentation
 
 **Last Updated:** 2026-03-12
-**Status:** v4.1
+**Status:** v4.2
 
 ---
 
@@ -30,6 +30,7 @@ Complete documentation for the TeamReel web application — frontend design syst
 | [frontend-design/mobile-patterns.md](frontend-design/mobile-patterns.md) | Touch targets, gestures, safe areas, responsive layouts |
 | [frontend-design/code-conventions.md](frontend-design/code-conventions.md) | Quality gates, review checklist, current metrics |
 | [frontend-design/refactoring-status.md](frontend-design/refactoring-status.md) | **Refactoring eindstatus** — 6 roadmaps, 69 fases, alle metrieken |
+| [frontend-design/mobile-app-blueprint.md](frontend-design/mobile-app-blueprint.md) | Mobile-first app design blueprint — richtlijnen vs huidige staat |
 
 ### Features & Architecture
 
@@ -39,7 +40,6 @@ Complete documentation for the TeamReel web application — frontend design syst
 | [features/generation-queue.md](features/generation-queue.md) | AI Generation Queue — GenerationJob lifecycle, Celery pipeline |
 | [features/member-asset-save-flow.md](features/member-asset-save-flow.md) | Asset save flow + stale closure fix pattern |
 | [features/members-batch-actions.md](features/members-batch-actions.md) | Batch operations on members + RBAC mapping |
-| [features/mobile-ux-gamification-analyse.md](features/mobile-ux-gamification-analyse.md) | Mobile UX analysis + gamification recommendations |
 
 ### Media & AI Pipeline
 
@@ -72,9 +72,8 @@ Complete documentation for the TeamReel web application — frontend design syst
 
 | Document | Purpose |
 |----------|---------|
-| [plans/frontend-refactoring-phases.md](plans/frontend-refactoring-phases.md) | Master frontend refactoring plan (phases 1-46) |
 | [plans/package-audit-report.md](plans/package-audit-report.md) | Package relevance audit (keep/archive) |
-| [plans/season-hub-refactor.md](plans/season-hub-refactor.md) | Season hub decomposition plan |
+| [plans/mobile-ux-gamification-analyse.md](plans/mobile-ux-gamification-analyse.md) | Mobile UX analysis + gamification recommendations |
 
 ---
 
@@ -84,19 +83,20 @@ Complete documentation for the TeamReel web application — frontend design syst
 05-demo/
 ├── index.md                  # This file
 ├── getting-started.md        # Integration guide + domain glossary
-├── frontend-design/          # Frontend design system (6 docs)
+├── frontend-design/          # Frontend design system (8 docs)
 │   ├── index.md
 │   ├── css-architecture.md
 │   ├── theming.md
 │   ├── component-library.md
 │   ├── mobile-patterns.md
+│   ├── mobile-app-blueprint.md
+│   ├── refactoring-status.md
 │   └── code-conventions.md
-├── features/                 # Features & architecture (5 docs)
+├── features/                 # Features & architecture (4 docs)
 │   ├── application-architecture.md
 │   ├── generation-queue.md
 │   ├── member-asset-save-flow.md
-│   ├── members-batch-actions.md
-│   └── mobile-ux-gamification-analyse.md
+│   └── members-batch-actions.md
 ├── media/                    # Media & AI pipeline (6 docs)
 │   ├── media-architecture.md
 │   ├── media-templates.md
@@ -112,10 +112,9 @@ Complete documentation for the TeamReel web application — frontend design syst
 │   ├── counts.md
 │   ├── hierarchy-compact.md
 │   └── frontend-integration.md
-├── plans/                    # Active plans (3 docs)
-│   ├── frontend-refactoring-phases.md
+├── plans/                    # Active plans (2 docs)
 │   ├── package-audit-report.md
-│   └── season-hub-refactor.md
+│   └── mobile-ux-gamification-analyse.md
 └── archive/                  # Historical reference
 ```
 
@@ -147,6 +146,7 @@ Archived docs in [archive/](archive/) — implemented plans, superseded data dum
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 4.2.0 | 2026-03-12 | Docs-hygiene: dead code verwijderd, metrics 179→276 CSS Modules, xrefs fixed, plans/features gereorganiseerd |
 | 4.1.0 | 2026-03-12 | Added refactoring-status.md, updated metrics post-hardening+hygiene |
 | 4.0.0 | 2026-03-04 | Reorganized: 7 root files → 2, merged schema+seeding+state → data/, added features/ |
 | 3.0.0 | 2026-03-04 | Added frontend-design/ (6 docs), archived 6 obsolete plans |
