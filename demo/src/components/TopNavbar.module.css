@@ -12,7 +12,7 @@
 }
 
 .nav {
-  background-color: var(--color-white, #fff);
+  background-color: var(--app-surface, #fff);
   border-bottom: 1px solid var(--app-border);
   position: fixed;
   top: 0;
@@ -162,7 +162,7 @@
 }
 
 .megaPanelInner {
-  background-color: var(--color-white, #fff);
+  background-color: var(--app-surface, #fff);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -311,7 +311,7 @@
   top: calc(100% + 12px);
   right: 0;
   min-width: 256px;
-  background-color: var(--color-white, #fff);
+  background-color: var(--app-surface, #fff);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -365,7 +365,7 @@
   top: 100%;
   right: 0;
   margin-top: var(--space-1);
-  background-color: var(--color-white, #fff);
+  background-color: var(--app-surface, #fff);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
@@ -470,7 +470,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--color-white, #fff);
+  background-color: var(--app-surface, #fff);
   border-top: 1px solid var(--app-border);
   overflow-y: auto;
   z-index: 999;

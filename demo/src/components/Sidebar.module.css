@@ -175,6 +175,14 @@
   padding-top: 56px;
 }
 
+/* Hide Panel B on tablet and mobile — CSS Module (un-layered) wins over
+   the @layer base ↔ @layer utilities conflict that kept .flex-col visible. */
+@media (max-width: 1023px) {
+  .panelB {
+    display: none;
+  }
+}
+
 /* ── Panel B header ── */
 .panelBHeader {
   padding: var(--space-3) var(--space-4) var(--space-2);
