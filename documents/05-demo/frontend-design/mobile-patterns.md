@@ -161,6 +161,7 @@ Active containers:
 | Component | Purpose |
 |-----------|---------|
 | **MobileBottomNav** | Fixed 5-item navigation bar |
+| **MobileTabBar** | Tab bar for sectioned mobile views (181 LOC) |
 | **MobileFilterSheet** | Bottom sheet for filter selection (swipe-to-dismiss) |
 | **SwipeableCard** | Card with swipe gesture actions |
 | **QuickActions** | Quick create actions (integrated in MobileBottomNav **+** button) |

@@ -818,6 +818,7 @@ In productie wordt dit JSON-object door `LineupSegmentBuilder` opgebouwd uit de 
 | Document | Beschrijving |
 |----------|-------------|
 | [media-architecture.md](media-architecture.md) | 4-laags media opslag model (FileAsset → MediaItem → BrandAsset → VideoJob) |
+| [../features/content-templates.md](../features/content-templates.md) | ContentTemplate + ContentField DB schema (feature-perspectief) |
 | [../04-modules/](../04-modules/) | Module-specifieke documentatie |
 | [schema/tables.md](schema/tables.md) | Database tabel structuur |
 | [glossary.md](glossary.md) | Domain concepten en naamgeving |

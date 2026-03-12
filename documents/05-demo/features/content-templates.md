@@ -134,3 +134,4 @@ ContentApproval → notification_routing (B17 event)
 - [generative-pipeline.md](generative-pipeline.md) — AI generation pipeline
 - [credits-transactions.md](credits-transactions.md) — Credits per template
 - [workflow-engine.md](workflow-engine.md) — Approval state machine
+- [../media/media-templates.md](../media/media-templates.md) — Visuele rendering pipeline (lineup flyers, match updates)
