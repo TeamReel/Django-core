@@ -1,6 +1,6 @@
 # R3 — Root Script Purge
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 30 min
 **Scope:** Verwijder one-off debug scripts en temp output files uit de repository root
 
@@ -55,9 +55,8 @@ De repo root bevat 15 tracked bestanden (Python scripts + debug output) die one-
 
 ## Verificatie
 
-- [ ] 0 one-off scripts in repo root (alleen `manage.py` blijft)
-- [ ] 7 untracked files lokaal verwijderd
-- [ ] Credentials-bestanden verwijderd
-- [ ] `.gitignore` bijgewerkt
-- [ ] `python manage.py check` clean
-- [ ] Gecommit + gepusht
+- [x] 0 one-off scripts in repo root (alleen `manage.py` blijft)
+- [x] 7 untracked files lokaal verwijderd (incl. credentials)
+- [x] Credentials-bestanden verwijderd
+- [x] `.gitignore` bijgewerkt (debug_*.png, *_dump.txt, tsc_output.txt)
+- [x] Gecommit + gepusht

@@ -89,6 +89,11 @@ backup_*
 # Temporary Inspection Scripts
 check_*.py
 
+# Debug output files
+debug_*.png
+*_dump.txt
+tsc_output.txt
+
 # Temporary demo audit outputs
 documents/05-demo/*-temp.md
 repro_lineup/

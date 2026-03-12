@@ -1,9 +1,0 @@
-Found 1 memberships for user a64e0cde-4cb5-400d-9677-eef2d7d26511
-
---- Membership ID: a64e0cde-4cb5-400d-9677-eef2d7d26511 ---
-Project: Ajax 1 (ID: 93)
-Intro variants keys: ['home_hand_up']
-
-Variant: home_hand_up
-Value type: <class 'dict'>
-Value: {'raw': 'members/a64e0cde-4cb5-400d-9677-eef2d7d26511/generated/output/member_intro_kit_type-home_style_variant-hand_up_1770816319_0_20260211_b6c5fc1e.mp4', 'specs': {'fps': 15, 'codec': 'vp9', 'width': 1080, 'format': 'webm', 'height': 1920, 'duration': 5.734, 'bg_removed': True, 'total_frames': 86}, 'processed': 'members/a64e0cde-4cb5-400d-9677-eef2d7d26511/processed/intro/home_hand_up_ad9d8950.webm', 'processed_at': '2026-02-13T21:38:54.547258+00:00', 'processing_state': 'processed'}
