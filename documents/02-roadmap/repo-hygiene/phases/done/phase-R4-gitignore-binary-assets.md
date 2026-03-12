@@ -1,6 +1,6 @@
 # R4 — Gitignore & Binary Assets
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 30 min
 **Scope:** Untrack binary assets uit git, update `.gitignore`, verwijder lokale debug directories
 
@@ -41,8 +41,8 @@ De 82 bestanden in `asc/` zijn samen ~50-100 MB aan binary data. Na `git rm --ca
 
 ## Verificatie
 
-- [ ] `git ls-files asc/` retourneert 0 resultaten
-- [ ] `local_lineup_test/` en `repro_lineup/` verwijderd
-- [ ] `.gitignore` bijgewerkt met alle patterns
-- [ ] Geen duplicaten in `.gitignore`
-- [ ] Gecommit + gepusht
+- [x] `git ls-files asc/` retourneert 0 resultaten (was 82)
+- [x] `local_lineup_test/` en `repro_lineup/` verwijderd
+- [x] `.gitignore` al up-to-date (asc/, local_lineup_test/, repro_lineup/ waren al aanwezig; debug_*.png toegevoegd in R3)
+- [x] Geen duplicaten in `.gitignore`
+- [x] Gecommit + gepusht
