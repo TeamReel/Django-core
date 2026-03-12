@@ -1,6 +1,6 @@
 # Navigation Architecture — Roadmap
 
-**Status:** 🔄 Actief (3/10 fases done)
+**Status:** 🔄 Actief (4/10 fases done)
 **Aangemaakt:** 2026-03-12
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -195,7 +195,7 @@ De hiërarchie Organisation → Club → Team → Season → Competition → Mat
 | navGroups dead code | ✅ | 0 | 0 | 0 | 0 |
 | Type-safe route usage | 0% | 80%+ | 90%+ | 95%+ | 100% |
 | Breadcrumbs | 0 | 0 | 0 | ✅ | ✅ |
-| createBrowserRouter | ❌ | ❌ | ❌ | ❌ | ✅ |
+| createBrowserRouter | ❌ | ❌ | ❌ | ✅ | ✅ |
 | Deep-link UI | ❌ | ❌ | ❌ | ✅ | ✅ |
 
 ---
