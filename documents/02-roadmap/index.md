@@ -37,6 +37,15 @@ The project is divided into **18 Development Phases**. Click a phase to see its 
 *   **[Phase 10: Content Engine Core](phases/done/phase-10-content-engine-core.md)** (Modules 039-044) ✅
 *   **Accelerated Modules** (045-049): B39, B40, B41, B37, B55 ✅
 
+### Frontend Improvement Roadmaps
+*   **[Design System Adoption](design-system-adoption/index.md)** (11/11 ✅)
+*   **[Frontend Tech Debt](frontend-tech-debt/index.md)** (12/12 ✅)
+*   **[Frontend Structural Debt](frontend-structural-debt/index.md)** (17/17 ✅)
+*   **[Frontend Final Cleanup](frontend-final-cleanup/index.md)** (12/12 ✅)
+*   **[Frontend Hardening](frontend-hardening/index.md)** (12/12 ✅)
+*   **[Navigation Architecture](navigation-architecture/index.md)** (0/10 🔄 Actief)
+*   **[Wizard Optimization](wizard-optimization/index.md)** (Actief)
+
 ### Planned Phases
 *   **[Phase 11: Frontend & Visual Development](phases/planned/phase-11-frontend-and-visual-development.md)** (Modules 045-047) 📋
 *   **[Phase 12: Workflows & Payments](phases/planned/phase-12-workflows-and-payments.md)** — B37 ✅, B36/B38 📋
