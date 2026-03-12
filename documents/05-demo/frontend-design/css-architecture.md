@@ -26,25 +26,34 @@ All global CSS lives in `demo/src/styles/`:
 
 | File | Purpose | Lines |
 |------|---------|-------|
-| `tokens.css` | Primitive design tokens (colors, spacing, type, motion) | ~150 |
-| `theme.css` | Semantic tokens per theme (light/dark) | ~200 |
-| `base.css` | CSS reset, global element styles, focus-visible | ~340 |
-| `utility.css` | Atomic utility classes | ~730 |
-| `layouts.css` | Page-level layout grids (dashboard, detail, gallery) | ~475 |
-| `responsive.css` | Media queries for sidebar, nav, modals | ~460 |
-| `design-system-interactive.css` | Micro-interactions, loading animations | ~170 |
+| `tokens.css` | Primitive design tokens (colors, spacing, type, motion) | ~205 |
+| `theme.css` | Semantic tokens per theme (light/dark) | ~133 |
+| `base.css` | CSS reset, global element styles, focus-visible | ~354 |
+| `utility.css` | Atomic utility classes | ~688 |
+| `layouts.css` | Page-level layout grids (dashboard, detail, gallery) | ~400 |
+| `responsive.css` | Media queries for sidebar, nav, modals | ~394 |
+| `design-system-interactive.css` | Micro-interactions, loading animations | ~141 |
 
-Import order in `index.css`:
+Import chain — `src/index.css` loads the core globals, `main.tsx` adds utility separately:
 
 ```css
+/* src/index.css */
+@layer base, layouts, utilities;
+
 @import './styles/tokens.css';
 @import './styles/theme.css';
 @import './styles/base.css';
-@import './styles/utility.css';
-@import './styles/layouts.css';
 @import './styles/responsive.css';
-@import './styles/design-system-interactive.css';
+@import './styles/layouts.css';
 ```
+
+```tsx
+// src/main.tsx — utility loaded separately for layer ordering
+import './index.css';
+import './styles/utility.css';
+```
+
+> `design-system-interactive.css` is loaded on-demand by `DesignSystemPage.tsx` only.
 
 ---
 
@@ -63,18 +72,21 @@ Import order in `index.css`:
 - **Motion:** `--duration-{speed}`, `--ease-{curve}`
 - **Shadows:** `--shadow-{depth}`
 
-### Color Palette (110 tokens)
+### Color Palette (140 tokens)
 
-Six 10-step scales, each from 50 (lightest) to 900 (darkest):
+Nine color scales — six full 10-step scales (50–900), three partial accent scales:
 
-| Palette | CSS prefix | Brand anchor | Hex |
-|---------|-----------|-------------|-----|
-| **Primary** (Ocean Teal) | `--color-primary-` | 400 | `#3B8EA5` |
-| **Neutral** (Navy → Ice) | `--color-neutral-` | 800 / 50 | `#1C355E` / `#EDF6FF` |
-| **Green** (Success) | `--color-green-` | 500 | `#06D6A0` |
-| **Red** (Error) | `--color-red-` | 400 | `#E63946` |
-| **Amber** (Warning) | `--color-amber-` | 300 | `#FFD166` |
-| **Blue** (Info) | `--color-blue-` | 500 | `#3b82f6` |
+| Palette | CSS prefix | Brand anchor | Hex | Steps |
+|---------|-----------|-------------|-----|-------|
+| **Primary** (Ocean Teal) | `--color-primary-` | 400 | `#3B8EA5` | 50–900 |
+| **Neutral** (Navy → Ice) | `--color-neutral-` | 800 / 50 | `#1C355E` / `#EDF6FF` | 50–900 |
+| **Green** (Success) | `--color-green-` | 500 | `#06D6A0` | 50–900 |
+| **Red** (Error) | `--color-red-` | 400 | `#E63946` | 50–900 |
+| **Amber** (Warning) | `--color-amber-` | 300 | `#FFD166` | 50–900 |
+| **Blue** (Info) | `--color-blue-` | 500 | `#3b82f6` | 50–900 |
+| **Indigo** (AI accent) | `--color-indigo-` | 500 | `#6366f1` | 300–500 |
+| **Violet** (AI gradient) | `--color-violet-` | 500 | `#8b5cf6` | 400–500 |
+| **Orange** (Alert) | `--color-orange-` | 500 | `#f97316` | 400–500 |
 
 ### Spacing Scale
 
@@ -136,7 +148,7 @@ Easing: `--ease-default`, `--ease-in`, `--ease-out`, `--ease-in-out`.
 
 ## Utility Classes (`utility.css`)
 
-~230 atomic classes organized by category. Use for layout scaffolding and quick styling. **Not** for component-specific styles.
+~249 atomic classes organized by category. Use for layout scaffolding and quick styling. **Not** for component-specific styles.
 
 ### When to use utilities vs CSS Modules
 
@@ -215,6 +227,8 @@ ComponentName.tsx            →  uses className={styles.root}
 5. **No `!important`** unless overriding a third-party library
 6. **Keep modules focused** — if a module exceeds ~150 lines, consider splitting the component.
 
+> ⚠️ **Known debt:** 8 CSS files currently exceed 500 lines (largest: `CreateWizard.module.css` at 1442). These are tracked for future splitting. See [refactoring-status.md](refactoring-status.md#known-debt).
+
 ### Module Distribution
 
 | Area | Count | Notes |
@@ -271,7 +285,7 @@ Active container query contexts: `gallery`, `stats`, `dashboard`, `card-grid`.
 
 ## Inline Styles — When Allowed
 
-Only **417 inline styles** remain (from 2535+). All are legitimate dynamic cases:
+Only **~220 inline styles** remain (from 2535+). All are legitimate dynamic cases:
 
 | Pattern | Example | Why inline? |
 |---------|---------|------------|

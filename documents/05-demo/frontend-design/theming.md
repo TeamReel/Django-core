@@ -1,6 +1,6 @@
 # Theming & Brand Identity
 
-> Last updated: 2026-03-04
+> Last updated: 2026-03-12
 
 ## Overview
 
@@ -9,9 +9,9 @@ TeamReel supports light and dark themes via **semantic tokens** that map to prim
 ## Theme Architecture
 
 ```
-tokens.css          →  Primitive palette (60 color tokens)
+tokens.css          →  Primitive palette (140 color tokens, 9 scales)
     ↓
-theme.css           →  Semantic mapping per theme (light/dark)
+theme.css           →  Semantic mapping per theme (99 semantic tokens)
     ↓
 CSS Modules/Utils   →  Reference semantic tokens only
 ```
@@ -135,7 +135,7 @@ Individual clubs have their own brand colors stored in `BrandProfile`. These are
 </div>
 ```
 
-This is one of the ~417 allowed inline style patterns — data-driven colors from the API cannot be expressed as static CSS.
+This is one of the ~220 allowed inline style patterns — data-driven colors from the API cannot be expressed as static CSS.
 
 ## Adding Theme Support to New Components
 

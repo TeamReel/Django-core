@@ -32,14 +32,14 @@ De TeamReel frontend codebase heeft 6 opeenvolgende refactoring-roadmaps doorlop
 
 | Metriek | Waarde |
 |---------|--------|
-| Productie-bestanden (`.ts`/`.tsx`) | 832 |
+| Productie-bestanden (`.ts`/`.tsx`) | 830 |
 | Test-bestanden (`.test.ts`/`.test.tsx`) | 187 |
 | CSS Modules (`.module.css`) | 276 |
-| Productie LOC | 119.918 |
+| Productie LOC | 119.622 |
 | Test LOC | 11.036 |
-| Totaal LOC | 130.954 |
-| Components (`.tsx` in `components/`) | 154 |
-| Pages (`.tsx` in `pages/`) | 294 |
+| Totaal LOC | 130.658 |
+| Components (`.tsx` in `components/`) | 153 |
+| Pages (`.tsx` in `pages/`) | 293 |
 | Custom hooks (`hooks/`) | 52 |
 
 ### Kwaliteit
@@ -48,15 +48,16 @@ De TeamReel frontend codebase heeft 6 opeenvolgende refactoring-roadmaps doorlop
 |---------|--------|--------|--------|
 | TypeScript errors | 0 | 0 | ✅ |
 | ESLint warnings/errors | 0 | 0 | ✅ |
-| Test suites passing | 187/187 | 100% | ✅ |
+| Test suites passing | 408/408 | 100% | ✅ |
 | Tests passing | 892/892 | 100% | ✅ |
-| Files > 500 lines | 0 | 0 | ✅ |
-| Files > 400 lines | 2 | < 5 | ✅ |
-| Inline styles (only dynamic) | ~417 | < 500 | ✅ |
-| `any` types | 0 | 0 | ✅ |
+| TSX files > 500 lines | 0 | 0 | ✅ |
+| TSX files > 400 lines | 2 | < 5 | ✅ |
+| CSS files > 500 lines | 8 | 0 | ⚠️ Known debt |
+| Inline styles (only dynamic) | ~220 | < 300 | ✅ |
+| `any` types | ~257 | 0 | ⚠️ Known debt |
 | `eslint-disable` comments | 0 | 0 | ✅ |
 | Hardcoded S3 URLs | 0 | 0 | ✅ |
-| `console.log` statements | 0 | 0 | ✅ |
+| `console.log` statements | 2 | 0 | ✅ (logger utility) |
 
 ### Dependencies
 
@@ -78,8 +79,8 @@ De TeamReel frontend codebase heeft 6 opeenvolgende refactoring-roadmaps doorlop
 
 Transformatie van ad-hoc styling naar een volledig token-based design system.
 
-- 110 design tokens (primitief + semantisch)
-- ~230 utility classes
+- 140 primitive design tokens + 99 semantic tokens
+- ~249 utility classes
 - 15 UI primitives (Card, Badge, Stack, Modal, etc.)
 - Light + Dark theme support
 - 8pt grid alignment
@@ -141,7 +142,7 @@ Tests, accessibility, performance.
 demo/src/
 ├── adapters/          # API client layer (fetch wrappers)
 ├── api/               # API service modules
-├── components/        # 154 shared components
+├── components/        # 153 shared components
 │   ├── ui/            # 15 UI primitives
 │   ├── AppShell/      # Main layout shell
 │   ├── Sidebar/       # Navigation sidebar
@@ -152,7 +153,7 @@ demo/src/
 │   ├── useCompetitionsData/   # Module pattern (folder + index.ts)
 │   ├── useMatchesData/        # Module pattern (folder + index.ts)
 │   └── ...
-├── pages/             # 294 route-level pages
+├── pages/             # 293 route-level pages
 │   ├── identity/      # Club/team management
 │   ├── work/          # Operational pages
 │   ├── studio/        # Content creation
@@ -160,9 +161,13 @@ demo/src/
 ├── providers/         # React contexts (Auth, Season, Theme, Org)
 ├── layouts/           # Page layout shells
 ├── styles/            # Global CSS + design tokens
-│   ├── design-tokens.css
-│   ├── utilities.css
-│   └── base.css
+│   ├── tokens.css
+│   ├── theme.css
+│   ├── base.css
+│   ├── utility.css
+│   ├── layouts.css
+│   ├── responsive.css
+│   └── design-system-interactive.css
 ├── utils/             # Shared utilities
 └── test/              # Test utilities + providers
 ```
@@ -172,7 +177,7 @@ demo/src/
 | Pattern | Implementatie |
 |---------|--------------|
 | **Styling** | CSS Modules + design tokens + utility classes |
-| **Routing** | React Router v6, 78 lazy-loaded routes |
+| **Routing** | React Router v6, 79 lazy-loaded routes |
 | **State** | React hooks + context (geen Redux) |
 | **API** | Custom `useApiBase` hook + typed fetch wrappers |
 | **Testing** | Vitest + @testing-library/react + @testing-library/user-event |
@@ -198,12 +203,39 @@ demo/src/
 
 ---
 
+## Known Debt
+
+Eerlijk gerapporteerde tech debt die uit de refactoring is overgebleven:
+
+### CSS files > 500 lines (8 bestanden)
+
+| Bestand | Regels | Reden |
+|---------|--------|-------|
+| `CreateWizard.module.css` | 1442 | 5-stap wizard met complexe layout per stap |
+| `TopNavbar.module.css` | 873 | Desktop + mobile + notification panels |
+| `ApprovalsPage.module.css` | 794 | Queue + tabs + approval cards |
+| `utility.css` | 688 | Globaal utility bestand — bewust groot |
+| `AIStudioPage.module.css` | 616 | Studio canvas + control panels |
+| `ProjectSeasonDetailPage.module.css` | 527 | Seizoen overzicht met veel tabs |
+| `GalleryMatchTimeline.module.css` | 526 | Timeline layout + image grid |
+| `SeasonMatchesTab.module.css` | 503 | Match cards + filters + sorting |
+
+**Plan:** CSS Module splitting als toekomstige taak. `utility.css` wordt bewust niet gesplitst (globale utility classes).
+
+### `any` types (~257)
+
+Voornamelijk in de API-adapter layer (`as any` bij generieke fetch responses) en enkele legacy hooks. TypeScript strict mode is aan maar de API client is niet volledig getypt.
+
+**Plan:** Geleidelijk vervangen door generieke typed responses per API module.
+
+---
+
 ## Wat Overblijft (nice-to-have, geen blockers)
 
 | Item | Prioriteit | Opmerking |
 |------|-----------|-----------|
 | 2 files ~400 regels | Low | `MatchWizard.tsx` (435) en `TeamOrganisationDetailPage.tsx` (406) — net onder de grens, complexe flows |
-| `LazyChartBoundary` ongebruikt | Low | Component bestaat maar wordt niet meer geïmporteerd na recharts-migratie |
+| MatchWizard V1/V2 coëxistentie | Medium | V1 (8 files) en V2 (16 files) bestaan naast elkaar. V1 types nog in gebruik door 2 pages |
 | E2E tests (Playwright) | Medium | Config aanwezig, maar geen actieve test suite |
 | Bundle size analyse | Low | Performance budget gedefinieerd, nog geen CI check |
 

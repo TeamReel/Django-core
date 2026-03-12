@@ -206,16 +206,17 @@ Before merging any frontend PR:
 | Metric | Value | Target | Status |
 |--------|-------|--------|--------|
 | CSS Modules | 276 | 30+ | ✅ Exceeded |
-| Inline styles | ~417 (all dynamic) | < 500 | ✅ Met |
-| Design tokens | 110 primitive + semantic | — | ✅ Complete |
-| Utility classes | ~230 | — | ✅ Complete |
+| Inline styles | ~220 (all dynamic) | < 300 | ✅ Met |
+| Design tokens | 140 primitive + 99 semantic | — | ✅ Complete |
+| Utility classes | ~249 | — | ✅ Complete |
 | UI primitives | 15 | 15 | ✅ Met |
 | TSX files > 500 lines | 0 | 0 | ✅ Met |
 | TSX files > 400 lines | 2 | < 5 | ✅ Met |
-| Global CSS files > 500 lines | 0 | 0 | ✅ Met |
+| CSS files > 500 lines | 8 | 0 | ⚠️ Known debt |
+| Global CSS files > 500 lines | 1 (utility.css: 688) | 0 | ⚠️ Known debt |
+| `any` types | ~257 | 0 | ⚠️ Known debt |
 | Test files | 187 | — | ✅ |
+| Test suites passing | 408/408 | 100% | ✅ |
 | Tests passing | 892/892 | 100% | ✅ |
-| TypeScript errors | 0 | 0 | ✅ |
-| ESLint errors | 0 | 0 | ✅ |
 
 > Volledige refactoring-analyse: [refactoring-status.md](refactoring-status.md)

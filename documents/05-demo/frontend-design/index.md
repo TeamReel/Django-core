@@ -36,12 +36,12 @@ This documentation defines TeamReel's frontend design system — the tokens, com
 │                   CSS Modules (276)                          │
 │  Component-scoped styles, token-driven                      │
 ├─────────────────────────────────────────────────────────────┤
-│  Utility Classes (~230)     │  Layouts + Responsive         │
+│  Utility Classes (~249)     │  Layouts + Responsive         │
 │  Atomic layout/type helpers │  Grid patterns, media queries │
 ├─────────────────────────────┴───────────────────────────────┤
 │  Theme Layer — Semantic tokens (light/dark)                 │
 ├─────────────────────────────────────────────────────────────┤
-│  Design Tokens — 110 primitive tokens (color/space/type)    │
+│  Design Tokens — 140 primitive + 99 semantic tokens         │
 ├─────────────────────────────────────────────────────────────┤
 │  Base & Reset — Normalize, focus, global defaults           │
 └─────────────────────────────────────────────────────────────┘
@@ -59,7 +59,7 @@ This documentation defines TeamReel's frontend design system — the tokens, com
 
 5. **Theme-aware by default** — Use semantic tokens (`--app-bg`, `--app-text`) so components work in both light and dark mode without changes.
 
-6. **Small files** — No TSX file > 500 lines. No CSS file > 500 lines. Extract, split, compose.
+6. **Small files** — No TSX file > 500 lines. CSS Modules > 500 lines = known debt (8 files, planned for splitting). Extract, split, compose.
 
 ## Quick Reference
 
@@ -95,13 +95,15 @@ Everything else → CSS Module with tokens
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| Design tokens | 110 primitive + semantic | ✅ |
+| Design tokens | 140 primitive + 99 semantic | ✅ |
 | CSS Modules | 276 | ✅ |
-| Utility classes | ~230 | ✅ |
+| Utility classes | ~249 | ✅ |
 | UI primitives | 15 | ✅ |
-| Inline styles | ~417 (all dynamic) | ✅ |
-| Files > 500 lines | 0 | ✅ |
-| Test files / tests | 187 / 892 | ✅ |
+| Inline styles | ~220 (all dynamic) | ✅ |
+| `any` types | ~257 (API layer — known debt) | ⚠️ |
+| TSX files > 500 lines | 0 | ✅ |
+| CSS files > 500 lines | 8 (known debt, split planned) | ⚠️ |
+| Test files / suites / tests | 187 / 408 / 892 | ✅ |
 | TypeScript errors | 0 | ✅ |
 | Themes | Light + Dark | ✅ |
 | Touch targets (44px) | Enforced | ✅ |

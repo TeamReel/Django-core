@@ -1,6 +1,6 @@
 # Mobile-First App Design — Blueprint
 
-> Last updated: 2026-03-04
+> Last updated: 2026-03-12
 > Status: **Active design document** — living reference for all frontend work
 > Roadmap: [02-roadmap/mobile-design/](../../02-roadmap/mobile-design/index.md)
 
@@ -25,7 +25,7 @@
 | Overlays: Quick view modals | ✅ Gebouwd | `NavbarQuickReviewModal`, `NavbarNotificationsModal` |
 | Stack navigatie (hiërarchie) | ✅ Gebouwd | `/:org/:club/:team/:season/:competition/:match` routes |
 | Season tab → actieve season | ✅ Gebouwd | `activeSeasonSlug` via `getActiveContext()` |
-| CSS Modules + `--app-*` tokens | ✅ Gebouwd | 179 modules, 110+ tokens, ~230 utilities |
+| CSS Modules + `--app-*` tokens | ✅ Gebouwd | 276 modules, 140 primitive + 99 semantic tokens, ~249 utilities |
 | Touch targets ≥ 44px | ✅ Gebouwd | `.touch-target` utility, `(hover: none)` media query |
 | Consistente spacing/typografie/tokens | ✅ Gebouwd | Full design system (tokens.css → theme.css → utility.css) |
 | Skeletons boven spinners | ✅ Gebouwd | Phase A1: 18 bestanden gemigreerd, 5 page-level composites, 0 spinners |
