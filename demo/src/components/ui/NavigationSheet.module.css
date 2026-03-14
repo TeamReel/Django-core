@@ -120,6 +120,33 @@
   text-overflow: ellipsis;
 }
 
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  border: none;
+  background: none;
+  color: var(--app-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--duration-fast) var(--ease-default);
+  white-space: nowrap;
+}
+
+.backButton:active {
+  opacity: 0.6;
+}
+
+@media (hover: hover) {
+  .backButton:hover {
+    opacity: 0.7;
+  }
+}
+
 .closeButton {
   display: flex;
   align-items: center;

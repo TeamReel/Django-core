@@ -22,7 +22,7 @@
  * ```
  */
 import React, { useEffect, useRef, useCallback, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, ChevronLeft } from 'lucide-react';
 import styles from './NavigationSheet.module.css';
 
 export interface NavigationSheetProps {
@@ -42,6 +42,12 @@ export interface NavigationSheetProps {
   desktopWidth?: string;
   /** Additional className on the sheet panel */
   className?: string;
+  /**
+   * iOS-style back button — when provided, replaces the × close button
+   * with a "‹ Vorige" back arrow. Used for child sheets that drill
+   * deeper from a parent sheet.
+   */
+  onBack?: () => void;
 }
 
 const CLOSE_DURATION = 200; // ms — matches CSS animation
@@ -63,6 +69,7 @@ export const NavigationSheet: React.FC<NavigationSheetProps> = ({
   footer,
   desktopWidth,
   className,
+  onBack,
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
@@ -172,14 +179,29 @@ export const NavigationSheet: React.FC<NavigationSheetProps> = ({
       >
         {/* Header */}
         <div className={styles.header}>
-          <div className={styles.headerLeft}>
-            {icon && <span className={styles.headerIcon}>{icon}</span>}
+          {onBack ? (
+            <button
+              className={styles.backButton}
+              onClick={onBack}
+              aria-label="Vorige"
+            >
+              <ChevronLeft size={20} />
+              <span>Vorige</span>
+            </button>
+          ) : (
+            <div className={styles.headerLeft}>
+              {icon && <span className={styles.headerIcon}>{icon}</span>}
+              <h2 className={styles.title}>{title}</h2>
+            </div>
+          )}
+          {onBack ? (
             <h2 className={styles.title}>{title}</h2>
-          </div>
+          ) : null}
           <button
             className={styles.closeButton}
             onClick={handleClose}
             aria-label="Close"
+            style={onBack ? { visibility: 'hidden' } : undefined}
           >
             <X size={20} />
           </button>

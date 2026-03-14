@@ -19,9 +19,11 @@ interface LineupSheetProps {
   isOpen: boolean;
   onClose: () => void;
   match: Match | null;
+  /** iOS-style back — returns to the parent (match) sheet */
+  onBack?: () => void;
 }
 
-export const LineupSheet: React.FC<LineupSheetProps> = ({ isOpen, onClose, match }) => {
+export const LineupSheet: React.FC<LineupSheetProps> = ({ isOpen, onClose, match, onBack }) => {
   const lineup = useLineupSheet(match);
 
   return (
@@ -29,7 +31,8 @@ export const LineupSheet: React.FC<LineupSheetProps> = ({ isOpen, onClose, match
       isOpen={isOpen}
       onClose={onClose}
       title="Opstelling"
-      icon={<Users size={18} />}
+      icon={onBack ? undefined : <Users size={18} />}
+      onBack={onBack}
     >
       <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center', color: 'var(--app-muted-text)' }}>Laden...</div>}>
         <MatchLineupTab

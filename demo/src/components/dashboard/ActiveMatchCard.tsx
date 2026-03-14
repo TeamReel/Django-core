@@ -400,6 +400,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
         isOpen={lineupSheetOpen}
         onClose={() => setLineupSheetOpen(false)}
         match={match}
+        onBack={() => { setLineupSheetOpen(false); setSheetOpen(true); }}
       />
     </>
   );
