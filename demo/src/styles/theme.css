@@ -40,6 +40,7 @@
   --app-primary: var(--app-link);               /* Ocean Teal — alias for link/action color */
   --app-primary-light: rgba(59, 142, 165, 0.08); /* Teal tint for hover/active states */
   --app-danger: var(--app-error);               /* Signal Red — alias for error */
+  --app-text-primary: var(--app-text);          /* Alias for primary text — used in wizards, cards, labels */
   --app-text-secondary: var(--app-muted-text);  /* Alias for muted text */
   --app-muted: var(--app-muted-text);           /* Alias for muted text */
   --app-background: var(--app-bg);              /* Alias for page background */
@@ -90,6 +91,7 @@
   --app-primary: var(--app-link);               /* Sky Blue in dark mode */
   --app-primary-light: rgba(76, 161, 255, 0.12); /* Blue tint for hover/active */
   --app-danger: var(--app-error);               /* Signal Red */
+  --app-text-primary: var(--app-text);          /* Alias for primary text — dark mode */
   --app-text-secondary: var(--app-muted-text);  /* Alias for muted text */
   --app-muted: var(--app-muted-text);           /* Alias for muted text */
   --app-background: var(--app-bg);              /* Alias for page background */
