@@ -4,9 +4,9 @@
  */
 
 import { fetchAllPages } from '../../utils/fetchAllPages';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { chunkArray, getTeamParentId } from '../../utils/directoryHelpers';
-import type { Activity } from '../../utils/directoryHelpers';
+import type { Activity, Period } from '../../utils/directoryHelpers';
 
 interface Team {
   id: string | number;
@@ -33,8 +33,8 @@ export async function fetchMatchesSeasons({
   selectedOrgId,
   teams,
   refreshKey,
-}: FetchSeasonsParams): Promise<any[]> {
-  const apiBaseUrl = getApiBaseUrl();
+}: FetchSeasonsParams): Promise<Period[]> {
+  const apiBaseUrl = getApiV1BaseUrl();
 
   const baseParams = new URLSearchParams();
   baseParams.set('page_size', '500');
@@ -53,8 +53,8 @@ export async function fetchMatchesSeasons({
           chunks.map(async (ids) => {
             const params = new URLSearchParams(baseParams);
             params.set('project_id__in', ids.join(','));
-            return await fetchAllPages<any>(
-              `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+            return await fetchAllPages<Period>(
+              `${apiBaseUrl}/periods/?${params.toString()}`,
               { credentials: 'include' },
               { ttlMs: 120_000, bypass: refreshKey > 0 },
             );
@@ -77,8 +77,8 @@ export async function fetchMatchesSeasons({
           chunks.map(async (ids) => {
             const params = new URLSearchParams(baseParams);
             params.set('project_id__in', ids.join(','));
-            return await fetchAllPages<any>(
-              `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+            return await fetchAllPages<Period>(
+              `${apiBaseUrl}/periods/?${params.toString()}`,
               { credentials: 'include' },
               { ttlMs: 120_000, bypass: refreshKey > 0 },
             );
@@ -95,8 +95,8 @@ export async function fetchMatchesSeasons({
     baseParams.set('organisation_id', selectedOrgId);
   }
 
-  const results = await fetchAllPages<any>(
-    `${apiBaseUrl}/api/v1/periods/?${baseParams.toString()}`,
+  const results = await fetchAllPages<Period>(
+    `${apiBaseUrl}/periods/?${baseParams.toString()}`,
     { credentials: 'include' },
     { ttlMs: 120_000, bypass: refreshKey > 0 },
   );
@@ -130,10 +130,10 @@ export async function fetchMatchesCompetitions({
   teams,
   refreshKey,
   getSelectedOrgIdForApi,
-}: FetchCompetitionsParams): Promise<any[]> {
+}: FetchCompetitionsParams): Promise<Period[]> {
   if (!selectedSeasonName) return [];
 
-  const apiBaseUrl = getApiBaseUrl();
+  const apiBaseUrl = getApiV1BaseUrl();
   const seasonIds = selectedSeasonIds;
   if (seasonIds.length === 0) return [];
 
@@ -149,8 +149,8 @@ export async function fetchMatchesCompetitions({
         chunks.map(async (ids) => {
           const params = new URLSearchParams(baseParams);
           params.set('project_id__in', ids.join(','));
-          return await fetchAllPages<any>(
-            `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+          return await fetchAllPages<Period>(
+            `${apiBaseUrl}/periods/?${params.toString()}`,
             { credentials: 'include' },
             { ttlMs: 120_000, bypass: refreshKey > 0 },
           );
@@ -179,8 +179,8 @@ export async function fetchMatchesCompetitions({
       if (orgIdForApi) params.set('organisation_id', orgIdForApi);
     }
 
-    return await fetchAllPages<any>(
-      `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+    return await fetchAllPages<Period>(
+      `${apiBaseUrl}/periods/?${params.toString()}`,
       { credentials: 'include' },
       { ttlMs: 120_000, bypass: refreshKey > 0 },
     );
@@ -220,7 +220,7 @@ export async function fetchMatches({
   orgLocked,
   getSelectedOrgIdForApi,
 }: FetchMatchesParams): Promise<Activity[]> {
-  const apiBaseUrl = getApiBaseUrl();
+  const apiBaseUrl = getApiV1BaseUrl();
 
   if (orgLocked && !selectedOrgId) {
     return [];
@@ -257,7 +257,7 @@ export async function fetchMatches({
   }
 
   const all = await fetchAllPages<Activity>(
-    `${apiBaseUrl}/api/v1/activities/?${params.toString()}`,
+    `${apiBaseUrl}/activities/?${params.toString()}`,
     { credentials: 'include' },
     {
       ttlMs: 20_000,

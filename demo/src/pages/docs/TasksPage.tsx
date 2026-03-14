@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import AppShell from '../../components/AppShell';
 import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Card, Badge, Alert, Spinner } from '@django-core/design-system';
-import { api } from '../../api';
+import { api } from '@/api';
 import styles from './TasksPage.module.css';
 import { logger } from '@/utils/logger';
 
@@ -86,7 +85,7 @@ export function TasksPage() {
   }, {} as Record<string, number>);
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title="Background Tasks"
         subtitle={isRefreshing ? "B15 Task Scheduling & Monitoring • Refreshing..." : "B15 Task Scheduling & Monitoring"}
@@ -164,7 +163,7 @@ export function TasksPage() {
           )}
         </div>
       </PageContent>
-    </AppShell>
+    </>
   );
 }
 

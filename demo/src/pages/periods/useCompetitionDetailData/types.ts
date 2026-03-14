@@ -3,8 +3,8 @@
  */
 import type { Dispatch, SetStateAction } from 'react';
 import type { NavigateFunction, Location } from 'react-router-dom';
-import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../../types/season';
-import type { Activity } from '../../../types/api/activity';
+import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '@/types/season';
+import type { Activity } from '@/types/api/activity';
 import type { PeriodEditRef, MatchRef, MemberRef, CreateMatchPayload } from '../useCompetitionMutations';
 
 /** Teamreel-specific match metadata nested under activity.metadata. */

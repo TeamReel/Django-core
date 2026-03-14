@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { logger } from '@/utils/logger';
 import { fetchAllPages } from '../../utils/fetchAllPages';
+import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { isSeasonPeriod, isCompetitionPeriod } from './orgDetailUtils';
 import {
     mergeUniqueById,
     type Project, type Period,
 } from './clubOrgDetailHelpers';
-import { api } from '../../api';
+import { api } from '@/api';
 
 /* ═══════════════════════════════════════════════════════════════
    useClubOrgHierarchy
@@ -22,6 +23,7 @@ interface Params {
 }
 
 export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDirectoryLists, clubIdForDirectoryLists }: Params) {
+    const apiV1 = getApiV1BaseUrl();
     // ── State ──
     const [hierarchyTeams, setHierarchyTeams] = useState<Project[]>([]);
     const [hierarchySeasonsByTeamId, setHierarchySeasonsByTeamId] = useState<Record<string, Period[]>>({});
@@ -43,7 +45,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
             const clubId = String(clubIdForDirectoryLists || '').trim();
             if (!clubId) return;
             try {
-                const data = await api.list<any>(`/projects/${encodeURIComponent(clubId)}/members/`, { pageSize: 1 });
+                const data = await api.list<Record<string, unknown>>(`/projects/${encodeURIComponent(clubId)}/members/`, { pageSize: 1 });
                 if (!cancelled) setHierarchyMembersCountForClub(data.count);
             } catch { if (!cancelled) setHierarchyMembersCountForClub(null); }
         };
@@ -60,8 +62,8 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
             setHierarchyLoading(true);
             setHierarchyError(null);
             try {
-                const teamsData = await api.list<any>(`/organisations/${encodeURIComponent(orgSlugForDirectoryLists)}/projects/`, { pageSize: 2000, params: { include_archived: true, parent_project__isnull: false } });
-                const teamsList: any[] = teamsData.results;
+                const teamsData = await api.list<Project>(`/organisations/${encodeURIComponent(orgSlugForDirectoryLists)}/projects/`, { pageSize: 2000, params: { include_archived: true, parent_project__isnull: false } });
+                const teamsList = teamsData.results;
                 const filteredTeams = teamsList
                     .filter((t) => {
                         const parent = t?.parent_id ?? t?.parent_project_id ?? (typeof t?.parent_project === 'object' ? t?.parent_project?.id : t?.parent_project) ?? (typeof t?.parent === 'object' ? t?.parent?.id : t?.parent);
@@ -85,9 +87,9 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                         const params = new URLSearchParams();
                         params.set('project_id__in', chunk.join(','));
                         params.set('page_size', '500');
-                        const typedData = await api.list<any>('/periods/', { pageSize: 500, params: { project_id__in: chunk.join(','), type: 'season' } });
+                        const typedData = await api.list<Period>('/periods/', { pageSize: 500, params: { project_id__in: chunk.join(','), type: 'season' } });
                         if (typedData.results.length > 0) return typedData.results;
-                        const untypedData = await api.list<any>('/periods/', { pageSize: 500, params: { project_id__in: chunk.join(',') } });
+                        const untypedData = await api.list<Period>('/periods/', { pageSize: 500, params: { project_id__in: chunk.join(',') } });
                         return untypedData.results.filter(isSeasonPeriod);
                     }),
                 );
@@ -110,7 +112,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                             const params = new URLSearchParams();
                             params.set('project_id__in', chunk.join(','));
                             params.set('page_size', '250');
-                            return await fetchAllPages<any>(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
+                            return await fetchAllPages<Period>(`${apiV1}/periods/?${params.toString()}`, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
                         }),
                     );
                     const allPeriods: Period[] = periodsChunks.flat();
@@ -123,7 +125,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                         arr.push(p);
                         childrenMap.set(key, arr);
                     }
-                    const getRecursiveActivitiesCount = (p: any): number => {
+                    const getRecursiveActivitiesCount = (p: Period): number => {
                         let count: number = Number(p?.activities_count ?? 0);
                         const children = childrenMap.get(String(p?.id));
                         if (children) for (const child of children) count += getRecursiveActivitiesCount(child);
@@ -170,7 +172,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                                 const tid = String(t?.id || '').trim();
                                 if (!tid) return null;
                                 try {
-                                    const data = await api.list<any>(`/projects/${encodeURIComponent(tid)}/members/`, { pageSize: 1 });
+                                    const data = await api.list<Record<string, unknown>>(`/projects/${encodeURIComponent(tid)}/members/`, { pageSize: 1 });
                                     return { teamId: tid, count: data.count };
                                 } catch { return { teamId: tid, count: 0 }; }
                             }),

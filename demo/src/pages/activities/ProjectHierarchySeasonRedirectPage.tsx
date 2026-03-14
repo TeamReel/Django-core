@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
-import { organisationsApi, projectsApi } from '../../api';
+import { organisationsApi, projectsApi } from '@/api';
 import { unwrapEnvelope } from '../../utils/apiEnvelope';
 import SeasonDetailPage from '../identity/SeasonDetailPage';
 

@@ -4,8 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type React from 'react';
 import { api, ApiError } from '@/api';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCsrfToken } from '../../utils/csrf';
+import { getApiV1BaseUrl, apiFetch } from '../../utils/apiFetch';
 import { getAssetUrl } from '../../hooks/brandProfileConstants';
 import type { EntityType, EntityData, BrandProfile, DesignToken } from './entityEditTypes';
 
@@ -72,15 +71,14 @@ export function useEntityEditData(
       if (!organisationId || !entityId) { setError('Organisation ID and entity ID required for uploads'); return null; }
       setUploading(true); setError(null);
       try {
-        // Kept as fetch — needs X-Organization-ID header not supported by api.upload
-        const apiBaseUrl = getApiBaseUrl();
+        const apiBaseUrl = getApiV1BaseUrl();
         const formData = new FormData();
         formData.append('file', file);
         formData.append('is_public', 'true');
         const pathPrefix = `logos/${entityId}`;
-        const fileRes = await fetch(`${apiBaseUrl}/api/v1/files/?path_prefix=${encodeURIComponent(pathPrefix)}`, {
-          method: 'POST', credentials: 'include',
-          headers: { 'X-Organization-ID': organisationId, 'X-CSRFToken': getCsrfToken() },
+        const fileRes = await apiFetch(`${apiBaseUrl}/files/?path_prefix=${encodeURIComponent(pathPrefix)}`, {
+          method: 'POST',
+          headers: { 'X-Organization-ID': organisationId, 'Content-Type': '' },
           body: formData,
         });
         if (!fileRes.ok) { const t = await fileRes.text(); throw new Error(`File upload failed: ${fileRes.status} - ${t}`); }
@@ -107,7 +105,7 @@ export function useEntityEditData(
           const endpoint = entityType === 'organisation'
             ? `/organisations/${entityId}/`
             : `/projects/${entityId}/`;
-          const data = await api.get<any>(endpoint);
+          const data = await api.get<EntityData>(endpoint);
           setEntityData(data); setOriginalEntityData(data);
         }
 
@@ -117,9 +115,9 @@ export function useEntityEditData(
           setOriginalTokens(initialBrandProfile?.tokens || []);
         } else {
           const qp = entityType === 'organisation' ? { organisation: organisationId || entityId } : { project: projectId || entityId };
-          const { results: profiles } = await api.list<any>('/branding/profiles/', { params: qp });
+          const { results: profiles } = await api.list<BrandProfile>('/branding/profiles/', { params: qp });
           if (profiles.length > 0) {
-            const d = await api.get<any>(`/branding/profiles/${profiles[0].id}/`);
+            const d = await api.get<BrandProfile>(`/branding/profiles/${profiles[0].id}/`);
             setBrandProfile(d); setTokens(d.tokens || []); setOriginalTokens(d.tokens || []);
           }
         }

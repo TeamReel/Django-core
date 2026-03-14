@@ -1,10 +1,11 @@
 /**
  * State management for useCreditsData hook
  */
-import { useState, useRef } from 'react';
+import { useRef, useMemo, useReducer } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
+import { formReducer, makeSetter } from '../../../../utils/formReducer';
 import type { CreditsBalance, UserCreditsBalance, Transaction, TabType } from '../creditsTypes';
 import type { WalletScope } from './types';
 
@@ -13,20 +14,62 @@ export function useCreditsState() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // ── Derived values (needed before reducer init) ──
+  const walletParam = searchParams.get('wallet');
+
   // ── State ──────────────────────────────────────────────────────────
-  const [credits, setCredits] = useState<CreditsBalance | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [personalCredits, setPersonalCredits] = useState<UserCreditsBalance | null>(null);
-  const [personalLoading, setPersonalLoading] = useState(false);
-  const [personalError, setPersonalError] = useState<string | null>(null);
-  const [personalRecentTransactions, setPersonalRecentTransactions] = useState<Transaction[]>([]);
-  const [activeTab, setActiveTab] = useState<TabType>('balance');
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [transactionsLoading, setTransactionsLoading] = useState(false);
-  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  interface CreditsState {
+    credits: CreditsBalance | null;
+    loading: boolean;
+    error: string | null;
+    personalCredits: UserCreditsBalance | null;
+    personalLoading: boolean;
+    personalError: string | null;
+    personalRecentTransactions: Transaction[];
+    activeTab: TabType;
+    transactions: Transaction[];
+    transactionsLoading: boolean;
+    recentTransactions: Transaction[];
+    allTransactions: Transaction[];
+    toastMessage: string | null;
+    scope: WalletScope;
+  }
+
+  const [s, dispatch] = useReducer(formReducer<CreditsState>, {
+    credits: null,
+    loading: true,
+    error: null,
+    personalCredits: null,
+    personalLoading: false,
+    personalError: null,
+    personalRecentTransactions: [],
+    activeTab: 'balance' as TabType,
+    transactions: [],
+    transactionsLoading: false,
+    recentTransactions: [],
+    allTransactions: [],
+    toastMessage: null,
+    scope: (() => {
+      if (walletParam === 'personal') return 'personal' as WalletScope;
+      if (walletParam === 'org') return 'org' as WalletScope;
+      return (context.organisation?.id ? 'org' : 'personal') as WalletScope;
+    })(),
+  });
+
+  const setCredits                    = useMemo(() => makeSetter(dispatch, 'credits'), [dispatch]);
+  const setLoading                    = useMemo(() => makeSetter(dispatch, 'loading'), [dispatch]);
+  const setError                      = useMemo(() => makeSetter(dispatch, 'error'), [dispatch]);
+  const setPersonalCredits            = useMemo(() => makeSetter(dispatch, 'personalCredits'), [dispatch]);
+  const setPersonalLoading            = useMemo(() => makeSetter(dispatch, 'personalLoading'), [dispatch]);
+  const setPersonalError              = useMemo(() => makeSetter(dispatch, 'personalError'), [dispatch]);
+  const setPersonalRecentTransactions = useMemo(() => makeSetter(dispatch, 'personalRecentTransactions'), [dispatch]);
+  const setActiveTab                  = useMemo(() => makeSetter(dispatch, 'activeTab'), [dispatch]);
+  const setTransactions               = useMemo(() => makeSetter(dispatch, 'transactions'), [dispatch]);
+  const setTransactionsLoading        = useMemo(() => makeSetter(dispatch, 'transactionsLoading'), [dispatch]);
+  const setRecentTransactions         = useMemo(() => makeSetter(dispatch, 'recentTransactions'), [dispatch]);
+  const setAllTransactions            = useMemo(() => makeSetter(dispatch, 'allTransactions'), [dispatch]);
+  const setToastMessage               = useMemo(() => makeSetter(dispatch, 'toastMessage'), [dispatch]);
+  const setScope                      = useMemo(() => makeSetter(dispatch, 'scope'), [dispatch]);
   const hasAutoSelectedRef = useRef(false);
 
   // ── Derived values ─────────────────────────────────────────────────
@@ -34,7 +77,6 @@ export function useCreditsState() {
   const userFilter = searchParams.get('user') || '';
   const dateFromFilter = searchParams.get('date_from') || '';
   const dateToFilter = searchParams.get('date_to') || '';
-  const walletParam = searchParams.get('wallet');
 
   const currentOrgId = context.organisation?.id ? String(context.organisation.id) : null;
   const currentOrgName = context.organisation?.name || '';
@@ -42,38 +84,31 @@ export function useCreditsState() {
   const isSuperAdmin = Boolean(user?.is_superuser) || user?.role === 'superadmin';
   const canSeeTestControls = !!user;
 
-  // ── Wallet scope (personal vs org) ─────────────────────────────────
-  const [scope, setScope] = useState<WalletScope>(() => {
-    if (walletParam === 'personal') return 'personal';
-    if (walletParam === 'org') return 'org';
-    return context.organisation?.id ? 'org' : 'personal';
-  });
-
   return {
     // Context
     context, organisations, switchContext, user,
     searchParams, setSearchParams,
 
     // State
-    credits, setCredits,
-    loading, setLoading,
-    error, setError,
-    personalCredits, setPersonalCredits,
-    personalLoading, setPersonalLoading,
-    personalError, setPersonalError,
-    personalRecentTransactions, setPersonalRecentTransactions,
-    activeTab, setActiveTab,
-    transactions, setTransactions,
-    transactionsLoading, setTransactionsLoading,
-    recentTransactions, setRecentTransactions,
-    allTransactions, setAllTransactions,
-    toastMessage, setToastMessage,
+    credits: s.credits, setCredits,
+    loading: s.loading, setLoading,
+    error: s.error, setError,
+    personalCredits: s.personalCredits, setPersonalCredits,
+    personalLoading: s.personalLoading, setPersonalLoading,
+    personalError: s.personalError, setPersonalError,
+    personalRecentTransactions: s.personalRecentTransactions, setPersonalRecentTransactions,
+    activeTab: s.activeTab, setActiveTab,
+    transactions: s.transactions, setTransactions,
+    transactionsLoading: s.transactionsLoading, setTransactionsLoading,
+    recentTransactions: s.recentTransactions, setRecentTransactions,
+    allTransactions: s.allTransactions, setAllTransactions,
+    toastMessage: s.toastMessage, setToastMessage,
     hasAutoSelectedRef,
 
     // Derived values
     sourceTypeFilter, userFilter, dateFromFilter, dateToFilter,
     walletParam, currentOrgId, currentOrgName,
     isSuperAdmin, canSeeTestControls,
-    scope, setScope,
+    scope: s.scope, setScope,
   };
 }

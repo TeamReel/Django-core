@@ -1,13 +1,13 @@
 import React from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
-import { projectsApi } from '../../api';
+import { projectsApi } from '@/api';
 import {
   normalizeVariantValue,
   getBestUrl,
   isLineupReady,
   isProcessing,
 } from '../../constants/assetProcessingSpecs';
-import type { MemberTabCommonProps } from './memberDetailUtils';
+import type { MemberTabCommonProps, MembershipRecord } from './memberDetailUtils';
 import {
   getVariantRawUrl,
   triggerAssetProcessing,
@@ -162,7 +162,7 @@ export function MemberPhotoCompositeTab({
                             if (isCancelling) {
                               try {
                                 const memberData = await projectsApi.getMember(project?.id || '', membershipId!);
-                                setMembership(memberData as any);
+                                setMembership(memberData as unknown as MembershipRecord);
                               } catch { /* best-effort */ }
                             } else {
                               const rawUrl = getVariantRawUrl(compositeVideoData) || '';

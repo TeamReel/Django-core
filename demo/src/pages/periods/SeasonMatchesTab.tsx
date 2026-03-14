@@ -11,7 +11,9 @@ import {
 } from 'lucide-react';
 import { logger } from '@/utils/logger';
 import { Card } from '@django-core/design-system';
-import { api } from '../../api';
+import { api } from '@/api';
+import type { MediaItem } from '@/types/api/media';
+import type { ContentItem } from '@/types/api/content';
 import { periodPathKey } from '../../utils/periodPath';
 import { CONTENT_TYPES } from '../../components/matchWizardTypes';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
@@ -167,8 +169,8 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
 
     try {
       const [mediaData, contentData] = await Promise.all([
-        api.get<any>(`/media/items/?activity=${matchId}&page_size=100`),
-        api.get<any>(`/content-generation/items/?activity=${matchId}&page_size=100`),
+        api.get<{ results?: MediaItem[]; count?: number }>(`/media/items/?activity=${matchId}&page_size=100`),
+        api.get<{ results?: ContentItem[]; count?: number }>(`/content-generation/items/?activity=${matchId}&page_size=100`),
       ]);
 
       let mediaCount = 0;

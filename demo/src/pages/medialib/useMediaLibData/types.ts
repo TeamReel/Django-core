@@ -4,8 +4,8 @@
  */
 
 import type { Dispatch, SetStateAction } from 'react';
-import type { BrandAsset } from '../../../hooks/useBrandAssets';
-import type { FileAsset, FileTypeFilter } from '../../../hooks/useFileAssets';
+import type { BrandAsset } from '@/hooks/useBrandAssets';
+import type { FileAsset, FileTypeFilter } from '@/hooks/useFileAssets';
 import type { HierarchyTab, OrganisationOption, ProjectOption, PreviewItem, MemberMediaItem } from '../medialibHelpers';
 
 export interface UseMediaLibDataReturn {

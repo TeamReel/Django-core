@@ -110,11 +110,11 @@ export function getAccessRoleColor(m: MemberRecord): string {
  */
 export function resolveMediaUrl(m: MemberRecord, slotId: string): string | null {
   // 1) Flat media URL
-  const flat = (m?.metadata?.teamreel_assets as Record<string, any>)?.media?.[slotId]?.url;
+  const flat = (m?.metadata?.teamreel_assets as Record<string, Record<string, Record<string, string>>> | undefined)?.media?.[slotId]?.url;
   if (flat) return getAssetUrl(flat);
 
   // 2) Per-variant structure
-  const tr: any = m?.metadata?.teamreel_assets || {};
+  const tr = (m?.metadata?.teamreel_assets || {}) as Record<string, Record<string, unknown>>;
   const VARIANT_MAP: Record<string, { branch: string; category: string }> = {
     closeup: { branch: 'images', category: 'closeup' },
     kit: { branch: 'images', category: 'fullbody' },
@@ -126,7 +126,7 @@ export function resolveMediaUrl(m: MemberRecord, slotId: string): string | null 
     if (branch && typeof branch === 'object') {
       for (const [_key, val] of Object.entries(branch)) {
         if (!val || typeof val !== 'object') continue;
-        const v = val as Record<string, any>;
+        const v = val as Record<string, unknown>;
         if (v.processed && typeof v.processed === 'string') return getAssetUrl(v.processed);
         if (v.raw && typeof v.raw === 'string') return getAssetUrl(v.raw);
       }

@@ -71,7 +71,7 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
 
   const breadcrumbs = useMemo(
     () => [
-      { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+      { label: 'Dashboard', onClick: () => navigate(routes.dashboard()) },
       { label: org?.name || 'Federation', onClick: () => navigate(routes.orgDetail({ orgId: orgSlugOrId })) },
       ...(isTeamRoute
         ? [

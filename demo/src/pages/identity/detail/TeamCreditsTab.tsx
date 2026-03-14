@@ -1,7 +1,7 @@
 import React from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
-import { Table } from '../../../shims/design-system';
-import GovernanceSummaryCard from '../../../components/Governance/GovernanceSummaryCard';
+import { Table } from '@/shims/design-system';
+import GovernanceSummaryCard from '@/components/Governance/GovernanceSummaryCard';
 import {
   useTeamCreditsData,
   formatCredits,

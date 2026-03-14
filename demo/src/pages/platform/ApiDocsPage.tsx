@@ -11,7 +11,6 @@ import {
   PageHeader,
   PageContent,
 } from '@django-core/page-templates';
-// import AppShell from '../../components/AppShell';
 
 /**
  * T020 - API Docs Page

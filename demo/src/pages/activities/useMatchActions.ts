@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 import type { MatchDetail, Participation, ContentItem } from './matchDetailTypes';
 import type { ContentTemplate } from '../identity/ContentGenerationModal';
 import { getEnvelopeData } from './matchDetailTypes';
@@ -50,6 +51,8 @@ export function useMatchActions(params: UseMatchActionsParams) {
     setSelectedTemplate, setSelectedContentTypeLabel, setIsContentModalOpen,
     setSelectedContentItem, setIsContentPreviewOpen,
   } = params;
+
+  const { pushToast } = useToast();
 
   // ── Media CRUD ──
   const handleDeleteMediaItem = useCallback(async (item: MatchMediaItem) => {
@@ -137,7 +140,7 @@ export function useMatchActions(params: UseMatchActionsParams) {
       setTimeout(() => setLineupSaveSuccess(false), 3000);
     } catch (e) {
       logger.error('Failed to save lineup', e);
-      alert(e instanceof Error ? e.message : 'Failed to save lineup');
+      pushToast({ message: e instanceof Error ? e.message : 'Failed to save lineup', type: 'error' });
     } finally {
       setLineupSaving(false);
     }

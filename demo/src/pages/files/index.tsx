@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { FileUpload, Card, Stack, Text, Button, Badge, Alert } from '@django-core/design-system';
 import type { FileUploadFile } from '@django-core/design-system';
-import AppShell from '../../components/AppShell';
-import { api } from '../../api';
+import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import styles from './index.module.css';
 
 interface FileAsset {
@@ -85,7 +85,7 @@ const FilesPage: React.FC = () => {
   const fetchFiles = async () => {
     try {
       setLoading(true);
-      const data = await api.get<any>('/files/');
+      const data = await api.get<{ results?: FileAsset[] }>('/files/');
       setFiles(data.results || data);
     } catch (err) {
       logger.debug('Loading demo mode files due to API unavailability', err);
@@ -126,7 +126,7 @@ const FilesPage: React.FC = () => {
 
         // Try API upload first
         try {
-            const data = await api.upload<any>('/files/', file, { is_public: 'false' });
+            const data = await api.upload<FileAsset>('/files/', file, { is_public: 'false' });
 
             // Update progress to success
             setActiveUploads(prev => prev.map(u => u.id === uploadId ? { ...u, status: 'success', progress: 100 } : u));
@@ -175,7 +175,7 @@ const FilesPage: React.FC = () => {
 
       } catch (err) {
         logger.error('Upload failed', err);
-        const errorMsg = err instanceof Error ? err.message : 'Upload failed';
+        const errorMsg = getErrorMessage(err);
         setError(errorMsg);
 
         // Update status to error
@@ -217,7 +217,7 @@ const FilesPage: React.FC = () => {
       setSuccess(`Demo download started for ${file.original_filename} (saved as demo-${file.original_filename}.txt)`);
     } catch (err) {
       logger.error('Download failed', err);
-      setError(err instanceof Error ? err.message : 'Download failed');
+      setError(getErrorMessage(err));
     }
   };
 
@@ -237,7 +237,7 @@ const FilesPage: React.FC = () => {
       setSuccess(`Successfully deleted ${file.original_filename} (demo mode)`);
     } catch (err) {
       logger.error('Delete failed', err);
-      setError(err instanceof Error ? err.message : 'Delete failed');
+      setError(getErrorMessage(err));
     }
   };
 
@@ -251,7 +251,7 @@ const FilesPage: React.FC = () => {
   };
 
   return (
-    <AppShell>
+    <>
       <div className={`bg-primary ${styles.page}`}>
         {/* Page Header */}
         <div className="p-24 border-bottom bg-surface">
@@ -403,7 +403,7 @@ const FilesPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 };
 

@@ -2,7 +2,7 @@
  * Data fetching for useUsersData hook
  */
 import { useEffect, useCallback } from 'react';
-import { api } from '../../../api';
+import { api } from '@/api';
 import { logger } from '@/utils/logger';
 import type { OrganisationOption, ProjectOption, UserListEntry } from './types';
 import { FALLBACK_ROLES } from './types';

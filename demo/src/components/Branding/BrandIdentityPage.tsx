@@ -7,6 +7,7 @@ import type { BrandProfile, BrandIdentityPageProps, DesignToken } from './brandI
 import { ColorPaletteSection, TypographySection, OtherTokensSection, BrandAssetsSection } from './BrandTokenSections';
 import { ProfileHeader, EmptyState } from './BrandProfileChrome';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import s from './BrandIdentityPage.module.css';
 
 export default function BrandIdentityPage({
@@ -35,7 +36,7 @@ export default function BrandIdentityPage({
       await fetchProfile();
     } catch (err) {
       logger.error('Failed to generate tokens', err);
-      setError(err instanceof Error ? err.message : 'Failed to generate tokens');
+      setError(getErrorMessage(err));
     } finally {
       setGeneratingTokens(false);
     }
@@ -50,7 +51,7 @@ export default function BrandIdentityPage({
       else if (organisationId) params.organisation = organisationId;
       else { setProfile(null); setLoading(false); return; }
 
-      const { results } = await api.list<any>('/branding/profiles/', { params });
+      const { results } = await api.list<BrandProfile>('/branding/profiles/', { params });
       if (results.length === 0) { setProfile(null); return; }
 
       const profileData = results[0];
@@ -62,7 +63,7 @@ export default function BrandIdentityPage({
       }
     } catch (err) {
       logger.error('Failed to load brand profile', err);
-      setError(err instanceof Error ? err.message : 'Failed to load brand profile');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

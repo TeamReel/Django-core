@@ -2,9 +2,10 @@
  * Event handlers for useUsersListData hook
  */
 import { useCallback } from 'react';
-import { api } from '../../../../api/client';
+import { api } from '@/api/client';
 import type { User, ProjectOption } from '../usersListTypes';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 
 export interface UserRow extends User {
   user?: User;
@@ -46,6 +47,8 @@ export function useUsersListHandlers(params: UseUsersListHandlersParams) {
     setStatusFilter, setRoleFilter, setIsAddMemberOpen, setSearchParams,
     setEditUser, setIsEditModalOpen, setUsers,
   } = params;
+
+  const { pushToast } = useToast();
 
   // ── Helpers ──────────────────────────────────────────────
   const getSelectedOrgSlug = useCallback(() => {
@@ -106,7 +109,7 @@ export function useUsersListHandlers(params: UseUsersListHandlersParams) {
 
   const onAddMember = useCallback(() => {
     if (!selectedOrgId) {
-      alert('Select a federation first to add a member.');
+      pushToast({ message: 'Select a federation first to add a member.', type: 'warning' });
       return;
     }
     setIsAddMemberOpen(true);
@@ -134,7 +137,7 @@ export function useUsersListHandlers(params: UseUsersListHandlersParams) {
   ) => {
     const orgSlug = getSelectedOrgSlug();
     if (!orgSlug) {
-      alert('Select a federation first.');
+      pushToast({ message: 'Select a federation first.', type: 'warning' });
       return;
     }
     if (!window.confirm(`Remove ${usernameLabel} from ${orgName}?`)) return;
@@ -143,7 +146,7 @@ export function useUsersListHandlers(params: UseUsersListHandlersParams) {
       await api.delete(`/organisations/${orgSlug}/members/${membershipId}/`);
     } catch (_err: unknown) {
       const err = _err as { message?: string };
-      alert(err?.message || `Failed to delete member`);
+      pushToast({ message: err?.message || 'Failed to delete member', type: 'error' });
       return;
     }
 
@@ -168,7 +171,7 @@ export function useUsersListHandlers(params: UseUsersListHandlersParams) {
     } catch (_err: unknown) {
       const err = _err as { message?: string };
       logger.error('Delete team member failed', err);
-      alert(err?.message || `Failed to remove member`);
+      pushToast({ message: err?.message || 'Failed to remove member', type: 'error' });
       return;
     }
 

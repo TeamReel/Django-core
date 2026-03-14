@@ -9,10 +9,11 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Card, Alert, Button } from '@django-core/design-system';
 import { ResponsiveGrid } from '../ui/ResponsiveGrid';
 import { api } from '@/api';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { getApiV1BaseUrl, apiFetch } from '../../utils/apiFetch';
 import { getAssetUrl } from '@/hooks/brandProfileConstants';
 import styles from './KitsTab.module.css';
 import { logger } from '@/utils/logger';
+import type { BrandAsset } from '@/types/api/branding';
 
 // ============================================================================
 // Types & Constants
@@ -57,8 +58,6 @@ interface KitsTabProps {
   onKitUploaded?: () => void;
 }
 
-import { getCsrfToken } from '../../utils/csrf';
-
 // ============================================================================
 // Component
 // ============================================================================
@@ -85,7 +84,7 @@ export function KitsTab({
     }
 
     try {
-      const { results } = await api.list<any>('/branding/assets/', { params: { profile: brandProfileId } });
+      const { results } = await api.list<BrandAsset>('/branding/assets/', { params: { profile: brandProfileId } });
       setKits(results.filter((a: { asset_type?: string }) => String(a.asset_type || '').startsWith('kit_')));
       setLoading(false);
     } catch (e) {
@@ -112,19 +111,18 @@ export function KitsTab({
     setError(null);
 
     try {
-      // Step 1: Upload file (kept as fetch — needs X-Organization-ID header)
-      const apiBaseUrl = getApiBaseUrl();
+      // Step 1: Upload file via apiFetch (auth + CSRF handled automatically)
+      const apiBaseUrl = getApiV1BaseUrl();
       const formData = new FormData();
       formData.append('file', file);
       formData.append('is_public', 'true');
 
       const pathPrefix = `kits/${projectSlug}/${kitTypeId}`;
-      const fileRes = await fetch(`${apiBaseUrl}/api/v1/files/?path_prefix=${encodeURIComponent(pathPrefix)}`, {
+      const fileRes = await apiFetch(`${apiBaseUrl}/files/?path_prefix=${encodeURIComponent(pathPrefix)}`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'X-Organization-ID': orgId,
-          'X-CSRFToken': getCsrfToken(),
+          'Content-Type': '',
         },
         body: formData,
       });
@@ -142,9 +140,9 @@ export function KitsTab({
       const existingKit = kits.find((k) => k.asset_type === kitTypeId);
 
       if (existingKit) {
-        await api.patch<any>(`/branding/assets/${existingKit.id}/`, { file: fileId });
+        await api.patch<BrandAsset>(`/branding/assets/${existingKit.id}/`, { file: fileId });
       } else {
-        await api.post<any>('/branding/assets/', {
+        await api.post<BrandAsset>('/branding/assets/', {
           profile: brandProfileId,
           file: fileId,
           asset_type: kitTypeId,

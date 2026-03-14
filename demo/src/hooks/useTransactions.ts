@@ -1,8 +1,5 @@
-import { useState, useEffect } from 'react';
 import { transactionsApi } from '@/api';
-import { logger } from '@/utils/logger';
-
-const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
+import { useAsync } from '@/hooks/useAsync';
 
 export interface Transaction {
   id: string;
@@ -28,36 +25,17 @@ interface UseTransactionsResult {
 }
 
 export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsParams): UseTransactionsResult {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { data, loading, error } = useAsync(
+    async () => {
+      if (!organisation_id) return [];
+      const { results } = await transactionsApi.list(
+        { organizationId: organisation_id },
+        { params: { ordering: '-timestamp' }, pageSize: limit },
+      );
+      return results as unknown as Transaction[];
+    },
+    [organisation_id, limit],
+  );
 
-  useEffect(() => {
-    if (!organisation_id) {
-      setLoading(false);
-      return;
-    }
-
-    const fetchTransactions = async () => {
-      try {
-        setLoading(true);
-
-        const { results } = await transactionsApi.list(
-          { organizationId: organisation_id },
-          { params: { ordering: '-timestamp' }, pageSize: limit },
-        );
-        setTransactions(results as unknown as Transaction[]);
-        setError(null);
-      } catch (err) {
-        logger.error('useTransactions error', err);
-        setError(err as Error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTransactions();
-  }, [organisation_id, limit]);
-
-  return { transactions, loading, error };
+  return { transactions: data || [], loading, error: error ? new Error(error) : null };
 }

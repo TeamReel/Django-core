@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Button } from '../../../shims/design-system';
+import { Card, Button } from '@/shims/design-system';
 import { Toast, type ToastProps } from './Toast';
 
 interface DemoToast {

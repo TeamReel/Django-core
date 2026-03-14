@@ -1,13 +1,13 @@
 import React from 'react';
 import { Alert, Badge } from '@django-core/design-system';
-import { SkeletonList } from '../../../components/Skeleton';
-import SmartEmptyState from '../../../components/SmartEmptyState';
+import { SkeletonList } from '@/components/Skeleton';
+import SmartEmptyState from '@/components/SmartEmptyState';
 import { Table } from '@/shims/design-system';
 import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
 import ProjectCreateModal from '../ProjectCreateModal';
 import { useClubsData } from './useClubsData';
-import { routes } from '../../../routes';
+import { routes } from '@/routes';
 import type { ProjectOption } from '../../work/WorkFilterBar';
 import styles from './ClubsList.module.css';
 import dp from './DirectoryPremium.module.css';

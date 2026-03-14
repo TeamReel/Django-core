@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
-import { SkeletonList } from '../../../components/Skeleton';
+import { SkeletonList } from '@/components/Skeleton';
 import co from './ContentOverview.module.css';
-import { generativeApi } from '../../../api';
-import type { GenerationJob } from '../../../hooks/useGenerationJobs';
+import { generativeApi } from '@/api';
+import type { GenerationJob } from '@/hooks/useGenerationJobs';
 
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

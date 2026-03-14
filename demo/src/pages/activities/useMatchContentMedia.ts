@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useCallback } from 'react';
 import { fetchFlags } from '../../utils/featureFlagsApi';
-import { mediaApi, contentApi } from '../../api';
+import { mediaApi, contentApi } from '@/api';
 import { logger } from '@/utils/logger';
 import type { MatchMediaItem } from '../../components/MediaAssetCard';
 import type { ContentItem, MatchDetail } from './matchDetailTypes';

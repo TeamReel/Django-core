@@ -3,10 +3,10 @@
  */
 import { useMemo, useCallback, useEffect } from 'react';
 import { logger } from '@/utils/logger';
-import { periodPathKey } from '../../../utils/periodPath';
-import { getActiveContext } from '../../../utils/activeContext';
-import type { Period, SeasonProject as Project } from '../../../types/season';
-import type { Activity } from '../../../types/api/activity';
+import { periodPathKey } from '@/utils/periodPath';
+import { getActiveContext } from '@/utils/activeContext';
+import type { Period, SeasonProject as Project } from '@/types/season';
+import type { Activity } from '@/types/api/activity';
 import type { MatchMetadata } from './types';
 
 interface UseDerivedParams {

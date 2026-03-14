@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import type { Activity } from '../../utils/directoryHelpers';
+import type { OrganisationOption, ProjectOption } from '../../pages/work/WorkFilterBar';
 
 vi.mock('../../utils/directoryHelpers', () => ({
   sortKey: (s: string) => s.toLowerCase().trim(),
@@ -20,23 +22,23 @@ vi.mock('../../utils/directoryHelpers', () => ({
 
 import { useDerivedMatches } from './derived';
 
-const makeMatch = (overrides: Record<string, any>) => ({
-  id: overrides.id || 'default',
-  title: overrides.title || 'Match',
+const makeMatch = (overrides: Record<string, unknown>): Activity => ({
+  id: (overrides.id as string) || 'default',
+  title: (overrides.title as string) || 'Match',
   activity_type: 'match',
-  start_time: overrides.start_time || '2025-06-15T14:00:00Z',
+  start_time: (overrides.start_time as string) || '2025-06-15T14:00:00Z',
   end_time: '2025-06-15T16:00:00Z',
   location: '',
   description: '',
-  project: overrides.project || { id: 'team-1', name: 'Heren 1' },
-  organisation: overrides.organisation || { id: 'org-1', name: 'KNVB' },
-  period: overrides.period || { name: 'Eredivisie', sport: null, parent_period: { name: 'Season 24/25' } },
+  project: (overrides.project as Activity['project']) || { id: 'team-1', name: 'Heren 1' },
+  organisation: (overrides.organisation as Activity['organisation']) || { id: 'org-1', name: 'KNVB', slug: 'knvb' },
+  period: (overrides.period as Activity['period']) || { id: 'p1', name: 'Eredivisie', sport: null, parent_period: { id: 'pp1', name: 'Season 24/25' } },
   ...overrides,
 });
 
-const ORGS = [{ id: 'org-1', name: 'KNVB' }];
-const CLUBS = [{ id: 'club-1', name: 'FC Example' }];
-const TEAMS = [
+const ORGS: Partial<OrganisationOption>[] = [{ id: 'org-1', name: 'KNVB' }];
+const CLUBS: Partial<ProjectOption>[] = [{ id: 'club-1', name: 'FC Example' }];
+const TEAMS: Partial<ProjectOption>[] = [
   { id: 'team-1', name: 'Heren 1', parent_id: 'club-1' },
   { id: 'team-2', name: 'Dames 1', parent_id: 'club-1' },
 ];
@@ -45,19 +47,19 @@ const DEFAULT_PARAMS = {
   statusFilter: 'all',
   sportFilter: 'all',
   variantFilter: 'all',
-  organisations: ORGS as any[],
-  clubs: CLUBS as any[],
-  teams: TEAMS as any[],
+  organisations: ORGS as OrganisationOption[],
+  clubs: CLUBS as ProjectOption[],
+  teams: TEAMS as ProjectOption[],
   selectedTeamId: null,
   selectedClubId: null,
 };
 
 describe('useDerivedMatches', () => {
-  const matches = [
+  const matches: Activity[] = [
     makeMatch({ id: 'm1', title: 'Match 1', project: { id: 'team-1' }, start_time: '2025-06-10T14:00:00Z' }),
     makeMatch({ id: 'm2', title: 'Match 2', project: { id: 'team-1' }, start_time: '2025-06-20T14:00:00Z' }),
     makeMatch({ id: 'm3', title: 'Match 3', project: { id: 'team-2' }, start_time: '2025-06-15T14:00:00Z' }),
-  ] as any[];
+  ];
 
   it('returns all matches when no filters applied', () => {
     const { result } = renderHook(() =>
@@ -72,7 +74,7 @@ describe('useDerivedMatches', () => {
       useDerivedMatches({ ...DEFAULT_PARAMS, matches, selectedTeamId: 'team-1' }),
     );
     expect(result.current.filteredMatches).toHaveLength(2);
-    expect(result.current.filteredMatches.every((m: any) => m.project?.id === 'team-1')).toBe(true);
+    expect(result.current.filteredMatches.every((m) => m.project?.id === 'team-1')).toBe(true);
   });
 
   it('filters by selectedClubId', () => {
@@ -90,7 +92,7 @@ describe('useDerivedMatches', () => {
     const { result } = renderHook(() =>
       useDerivedMatches({
         ...DEFAULT_PARAMS,
-        matches: [pastMatch, futureMatch] as any[],
+        matches: [pastMatch, futureMatch],
         statusFilter: 'active',
       }),
     );
@@ -105,7 +107,7 @@ describe('useDerivedMatches', () => {
     const { result } = renderHook(() =>
       useDerivedMatches({
         ...DEFAULT_PARAMS,
-        matches: [pastMatch, futureMatch] as any[],
+        matches: [pastMatch, futureMatch],
         statusFilter: 'past',
       }),
     );

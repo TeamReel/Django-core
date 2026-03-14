@@ -2,7 +2,7 @@
  * UserDetailPage — Orchestrator. Routes between tabs and renders lightweight
  * Balance/Transactions tabs inline. Heavy tabs are delegated to sub-components.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { Alert, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 
@@ -15,9 +15,11 @@ import { UserDetailOverviewTab } from './UserDetailOverviewTab';
 import { UserDetailIdentityTab } from './UserDetailIdentityTab';
 import { UserDetailMembershipTabs } from './UserDetailMembershipTabs';
 import { UserDetailActivityTabs } from './UserDetailActivityTabs';
+import { routes } from '../../routes';
 
 const UserDetailPage: React.FC = () => {
   const data = useUserDetailData();
+  const [actionError, setActionError] = useState<string | null>(null);
   const {
     userId, orgId, navigate, user, loading, error, userDisplayName, backPath,
     activeTab, setTab,
@@ -36,7 +38,7 @@ const UserDetailPage: React.FC = () => {
       <PageHeader
         title={userDisplayName}
         breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Dashboard', href: routes.dashboard() },
           ...(orgId ? [{ label: 'Federations', href: '/organisations' }] : []),
           ...(orgId ? [{ label: 'Members', href: backPath }] : [{ label: 'Users', href: backPath }]),
           { label: userDisplayName, current: true },
@@ -44,10 +46,11 @@ const UserDetailPage: React.FC = () => {
         actions={
           <div className="flex-row gap-10">
             <button type="button" onClick={() => {
+              setActionError(null);
               const orgIdForTxn = getPreferredOrganisationId();
-              if (!orgIdForTxn) { alert('Select an organisation first (context switcher), then try again'); return; }
-              if (!Number.isFinite(currentUserIdForTxn)) { alert('No current user id available'); return; }
-              if (!Number.isFinite(targetUserIdForTxn)) { alert('No target user id available'); return; }
+              if (!orgIdForTxn) { setActionError('Select an organisation first (context switcher), then try again'); return; }
+              if (!Number.isFinite(currentUserIdForTxn)) { setActionError('No current user id available'); return; }
+              if (!Number.isFinite(targetUserIdForTxn)) { setActionError('No target user id available'); return; }
               setIsCreateTxnModalOpen(true);
             }} className="app-action-button cta-btn cta-btn-primary" disabled={!user}>Create transaction</button>
             <button type="button" className="app-action-button cta-btn" onClick={() => setIsLinkModalOpen(true)} disabled={!user}>Add to…</button>
@@ -59,6 +62,7 @@ const UserDetailPage: React.FC = () => {
       />
 
       <PageContent>
+        {actionError && <Alert variant="warning" title="Action Error" style={{ marginBottom: 16 }}>{actionError}</Alert>}
         {activeTab === 'overview' && <UserDetailOverviewTab data={data} />}
         {activeTab === 'identity' && <UserDetailIdentityTab data={data} />}
 

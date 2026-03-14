@@ -8,23 +8,6 @@ export const getNextUrl = (raw: { data?: { next?: string | null }; next?: string
   return typeof next === 'string' ? next : '';
 };
 
-export const fetchAllPagesLocal = async <T = Record<string, unknown>>(url: string, opts: RequestInit, maxItems = 2000): Promise<T[]> => {
-  const all: T[] = [];
-  let nextUrl = url;
-  const seen = new Set<string>();
-
-  while (nextUrl && all.length < maxItems && !seen.has(nextUrl)) {
-    seen.add(nextUrl);
-    const res = await fetch(nextUrl, opts);
-    if (!res.ok) break;
-    const raw = await res.json().catch(() => null);
-    all.push(...extractList(raw));
-    nextUrl = getNextUrl(raw);
-  }
-
-  return all.slice(0, maxItems);
-};
-
 // ─── Project helpers ─────────────────────────────────────────────────────────
 
 export const getParentProjectId = (p: ProjectOption): string | null => {

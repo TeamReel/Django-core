@@ -102,7 +102,7 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}): UseGe
     params.set('limit', '100');
 
     try {
-      const data = await api.get<any>(`/generative/jobs/?${params}`);
+      const data = await api.get<GenerationJob[] | { results: GenerationJob[] }>(`/generative/jobs/?${params}`);
       const newJobs: GenerationJob[] = data.results ?? (Array.isArray(data) ? data : []);
 
       // Detect status changes and fire callback

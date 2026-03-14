@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { routes } from '../routes';
 import { useSignIn, useAuth } from '@django-core/auth-ui';
 import styles from './LoginPage.module.css';
 
@@ -7,15 +8,17 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const { signIn, isLoading, error } = useSignIn();
   const { user } = useAuth();
 
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      const next = searchParams.get('next');
+      navigate(next || routes.dashboard());
     }
-  }, [user, navigate]);
+  }, [user, navigate, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

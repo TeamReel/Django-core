@@ -8,7 +8,7 @@ vi.mock('@/utils/mediaHelpers', () => ({
   getMediaProcessingState: vi.fn(() => 'processed'),
 }));
 
-import { useMediaProgress } from '../../../pages/identity/useMediaProgress';
+import { useMediaProgress } from '@/pages/identity/useMediaProgress';
 
 const base = () => ({
   activeTabFromUrl: 'overview' as string,

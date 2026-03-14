@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { RouterAdapter } from '@django-core/context-switcher';
+import { routes } from '../routes';
 
 /**
  * React Router adapter for @django-core/context-switcher.
@@ -107,7 +108,7 @@ export function useReactRouterAdapter(): RouterAdapter {
       }
 
       // Return fallback path or dashboard
-      return options?.fallbackPath || '/dashboard';
+      return options?.fallbackPath || routes.dashboard();
     },
   }), [location.pathname, navigate]);
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import { useLocation, useNavigate, useParams, type NavigateFunction } from 'react-router-dom';
 import { type BreadcrumbSwitcherOption } from '@django-core/page-templates';
 
@@ -7,9 +7,11 @@ import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { unwrapEnvelope } from '../../utils/apiEnvelope';
 import { useUserRole } from '../../components/PermissionGuards';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { logger } from '@/utils/logger';
-import { api } from '../../api';
+import { api } from '@/api';
 import { routes } from '../../routes';
+import type { BrandProfile } from '@/types/api/branding';
 
 import {
   type Organisation,
@@ -58,6 +60,8 @@ export interface UseTeamDetailDataReturn {
   // Meta
   apiBaseUrl: string;
   isPlayer: boolean;
+  // Refetch
+  refetch: () => void;
 }
 
 export function useTeamDetailData(): UseTeamDetailDataReturn {
@@ -67,6 +71,7 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
   const { isPlayer } = useUserRole();
 
   const apiBaseUrl = getApiBaseUrl();
+  const apiV1 = getApiV1BaseUrl();
 
   const orgSlugOrId = String(orgId || '').trim();
   const clubSlugOrId = String(clubId || '').trim();
@@ -93,6 +98,9 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
   const [isProjectEditModalOpen, setIsProjectEditModalOpen] = useState(false);
   const [isProjectDetailModalOpen, setIsProjectDetailModalOpen] = useState(false);
   const [brandProfileId, setBrandProfileId] = useState<string | null>(null);
+
+  const [refreshKey, setRefreshKey] = useState(0);
+  const refetch = useCallback(() => setRefreshKey(k => k + 1), []);
 
   const [clubTeamsForSwitcher, setClubTeamsForSwitcher] = useState<Project[]>([]);
   const [clubTeamsForSwitcherLoading, setClubTeamsForSwitcherLoading] = useState(false);
@@ -164,7 +172,7 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
 
     void run();
     return () => { cancelled = true; };
-  }, [apiBaseUrl, clubSlugOrId, orgSlugOrId, teamSlugOrId, effectiveOrgSlug]);
+  }, [apiBaseUrl, clubSlugOrId, orgSlugOrId, teamSlugOrId, effectiveOrgSlug, refreshKey]);
 
   // ── ID / slug memos ──
   const orgIdForDirectoryLists = useMemo(() => String(org?.id || '').trim(), [org?.id]);
@@ -250,14 +258,14 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
           return parentId === clubIdForFilter;
         };
 
-        const directUrl = `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(String(clubIdForDirectoryLists))}&page_size=500&include_archived=true`;
+        const directUrl = `${apiV1}/projects/?parent_project=${encodeURIComponent(String(clubIdForDirectoryLists))}&page_size=500&include_archived=true`;
         const orgTeamsUrl = orgKey
-          ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgKey)}/projects/?page_size=250&include_archived=true&parent_project__isnull=false`
-          : `${apiBaseUrl}/api/v1/projects/?page_size=250&include_archived=true&parent_project__isnull=false`;
+          ? `${apiV1}/organisations/${encodeURIComponent(orgKey)}/projects/?page_size=250&include_archived=true&parent_project__isnull=false`
+          : `${apiV1}/projects/?page_size=250&include_archived=true&parent_project__isnull=false`;
 
         const [directResults, orgTeamsResults] = await Promise.all([
-          fetchAllPages<any>(directUrl, { credentials: 'include' }, { ttlMs: 60_000, bypass: true, maxItems: 5000 }),
-          fetchAllPages<any>(orgTeamsUrl, { credentials: 'include' }, { ttlMs: 60_000, bypass: true, maxItems: 5000 }),
+          fetchAllPages<Project>(directUrl, { credentials: 'include' }, { ttlMs: 60_000, bypass: true, maxItems: 5000 }),
+          fetchAllPages<Project>(orgTeamsUrl, { credentials: 'include' }, { ttlMs: 60_000, bypass: true, maxItems: 5000 }),
         ]);
 
         const merged = mergeUniqueById([...(directResults || []), ...(orgTeamsResults || [])]);
@@ -290,7 +298,7 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
 
     const loadBrandProfile = async () => {
       try {
-        const res = await api.list<any>(`/branding/profiles/`, { params: { project: team.id } });
+        const res = await api.list<BrandProfile>(`/branding/profiles/`, { params: { project: team.id } });
         const results = res.results || [];
         if (results.length > 0 && !cancelled) {
           setBrandProfileId(results[0]?.id || null);
@@ -363,5 +371,7 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
     backToClubHref, federationClubsHref,
     // Meta
     apiBaseUrl, isPlayer,
+    // Refetch
+    refetch,
   };
 }

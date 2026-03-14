@@ -28,6 +28,17 @@
   margin-bottom: var(--space-8);
 }
 
+.path {
+  display: inline-block;
+  padding: 2px 8px;
+  background-color: var(--info-box-bg, #f8f9fa);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-sm);
+  color: var(--app-error);
+  word-break: break-all;
+}
+
 .actions {
   display: flex;
   gap: var(--space-3);

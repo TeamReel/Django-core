@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { routes } from '../routes';
 import { Command, Star, Clock, Plus, ArrowRight } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 import { useNavFavorites, useNavRecents } from '../hooks/useNavItems';
@@ -31,7 +32,7 @@ export default function CommandPalette({
 
   const baseItems: CommandItem[] = useMemo(
     () => [
-      { id: 'dash', label: 'Dashboard', path: '/dashboard', kind: 'page' },
+      { id: 'dash', label: 'Dashboard', path: routes.dashboard(), kind: 'page' },
       { id: 'dir', label: 'Directory', path: '/directory', kind: 'page' },
       { id: 'profile', label: 'My Profile', path: '/preferences?tab=profile', kind: 'page' },
       { id: 'prefs', label: 'Preferences', path: '/preferences', kind: 'page' },

@@ -9,7 +9,7 @@ import { ChevronRight, Clock, Play, Check, AlertTriangle, RefreshCw } from 'luci
 import { useWizard } from '../../Wizard';
 import { useMatchWizard } from '../MatchWizardContext';
 import { useTemplatesData } from '../hooks';
-import { useMatchPhase } from '../../../hooks/useMatchPhase';
+import { useMatchPhase } from '@/hooks/useMatchPhase';
 import { CONTENT_TYPES, LINEUP_REQUIRED_SUBTYPES, HAS_OPTIONS_SUBTYPES, type ContentType } from '../types';
 import styles from '../MatchWizardV2.module.css';
 

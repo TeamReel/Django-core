@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Badge, Alert } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { Table } from '../../shims/design-system';
-import { api } from '../../api';
+import { api } from '@/api';
+import type { User } from '@/types/api/user';
 import {
   roleColumns, expectedPermissionKeys, permissionMatrix,
   formatPermissionLabel, permissionDescriptionFor, normalizeRoleKey,
@@ -35,10 +37,10 @@ export const PermissionsPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const userData = await api.get<any>('/auth/me/');
+        const userData = await api.get<User>('/auth/me/');
         setCurrentUserRole(userData.role);
 
-        const tree = await api.get<any>('/permissions/current/');
+        const tree = await api.get<Record<string, unknown>>('/permissions/current/');
         setPermissionsTree(tree);
 
         const keys: string[] = [];
@@ -57,7 +59,7 @@ export const PermissionsPage: React.FC = () => {
         setEffectivePermissionKeys(Array.from(new Set(keys.map(k => String(k).trim()).filter(Boolean))).sort());
       } catch (err) {
         logger.error('Failed to fetch permissions', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch permissions');
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
       }

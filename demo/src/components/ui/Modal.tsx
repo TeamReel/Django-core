@@ -85,6 +85,56 @@ export function Modal({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, handleKeyDown]);
 
+  // ------ Focus trapping ------
+  useEffect(() => {
+    if (!isOpen || !panelRef.current) return;
+
+    // Move focus into the panel on open
+    const panel = panelRef.current;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+
+    // Focus the first focusable element, or the panel itself
+    const focusable = panel.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    );
+    if (focusable.length > 0) {
+      focusable[0].focus();
+    } else {
+      panel.focus();
+    }
+
+    // Trap Tab inside the panel
+    const trapFocus = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const focusableEls = panel.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusableEls.length === 0) return;
+      const first = focusableEls[0];
+      const last = focusableEls[focusableEls.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', trapFocus);
+
+    return () => {
+      document.removeEventListener('keydown', trapFocus);
+      // Restore focus when modal closes
+      previouslyFocused?.focus?.();
+    };
+  }, [isOpen]);
+
   // ------ Body scroll lock ------
   useEffect(() => {
     if (!isOpen) return;
@@ -106,15 +156,17 @@ export function Modal({
       className="flex-center"
       style={overlayStyle}
       onClick={handleBackdropClick}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={title ? 'modal-title' : undefined}
+      role="presentation"
     >
       <div
         ref={panelRef}
         className={`bg-surface rounded-12 flex-col ${className}`}
         style={{ ...panelStyle, maxWidth: SIZE_MAP[size] }}
         onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? 'modal-title' : undefined}
+        tabIndex={-1}
       >
         {/* Header */}
         {(title || !preventClose) && (

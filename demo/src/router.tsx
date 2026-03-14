@@ -13,18 +13,22 @@
  *
  * @see https://reactrouter.com/en/main/routers/create-browser-router
  */
+import React, { Suspense } from 'react';
 import {
   createBrowserRouter,
   createRoutesFromElements,
   Route,
   Navigate,
+  Outlet,
 } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
+import { routes } from './routes';
 
 import AppShell from './layouts/AppShell';
 import MainLayout from './layouts/MainLayout';
 import { ProtectedRoute } from './components/PermissionGuards';
 import RouteErrorBoundary from './components/RouteErrorBoundary';
+import { SkeletonDetailPage, SkeletonTablePage, SkeletonGrid } from './components/SkeletonComposites';
 
 // Critical pages (eager load)
 import LoginPage from './pages/LoginPage';
@@ -61,7 +65,7 @@ import { getHierarchyRoutes, getIdentityRoutes, getAdminRoutes } from './appRout
 
 function RootRedirect() {
   const { user } = useAuth();
-  return user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
+  return user ? <Navigate to={routes.dashboard()} replace /> : <Navigate to="/login" replace />;
 }
 
 // =============================================================================
@@ -96,22 +100,32 @@ export const router = createBrowserRouter(
         <Route path="/matches" element={<ProtectedRoute><MatchesPage /></ProtectedRoute>} />
         <Route path="/matches/:matchId" element={<ProtectedRoute><LegacyMatchRedirectPage /></ProtectedRoute>} />
 
-        {/* Work hierarchy list pages */}
-        <Route path="/federations" element={<ProtectedRoute><FederationsPage /></ProtectedRoute>} />
-        <Route path="/clubs" element={<ProtectedRoute><ClubsPage /></ProtectedRoute>} />
-        <Route path="/teams" element={<ProtectedRoute><TeamsPage /></ProtectedRoute>} />
-        <Route path="/seasons" element={<ProtectedRoute><SeasonsPage /></ProtectedRoute>} />
-        <Route path="/competitions" element={<ProtectedRoute><CompetitionsPage /></ProtectedRoute>} />
+        {/* Work hierarchy list pages — Suspense: table skeleton */}
+        <Route element={<Suspense fallback={<SkeletonTablePage />}><Outlet /></Suspense>}>
+          <Route path="/federations" element={<ProtectedRoute><FederationsPage /></ProtectedRoute>} />
+          <Route path="/clubs" element={<ProtectedRoute><ClubsPage /></ProtectedRoute>} />
+          <Route path="/teams" element={<ProtectedRoute><TeamsPage /></ProtectedRoute>} />
+          <Route path="/seasons" element={<ProtectedRoute><SeasonsPage /></ProtectedRoute>} />
+          <Route path="/competitions" element={<ProtectedRoute><CompetitionsPage /></ProtectedRoute>} />
+        </Route>
 
-        {/* AI Studio & search */}
-        <Route path="/studio" element={<ProtectedRoute><AIStudioPage /></ProtectedRoute>} />
-        <Route path="/studio/videos" element={<Navigate to="/approvals?tab=video" replace />} />
-        <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+        {/* AI Studio & search — Suspense: grid skeleton */}
+        <Route element={<Suspense fallback={<SkeletonGrid columns={3} count={6} />}><Outlet /></Suspense>}>
+          <Route path="/studio" element={<ProtectedRoute><AIStudioPage /></ProtectedRoute>} />
+          <Route path="/studio/videos" element={<Navigate to="/approvals?tab=video" replace />} />
+          <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+        </Route>
 
-        {/* ── Route groups (bridge: spread legacy patterns) ── */}
-        {getHierarchyRoutes()}
-        {getIdentityRoutes()}
-        {getAdminRoutes()}
+        {/* ── Route groups — each with feature-specific Suspense boundary ── */}
+        <Route element={<Suspense fallback={<SkeletonDetailPage />}><Outlet /></Suspense>}>
+          {getHierarchyRoutes()}
+        </Route>
+        <Route element={<Suspense fallback={<SkeletonDetailPage />}><Outlet /></Suspense>}>
+          {getIdentityRoutes()}
+        </Route>
+        <Route element={<Suspense fallback={<SkeletonTablePage />}><Outlet /></Suspense>}>
+          {getAdminRoutes()}
+        </Route>
 
         {/* Error pages */}
         <Route path="/403" element={<ForbiddenPage />} />

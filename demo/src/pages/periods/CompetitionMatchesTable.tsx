@@ -5,10 +5,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 import { Table } from '../../shims/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
 import ct from './CompetitionMatchesTable.module.css';
-import { activitiesApi } from '../../api';
+import { activitiesApi } from '@/api';
 import type { Activity } from '../../types/api/activity';
 import type { MatchRef } from './useCompetitionMutations';
 
@@ -37,6 +38,7 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
   setSelectedEditMatch,
   setIsMatchEditModalOpen,
 }) => {
+  const { pushToast } = useToast();
   if (matchesLoading && !rows.length) {
     return <div className="text-sm text-gray-500 py-4 text-center">Loading matches…</div>;
   }
@@ -100,7 +102,7 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
                       try {
                         await activitiesApi.delete(String(m.id));
                         setMatches((prev) => prev.filter((x) => String(x.id) !== String(m.id)));
-                      } catch (e) { logger.error('Error deleting match', e); alert('Error deleting match'); }
+                      } catch (e) { logger.error('Error deleting match', e); pushToast({ message: 'Error deleting match', type: 'error' }); }
                     }}
                   >
                     Delete

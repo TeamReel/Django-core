@@ -5,7 +5,7 @@ import React from 'react';
 import { Button, Card } from '@django-core/design-system';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import { CompetitionMatchesTable } from './CompetitionMatchesTable';
-import { periodsApi } from '../../api';
+import { periodsApi } from '@/api';
 import type { Activity } from '../../types/api/activity';
 import type { MatchRef } from './useCompetitionMutations';
 import styles from './CompetitionOverviewTab.module.css';

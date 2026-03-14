@@ -12,7 +12,7 @@ export default function SettingsLandingPage() {
 
   const tiles: TileItem[] = [
     {
-      path: '/preferences?tab=profile',
+      path: '/profile',
       label: 'Preferences',
       description: 'Manage your personal settings and notifications',
       icon: Settings,

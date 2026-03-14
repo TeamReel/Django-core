@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { routes } from '../../routes';
 import {
   PageHeader,
   PageContent,
@@ -46,7 +47,7 @@ export const DirectoryPage: React.FC = () => {
           title="Directory"
           subtitle={subtitle}
           breadcrumbs={[
-            { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+            { label: 'Dashboard', onClick: () => navigate(routes.dashboard()) },
             { label: 'Directory', current: true },
           ]}
         />

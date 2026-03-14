@@ -8,6 +8,7 @@
 import React, { memo, useRef, useState } from 'react';
 import { Card, Text, Badge, Button } from '@django-core/design-system';
 import { Download, Share2, Trash2, X, Play, Pause, Maximize2, Clock, FileText, Tag, Calendar } from 'lucide-react';
+import { clickableProps } from '@/utils/a11y';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { formatFileSize } from '../../hooks/useFileAssets';
@@ -54,7 +55,7 @@ export const ContentCard = memo(function ContentCard({
   const scoreAway = item.extraction_metadata?.score_away as number | undefined;
 
   return (
-    <Card className="gallery-card p-0 overflow-hidden flex-col cursor-pointer" onClick={() => onPreview?.(item)}>
+    <Card className="gallery-card p-0 overflow-hidden flex-col cursor-pointer" onClick={() => onPreview?.(item)} {...clickableProps(() => onPreview?.(item))}>
       <div className="gallery-card-inner flex-col flex-1">
         {/* Thumbnail */}
         <div className={`gallery-card-thumb flex-center overflow-hidden relative border-bottom ${styles.thumbContainer}`}>
@@ -202,7 +203,7 @@ export function ContentPreviewModal({ item, onClose, onDownload, onShare, onDele
   };
 
   return (
-    <div className={styles.detailOverlay} onClick={onClose}>
+    <div className={styles.detailOverlay} onClick={onClose} role="presentation">
       <div className={styles.detailPanel} onClick={(e) => e.stopPropagation()} role="dialog">
 
         {/* Header */}

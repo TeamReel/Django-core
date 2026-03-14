@@ -37,7 +37,7 @@ type JsonCacheEntry = {
   inFlight?: Promise<unknown>;
 };
 
-const cache = new Map<string, CacheEntry<any>>();
+const cache = new Map<string, CacheEntry<unknown>>();
 const pageCache = new Map<string, JsonCacheEntry>();
 
 export function invalidateFetchAllPagesCache(prefix?: string) {
@@ -60,7 +60,7 @@ export function invalidateFetchAllPagesCache(prefix?: string) {
   }
 }
 
-async function fetchJsonWithCache(url: string, init: RequestInit, ttlMs: number, bypass: boolean): Promise<any> {
+async function fetchJsonWithCache(url: string, init: RequestInit, ttlMs: number, bypass: boolean): Promise<unknown> {
   const method = (init.method || 'GET').toUpperCase();
   const canCache = method === 'GET' && !init.body && !bypass;
   const key = `PAGE:GET:${url}`;

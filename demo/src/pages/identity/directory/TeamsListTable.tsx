@@ -1,7 +1,7 @@
 import React from 'react';
 import { Badge } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
-import { routes } from '../../../routes';
+import { routes } from '@/routes';
 import { isNumericId, isUuid } from './useTeamsListData';
 import type { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import styles from './TeamsListTable.module.css';

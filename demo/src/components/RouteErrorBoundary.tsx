@@ -8,6 +8,7 @@
  */
 import React from 'react';
 import { useRouteError, isRouteErrorResponse, useNavigate } from 'react-router-dom';
+import { routes } from '../routes';
 import { logger } from '../utils/logger';
 
 interface RouteErrorBoundaryProps {
@@ -58,7 +59,7 @@ export default function RouteErrorBoundary({ title }: RouteErrorBoundaryProps): 
   };
 
   const handleGoHome = () => {
-    navigate('/dashboard');
+    navigate(routes.dashboard());
   };
 
   const handleReload = () => {

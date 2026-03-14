@@ -1,10 +1,10 @@
 /**
  * SeasonContentTab types
  */
-import type { SeasonOrganisation as Organisation } from '../../../types/season';
+import type { SeasonOrganisation as Organisation } from '@/types/season';
 import type { ContentTemplate } from '../../identity/ContentGenerationModal';
 import type { ThenVsNowVideoType } from '../ThenVsNowModal';
-import type { VideoJob } from '../../../hooks/useVideoJobs';
+import type { VideoJob } from '@/hooks/useVideoJobs';
 
 /** Squad member record with metadata and media assets */
 export interface SquadMember {

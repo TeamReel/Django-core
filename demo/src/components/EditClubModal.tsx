@@ -65,7 +65,7 @@ export default function EditClubModal({
 
       // Use path_prefix to organize logos in S3: logos/{club_slug_or_id}/
       const pathPrefix = `logos/${club?.slug || club?.id || 'unknown'}`;
-      const fileData = await api.upload<any>(
+      const fileData = await api.upload<{ id: string; storage_path?: string }>(
         `/files/?path_prefix=${encodeURIComponent(pathPrefix)}`,
         file,
         { is_public: 'true' },

@@ -3,13 +3,14 @@
  * 7 useEffect hooks that fetch switcher options for each hierarchy level.
  * Keeps Breadcrumbs.tsx focused on route matching and crumbs building.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useReducer } from 'react';
 import type { BreadcrumbSwitcherOption } from '@django-core/page-templates';
 import { api } from '@/api';
 import { fetchAllPages } from '../utils/fetchAllPages';
 import { periodPathKey } from '../utils/periodPath';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { getApiV1BaseUrl } from '../utils/apiFetch';
 import { isSeasonPeriod, UUID_RE } from './breadcrumbHelpers';
+import { formReducer, makeSetter } from '../utils/formReducer';
 import type {
   ApiProject,
   ApiPeriod,
@@ -32,25 +33,54 @@ export function useBreadcrumbsData({
   effectiveMatchId,
   userDetailUserId,
 }: BreadcrumbsDataParams): BreadcrumbsDataReturn {
-  const [clubOptions, setClubOptions] = useState<BreadcrumbSwitcherOption[]>([]);
-  const [teamOptions, setTeamOptions] = useState<BreadcrumbSwitcherOption[]>([]);
-  const [loadingTeams, setLoadingTeams] = useState(false);
+  interface BreadcrumbsState {
+    clubOptions: BreadcrumbSwitcherOption[];
+    teamOptions: BreadcrumbSwitcherOption[];
+    loadingTeams: boolean;
+    seasonOptions: BreadcrumbSwitcherOption[];
+    loadingSeasons: boolean;
+    competitionOptions: BreadcrumbSwitcherOption[];
+    loadingCompetitions: boolean;
+    matchOptions: BreadcrumbSwitcherOption[];
+    loadingMatches: boolean;
+    userOptions: BreadcrumbSwitcherOption[];
+    loadingUsers: boolean;
+    memberOptions: BreadcrumbSwitcherOption[];
+    loadingMembers: boolean;
+    currentMemberName: string | null;
+  }
 
-  const [seasonOptions, setSeasonOptions] = useState<BreadcrumbSwitcherOption[]>([]);
-  const [loadingSeasons, setLoadingSeasons] = useState(false);
+  const [s, dispatch] = useReducer(formReducer<BreadcrumbsState>, {
+    clubOptions: [],
+    teamOptions: [],
+    loadingTeams: false,
+    seasonOptions: [],
+    loadingSeasons: false,
+    competitionOptions: [],
+    loadingCompetitions: false,
+    matchOptions: [],
+    loadingMatches: false,
+    userOptions: [],
+    loadingUsers: false,
+    memberOptions: [],
+    loadingMembers: false,
+    currentMemberName: null,
+  });
 
-  const [competitionOptions, setCompetitionOptions] = useState<BreadcrumbSwitcherOption[]>([]);
-  const [loadingCompetitions, setLoadingCompetitions] = useState(false);
-
-  const [matchOptions, setMatchOptions] = useState<BreadcrumbSwitcherOption[]>([]);
-  const [loadingMatches, setLoadingMatches] = useState(false);
-
-  const [userOptions, setUserOptions] = useState<BreadcrumbSwitcherOption[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
-
-  const [memberOptions, setMemberOptions] = useState<BreadcrumbSwitcherOption[]>([]);
-  const [loadingMembers, setLoadingMembers] = useState(false);
-  const [currentMemberName, setCurrentMemberName] = useState<string | null>(null);
+  const setClubOptions          = useMemo(() => makeSetter(dispatch, 'clubOptions'), [dispatch]);
+  const setTeamOptions          = useMemo(() => makeSetter(dispatch, 'teamOptions'), [dispatch]);
+  const setLoadingTeams         = useMemo(() => makeSetter(dispatch, 'loadingTeams'), [dispatch]);
+  const setSeasonOptions        = useMemo(() => makeSetter(dispatch, 'seasonOptions'), [dispatch]);
+  const setLoadingSeasons       = useMemo(() => makeSetter(dispatch, 'loadingSeasons'), [dispatch]);
+  const setCompetitionOptions   = useMemo(() => makeSetter(dispatch, 'competitionOptions'), [dispatch]);
+  const setLoadingCompetitions  = useMemo(() => makeSetter(dispatch, 'loadingCompetitions'), [dispatch]);
+  const setMatchOptions         = useMemo(() => makeSetter(dispatch, 'matchOptions'), [dispatch]);
+  const setLoadingMatches       = useMemo(() => makeSetter(dispatch, 'loadingMatches'), [dispatch]);
+  const setUserOptions          = useMemo(() => makeSetter(dispatch, 'userOptions'), [dispatch]);
+  const setLoadingUsers         = useMemo(() => makeSetter(dispatch, 'loadingUsers'), [dispatch]);
+  const setMemberOptions        = useMemo(() => makeSetter(dispatch, 'memberOptions'), [dispatch]);
+  const setLoadingMembers       = useMemo(() => makeSetter(dispatch, 'loadingMembers'), [dispatch]);
+  const setCurrentMemberName    = useMemo(() => makeSetter(dispatch, 'currentMemberName'), [dispatch]);
 
   const isMemberDetailRoute = useMemo(() => {
     const compId = String(effectiveCompetitionSlugOrId || '').trim();
@@ -66,7 +96,7 @@ export function useBreadcrumbsData({
       try {
         let currentUserOption: BreadcrumbSwitcherOption | null = null;
         try {
-          const u = await api.get<any>(`/admin/users/${encodeURIComponent(userDetailUserId)}/`);
+          const u = await api.get<ApiUser>(`/admin/users/${encodeURIComponent(userDetailUserId)}/`);
           const id = String(u?.id || userDetailUserId).trim();
           const name = `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim();
           const email = String(u?.email || '').trim();
@@ -74,9 +104,9 @@ export function useBreadcrumbsData({
           currentUserOption = { id, label };
         } catch { /* ignore */ }
 
-        const apiBaseUrl = getApiBaseUrl();
-        const users = await fetchAllPages<any>(
-          `${apiBaseUrl}/api/v1/admin/users/?page_size=200`,
+        const apiBaseUrl = getApiV1BaseUrl();
+        const users = await fetchAllPages<ApiUser>(
+          `${apiBaseUrl}/admin/users/?page_size=200`,
           { credentials: 'include' },
           { ttlMs: 60_000, cacheKey: 'breadcrumbs:users', maxItems: 200 }
         );
@@ -109,7 +139,7 @@ export function useBreadcrumbsData({
     if (!effectiveOrg) return;
     const fetchClubs = async () => {
       try {
-        const { results } = await api.list<any>(
+        const { results } = await api.list<ApiProject>(
           `/organisations/${encodeURIComponent(effectiveOrg)}/projects/`,
           { params: { parent_project__isnull: 'true' }, pageSize: 250 },
         );
@@ -134,13 +164,13 @@ export function useBreadcrumbsData({
       setLoadingTeams(true);
       setTeamOptions([]);
       try {
-        const resolvedClub = (clubOptions || []).find((o) => {
+        const resolvedClub = (s.clubOptions || []).find((o) => {
           const slug = String(o?.slug || '').trim();
           const id = String(o?.id || '').trim();
           return slug === effectiveClub || id === effectiveClub;
         });
         const clubIdForQuery = String(resolvedClub?.id || effectiveClub).trim();
-        const { results } = await api.list<any>(
+        const { results } = await api.list<ApiProject>(
           `/organisations/${encodeURIComponent(effectiveOrg)}/projects/`,
           { params: { parent_project: clubIdForQuery }, pageSize: 1000 },
         );
@@ -165,12 +195,12 @@ export function useBreadcrumbsData({
       }
     };
     fetchTeams();
-  }, [isTeamDetail, orgSlug, clubSlugOrId, clubOptions]);
+  }, [isTeamDetail, orgSlug, clubSlugOrId, s.clubOptions]);
 
   // ─── Shared helper: resolve project ID from team slug ───
   const resolveProjectId = async (org: string, team: string): Promise<string> => {
     try {
-      const projectJson = await api.get<any>(
+      const projectJson = await api.get<ApiProject>(
         `/organisations/${encodeURIComponent(org)}/projects/${encodeURIComponent(team)}/`,
       );
       return String(projectJson?.id || '').trim();
@@ -180,18 +210,18 @@ export function useBreadcrumbsData({
   };
 
   const fetchRootPeriods = async (projectId: string) => {
-    const apiBaseUrl = getApiBaseUrl();
-    return fetchAllPages<any>(
-      `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(projectId)}&parent_id=null&page_size=500`,
+    const apiBaseUrl = getApiV1BaseUrl();
+    return fetchAllPages<ApiPeriod>(
+      `${apiBaseUrl}/periods/?project_id=${encodeURIComponent(projectId)}&parent_id=null&page_size=500`,
       { credentials: 'include' },
       { ttlMs: 60_000, cacheKey: `periods:root:breadcrumb:${projectId}` }
     );
   };
 
   const fetchChildPeriods = async (parentId: string) => {
-    const apiBaseUrl = getApiBaseUrl();
-    return fetchAllPages<any>(
-      `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(parentId)}&page_size=500`,
+    const apiBaseUrl = getApiV1BaseUrl();
+    return fetchAllPages<ApiPeriod>(
+      `${apiBaseUrl}/periods/?parent_id=${encodeURIComponent(parentId)}&page_size=500`,
       { credentials: 'include' },
       { ttlMs: 60_000, cacheKey: `periods:children:breadcrumb:${parentId}` }
     );
@@ -287,7 +317,7 @@ export function useBreadcrumbsData({
         const seasonId = findSeasonId(rootPeriods, effectiveSeason);
         if (!seasonId || cancelled) return;
 
-        const { results: membersList } = await api.list<any>(
+        const { results: membersList } = await api.list<ApiMember>(
           `/projects/${encodeURIComponent(projectId)}/members/`,
           { params: { period_id: seasonId }, pageSize: 500 },
         );
@@ -342,11 +372,11 @@ export function useBreadcrumbsData({
         const competitionId = String(competitionFromList?.id || '').trim();
         if (!competitionId || cancelled) return;
 
-        const apiBaseUrl = getApiBaseUrl();
-        const matchesUrl = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(
+        const apiBaseUrl = getApiV1BaseUrl();
+        const matchesUrl = `${apiBaseUrl}/activities/?project_id=${encodeURIComponent(
           projectId
         )}&period_id=${encodeURIComponent(competitionId)}&activity_type=match&ordering=-start_time&page_size=250`;
-        const matchRows = await fetchAllPages<any>(
+        const matchRows = await fetchAllPages<ApiMatch>(
           matchesUrl,
           { credentials: 'include' },
           { ttlMs: 30_000, cacheKey: `matches:competition:breadcrumb:${projectId}:${competitionId}`, maxItems: 250 }
@@ -366,10 +396,10 @@ export function useBreadcrumbsData({
   }, [orgSlug, effectiveTeamSlugOrId, effectiveSeasonSlugOrId, effectiveCompetitionSlugOrId, effectiveMatchId]);
 
   return {
-    clubOptions, teamOptions, seasonOptions, competitionOptions,
-    matchOptions, userOptions, memberOptions, currentMemberName,
-    loadingTeams, loadingSeasons, loadingCompetitions,
-    loadingMatches, loadingUsers, loadingMembers,
+    clubOptions: s.clubOptions, teamOptions: s.teamOptions, seasonOptions: s.seasonOptions, competitionOptions: s.competitionOptions,
+    matchOptions: s.matchOptions, userOptions: s.userOptions, memberOptions: s.memberOptions, currentMemberName: s.currentMemberName,
+    loadingTeams: s.loadingTeams, loadingSeasons: s.loadingSeasons, loadingCompetitions: s.loadingCompetitions,
+    loadingMatches: s.loadingMatches, loadingUsers: s.loadingUsers, loadingMembers: s.loadingMembers,
     isMemberDetailRoute,
   };
 }

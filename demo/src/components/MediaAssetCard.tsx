@@ -12,6 +12,7 @@
  */
 
 import React, { memo, useMemo, useState } from 'react';
+import { clickableProps } from '@/utils/a11y';
 import styles from './MediaAssetCard.module.css';
 import { getAssetUrl } from '../hooks/useBrandProfile';
 import { getStateDisplay } from '../hooks/useWorkflows';
@@ -121,6 +122,7 @@ export const MediaAssetCard = memo(function MediaAssetCard({
         {/* Preview area */}
         <div
           onClick={() => mediaItem && onPreview?.(mediaItem)}
+          {...(mediaItem && onPreview ? clickableProps(() => onPreview!(mediaItem!)) : {})}
           className={`relative flex-center ${styles.previewArea} ${url ? styles.previewBgMedia : styles.previewBgEmpty}`}
           style={{ aspectRatio }}
         >
@@ -264,10 +266,12 @@ export const MediaAssetCard = memo(function MediaAssetCard({
         <div
           className={`modal-backdrop ${styles.modalBackdrop}`}
           onClick={() => setShowHistory(false)}
+          role="presentation"
         >
           <div
             onClick={(e) => e.stopPropagation()}
             className={`rounded-8 p-20 overflow-auto ${styles.modalContent}`}
+            role="dialog"
           >
             <div className="flex-between mb-16">
               <h3 className="m-0 fs-16">Versiegeschiedenis — {label}</h3>

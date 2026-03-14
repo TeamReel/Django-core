@@ -89,18 +89,18 @@ async function videoApiFetch<T>(
   const method = options?.method || 'GET';
 
   if (method === 'GET') {
-    const raw = await api.get<any>(path);
+    const raw = await api.get<T>(path);
     return raw as T;
   } else if (method === 'POST') {
     const body = options?.body ? JSON.parse(options.body as string) : undefined;
-    const raw = await api.post<any>(path, body);
+    const raw = await api.post<T>(path, body);
     return raw as T;
   } else if (method === 'DELETE') {
     await api.delete(path);
     return {} as T;
   } else if (method === 'PATCH') {
     const body = options?.body ? JSON.parse(options.body as string) : undefined;
-    const raw = await api.patch<any>(path, body);
+    const raw = await api.patch<T>(path, body);
     return raw as T;
   }
 
@@ -216,7 +216,7 @@ export function useVideoJobs(options: UseVideoJobsOptions): UseVideoJobsReturn {
         if (jobType) params.append('job_type', jobType);
         params.append('ordering', '-created_at');
 
-        const data = await videoApiFetch<any>(
+        const data = await videoApiFetch<{ results?: VideoJob[] } | VideoJob[]>(
           `/video/jobs/?${params.toString()}`,
           projectId
         );
@@ -350,7 +350,7 @@ export function useVideoPresets(projectId: string | number): UseVideoPresetsRetu
 
     async function fetchPresets() {
       try {
-        const data = await videoApiFetch<any>(
+        const data = await videoApiFetch<{ results?: VideoPreset[] } | VideoPreset[]>(
           '/video/presets/',
           projectId
         );

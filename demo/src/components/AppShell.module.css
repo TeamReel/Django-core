@@ -8,3 +8,30 @@
   background-color: var(--app-bg);
   color: var(--app-text);
 }
+
+/* Remove focus outline on main when programmatically focused */
+.main:focus {
+  outline: none;
+}
+
+/* Skip-to-content link — hidden until focused via keyboard */
+.skipLink {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--app-bg);
+  color: var(--app-text);
+  font-weight: 600;
+  font-size: 14px;
+  border: 2px solid var(--app-focus-ring, var(--color-primary-400));
+  border-radius: 4px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.skipLink:focus {
+  top: 8px;
+  left: 8px;
+}

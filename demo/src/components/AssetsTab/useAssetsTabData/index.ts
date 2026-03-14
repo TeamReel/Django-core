@@ -9,7 +9,7 @@ import { useState } from 'react';
 import {
   useBrandProfile,
   getAssetUrl,
-} from '../../../hooks/useBrandProfile';
+} from '@/hooks/useBrandProfile';
 import { useAssetAutoProcessing } from '../useAssetAutoProcessing';
 import type { HistoryItem } from '../AssetSubComponents';
 import type { UseAssetsTabDataProps, AssetsTabData } from './types';

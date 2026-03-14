@@ -3,6 +3,8 @@
  * These have NO dependency on React component state.
  */
 
+import { apiFetch } from '@/utils/apiFetch';
+
 // ─── Helper types ─────────────────────────────────────────────────────────────
 
 interface MemberRecord {
@@ -150,7 +152,7 @@ export const fetchWithThrottleRetry = async (
   const baseDelayMs = opts?.baseDelayMs ?? 500;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const res = await fetch(input, init);
+    const res = await apiFetch(String(input), init);
 
     if (res.status !== 429 || attempt === maxAttempts) return res;
 

@@ -15,10 +15,10 @@ import {
 } from '../../shims/page-templates';
 import { SkeletonDetailPage } from '../../components/Skeleton';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import AppShell from '../../components/AppShell';
-import { api, organisationsApi, projectsApi } from '../../api';
+import { api, organisationsApi, projectsApi } from '@/api';
 import { routes } from '../../routes';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import { Project } from '../../types';
 
 export const ProjectEditPage: React.FC = () => {
@@ -85,7 +85,7 @@ export const ProjectEditPage: React.FC = () => {
         setIsPrivate(data.is_private || false);
       } catch (err) {
         logger.error('Failed to load project', err);
-        setError(err instanceof Error ? err.message : 'Failed to load project');
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
       }
@@ -107,7 +107,7 @@ export const ProjectEditPage: React.FC = () => {
         ? `/organisations/${resolvedOrg.slug}/projects/${currentProjectSlug}/`
         : `/projects/${currentProjectSlug}/`;
 
-      const response = await api.patch<any>(endpoint, {
+      const response = await api.patch<Project>(endpoint, {
           name,
           slug: slug || undefined,
           description,
@@ -120,7 +120,7 @@ export const ProjectEditPage: React.FC = () => {
       navigate(routes.orgProjectDetailLegacy({ orgId: resolvedOrg?.slug || resolvedOrg?.id!, projectId: nextSlug }));
     } catch (err) {
       logger.error('Failed to save project', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(getErrorMessage(err));
     } finally {
       setSaving(false);
     }
@@ -139,7 +139,7 @@ export const ProjectEditPage: React.FC = () => {
       <PageHeader
         title={`Edit ${name}`}
         breadcrumbs={[
-          { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+          { label: 'Dashboard', onClick: () => navigate(routes.dashboard()) },
           {
             label: (
               <BreadcrumbContextSwitcher

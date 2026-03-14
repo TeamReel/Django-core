@@ -4,7 +4,8 @@
  */
 
 import { useCallback } from 'react';
-import { getAssetUrl, MULTI_INSTANCE_TYPES, type BrandAsset } from '../../../hooks/useBrandProfile';
+import { getAssetUrl, MULTI_INSTANCE_TYPES, type BrandAsset } from '@/hooks/useBrandProfile';
+import type { SubmitParams } from '@/hooks/useAssetGeneration';
 import { UPLOAD_OUTPUT_TYPE, UPLOAD_TO_AI_TEMPLATE } from '../assetsTabHelpers';
 import type { AssetsLevel } from './types';
 import type { HistoryItem } from '../AssetSubComponents';
@@ -24,7 +25,7 @@ interface UseAssetHandlersParams {
   getAsset: (assetType: string) => BrandAsset | undefined;
   parentGetAsset: ((assetType: string) => BrandAsset | undefined) | undefined;
   baseAiInputAssets: { logo: string | null; sponsor: string | null };
-  startUploadAutoProcess: (outputType: string, params: any) => void;
+  startUploadAutoProcess: (outputType: string, params: SubmitParams) => void;
   // State setters
   setUploading: (v: string | null) => void;
   setShowAiModal: (v: boolean) => void;
@@ -137,7 +138,7 @@ export function useAssetHandlers({
         }
 
         const uploadLabel = MULTI_INSTANCE_TYPES.has(assetType)
-          ? (result as any)?.label || file.name.replace(/\.[^.]+$/, '')
+          ? result?.label || file.name.replace(/\.[^.]+$/, '')
           : undefined;
 
         startUploadAutoProcess(outputType, {

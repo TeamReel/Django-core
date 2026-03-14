@@ -1,18 +1,19 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@django-core/design-system';
-import { DirectoryFilterBar } from '../../../components/DirectoryFilterBar';
-import { DirectoryTableShell } from '../../../components/DirectoryTableShell';
-import { invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
-import { activitiesApi } from '../../../api';
-import type { ActivityWritePayload } from '../../../api/activities';
+import { DirectoryFilterBar } from '@/components/DirectoryFilterBar';
+import { DirectoryTableShell } from '@/components/DirectoryTableShell';
+import { invalidateFetchAllPagesCache } from '@/utils/fetchAllPages';
+import { activitiesApi } from '@/api';
+import type { ActivityWritePayload } from '@/api/activities';
 import MatchDetailModal from '../MatchDetailModal';
 import MatchEditModal from '../MatchEditModal';
 import MatchCreateModal from '../MatchCreateModal';
-import { useDirectoryFilters } from '../../../hooks/useDirectoryFilters';
-import { useMatchesData } from '../../../hooks/useMatchesData';
+import { useDirectoryFilters } from '@/hooks/useDirectoryFilters';
+import { useMatchesData } from '@/hooks/useMatchesData';
+import { useCrudModals } from '@/hooks/useModalState';
 import { MatchRow } from './MatchRow';
-import type { DirectoryListProps, RowContextConfig, Activity } from '../../../utils/directoryHelpers';
+import type { DirectoryListProps, RowContextConfig, Activity } from '@/utils/directoryHelpers';
 import styles from './MatchesList.module.css';
 
 // ─── Main component ──────────────────────────────────────────────────
@@ -56,17 +57,13 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
 
   // ─── Modal state ─────────────────────────────────────────────────
 
-  const [detailMatch, setDetailMatch] = useState<Activity | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [editMatch, setEditMatch] = useState<Activity | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const modals = useCrudModals<Activity>();
 
   // Auto-open create modal from ?create=match URL param
   useEffect(() => {
     const create = String(searchParams.get('create') || '').trim().toLowerCase();
     if (create !== 'match') return;
-    setIsCreateModalOpen(true);
+    modals.create.open();
     const next = new URLSearchParams(searchParams);
     next.delete('create');
     setSearchParams(next, { replace: true });
@@ -85,8 +82,8 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
   // ─── CRUD handlers ──────────────────────────────────────────────
 
   const handleSaveMatch = async (payload: Record<string, any>) => {
-    if (!editMatch) return;
-    const res = await activitiesApi.update(String(editMatch.id), payload);
+    if (!modals.edit.item) return;
+    const res = await activitiesApi.update(String(modals.edit.item.id), payload);
     triggerRefresh();
   };
 
@@ -133,7 +130,7 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
       <DirectoryFilterBar
         filters={filters}
         createButtonLabel="Create Match"
-        onCreateClick={() => setIsCreateModalOpen(true)}
+        onCreateClick={() => modals.create.open()}
         showSeasonFilter
         showCompetitionFilter
         showVariantFilter
@@ -199,29 +196,29 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
               seasons={seasons}
               competitions={competitions}
               navigate={navigate}
-              onView={(match) => { setDetailMatch(match); setIsDetailModalOpen(true); }}
-              onEdit={(match) => { setEditMatch(match); setIsEditModalOpen(true); }}
+              onView={(match) => modals.detail.open(match)}
+              onEdit={(match) => modals.edit.open(match)}
             />
           ))}
         </tbody>
       </DirectoryTableShell>
 
       <MatchDetailModal
-        opened={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        match={detailMatch}
+        opened={modals.detail.isOpen}
+        onClose={modals.detail.close}
+        match={modals.detail.item}
       />
 
       <MatchEditModal
-        opened={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        match={editMatch}
+        opened={modals.edit.isOpen}
+        onClose={modals.edit.close}
+        match={modals.edit.item}
         onSave={handleSaveMatch}
       />
 
       <MatchCreateModal
-        opened={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        opened={modals.create.isOpen}
+        onClose={modals.create.close}
         selectOptions={{
           organisations: organisations,
           clubs: clubs,

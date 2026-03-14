@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import type { Period } from '@/utils/directoryHelpers';
 
 vi.mock('../../../pages/identity/orgDataHelpers', () => ({
   getBestMatchDetailPath: vi.fn(() => '/matches/1'),
@@ -18,7 +19,7 @@ vi.mock('../../../pages/identity/orgDetailUtils', () => ({
   isCompetitionPeriod: vi.fn(() => false),
 }));
 
-import { useOrgDerived } from '../../../pages/identity/useOrgDerived';
+import { useOrgDerived } from '@/pages/identity/useOrgDerived';
 
 type Params = Parameters<typeof useOrgDerived>[0];
 
@@ -60,21 +61,21 @@ describe('useOrgDerived', () => {
   });
 
   it('builds period children map', () => {
-    const orgPeriods = [
+    const orgPeriods: Partial<Period>[] = [
       { id: '10', parent_period_id: null },
       { id: '20', parent_period_id: '10' },
       { id: '30', parent_period_id: '10' },
-    ] as any[];
-    const { result } = renderHook(() => useOrgDerived(base({ orgPeriods })));
+    ];
+    const { result } = renderHook(() => useOrgDerived(base({ orgPeriods: orgPeriods as Period[] })));
     expect(result.current.periodChildrenMap.get('10')).toHaveLength(2);
   });
 
   it('getRecursiveMatchesCount sums across children', () => {
-    const orgPeriods = [
+    const orgPeriods: Partial<Period>[] = [
       { id: '10', parent_period_id: null, activities_count: 5 },
       { id: '20', parent_period_id: '10', activities_count: 3 },
-    ] as any[];
-    const { result } = renderHook(() => useOrgDerived(base({ orgPeriods })));
+    ];
+    const { result } = renderHook(() => useOrgDerived(base({ orgPeriods: orgPeriods as Period[] })));
     expect(result.current.getRecursiveMatchesCount({ id: '10', activities_count: 5 })).toBe(8);
   });
 

@@ -4,7 +4,7 @@
  * Extracted during Phase 24 of the frontend refactoring plan.
  */
 import type React from 'react';
-import type { Organisation as SharedOrganisation } from '../../../types';
+import type { Organisation as SharedOrganisation } from '@/types';
 
 // ────────────────────────────────────────────────────────────
 //  Types

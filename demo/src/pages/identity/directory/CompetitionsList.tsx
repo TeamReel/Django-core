@@ -1,21 +1,24 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@django-core/design-system';
-import { periodPathKey } from '../../../utils/periodPath';
-import { routes } from '../../../routes';
+import { periodPathKey } from '@/utils/periodPath';
+import { routes } from '@/routes';
 
 import {
   isPeriodActive,
   resolveRowContext,
-} from '../../../utils/directoryHelpers';
-import type { DirectoryListProps, RowContextConfig, Period } from '../../../utils/directoryHelpers';
-import { useDirectoryFilters } from '../../../hooks/useDirectoryFilters';
-import { useCompetitionsData } from '../../../hooks/useCompetitionsData';
-import { DirectoryFilterBar } from '../../../components/DirectoryFilterBar';
-import { DirectoryTableShell } from '../../../components/DirectoryTableShell';
+} from '@/utils/directoryHelpers';
+import type { DirectoryListProps, RowContextConfig, Period } from '@/utils/directoryHelpers';
+import { useDirectoryFilters } from '@/hooks/useDirectoryFilters';
+import { useCompetitionsData } from '@/hooks/useCompetitionsData';
+import { useCrudModals } from '@/hooks/useModalState';
+import { DirectoryFilterBar } from '@/components/DirectoryFilterBar';
+import { DirectoryTableShell } from '@/components/DirectoryTableShell';
 import PeriodDetailModal from '../PeriodDetailModal';
 import PeriodEditModal from '../PeriodEditModal';
 import PeriodCreateModal from '../PeriodCreateModal';
+import type { PeriodLike as DetailPeriodLike } from '../PeriodDetailModal';
+import type { PeriodLike as EditPeriodLike } from '../PeriodEditModal';
 import styles from './CompetitionsList.module.css';
 
 export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
@@ -46,11 +49,7 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
   } = useCompetitionsData(filters);
 
   // Modal state
-  const [detailCompetition, setDetailCompetition] = useState<Period | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [editCompetition, setEditCompetition] = useState<Period | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const modals = useCrudModals<Period>();
 
   const rowConfig = useMemo<RowContextConfig>(() => ({
     organisations, clubs, teams,
@@ -65,7 +64,7 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
       <DirectoryFilterBar
         filters={filters}
         createButtonLabel="Create Competition"
-        onCreateClick={() => setIsCreateModalOpen(true)}
+        onCreateClick={() => modals.create.open()}
         showSeasonFilter
         showVariantFilter
       />
@@ -243,8 +242,7 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                             <div className="dir-actions">
                                 <button
                                     onClick={() => {
-                                 setDetailCompetition(comp);
-                                 setIsDetailModalOpen(true);
+                                 modals.detail.open(comp);
                                     }}
                                     className="action-btn action-btn-primary"
                                 >
@@ -252,8 +250,7 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                                 </button>
                                 <button
                               onClick={() => {
-                                setEditCompetition(comp);
-                                setIsEditModalOpen(true);
+                                modals.edit.open(comp);
                               }}
                                     className="action-btn action-btn-warning"
                                 >
@@ -274,8 +271,8 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
       </DirectoryTableShell>
 
       <PeriodCreateModal
-        opened={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        opened={modals.create.isOpen}
+        onClose={modals.create.close}
         title="Create Competition"
         organisations={organisations}
         clubs={clubs}
@@ -294,15 +291,15 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
       />
 
       <PeriodDetailModal
-        opened={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        period={detailCompetition as any}
+        opened={modals.detail.isOpen}
+        onClose={modals.detail.close}
+        period={modals.detail.item as DetailPeriodLike | null}
       />
 
       <PeriodEditModal
-        opened={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        period={editCompetition as any}
+        opened={modals.edit.isOpen}
+        onClose={modals.edit.close}
+        period={modals.edit.item as EditPeriodLike | null}
         showSportVariant={true}
         organisationSportId={(() => {
           const selectedOrg = selectedOrgId
@@ -311,8 +308,8 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
           return selectedOrg?.sport?.id || null;
         })()}
         onSave={async (payload) => {
-          if (!editCompetition) return;
-          await savePeriodEdits(editCompetition.id, payload);
+          if (!modals.edit.item) return;
+          await savePeriodEdits(modals.edit.item.id, payload);
           triggerRefresh();
         }}
       />

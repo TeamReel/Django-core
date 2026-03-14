@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Badge, Button, Select } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
-import SmartEmptyState from '../../../components/SmartEmptyState';
-import { api, projectsApi } from '../../../api';
+import SmartEmptyState from '@/components/SmartEmptyState';
+import { api, projectsApi } from '@/api';
 import { logger } from '@/utils/logger';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { getApiBaseUrl } from '@/utils/apiBase';
 import styles from './MemberList.module.css';
 
 interface Member {
@@ -53,7 +53,7 @@ export const MemberList: React.FC<MemberListProps> = ({
   useEffect(() => {
     const fetchSeasons = async () => {
       try {
-        const data = await api.get<any>(`/periods/?project=${projectId}&type=season`);
+        const data = await api.get<{ results?: Period[] } & Record<string, unknown>>(`/periods/?project=${projectId}&type=season`);
         const results = data.results || data;
         setPeriods(results);
 

@@ -15,7 +15,7 @@ import { useEffect } from 'react';
 import type { OrgDataReturn } from './orgDataTypes';
 import { getActiveContext } from '../../utils/activeContext';
 import { DEBUG_LOGS, getApiV1BaseUrl, getCsrfToken } from './orgDataHelpers';
-import { organisationsApi } from '../../api';
+import { organisationsApi } from '@/api';
 import type { Organisation } from '../../types';
 import { logger } from '@/utils/logger';
 import { useOrgFormState } from './useOrgFormState';

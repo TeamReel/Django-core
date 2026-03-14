@@ -11,7 +11,7 @@ import {
   Zap, ChevronRight, MapPin, Clock, CheckCircle2,
   Circle, Loader2, AlertCircle, Sparkles,
 } from 'lucide-react';
-import { api } from '../../api';
+import { api } from '@/api';
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
 import { SkeletonCard } from '../Skeleton';
@@ -156,7 +156,7 @@ export const NextMatchHero: React.FC = () => {
       try {
         setLoading(true);
         const now = new Date().toISOString();
-        const data = await api.get<any>(
+        const data = await api.get<Record<string, unknown>>(
           `/activities/?activity_type=match&start_time__gte=${encodeURIComponent(now)}&ordering=start_time&page_size=1`,
         );
         const items = extractItems<Match>(data);
@@ -165,7 +165,7 @@ export const NextMatchHero: React.FC = () => {
 
         // If we have a match, fetch its media items to compute readiness
         if (m) {
-          const mediaData = await api.get<any>(
+          const mediaData = await api.get<Record<string, unknown>>(
             `/media/items/?activity=${m.id}&page_size=100`,
           );
           if (!cancelled) setMediaItems(extractItems<MediaItem>(mediaData));

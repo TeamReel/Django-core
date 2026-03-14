@@ -2,14 +2,7 @@ import { useEffect, useState } from 'react';
 import { Alert } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
 import styles from './ProjectEditModal.module.css';
-
-interface Project {
-  id: string | number;
-  slug?: string;
-  name: string;
-  description?: string;
-  is_active?: boolean;
-}
+import type { Project } from '../../types';
 
 interface ProjectEditModalProps {
   opened: boolean;

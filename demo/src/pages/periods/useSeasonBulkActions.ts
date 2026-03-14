@@ -2,10 +2,12 @@ import { useCallback } from 'react';
 import type { Period } from '../../types/season';
 import type { PeriodCreatePayload } from '../identity/PeriodCreateModal/types';
 import type { MatchCreatePayload } from '../identity/matchCreateTypes';
-import { api } from '../../api/client';
+import { api } from '@/api/client';
 import { getCsrfToken } from '../../utils/csrf';
+import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { sleep, fetchWithThrottleRetry } from './seasonDetailUtils';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -40,6 +42,10 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
     getBestRoleForUser,
   } = params;
 
+  const { pushToast } = useToast();
+
+  const apiV1 = getApiV1BaseUrl();
+
   // ── Assign users to season squad ──
 
   const assignUsersToSeasonSquad = async (userIds: string[]) => {
@@ -56,7 +62,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
       // Prefer bulk endpoint to avoid per-user write throttling.
       if (ids.length > 1) {
         const res = await fetchWithThrottleRetry(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/bulk/`,
+          `${apiV1}/projects/${encodeURIComponent(projectIdForMembers)}/members/bulk/`,
           {
             method: 'POST',
             headers: {
@@ -91,7 +97,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
         await sleep(250);
         const role = getBestRoleForUser(uid);
         const res = await fetchWithThrottleRetry(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/`,
+          `${apiV1}/projects/${encodeURIComponent(projectIdForMembers)}/members/`,
           {
             method: 'POST',
             headers: {
@@ -119,7 +125,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
       setTeamRosterReloadToken((x) => x + 1);
     } catch (e) {
       logger.error('Failed to assign users', e);
-      alert(e instanceof Error ? e.message : 'Failed to assign users');
+      pushToast({ message: e instanceof Error ? e.message : 'Failed to assign users', type: 'error' });
     } finally {
       setBulkSubmitting(false);
     }
@@ -140,7 +146,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
       // Prefer bulk endpoint to avoid per-row throttling.
       if (ids.length > 1) {
         const res = await fetchWithThrottleRetry(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/bulk-delete/`,
+          `${apiV1}/projects/${encodeURIComponent(projectIdForMembers)}/members/bulk-delete/`,
           {
             method: 'POST',
             headers: {
@@ -166,7 +172,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
         // Pace requests to avoid hitting server throttles when unassigning many users.
         await sleep(200);
         const res = await fetchWithThrottleRetry(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/${encodeURIComponent(membershipId)}/`,
+          `${apiV1}/projects/${encodeURIComponent(projectIdForMembers)}/members/${encodeURIComponent(membershipId)}/`,
           {
             method: 'DELETE',
             headers: {
@@ -186,7 +192,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
       setTeamRosterReloadToken((x) => x + 1);
     } catch (e) {
       logger.error('Failed to unassign users', e);
-      alert(e instanceof Error ? e.message : 'Failed to unassign users');
+      pushToast({ message: e instanceof Error ? e.message : 'Failed to unassign users', type: 'error' });
     } finally {
       setBulkSubmitting(false);
     }
@@ -288,7 +294,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
             const projectNumericId = String(project?.id || '').trim();
           const seasonUuid = String(resolvedSeasonId || '').trim();
           if (projectNumericId && seasonUuid) {
-            const seasonMatches = await api.listAll<any>('/activities/', {
+            const seasonMatches = await api.listAll<Record<string, unknown>>('/activities/', {
               params: {
                 project_id: projectNumericId,
                 period_id: seasonUuid,

@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
-import AppShell from '../../components/AppShell';
 import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Button, Card, Badge, Alert, Spinner } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
 import { apiFetch } from '../../utils/apiFetch';
+import { useAsync } from '@/hooks/useAsync';
 import styles from './DeploymentPage.module.css';
 
 interface ServiceStatus {
@@ -16,14 +15,12 @@ interface ServiceStatus {
 }
 
 export function DeploymentPage() {
-  const [services, setServices] = useState<ServiceStatus[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    apiFetch('/api/observability/demo-health/')
-      .then(r => r.json())
-      .then(data => {
-        setServices([
+  const { data: services, loading } = useAsync(
+    async (signal) => {
+      try {
+        const r = await apiFetch('/api/observability/demo-health/', { signal });
+        const data = await r.json();
+        return [
           {
             name: 'Backend API',
             status: (data.core_services?.auth?.status === 'active' || data.core_services?.auth?.status === 'healthy') ? 'healthy' : 'degraded',
@@ -43,18 +40,17 @@ export function DeploymentPage() {
             version: '7.2', type: 'Cache',
             detail: data.core_services?.cache?.latency_ms ? `${data.core_services.cache.latency_ms}ms latency` : undefined,
           },
-        ]);
-        setLoading(false);
-      })
-      .catch(err => {
+        ] as ServiceStatus[];
+      } catch (err) {
         logger.error('Deployment health check error', err);
-        setServices([
+        return [
           { name: 'Backend API', status: 'down', version: '1.0.0', type: 'Service' },
           { name: 'Frontend', status: 'healthy', version: '1.0.0', type: 'Client' },
-        ]);
-        setLoading(false);
-      });
-  }, []);
+        ] as ServiceStatus[];
+      }
+    },
+    [],
+  );
 
   const getStatusBadge = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -66,7 +62,7 @@ export function DeploymentPage() {
   };
 
   return (
-    <AppShell>
+    <>
       <PageHeader title="Deployment Status" subtitle="B19 Container & Service Health" />
       <PageContent>
         <div className="page-container" data-testid="deployment-page">
@@ -80,7 +76,7 @@ export function DeploymentPage() {
               </Alert>
 
               <div className={`grid gap-16 ${styles.servicesGrid}`}>
-                {services.map(service => (
+                {(services || []).map(service => (
                   <Card key={service.name} className="p-20">
                     <div className={styles.cardHeader}>
                       <div>
@@ -110,7 +106,7 @@ export function DeploymentPage() {
           )}
         </div>
       </PageContent>
-    </AppShell>
+    </>
   );
 }
 

@@ -4,6 +4,7 @@
 import { useMemo } from 'react';
 import { Home } from 'lucide-react';
 import { checkIsNonAppRoute } from '../topNavbarHelpers';
+import { routes } from '../../routes';
 
 export function useTopNavbarDerived(
   pathname: string,
@@ -42,7 +43,7 @@ export function useTopNavbarDerived(
     return `Credits: ${String(myCreditsBalance)}`;
   }, [myCreditsBalance]);
 
-  const dashboardItem = { path: '/dashboard', label: 'Dashboard', icon: Home };
+  const dashboardItem = { path: routes.dashboard(), label: 'Dashboard', icon: Home };
 
   return {
     showBreadcrumbs,

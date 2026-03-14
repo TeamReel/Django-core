@@ -6,7 +6,7 @@ vi.mock('@/hooks/useBrandProfile', () => ({
   getAssetUrl: vi.fn((url: string) => url),
 }));
 
-import { useBrandData } from '../../../pages/identity/useBrandData';
+import { useBrandData } from '@/pages/identity/useBrandData';
 import useBrandProfile from '@/hooks/useBrandProfile';
 import { getAssetUrl } from '@/hooks/useBrandProfile';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
-import { projectsApi } from '../../api';
+import { projectsApi } from '@/api';
 import {
   normalizeVariantValue,
   getBestUrl,

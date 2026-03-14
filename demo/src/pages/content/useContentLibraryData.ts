@@ -5,10 +5,11 @@
  * and derived filter memos. Extracted from ContentLibraryPage.tsx.
  */
 
-import { useEffect, useState, useMemo, useCallback, type Dispatch, type SetStateAction } from 'react';
-import { api } from '../../api/client';
-import { organisationsApi } from '../../api';
+import { useEffect, useReducer, useMemo, useCallback, type Dispatch, type SetStateAction } from 'react';
+import { api } from '@/api/client';
+import { organisationsApi } from '@/api';
 import { logger } from '@/utils/logger';
+import { formReducer, makeSetter } from '@/utils/formReducer';
 import { getAssetTypeLabel } from './contentLibraryTypes';
 import {
   CONTENT_CATEGORIES,
@@ -79,37 +80,60 @@ export interface UseContentLibraryDataReturn {
 }
 
 export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, activeLevel, urlCategory, autoTeamId }: Params): UseContentLibraryDataReturn {
-  // ── Data state ──
-  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // ── Reducer state ──
+  interface ContentLibState {
+    contentItems: ContentItem[];
+    loading: boolean;
+    error: string | null;
+    organisations: OrganisationOption[];
+    clubs: ProjectOption[];
+    teams: ProjectOption[];
+    seasons: SeasonOption[];
+    matches: MatchOption[];
+    selectedOrgId: string;
+    selectedClubId: string;
+    selectedTeamId: string;
+    selectedSeasonId: string;
+    selectedMatchId: string;
+    autoScopeApplied: boolean;
+    categoryFilter: ContentCategory;
+    subtypeFilter: string;
+    searchQuery: string;
+    sortBy: SortOption;
+  }
+  const [s, dispatch] = useReducer(formReducer<ContentLibState>, {
+    contentItems: [], loading: false, error: null,
+    organisations: [], clubs: [], teams: [], seasons: [], matches: [],
+    selectedOrgId: '', selectedClubId: '', selectedTeamId: '',
+    selectedSeasonId: '', selectedMatchId: '', autoScopeApplied: false,
+    categoryFilter: urlCategory || 'all', subtypeFilter: 'all', searchQuery: '', sortBy: 'newest',
+  });
 
-  // ── Directory filter state ──
-  const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
-  const [clubs, setClubs] = useState<ProjectOption[]>([]);
-  const [teams, setTeams] = useState<ProjectOption[]>([]);
-  const [seasons, setSeasons] = useState<SeasonOption[]>([]);
-  const [matches, setMatches] = useState<MatchOption[]>([]);
-  const [selectedOrgId, setSelectedOrgId] = useState<string>('');
-  const [selectedClubId, setSelectedClubId] = useState<string>('');
-  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
-  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
-  const [selectedMatchId, setSelectedMatchId] = useState<string>('');
-  const [autoScopeApplied, setAutoScopeApplied] = useState(false);
+  const setContentItems = useMemo(() => makeSetter<ContentLibState, 'contentItems'>(dispatch, 'contentItems'), [dispatch]);
+  const setLoading = useMemo(() => makeSetter<ContentLibState, 'loading'>(dispatch, 'loading'), [dispatch]);
+  const setError = useMemo(() => makeSetter<ContentLibState, 'error'>(dispatch, 'error'), [dispatch]);
+  const setOrganisations = useMemo(() => makeSetter<ContentLibState, 'organisations'>(dispatch, 'organisations'), [dispatch]);
+  const setClubs = useMemo(() => makeSetter<ContentLibState, 'clubs'>(dispatch, 'clubs'), [dispatch]);
+  const setTeams = useMemo(() => makeSetter<ContentLibState, 'teams'>(dispatch, 'teams'), [dispatch]);
+  const setSeasons = useMemo(() => makeSetter<ContentLibState, 'seasons'>(dispatch, 'seasons'), [dispatch]);
+  const setMatches = useMemo(() => makeSetter<ContentLibState, 'matches'>(dispatch, 'matches'), [dispatch]);
+  const setSelectedOrgId = useMemo(() => makeSetter<ContentLibState, 'selectedOrgId'>(dispatch, 'selectedOrgId'), [dispatch]);
+  const setSelectedClubId = useMemo(() => makeSetter<ContentLibState, 'selectedClubId'>(dispatch, 'selectedClubId'), [dispatch]);
+  const setSelectedTeamId = useMemo(() => makeSetter<ContentLibState, 'selectedTeamId'>(dispatch, 'selectedTeamId'), [dispatch]);
+  const setSelectedSeasonId = useMemo(() => makeSetter<ContentLibState, 'selectedSeasonId'>(dispatch, 'selectedSeasonId'), [dispatch]);
+  const setSelectedMatchId = useMemo(() => makeSetter<ContentLibState, 'selectedMatchId'>(dispatch, 'selectedMatchId'), [dispatch]);
+  const setCategoryFilter = useMemo(() => makeSetter<ContentLibState, 'categoryFilter'>(dispatch, 'categoryFilter'), [dispatch]);
+  const setSubtypeFilter = useMemo(() => makeSetter<ContentLibState, 'subtypeFilter'>(dispatch, 'subtypeFilter'), [dispatch]);
+  const setSearchQuery = useMemo(() => makeSetter<ContentLibState, 'searchQuery'>(dispatch, 'searchQuery'), [dispatch]);
+  const setSortBy = useMemo(() => makeSetter<ContentLibState, 'sortBy'>(dispatch, 'sortBy'), [dispatch]);
 
   // ── Auto-scope to user's team if available ──
   useEffect(() => {
-    if (autoTeamId && !autoScopeApplied && !selectedTeamId) {
+    if (autoTeamId && !s.autoScopeApplied && !s.selectedTeamId) {
       setSelectedTeamId(autoTeamId);
-      setAutoScopeApplied(true);
+      dispatch({ type: 'set', key: 'autoScopeApplied', value: true });
     }
-  }, [autoTeamId, autoScopeApplied, selectedTeamId]);
-
-  // ── Content filter state ──
-  const [categoryFilter, setCategoryFilter] = useState<ContentCategory>(urlCategory || 'all');
-  const [subtypeFilter, setSubtypeFilter] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  }, [autoTeamId, s.autoScopeApplied, s.selectedTeamId]);
 
   // ── Sync category from URL ──
   useEffect(() => {
@@ -127,8 +151,8 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
     }
     const load = async () => {
       try {
-        const orgs = await api.listAll<any>('/organisations/', { pageSize: 100 });
-        setOrganisations((orgs || []).map((o: { id: string | number; name: string; slug?: string }) => ({ id: String(o.id), name: o.name, slug: o.slug || '' })));
+        const orgs = await api.listAll<OrganisationOption>('/organisations/', { pageSize: 100 });
+        setOrganisations((orgs || []).map((o) => ({ id: String(o.id), name: o.name, slug: o.slug || '' })));
       } catch { /* ignore */ }
     };
     load();
@@ -137,7 +161,7 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
   // ── Load clubs/teams when org changes ──
   useEffect(() => {
     const load = async () => {
-      const selectedOrg = selectedOrgId ? organisations.find((o) => String(o.id) === String(selectedOrgId)) : null;
+      const selectedOrg = s.selectedOrgId ? s.organisations.find((o) => String(o.id) === String(s.selectedOrgId)) : null;
       const orgSlugForApi = selectedOrg?.slug || orgSlug || '';
       if (!orgSlugForApi) { setClubs([]); setTeams([]); return; }
       try {
@@ -150,46 +174,46 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
       } catch { /* ignore */ }
     };
     load();
-  }, [selectedOrgId, organisations, orgSlug]);
+  }, [s.selectedOrgId, s.organisations, orgSlug]);
 
   // ── Filter teams by selected club ──
   const filteredTeams = useMemo(() => {
-    if (!selectedClubId) return teams;
-    return teams.filter((t) => {
+    if (!s.selectedClubId) return s.teams;
+    return s.teams.filter((t) => {
       const parentId = typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project;
-      return String(parentId) === String(selectedClubId);
+      return String(parentId) === String(s.selectedClubId);
     });
-  }, [teams, selectedClubId]);
+  }, [s.teams, s.selectedClubId]);
 
   // ── Load seasons when team changes ──
   useEffect(() => {
-    if (!selectedTeamId) { setSeasons([]); return; }
+    if (!s.selectedTeamId) { setSeasons([]); return; }
     const load = async () => {
       try {
-        const { results: items } = await api.list<any>('/periods/', {
-          params: { project: selectedTeamId, period_type: 'season' },
+        const { results: items } = await api.list<SeasonOption>('/periods/', {
+          params: { project: s.selectedTeamId, period_type: 'season' },
           pageSize: 100,
         });
-        setSeasons(items.map((s: { id: string | number; name: string; key?: string; slug?: string }) => ({ id: String(s.id), name: s.name, key: s.key || s.slug || '' })));
+        setSeasons(items.map((s) => ({ id: String(s.id), name: s.name, key: s.key || s.slug || '' })));
       } catch { /* ignore */ }
     };
     load();
-  }, [selectedTeamId]);
+  }, [s.selectedTeamId]);
 
   // ── Load matches when season changes ──
   useEffect(() => {
-    if (!selectedSeasonId) { setMatches([]); return; }
+    if (!s.selectedSeasonId) { setMatches([]); return; }
     const load = async () => {
       try {
-        const { results: items } = await api.list<any>('/activities/', {
-          params: { period: selectedSeasonId, activity_type: 'match', ordering: '-activity_date' },
+        const { results: items } = await api.list<MatchOption>('/activities/', {
+          params: { period: s.selectedSeasonId, activity_type: 'match', ordering: '-activity_date' },
           pageSize: 100,
         });
-        setMatches(items.map((m: { id: string | number; title?: string; name?: string; slug?: string; activity_date?: string }) => ({ id: String(m.id), title: m.title || m.name || '', slug: m.slug, activity_date: m.activity_date })));
+        setMatches(items.map((m) => ({ id: String(m.id), title: m.title || m.name || '', slug: m.slug, activity_date: m.activity_date })));
       } catch { /* ignore */ }
     };
     load();
-  }, [selectedSeasonId]);
+  }, [s.selectedSeasonId]);
 
   // ── Fetch content items ──
   const fetchContent = useCallback(async () => {
@@ -197,10 +221,10 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
     setError(null);
     try {
       const params: Record<string, string> = {};
-      if (selectedMatchId) params.activity = selectedMatchId;
-      else if (selectedTeamId) params.project = selectedTeamId;
-      else if (selectedClubId) params.project = selectedClubId;
-      const { results: items } = await api.list<any>('/media/items/', { params, pageSize: 200 });
+      if (s.selectedMatchId) params.activity = s.selectedMatchId;
+      else if (s.selectedTeamId) params.project = s.selectedTeamId;
+      else if (s.selectedClubId) params.project = s.selectedClubId;
+      const { results: items } = await api.list<ContentItem>('/media/items/', { params, pageSize: 200 });
       setContentItems(Array.isArray(items) ? items : []);
     } catch (err) {
       logger.error('[ContentLibrary] Error', err);
@@ -208,7 +232,7 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
     } finally {
       setLoading(false);
     }
-  }, [selectedMatchId, selectedTeamId, selectedClubId]);
+  }, [s.selectedMatchId, s.selectedTeamId, s.selectedClubId]);
 
   useEffect(() => { fetchContent(); }, [fetchContent]);
 
@@ -221,10 +245,10 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
 
   // ── Filtered content ──
   const filteredContent = useMemo(() => {
-    let result = contentItems;
+    let result = s.contentItems;
 
-    if (categoryFilter !== 'all') {
-      const category = CONTENT_CATEGORIES.find(c => c.key === categoryFilter);
+    if (s.categoryFilter !== 'all') {
+      const category = CONTENT_CATEGORIES.find(c => c.key === s.categoryFilter);
       if (category && category.subtypes.length > 0) {
         result = result.filter(item => {
           const assetType = (item.extraction_metadata?.asset_type as string) || 'other';
@@ -234,16 +258,16 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
       }
     }
 
-    if (subtypeFilter !== 'all') {
+    if (s.subtypeFilter !== 'all') {
       result = result.filter(item => {
         const assetType = (item.extraction_metadata?.asset_type as string) || 'other';
         const normalizedType = assetType.replace(/_[a-f0-9]{8}$/i, '');
-        return normalizedType === subtypeFilter;
+        return normalizedType === s.subtypeFilter;
       });
     }
 
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
+    if (s.searchQuery) {
+      const q = s.searchQuery.toLowerCase();
       result = result.filter(item => {
         const assetType = (item.extraction_metadata?.asset_type as string) || '';
         const clubName = (item.extraction_metadata?.club_name as string) || '';
@@ -261,7 +285,7 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
 
     result = [...result].sort((a, b) => {
       let cmp = 0;
-      switch (sortBy) {
+      switch (s.sortBy) {
         case 'newest': {
           const dateA = a.extraction_metadata?.activity_date || a.created_at;
           const dateB = b.extraction_metadata?.activity_date || b.created_at;
@@ -288,14 +312,14 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
     });
 
     return result;
-  }, [contentItems, categoryFilter, subtypeFilter, searchQuery, sortBy]);
+  }, [s.contentItems, s.categoryFilter, s.subtypeFilter, s.searchQuery, s.sortBy]);
 
   // ── Category & subtype counts ──
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: contentItems.length };
+    const counts: Record<string, number> = { all: s.contentItems.length };
     CONTENT_CATEGORIES.forEach(cat => {
       if (cat.key !== 'all') {
-        counts[cat.key] = contentItems.filter(item => {
+        counts[cat.key] = s.contentItems.filter(item => {
           const assetType = (item.extraction_metadata?.asset_type as string) || 'other';
           const normalizedType = assetType.replace(/_[a-f0-9]{8}$/i, '');
           return cat.subtypes.includes(normalizedType);
@@ -303,56 +327,53 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
       }
     });
     return counts;
-  }, [contentItems]);
+  }, [s.contentItems]);
 
   const subtypeCounts = useMemo(() => {
     const counts: Record<string, number> = { all: 0 };
-    const category = CONTENT_CATEGORIES.find(c => c.key === categoryFilter);
+    const category = CONTENT_CATEGORIES.find(c => c.key === s.categoryFilter);
     const subtypes = category?.subtypes || [];
-    if (categoryFilter === 'all') {
+    if (s.categoryFilter === 'all') {
       CONTENT_TYPE_FILTERS.forEach(f => { counts[f.key] = 0; });
     } else {
       subtypes.forEach(st => { counts[st] = 0; });
     }
-    contentItems.forEach(item => {
+    s.contentItems.forEach(item => {
       const assetType = (item.extraction_metadata?.asset_type as string) || 'other';
       const normalizedType = assetType.replace(/_[a-f0-9]{8}$/i, '');
-      if (categoryFilter === 'all' || subtypes.includes(normalizedType)) {
+      if (s.categoryFilter === 'all' || subtypes.includes(normalizedType)) {
         counts[normalizedType] = (counts[normalizedType] || 0) + 1;
         counts.all = (counts.all || 0) + 1;
       }
     });
     return counts;
-  }, [contentItems, categoryFilter]);
+  }, [s.contentItems, s.categoryFilter]);
 
   // ── Clear all filters ──
   const clearFilters = useCallback(() => {
-    setSelectedOrgId('');
-    setSelectedClubId('');
-    setSelectedTeamId('');
-    setSelectedSeasonId('');
-    setSelectedMatchId('');
-    setCategoryFilter('all');
-    setSubtypeFilter('all');
-    setSearchQuery('');
+    dispatch({ type: 'patch', payload: {
+      selectedOrgId: '', selectedClubId: '', selectedTeamId: '',
+      selectedSeasonId: '', selectedMatchId: '',
+      categoryFilter: 'all' as ContentCategory, subtypeFilter: 'all', searchQuery: '',
+    } });
   }, []);
 
   return {
     // Data
-    contentItems, setContentItems, filteredContent,
-    loading, error, fetchContent,
+    contentItems: s.contentItems, setContentItems, filteredContent,
+    loading: s.loading, error: s.error, fetchContent,
     // Directory filters
-    organisations, clubs, filteredTeams, seasons, matches,
-    selectedOrgId, setSelectedOrgId,
-    selectedClubId, setSelectedClubId,
-    selectedTeamId, setSelectedTeamId,
-    selectedSeasonId, setSelectedSeasonId,
-    selectedMatchId, setSelectedMatchId,
+    organisations: s.organisations, clubs: s.clubs, filteredTeams, seasons: s.seasons, matches: s.matches,
+    selectedOrgId: s.selectedOrgId, setSelectedOrgId,
+    selectedClubId: s.selectedClubId, setSelectedClubId,
+    selectedTeamId: s.selectedTeamId, setSelectedTeamId,
+    selectedSeasonId: s.selectedSeasonId, setSelectedSeasonId,
+    selectedMatchId: s.selectedMatchId, setSelectedMatchId,
     // Content filters
-    categoryFilter, setCategoryFilter,
-    subtypeFilter, setSubtypeFilter,
-    searchQuery, setSearchQuery,
-    sortBy, setSortBy,
+    categoryFilter: s.categoryFilter, setCategoryFilter,
+    subtypeFilter: s.subtypeFilter, setSubtypeFilter,
+    searchQuery: s.searchQuery, setSearchQuery,
+    sortBy: s.sortBy, setSortBy,
     // Counts
     categoryCounts, subtypeCounts,
     // Actions

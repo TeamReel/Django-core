@@ -49,7 +49,7 @@ export function useResolvedAppContext(
 
         const load = async () => {
             try {
-                const payload = await api.get<any>('/auth/active-context/');
+                const payload = await api.get<Record<string, unknown>>('/auth/active-context/');
 
                 if (!cancelled) {
                     setResolvedAppContext({

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
 
 /**
  * Working ProfilePage with AppShell

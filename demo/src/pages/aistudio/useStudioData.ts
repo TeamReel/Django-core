@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { mediaApi, videoApi } from '../../api';
+import { mediaApi, videoApi } from '@/api';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import { logger } from '@/utils/logger';

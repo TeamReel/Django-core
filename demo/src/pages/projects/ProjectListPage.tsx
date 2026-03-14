@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 // import { useContextSwitcher } from '@django-core/context-switcher';
 import SmartEmptyState from '../../components/SmartEmptyState';
-import { organisationsApi } from '../../api';
+import { organisationsApi } from '@/api';
+import { useAsync } from '@/hooks/useAsync';
 import styles from './ProjectListPage.module.css';
 
 interface Project {
@@ -21,49 +21,43 @@ interface Project {
 
 export default function ProjectListPage() {
   const { orgId } = useParams<{ orgId: string }>();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   // const { context } = useContextSwitcher();
-  const [orgName, setOrgName] = useState<string>('');
 
-  // Fetch organisation name first
-  useEffect(() => {
-    if (!orgId) return;
+  // Fetch organisation name
+  const { data: orgName } = useAsync(
+    async () => {
+      if (!orgId) return 'Organisation';
+      try {
+        const data = await organisationsApi.get(orgId);
+        return String((data as unknown as Record<string, unknown>)?.name || 'Organisation');
+      } catch {
+        return 'Organisation';
+      }
+    },
+    [orgId],
+  );
 
-    organisationsApi.get(orgId)
-      .then((data) => setOrgName(String((data as unknown as Record<string, unknown>)?.name || 'Organisation')))
-      .catch(() => setOrgName('Organisation'));
-  }, [orgId]);
-
-  useEffect(() => {
-    if (!orgId) return;
-
-    organisationsApi.listProjects(orgId)
-      .then((data) => {
-        // Handle both paginated (DRF) and non-paginated responses
-        const results = ((data as unknown as Record<string, unknown>)?.results as { id: string | number; slug: string; name: string; [k: string]: unknown }[] | undefined) || [];
-        const projectsList: Project[] = results.map((p) => ({
-          id: String(p.id),
-          slug: String(p.slug || ''),
-          name: String(p.name || ''),
-          description: p.description as string | undefined,
-          status: p.status as string | undefined,
-          member_count: p.member_count as number | undefined,
-          seasons_count: p.seasons_count as number | undefined,
-          matches_count: p.matches_count as number | undefined,
-          parent_id: p.parent_id != null ? String(p.parent_id) : null,
-          parent_name: p.parent_name as string | undefined ?? null,
-        }));
-        setProjects(projectsList);
-        setIsLoading(false);
-      })
-      .catch((_err: unknown) => {
-        const err = _err as { message?: string; detail?: string };
-        setError(err.message || err.detail || 'Failed to fetch projects');
-        setIsLoading(false);
-      });
-  }, [orgId]);
+  // Fetch projects
+  const { data: projects, loading: isLoading, error } = useAsync(
+    async () => {
+      if (!orgId) return [];
+      const data = await organisationsApi.listProjects(orgId);
+      const results = ((data as unknown as Record<string, unknown>)?.results as { id: string | number; slug: string; name: string; [k: string]: unknown }[] | undefined) || [];
+      return results.map((p): Project => ({
+        id: String(p.id),
+        slug: String(p.slug || ''),
+        name: String(p.name || ''),
+        description: p.description as string | undefined,
+        status: p.status as string | undefined,
+        member_count: p.member_count as number | undefined,
+        seasons_count: p.seasons_count as number | undefined,
+        matches_count: p.matches_count as number | undefined,
+        parent_id: p.parent_id != null ? String(p.parent_id) : null,
+        parent_name: p.parent_name as string | undefined ?? null,
+      }));
+    },
+    [orgId],
+  );
 
   return (
     <>
@@ -93,7 +87,7 @@ export default function ProjectListPage() {
           </div>
         )}
 
-        {!isLoading && !error && projects.length === 0 && (
+        {!isLoading && !error && (!projects || projects.length === 0) && (
           <SmartEmptyState
             type="projects"
             description="Deze organisatie heeft nog geen projecten. Maak een project aan om te beginnen."
@@ -104,8 +98,8 @@ export default function ProjectListPage() {
         {!isLoading && (
           <div className="flex-col gap-24">
             {/* Render Root Projects (Clubs) */}
-            {projects.filter(p => !p.parent_id).map(club => {
-              const teams = projects.filter(p => p.parent_id === club.id);
+            {(projects || []).filter(p => !p.parent_id).map(club => {
+              const teams = (projects || []).filter(p => p.parent_id === club.id);
 
               return (
                 <div

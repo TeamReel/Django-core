@@ -3,6 +3,8 @@ import { Link, NavLink } from 'react-router-dom';
 import { PanelLeftClose, PanelLeft } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 import { useSidebarData } from './useSidebarData';
+import { preloadRoute } from '../utils/preloadRoute';
+import { routes } from '../routes';
 import styles from './Sidebar.module.css';
 
 /* ────────────────────────────────────────────────────────────── */
@@ -70,8 +72,8 @@ const Sidebar = memo(function Sidebar({ isOpen, toggle }: SidebarProps) {
                             return section.items.some((item) => {
                                 const itemPath = String(item.path || '').split('?')[0];
                                 if (!itemPath) return false;
-                                if (itemPath === '/dashboard') {
-                                    return path === '/dashboard' || path === '/recents' || path === '/favorites';
+                                if (itemPath === routes.dashboard()) {
+                                    return path === routes.dashboard() || path === '/recents' || path === '/favorites';
                                 }
                                 if (itemPath === '/directory') {
                                     return path.startsWith('/directory');
@@ -90,12 +92,12 @@ const Sidebar = memo(function Sidebar({ isOpen, toggle }: SidebarProps) {
                                     <div className="flex-between gap-8">
                                         <Link
                                             to={
-                                                section.id === 'overview' ? '/dashboard' :
+                                                section.id === 'overview' ? routes.dashboard() :
                                                 section.id === 'app' ? '/apps' :
                                                 section.id === 'content' ? '/content' :
                                                 section.id === 'settings' ? '/settings' :
                                                 section.id === 'help' ? '/docs' :
-                                                '/dashboard'
+                                                routes.dashboard()
                                             }
                                             className={styles.sectionTitle}
                                             data-active={sectionIsActive}
@@ -124,6 +126,8 @@ const Sidebar = memo(function Sidebar({ isOpen, toggle }: SidebarProps) {
                                         to={item.path === '/approvals' && queueCounts.review > 0 ? '/approvals?tab=review' : item.path}
                                         end={section.id === 'app'}
                                         title={!isOpen ? item.label : undefined}
+                                        onMouseEnter={() => preloadRoute(item.path)}
+                                        onFocus={() => preloadRoute(item.path)}
                                         className={({ isActive }) => {
                                             const curPath = location.pathname;
                                             const wp = new URLSearchParams(location.search || '').get('wallet');

@@ -1,7 +1,8 @@
-import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import { api } from '../../api/client';
+import { useEffect, useMemo, useReducer, type Dispatch, type SetStateAction } from 'react';
+import { api } from '@/api/client';
 import { getActiveContext } from '../../utils/activeContext';
 import { logger } from '@/utils/logger';
+import { formReducer, makeSetter } from '../../utils/formReducer';
 
 /** Minimal project shape for the hook params. */
 interface ProjectParam { id?: string; name?: string; slug?: string }
@@ -22,6 +23,19 @@ interface MemberRecord {
   user_id?: string;
   role?: string;
   metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+/** Minimal branding profile shape. */
+interface BrandingProfileRecord {
+  id?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+/** Minimal project record from the API. */
+interface ProjectRecord {
+  id?: string;
+  name?: string;
+  slug?: string;
   [key: string]: unknown;
 }
 
@@ -67,21 +81,57 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
   const { apiBaseUrl, project, resolvedSeasonId, org, orgSlugOrId, activeTab } = params;
 
   // ── Data state ──
-  const [activatingContext, setActivatingContext] = useState(false);
-  const [activeContext, setActiveContextState] = useState<Record<string, unknown> | null>(null);
-  const [matches, setMatches] = useState<MatchRecord[]>([]);
-  const [matchesLoading, setMatchesLoading] = useState(false);
-  const [members, setMembers] = useState<MemberRecord[]>([]);
-  const [membersLoading, setMembersLoading] = useState(false);
-  const [membersError, setMembersError] = useState<string | null>(null);
-  const [membersReloadToken, setMembersReloadToken] = useState(0);
-  const [teamRoster, setTeamRoster] = useState<MemberRecord[]>([]);
-  const [teamRosterLoading, setTeamRosterLoading] = useState(false);
-  const [teamRosterError, setTeamRosterError] = useState<string | null>(null);
-  const [teamRosterReloadToken, setTeamRosterReloadToken] = useState(0);
-  const [bulkSubmitting, setBulkSubmitting] = useState(false);
-  const [opponentClubNames, setOpponentClubNames] = useState<Record<string, string>>({});
-  const [brandProfileId, setBrandProfileId] = useState<string | null>(null);
+  interface SeasonFetchState {
+    activatingContext: boolean;
+    activeContext: Record<string, unknown> | null;
+    matches: MatchRecord[];
+    matchesLoading: boolean;
+    members: MemberRecord[];
+    membersLoading: boolean;
+    membersError: string | null;
+    membersReloadToken: number;
+    teamRoster: MemberRecord[];
+    teamRosterLoading: boolean;
+    teamRosterError: string | null;
+    teamRosterReloadToken: number;
+    bulkSubmitting: boolean;
+    opponentClubNames: Record<string, string>;
+    brandProfileId: string | null;
+  }
+
+  const [s, dispatch] = useReducer(formReducer<SeasonFetchState>, {
+    activatingContext: false,
+    activeContext: null,
+    matches: [],
+    matchesLoading: false,
+    members: [],
+    membersLoading: false,
+    membersError: null,
+    membersReloadToken: 0,
+    teamRoster: [],
+    teamRosterLoading: false,
+    teamRosterError: null,
+    teamRosterReloadToken: 0,
+    bulkSubmitting: false,
+    opponentClubNames: {},
+    brandProfileId: null,
+  });
+
+  const setActivatingContext     = useMemo(() => makeSetter(dispatch, 'activatingContext'), [dispatch]);
+  const setActiveContextState    = useMemo(() => makeSetter(dispatch, 'activeContext'), [dispatch]);
+  const setMatches               = useMemo(() => makeSetter(dispatch, 'matches'), [dispatch]);
+  const setMatchesLoading        = useMemo(() => makeSetter(dispatch, 'matchesLoading'), [dispatch]);
+  const setMembers               = useMemo(() => makeSetter(dispatch, 'members'), [dispatch]);
+  const setMembersLoading        = useMemo(() => makeSetter(dispatch, 'membersLoading'), [dispatch]);
+  const setMembersError          = useMemo(() => makeSetter(dispatch, 'membersError'), [dispatch]);
+  const setMembersReloadToken    = useMemo(() => makeSetter(dispatch, 'membersReloadToken'), [dispatch]);
+  const setTeamRoster            = useMemo(() => makeSetter(dispatch, 'teamRoster'), [dispatch]);
+  const setTeamRosterLoading     = useMemo(() => makeSetter(dispatch, 'teamRosterLoading'), [dispatch]);
+  const setTeamRosterError       = useMemo(() => makeSetter(dispatch, 'teamRosterError'), [dispatch]);
+  const setTeamRosterReloadToken = useMemo(() => makeSetter(dispatch, 'teamRosterReloadToken'), [dispatch]);
+  const setBulkSubmitting        = useMemo(() => makeSetter(dispatch, 'bulkSubmitting'), [dispatch]);
+  const setOpponentClubNames     = useMemo(() => makeSetter(dispatch, 'opponentClubNames'), [dispatch]);
+  const setBrandProfileId        = useMemo(() => makeSetter(dispatch, 'brandProfileId'), [dispatch]);
 
   // ── Load active context on mount ──
   useEffect(() => {
@@ -105,7 +155,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
 
     const loadBrandProfile = async () => {
       try {
-        const { results } = await api.list<any>('/branding/profiles/', {
+        const { results } = await api.list<BrandingProfileRecord>('/branding/profiles/', {
           params: { project: String(project.id) },
         });
         if (results.length > 0 && !cancelled) {
@@ -130,7 +180,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
       setMembersLoading(true);
       setMembersError(null);
       try {
-        const membersList = await api.listAll<any>(
+        const membersList = await api.listAll<MemberRecord>(
           `/projects/${encodeURIComponent(projectIdForMembers)}/members/`,
           {
             params: { period: seasonUuid },
@@ -152,7 +202,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
     return () => {
       cancelled = true;
     };
-  }, [apiBaseUrl, project, resolvedSeasonId, membersReloadToken]);
+  }, [apiBaseUrl, project, resolvedSeasonId, s.membersReloadToken]);
 
   // ── Fetch full team roster ──
   // Only fetch org members on the selectie tab (orgs can have thousands of members).
@@ -167,7 +217,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
       setTeamRosterError(null);
       try {
         // Fetch team-level memberships (project memberships without period filter)
-        const roster = await api.listAll<any>(
+        const roster = await api.listAll<MemberRecord>(
           `/projects/${encodeURIComponent(projectIdForMembers)}/members/`,
           { pageSize: 500, maxItems: 5000 },
         );
@@ -175,7 +225,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
         // Only merge org members on the squad tab — the team tab should only show
         // actual team members. Org-wide members are only relevant when assigning
         // new people to a season squad.
-        const byUserId = new Map<string, any>();
+        const byUserId = new Map<string, MemberRecord>();
         for (const m of Array.isArray(roster) ? roster : []) {
           const uid = String(m?.user?.id || m?.user_id || '').trim();
           if (uid && !byUserId.has(uid)) byUserId.set(uid, m);
@@ -185,7 +235,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
           const orgSlugForMembers = String(org?.slug || orgSlugOrId || '').trim();
           if (orgSlugForMembers) {
             try {
-              const orgMembers = await api.listAll<any>(
+              const orgMembers = await api.listAll<MemberRecord>(
                 `/organisations/${encodeURIComponent(orgSlugForMembers)}/members/`,
                 { pageSize: 500, maxItems: 5000 },
               );
@@ -213,7 +263,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
     return () => {
       cancelled = true;
     };
-  }, [activeTab, apiBaseUrl, org, project, teamRosterReloadToken]);
+  }, [activeTab, apiBaseUrl, org, project, s.teamRosterReloadToken]);
 
   // ── Fetch matches only when the user is on a tab that actually needs them ──
   useEffect(() => {
@@ -232,7 +282,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
     const run = async () => {
       setMatchesLoading(true);
       try {
-        const seasonMatches = await api.listAll<any>('/activities/', {
+        const seasonMatches = await api.listAll<MatchRecord>('/activities/', {
           params: {
             project_id: projectNumericId,
             period_id: seasonUuid,
@@ -259,11 +309,11 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
 
   // ── Fetch opponent club names from match metadata ──
   useEffect(() => {
-    if (!matches.length || !apiBaseUrl) return;
+    if (!s.matches.length || !apiBaseUrl) return;
     const clubIds = [...new Set(
-      matches
+      s.matches
         .map((m) => String(m.metadata?.teamreel?.match_context?.opponent_club_id || '').trim())
-        .filter((id: string) => id && !opponentClubNames[id])
+        .filter((id: string) => id && !s.opponentClubNames[id])
     )];
     if (!clubIds.length) return;
 
@@ -273,7 +323,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
       await Promise.all(
         clubIds.map(async (cid) => {
           try {
-            const data = await api.get<any>(`/projects/${encodeURIComponent(cid)}/`);
+            const data = await api.get<ProjectRecord>(`/projects/${encodeURIComponent(cid)}/`);
             if (data?.name) results[cid] = data.name;
           } catch { /* ignore */ }
         })
@@ -281,24 +331,24 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
       if (!cancelled) setOpponentClubNames((prev) => ({ ...prev, ...results }));
     })();
     return () => { cancelled = true; };
-  }, [matches, apiBaseUrl]);
+  }, [s.matches, apiBaseUrl]);
 
   return {
     // State
-    activatingContext, setActivatingContext,
-    activeContext, setActiveContextState,
-    matches, setMatches,
-    matchesLoading, setMatchesLoading,
-    members, setMembers,
-    membersLoading,
-    membersError,
+    activatingContext: s.activatingContext, setActivatingContext,
+    activeContext: s.activeContext, setActiveContextState,
+    matches: s.matches, setMatches,
+    matchesLoading: s.matchesLoading, setMatchesLoading,
+    members: s.members, setMembers,
+    membersLoading: s.membersLoading,
+    membersError: s.membersError,
     setMembersReloadToken,
-    teamRoster,
-    teamRosterLoading,
-    teamRosterError,
+    teamRoster: s.teamRoster,
+    teamRosterLoading: s.teamRosterLoading,
+    teamRosterError: s.teamRosterError,
     setTeamRosterReloadToken,
-    bulkSubmitting, setBulkSubmitting,
-    opponentClubNames,
-    brandProfileId,
+    bulkSubmitting: s.bulkSubmitting, setBulkSubmitting,
+    opponentClubNames: s.opponentClubNames,
+    brandProfileId: s.brandProfileId,
   };
 }

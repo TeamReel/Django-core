@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { looksLikeUuid } from '../../../utils/periodPath';
-import { organisationsApi } from '../../../api';
+import { looksLikeUuid } from '@/utils/periodPath';
+import { organisationsApi } from '@/api';
 import { logger } from '@/utils/logger';
 
 type ResolvedOrgIdState = {

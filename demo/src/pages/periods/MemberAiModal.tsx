@@ -6,7 +6,7 @@
  * previousResultUrl computation, onAssetSaved asset routing.
  */
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { projectsApi } from '../../api';
+import { projectsApi } from '@/api';
 import type { MemberMediaForm } from '../../constants/mediaSlots';
 import { getBestUrl } from '../../constants/assetProcessingSpecs';
 import { AssetGenerationModal } from '../../components/AssetGenerationModal';

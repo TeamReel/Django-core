@@ -5,6 +5,7 @@
 import { useMemo, useCallback } from 'react';
 import { Check, X } from 'lucide-react';
 import SwipeableCard from '../components/SwipeableCard';
+import { clickableProps } from '@/utils/a11y';
 import {
   type GenerationJob,
   type GenJobStatus,
@@ -101,6 +102,7 @@ export function ApprovalsJobList({
             <div
               key={canSwipe ? undefined : `ai-${job.task_id}`}
               onClick={() => isClickable && openModal(job)}
+              {...(isClickable ? clickableProps(() => openModal(job)) : {})}
               className={`${styles.aiCard} rounded-10 transition`}
               data-clickable={isClickable}
               data-border={borderState}
@@ -210,6 +212,7 @@ export function ApprovalsJobList({
             <div
               key={canSwipeVideo ? undefined : `video-${vJob.id}`}
               onClick={() => isClickable && openVideoModal(vJob)}
+              {...(isClickable ? clickableProps(() => openVideoModal(vJob)) : {})}
               className={`${styles.videoCard} flex-col rounded-10 transition`}
               data-clickable={isClickable}
               data-border={videoBorderState}

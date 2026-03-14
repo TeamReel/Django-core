@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ListDetail } from '@django-core/page-templates';
 import { Badge, Button, Card } from '@django-core/design-system';
-import AppShell from '../../components/AppShell';
 import rs from './ResourceDisplayPage.module.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MOCK_RESOURCES, getStatusBadgeType, type Resource } from './resourceDisplayData';
@@ -60,7 +59,7 @@ export function ResourceDisplayPage() {
   };
 
   return (
-    <AppShell>
+    <>
       <div className={rs.viewport}>
         <ListDetail
           selectedId={selectedId}
@@ -244,7 +243,7 @@ export function ResourceDisplayPage() {
           </ListDetail.Detail>
         </ListDetail>
       </div>
-    </AppShell>
+    </>
   );
 }
 

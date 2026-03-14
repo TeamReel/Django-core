@@ -7,24 +7,30 @@ vi.mock('../../../../pages/identity/ContentGenerationModal/contentGenerationApi'
 vi.mock('@/utils/logger', () => ({ logger: { error: vi.fn() } }));
 vi.mock('lucide-react', () => ({ CheckCircle: 'CheckCircle' }));
 
-import { useSaveHandlers } from '../../../../pages/identity/ContentGenerationModal/useSaveHandlers';
+import { useSaveHandlers } from '@/pages/identity/ContentGenerationModal/useSaveHandlers';
 
-const makeVariant = (idx: number) => ({
+interface MockVariant {
+  presigned_url: string;
+  mime_type: string;
+  storage_info: null;
+}
+
+const makeVariant = (idx: number): MockVariant => ({
   presigned_url: `https://cdn.example.com/variant-${idx}.png`,
   mime_type: 'image/png',
   storage_info: null,
 });
 
 const makeDeps = (overrides: Record<string, unknown> = {}) => ({
-  matchData: { id: 'match-1' } as any,
+  matchData: { id: 'match-1' },
   organisationId: 'org-1',
   assetType: 'flyer',
   onGenerated: vi.fn(),
   onClose: vi.fn(),
   selectedType: { type: 'pre_match', subtype: 'lineup', label: 'Lineup' },
-  selectedTemplate: { id: 1, name: 'Test Template' } as any,
-  generatedVariants: [makeVariant(0), makeVariant(1)] as any[],
-  generatedOutput: { presigned_url: 'https://cdn.example.com/out.png' } as any,
+  selectedTemplate: { id: 1, name: 'Test Template' },
+  generatedVariants: [makeVariant(0), makeVariant(1)] as MockVariant[],
+  generatedOutput: { presigned_url: 'https://cdn.example.com/out.png' },
   selectedVariantIndex: 0,
   savedVariantIndices: new Set<number>(),
   setGeneratedVariants: vi.fn(),

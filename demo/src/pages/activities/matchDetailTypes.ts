@@ -9,7 +9,8 @@ import type { MatchMediaItem } from '../../components/MediaAssetCard';
 import type { WalletOption } from '../../components/transactions/CreateTransactionModal';
 import type { ContentTemplate } from '../identity/ContentGenerationModal';
 import type { useBrandProfile } from '../../hooks/useBrandProfile';
-import type { Period, SeasonProject as Project } from '../../types/season';
+import type { Period, SeasonOrganisation, SeasonProject as Project } from '../../types/season';
+import type { User } from '@django-core/auth-ui';
 
 // Re-export helpers for backward compatibility
 export {
@@ -139,13 +140,13 @@ export interface MatchDetailDataReturn {
   location: ReturnType<typeof useLocation>;
 
   /* auth */
-  user: any;
+  user: User | null;
 
   /* season context */
-  org: any;
-  project: any;
-  club: any;
-  season: any;
+  org: SeasonOrganisation | null;
+  project: Project | null;
+  club: Project | null;
+  season: Period | null;
   resolvedSeasonId: string;
   providerLoading: boolean;
   isPlayer: boolean;
@@ -260,7 +261,7 @@ export interface MatchDetailDataReturn {
   setLineupFormation: (v: string) => void;
   lineupSlots: Record<string, string[]>;
   setLineupSlots: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
-  lineupSquad: Record<string, any[]>;
+  lineupSquad: Record<string, Record<string, unknown>[]>;
   lineupSquadLoading: boolean;
   lineupBenchStatus: Record<string, string>;
   setLineupBenchStatus: React.Dispatch<React.SetStateAction<Record<string, string>>>;

@@ -1,4 +1,5 @@
 import { useEscapeKey } from '../hooks/useEscapeKey';
+import { clickableProps } from '@/utils/a11y';
 import s from './TopNavbar.module.css';
 import styles from './NavbarModals.module.css';
 import type { GenerationJob } from '../hooks/useGenerationJobs';
@@ -39,7 +40,7 @@ export function NavbarQuickReviewModal({
   // Empty state
   if (jobsToShow.length === 0) {
     return (
-      <div onClick={onClose} className={s.modalOverlay}>
+      <div onClick={onClose} className={s.modalOverlay} role="presentation">
         <div onClick={e => e.stopPropagation()} className={s.modalPanelCentered} role="dialog">
           <div className={s.tabsRowCenter}>
             <button
@@ -76,7 +77,7 @@ export function NavbarQuickReviewModal({
   // In-progress tab: list view
   if (queueModalTab === 'in-progress') {
     return (
-      <div onClick={onClose} className={s.modalOverlay}>
+      <div onClick={onClose} className={s.modalOverlay} role="presentation">
         <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.inProgressPanel}`} role="dialog">
           <div className={s.modalHeader}>
             <div className="flex-between mb-12">
@@ -127,7 +128,7 @@ export function NavbarQuickReviewModal({
   // Review tab: no current job
   if (!job) {
     return (
-      <div onClick={onClose} className={s.modalOverlay}>
+      <div onClick={onClose} className={s.modalOverlay} role="presentation">
         <div onClick={e => e.stopPropagation()} className={s.modalPanelCenteredLarge} role="dialog">
           <div className={`mb-12 ${s.emptyIcon}`}>{'\u2705'}</div>
           <div className={`mb-8 ${s.modalTitle}`}>Alles beoordeeld!</div>
@@ -149,7 +150,7 @@ export function NavbarQuickReviewModal({
     v.mime_type?.startsWith('video/') || v.filename?.endsWith('.mp4') || job.output_type === 'video';
 
   return (
-    <div onClick={onClose} className={s.modalOverlay}>
+    <div onClick={onClose} className={s.modalOverlay} role="presentation">
       <div
         onClick={e => e.stopPropagation()}
         className={`w-full ${s.modalPanel} ${styles.reviewPanel}`} data-multi={variants.length > 1}
@@ -215,6 +216,7 @@ export function NavbarQuickReviewModal({
               <div
                 key={v.variant_index}
                 onClick={() => variants.length > 1 ? setSelectedVariantIdxs((prev: Set<number>) => { const next = new Set(prev); if (next.has(v.variant_index)) next.delete(v.variant_index); else next.add(v.variant_index); return next; }) : undefined}
+                {...(variants.length > 1 ? clickableProps(() => setSelectedVariantIdxs((prev: Set<number>) => { const next = new Set(prev); if (next.has(v.variant_index)) next.delete(v.variant_index); else next.add(v.variant_index); return next; })) : {})}
                 className={`${s.variantCard} ${styles.variantCardItem}`}
                 data-selected={selectedVariantIdxs.has(v.variant_index)}
                 data-single={variants.length === 1}

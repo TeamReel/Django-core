@@ -31,8 +31,8 @@ export interface Project {
   parent_id: number | null;
   parent_name: string | null;
   // Alternate parent reference fields that may appear in API responses
-  parent?: any;
-  parent_project?: any;
+  parent?: number | string | { id: number | string; name?: string } | null;
+  parent_project?: number | string | { id: number | string; name?: string } | null;
   parent_project_id?: number | string | null;
   parent_project_name?: string | null;
 }

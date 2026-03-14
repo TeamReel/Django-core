@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { projectsApi } from '../../api';
+import { projectsApi } from '@/api';
 import type { ProjectOption } from './matchCreateTypes';
 import { getParentProjectId, getProjectIdentity } from './matchCreateHelpers';
 import type { useMatchFormState } from './useMatchFormState';

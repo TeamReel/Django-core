@@ -16,6 +16,7 @@ import {
   type BrandAsset,
 } from '../../hooks/useBrandProfile';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 import { getTemplate } from '../../constants/assetTemplates';
 
 // ============================================================================
@@ -50,6 +51,8 @@ export function useAssetAutoProcessing({
   projectId,
   organisationId,
 }: AutoProcessingParams): UseAssetAutoProcessingReturn {
+  const { pushToast } = useToast();
+
   // ── Postprocess generation ──
   const postProcessGen = useAssetGeneration();
   const [postProcessingAsset, setPostProcessingAsset] = useState<string | null>(null);
@@ -67,12 +70,12 @@ export function useAssetAutoProcessing({
           const variant = postProcessGen.variants[0];
           if (variant?.error) {
             logger.error('[Error] Postprocess variant has error', variant.error);
-            alert(`Bewerken mislukt: ${variant.error}`);
+            pushToast({ message: `Bewerken mislukt: ${variant.error}`, type: 'error' });
             return;
           }
           if (!variant?.image_base64 && !variant?.storage_path && !variant?.presigned_url && !variant?.storage_info?.storage_path) {
             logger.error('[Error] Postprocess variant has no content', variant);
-            alert('Bewerken mislukt: geen resultaat ontvangen van de server.');
+            pushToast({ message: 'Bewerken mislukt: geen resultaat ontvangen van de server.', type: 'error' });
             return;
           }
           const result = await postProcessGen.acceptVariant(0);
@@ -92,7 +95,7 @@ export function useAssetAutoProcessing({
       })();
     } else if (postProcessGen.step === 'error' && postProcessingAsset) {
       logger.error('[Error] Postprocess failed', postProcessGen.error);
-      alert(`Bewerken mislukt: ${postProcessGen.error || 'Onbekende fout'}`);
+      pushToast({ message: `Bewerken mislukt: ${postProcessGen.error || 'Onbekende fout'}`, type: 'error' });
       setPostProcessingAsset(null);
       setPostProcessOutputType(null);
       postProcessGen.reset();
@@ -165,7 +168,7 @@ export function useAssetAutoProcessing({
 
     const asset = getEffAsset(assetType);
     if (!asset) {
-      alert('Genereer eerst een AI versie voordat je kunt bewerken.');
+      pushToast({ message: 'Genereer eerst een AI versie voordat je kunt bewerken.', type: 'error' });
       return;
     }
 

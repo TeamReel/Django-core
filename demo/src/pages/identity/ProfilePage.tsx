@@ -12,9 +12,9 @@ import {
   PageContent,
 } from '@django-core/page-templates';
 import { User } from '../../types';
-import AppShell from '../../components/AppShell';
-import { api, ApiError } from '../../api';
+import { api, ApiError } from '@/api';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import styles from './ProfilePage.module.css';
 
 /**
@@ -52,7 +52,7 @@ export const ProfilePage: React.FC = () => {
         if (err instanceof ApiError && err.status === 401) {
           setError('Not authenticated. Please log in.');
         } else {
-          setError(err instanceof Error ? err.message : 'Failed to fetch profile');
+          setError(getErrorMessage(err));
         }
       } finally {
         setLoading(false);
@@ -84,7 +84,7 @@ export const ProfilePage: React.FC = () => {
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
       logger.error('Failed to update profile', err);
-      setError(err instanceof Error ? err.message : 'Failed to update profile');
+      setError(getErrorMessage(err));
     } finally {
       setSaving(false);
     }

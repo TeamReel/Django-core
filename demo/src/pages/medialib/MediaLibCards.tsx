@@ -4,6 +4,7 @@ import { Card, Text, Badge } from '@django-core/design-system';
 import { getContentType, getHierarchyLevel, CONTENT_TYPE_LABELS, type BrandAsset } from '../../hooks/useBrandAssets';
 import SlotIcon from '../../components/SlotIcon';
 import { getFileIcon, formatFileSize, type FileAsset } from '../../hooks/useFileAssets';
+import { clickableProps } from '@/utils/a11y';
 import {
   type PreviewItem,
   type MemberMediaItem,
@@ -113,6 +114,7 @@ export const AssetCard = memo(function AssetCard({ asset, orgSlugOrId, onPreview
           linkHref,
         });
       }}
+      {...(asset.url ? clickableProps(() => onPreview({ url: asset.url!, title: friendlyAssetLabel(asset), subtitle: asset.project_name || asset.profile_name || asset.organisation_name || undefined, isVideo: Boolean(isVideo), linkHref })) : {})}
       >
         {asset.url ? (
           isVideo ? (
@@ -253,6 +255,7 @@ export const MemberMediaCard = memo(function MemberMediaCard({ item, orgSlugOrId
           linkHref,
         });
       }}
+      {...clickableProps(() => onPreview({ url: item.url || null, title: item.member_name || item.name || 'Member Media', subtitle: item.project_name || undefined, isVideo: Boolean(isVideo), linkHref }))}
       >
         {item.url ? (
           isVideo ? (

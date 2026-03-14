@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { api, ApiError } from '../../api';
+import { api, ApiError } from '@/api';
 import { installFetchMock, restoreFetch, mockApiResponse, mockApiList, mockApiError } from '../api-mock';
 import { buildProject, buildActivity } from '../factories';
 import type { Project, Activity } from '../../types/api';

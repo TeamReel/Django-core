@@ -1,11 +1,14 @@
-import { Link } from 'react-router-dom';
-import AppShell from '../../components/AppShell';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { routes } from '../../routes';
 import styles from './ForbiddenPage.module.css';
 
 export default function ForbiddenPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromPath = searchParams.get('from');
+
   return (
-    <AppShell>
-      <div className={styles.container}>
+    <div className={styles.container}>
         <div className={styles.emoji}>🚫</div>
 
         <h1 className={styles.errorCode}>
@@ -17,20 +20,21 @@ export default function ForbiddenPage() {
         </h2>
 
         <p className={styles.message}>
-          You don't have permission to access this resource.
-          Please contact your administrator if you believe this is an error.
+          {fromPath
+            ? <>You don&apos;t have permission to access <code className={styles.path}>{fromPath}</code>. Contact your administrator if you believe this is an error.</>
+            : <>You don&apos;t have permission to access this resource. Please contact your administrator if you believe this is an error.</>}
         </p>
 
         <div className={styles.actions}>
           <Link
-            to="/dashboard"
+            to={routes.dashboard()}
             className={styles.dashboardLink}
           >
             Go to Dashboard
           </Link>
 
           <button
-            onClick={() => window.history.back()}
+            onClick={() => window.history.length > 1 ? navigate(-1) : navigate(routes.dashboard())}
             className={styles.backButton}
           >
             Go Back
@@ -46,7 +50,6 @@ export default function ForbiddenPage() {
             <li>You're not logged in or your session has expired</li>
           </ul>
         </div>
-      </div>
-    </AppShell>
+    </div>
   );
 }

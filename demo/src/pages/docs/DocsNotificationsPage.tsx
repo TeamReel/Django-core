@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
-import AppShell from '../../components/AppShell';
+import { useState } from 'react';
 import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Card, Badge, Spinner } from '@django-core/design-system';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
+import { useAsync } from '@/hooks/useAsync';
 import styles from './DocsNotificationsPage.module.css';
 
 interface DocsNotification {
@@ -17,38 +18,26 @@ interface DocsNotification {
 }
 
 export function DocsNotificationsPage() {
-  const [notifications, setNotifications] = useState<DocsNotification[]>([]);
-  const [filter, setFilter] = useState('all');
-  const [loading, setLoading] = useState(true);
-  const [marking, setMarking] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
+  const { data: notifications, setData: setNotifications, loading, error, reload } = useAsync(
+    async () => {
       const { results } = await api.list<DocsNotification>('/user-notifications/');
-      setNotifications(results);
-    } catch (err) {
-      logger.error('Failed to fetch notifications', err);
-      setError(err instanceof Error ? err.message : 'Failed to load notifications');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchNotifications(); }, []);
+      return results;
+    },
+    [],
+  );
+  const [filter, setFilter] = useState('all');
+  const [marking, setMarking] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const handleToggleRead = async (id: string, currentReadStatus: boolean) => {
     setMarking(id);
     try {
       const updated = await api.patch<DocsNotification>(`/user-notifications/${id}/`, { is_read: !currentReadStatus });
-      setNotifications(prev => prev.map(n => n.id === id ? updated : n));
+      setNotifications(prev => (prev || []).map(n => n.id === id ? updated : n));
       window.dispatchEvent(new CustomEvent('notificationChanged'));
     } catch (err) {
       logger.error('Failed to toggle notification', err);
-      alert(err instanceof Error ? err.message : 'Failed to update notification');
+      setActionError(getErrorMessage(err));
     } finally {
       setMarking(null);
     }
@@ -58,19 +47,20 @@ export function DocsNotificationsPage() {
     try {
       await api.post('/user-notifications/mark-all-read/');
 
-      await fetchNotifications();
+      reload();
       window.dispatchEvent(new Event('notificationChanged'));
     } catch (err) {
       logger.error('Error marking all as read', err);
-      alert('Failed to mark all as read');
+      logger.error('Failed to mark all as read');
     }
   };
 
-  const filtered = filter === 'unread' ? notifications.filter(n => !n.is_read) : notifications;
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const list = notifications || [];
+  const filtered = filter === 'unread' ? list.filter(n => !n.is_read) : list;
+  const unreadCount = list.filter(n => !n.is_read).length;
 
   return (
-    <AppShell>
+    <>
       <PageHeader title="Notifications" subtitle="In-App Notifications with Persistent Read/Unread Status" />
       <PageContent>
         <div className="page-container" data-testid="notifications-page">
@@ -79,7 +69,7 @@ export function DocsNotificationsPage() {
           ) : error ? (
             <Card className="p-24 text-center bg-surface border">
               <p className={`mb-16 ${styles.errorText}`}>{error}</p>
-              <button onClick={fetchNotifications} className={styles.filterBtn} data-active="true">Retry</button>
+              <button onClick={reload} className={styles.filterBtn} data-active="true">Retry</button>
             </Card>
           ) : (
             <>
@@ -87,7 +77,7 @@ export function DocsNotificationsPage() {
                 <div className="flex-between">
                   <div>
                     <h3 className="m-0 fs-18 fw-600 text-primary">Unread: {unreadCount}</h3>
-                    <p className={`fs-14 text-muted ${styles.totalText}`}>Total: {notifications.length} notifications</p>
+                    <p className={`fs-14 text-muted ${styles.totalText}`}>Total: {list.length} notifications</p>
                   </div>
                   <div className={styles.filterGroup}>
                     <button onClick={() => setFilter('all')} className={styles.filterBtn} data-active={String(filter === 'all')}>All</button>
@@ -139,7 +129,7 @@ export function DocsNotificationsPage() {
           )}
         </div>
       </PageContent>
-    </AppShell>
+    </>
   );
 }
 

@@ -17,6 +17,8 @@ import {
   Image, Film, FileText, Sparkles,
 } from 'lucide-react';
 import { api } from '@/api';
+import type { GenerationRequest } from '@/types/api/generative';
+import type { MediaItem } from '@/types/api/media';
 import styles from './ContentOverviewCard.module.css';
 
 /* ── Helpers ──────────────────────────────────────────── */
@@ -137,8 +139,8 @@ export const ContentOverviewCard: React.FC = () => {
 
         // Fetch both GenerationRequests AND MediaItems in parallel
         const [genData, mediaData] = await Promise.all([
-          api.list<any>('/generative/requests/', { params: genParams, pageSize: 500 }),
-          api.list<any>('/media/items/', { params: mediaParams, pageSize: 500 }),
+          api.list<GenerationRequest>('/generative/requests/', { params: genParams, pageSize: 500 }),
+          api.list<MediaItem>('/media/items/', { params: mediaParams, pageSize: 500 }),
         ]);
 
         // Track seen IDs to avoid double-counting (some MediaItems are linked to GenRequests)

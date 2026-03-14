@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@django-core/design-system';
-import { SkeletonList } from '../../../components/Skeleton';
-import SmartEmptyState from '../../../components/SmartEmptyState';
-import { generativeApi } from '../../../api';
-import type { GenerationJob } from '../../../hooks/useGenerationJobs';
+import { SkeletonList } from '@/components/Skeleton';
+import SmartEmptyState from '@/components/SmartEmptyState';
+import { generativeApi } from '@/api';
+import type { GenerationJob } from '@/hooks/useGenerationJobs';
 import cl from './ContentList.module.css';
 import { logger } from '@/utils/logger';
 

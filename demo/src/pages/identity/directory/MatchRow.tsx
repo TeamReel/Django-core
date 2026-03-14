@@ -4,10 +4,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@django-core/design-system';
-import { periodPathKey } from '../../../utils/periodPath';
-import { routes } from '../../../routes';
-import { resolveRowContext } from '../../../utils/directoryHelpers';
-import type { Activity, Period, RowContextConfig } from '../../../utils/directoryHelpers';
+import { periodPathKey } from '@/utils/periodPath';
+import { routes } from '@/routes';
+import { resolveRowContext } from '@/utils/directoryHelpers';
+import type { Activity, Period, RowContextConfig } from '@/utils/directoryHelpers';
+import { useToast } from '@/components/ui/Toast';
 
 export interface MatchRowProps {
   match: Activity;
@@ -35,6 +36,7 @@ export const MatchRow: React.FC<MatchRowProps> = ({
   onEdit,
 }) => {
   const row = resolveRowContext(m, rowConfig);
+  const { pushToast } = useToast();
   const competition = m.period;
   const compName = competition?.name || '-';
   const season = competition?.parent_period;
@@ -181,7 +183,7 @@ export const MatchRow: React.FC<MatchRowProps> = ({
             onClick={(e) => {
               e.preventDefault();
               if (window.confirm('Are you sure you want to delete this match?')) {
-                alert('Delete functionality not yet implemented');
+                pushToast({ message: 'Delete functionality not yet implemented', type: 'info' });
               }
             }}
             className="action-btn action-btn-danger"

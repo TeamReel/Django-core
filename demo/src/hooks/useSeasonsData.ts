@@ -7,9 +7,10 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../utils/fetchAllPages';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { getApiV1BaseUrl } from '../utils/apiFetch';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 import {
   chunkArray,
   sortKey,
@@ -88,6 +89,8 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
     getSelectedOrgIdForApi,
   } = filters;
 
+  const { pushToast } = useToast();
+
   // ── State ─────────────────────────────────────────────────────────
   const [seasons, setSeasons] = useState<Period[]>([]);
   /** Accept PeriodLike[] from fetchers — safe at runtime because Period's extra
@@ -100,11 +103,11 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
   useEffect(() => {
     const loadSeasons = async () => {
       setSeasonsLoading(true);
-      const apiBaseUrl = getApiBaseUrl();
+      const apiBaseUrl = getApiV1BaseUrl();
 
       try {
         const fetchPeriods = async (params: URLSearchParams) => {
-          const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
+          const url = `${apiBaseUrl}/periods/?${params.toString()}`;
           const results = await fetchAllPages<PeriodLike>(
             url,
             { credentials: 'include' },
@@ -229,7 +232,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
           const fallbackParams = new URLSearchParams(baseParams);
           fallbackParams.delete('type');
 
-          const fallbackUrl = `${apiBaseUrl}/api/v1/periods/?${fallbackParams.toString()}`;
+          const fallbackUrl = `${apiBaseUrl}/periods/?${fallbackParams.toString()}`;
           const fallback = await fetchAllPages<PeriodLike>(
             fallbackUrl,
             { credentials: 'include' },
@@ -299,7 +302,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
       setSeasons((prev) => prev.filter((s) => s.id !== seasonId));
     } catch (err) {
       logger.error('useSeasonsData delete error', err);
-      alert('Failed to delete season');
+      pushToast({ message: 'Failed to delete season', type: 'error' });
     }
   }, []);
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { api } from '../../api/client';
+import { api } from '@/api/client';
 import type { OrgOption, ProjectOption, PeriodOption } from './matchCreateTypes';
 import {
   getParentProjectId,
@@ -139,33 +139,33 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     const load = async () => {
       setLoadingTeams(true);
       try {
-        let rawList: Record<string, unknown>[];
+        let rawList: ProjectOption[];
         if (clubId) {
-          rawList = await api.listAll<any>('/projects/', {
+          rawList = await api.listAll<ProjectOption>('/projects/', {
             params: { parent_project: clubId },
             pageSize: 200, maxItems: 3000,
             signal: abortController.signal,
           });
         } else if (orgId && orgSlug) {
-          rawList = await api.listAll<any>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, {
+          rawList = await api.listAll<ProjectOption>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, {
             params: { parent_project__isnull: 'false' },
             pageSize: 200, maxItems: 3000,
             signal: abortController.signal,
           });
         } else if (orgId) {
-          rawList = await api.listAll<any>('/projects/', {
+          rawList = await api.listAll<ProjectOption>('/projects/', {
             params: { organisation_id: orgId, parent_project__isnull: 'false' },
             pageSize: 200, maxItems: 3000,
             signal: abortController.signal,
           });
         } else {
-          rawList = await api.listAll<any>('/projects/', {
+          rawList = await api.listAll<ProjectOption>('/projects/', {
             params: { parent_project__isnull: 'false' },
             pageSize: 200, maxItems: 3000,
             signal: abortController.signal,
           });
         }
-        const list = rawList.map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
+        const list = rawList.map((p) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
         const unique = [...new Map(list.map((p) => [String(p.id), p])).values()];
         if (!cancelled) setRemoteTeams(unique);
       } catch {

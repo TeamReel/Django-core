@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { PanelBResult } from './sidebarPanelBWork.types';
 import { makeTabUrl, makeOrgSectionUrl } from './sidebarPanelBWork.types';
+import { routes } from '../routes';
 
 /* ── Dashboard / Recents / Favorites ────────────────────────────── */
 
@@ -17,7 +18,7 @@ export function buildDashboardSection(): PanelBResult {
     return {
         title: 'Overview',
         items: [
-            { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+            { label: 'Dashboard', path: routes.dashboard(), icon: LayoutDashboard },
             { label: 'Recents', path: '/recents', icon: Timer },
             { label: 'Manage Favorites', path: '/favorites', icon: Star },
         ],

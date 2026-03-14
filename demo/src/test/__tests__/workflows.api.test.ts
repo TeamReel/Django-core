@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { installFetchMock, restoreFetch, mockApiResponse, mockApiList, mockApiError } from '../api-mock';
-import { workflowsApi } from '../../api';
+import { workflowsApi } from '@/api';
 import { buildWorkflowInstance } from '../factories';
 
 beforeEach(() => installFetchMock());

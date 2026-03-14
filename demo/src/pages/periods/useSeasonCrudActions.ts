@@ -1,11 +1,12 @@
 import { useCallback } from 'react';
 import type { Period, SeasonProject, SeasonOrganisation } from '../../types/season';
 import type { SeasonSquadAddMemberPayload } from '../identity/seasonSquadAddMember.types';
-import { api } from '../../api/client';
-import { periodsApi, activitiesApi } from '../../api';
+import { api } from '@/api/client';
+import { periodsApi, activitiesApi } from '@/api';
 import type { Period as ApiPeriod, Activity } from '../../types/api/activity';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,8 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
     setActivatingContext, setActiveContextState,
   } = params;
 
+  const { pushToast } = useToast();
+
   // ── Save period edits ──
 
   const savePeriodEdits = async (periodToEdit: Record<string, unknown>, patch: Record<string, unknown>) => {
@@ -85,7 +88,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
       navigate(seasonsBasePath);
     } catch (e) {
       logger.error('Error deleting season', e);
-      alert('Error deleting season');
+      pushToast({ message: 'Error deleting season', type: 'error' });
     }
   }, [resolvedSeasonId, effectiveSeasonId, season?.name, seasonsBasePath, navigate]);
 

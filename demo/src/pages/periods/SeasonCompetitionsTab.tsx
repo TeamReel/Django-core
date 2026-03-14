@@ -1,8 +1,9 @@
 import React from 'react';
 import { Alert, Badge, Card } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 import { Table } from '../../shims/design-system';
-import { api } from '../../api';
+import { api } from '@/api';
 import type { Period } from '../../types/season';
 import s from './ProjectSeasonDetailPage.module.css';
 
@@ -36,7 +37,9 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
   setSelectedEditPeriod,
   setIsPeriodEditModalOpen,
   setCompetitions,
-}) => (
+}) => {
+  const { pushToast } = useToast();
+  return (
   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div className="lg:col-span-3">
       <Card>
@@ -130,7 +133,7 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
                                 setCompetitions((prev) => prev.filter((c) => c.id !== competition.id));
                               } catch (e) {
                                 logger.error('Error deleting competition', e);
-                                alert('Error deleting competition');
+                                pushToast({ message: 'Error deleting competition', type: 'error' });
                               }
                             }}
                           >
@@ -149,5 +152,6 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
     </div>
   </div>
 );
+};
 
 export default SeasonCompetitionsTab;

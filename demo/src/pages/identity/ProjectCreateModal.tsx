@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import styles from './ProjectCreateModal.module.css';
 
 type OrgOption = { id: string; name: string; slug?: string };
@@ -101,7 +102,7 @@ export default function ProjectCreateModal({
       onClose();
     } catch (err) {
       logger.error('Failed to create', err);
-      setError(err instanceof Error ? err.message : 'Failed to create');
+      setError(getErrorMessage(err));
     } finally {
       setSaving(false);
     }

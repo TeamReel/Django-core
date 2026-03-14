@@ -9,10 +9,12 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { useToast } from '@/components/ui/Toast';
+import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { fetchAllPages } from '../../utils/fetchAllPages';
+import type { ProjectMembership } from '@/types/api/project';
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -115,8 +117,9 @@ export function useSquadPageData(): UseSquadPageDataReturn {
   const params = useParams();
   const { user } = useAuth();
   const { context, organisations: myOrganisations } = useContextSwitcher();
+  const { pushToast } = useToast();
 
-  const apiBaseUrl = getApiBaseUrl();
+  const apiBaseUrl = getApiV1BaseUrl();
 
   const orgSlugOrId = String(params.orgId || '').trim();
   const projectSlugOrId = String(params.projectId || '').trim();
@@ -241,8 +244,8 @@ export function useSquadPageData(): UseSquadPageDataReturn {
         }
 
         // Resolve season UUID
-        const rootPeriodsUrl = `${apiBaseUrl}/api/v1/periods/?page_size=500&project_id=${encodeURIComponent(projectJson.id)}&parent_id=null`;
-        const allPeriods = await fetchAllPages<any>(rootPeriodsUrl, { credentials: 'include' }, { ttlMs: 60_000, cacheKey: `periods:root:${projectJson.id}` });
+        const rootPeriodsUrl = `${apiBaseUrl}/periods/?page_size=500&project_id=${encodeURIComponent(projectJson.id)}&parent_id=null`;
+        const allPeriods = await fetchAllPages<Period>(rootPeriodsUrl, { credentials: 'include' }, { ttlMs: 60_000, cacheKey: `periods:root:${projectJson.id}` });
         const seasonOptions = allPeriods.filter(isSeasonPeriod);
         if (!isCancelled) setSeasonsForSwitcher(seasonOptions);
 
@@ -264,8 +267,8 @@ export function useSquadPageData(): UseSquadPageDataReturn {
         }
 
         // Squad members
-        const membersUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectJson.id)}/members/?period=${encodeURIComponent(seasonUuid)}&page_size=200`;
-        const membersList = await fetchAllPages<any>(membersUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
+        const membersUrl = `${apiBaseUrl}/projects/${encodeURIComponent(projectJson.id)}/members/?period=${encodeURIComponent(seasonUuid)}&page_size=200`;
+        const membersList = await fetchAllPages<ProjectMembership>(membersUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
         if (!isCancelled) setMembers(Array.isArray(membersList) ? membersList : []);
       } catch (e) {
         logger.error('Failed to load squad', e);
@@ -298,7 +301,7 @@ export function useSquadPageData(): UseSquadPageDataReturn {
     try {
       await api.delete(`/periods/${encodeURIComponent(seasonUuid)}/`);
       navigate(seasonsBasePath);
-    } catch (e) { logger.error('Error deleting season', e); alert('Error deleting season'); }
+    } catch (e) { logger.error('Error deleting season', e); pushToast({ message: 'Error deleting season', type: 'error' }); }
   };
 
   const deleteMembership = async (membership: Membership) => {
@@ -313,7 +316,7 @@ export function useSquadPageData(): UseSquadPageDataReturn {
         `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
       );
       setMembers((prev) => prev.filter((m) => String(m.id) !== membershipId));
-    } catch (e) { logger.error('Error removing member', e); alert(e instanceof Error ? e.message : 'Error removing member'); }
+    } catch (e) { logger.error('Error removing member', e); pushToast({ message: e instanceof Error ? e.message : 'Error removing member', type: 'error' }); }
   };
 
   const savePeriodEdit = async (payload: Record<string, unknown>) => {

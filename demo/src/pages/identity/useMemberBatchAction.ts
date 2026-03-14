@@ -7,7 +7,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { logger } from '@/utils/logger';
-import { api, ApiError } from '../../api';
+import { api, ApiError } from '@/api';
 import { getMemberName } from './memberBatchAction.types';
 import type { BatchMemberEntry, TeamOption, ActionType, ActionConfig } from './memberBatchAction.types';
 

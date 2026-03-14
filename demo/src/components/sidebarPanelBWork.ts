@@ -8,6 +8,7 @@
 import { matchPath } from 'react-router-dom';
 import { looksLikeUuid } from '../utils/periodPath';
 import { getParam } from './sidebarPanelBWork.types';
+import { routes } from '../routes';
 import type { WorkSectionParams, PanelBResult } from './sidebarPanelBWork.types';
 import {
     buildDashboardSection,
@@ -108,7 +109,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
 
     /* ── Dashboard / Recents / Favorites ────────────────────────── */
 
-    if (path === '/dashboard' || path === '/recents' || path === '/favorites') {
+    if (path === routes.dashboard() || path === '/recents' || path === '/favorites') {
         return buildDashboardSection();
     }
 

@@ -12,7 +12,6 @@ import {
   PageContent,
 } from '@django-core/page-templates';
 import styles from './WebSocketTestPage.module.css';
-// import AppShell from '../../components/AppShell';
 
 interface LogMessage {
   id: number;

@@ -2,7 +2,7 @@
  * useMatchesData – Hook for fetching and managing match selection
  */
 import { useEffect } from 'react';
-import { useActivities, type Activity } from '../../../hooks/useActivities';
+import { useActivities, type Activity } from '@/hooks/useActivities';
 import { useMatchWizard } from '../MatchWizardContext';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';

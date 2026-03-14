@@ -1,6 +1,5 @@
 import { Button, Card, Badge } from '@django-core/design-system';
 import { useTheme, themeVars } from '@django-core/theme-system';
-import AppShell from '../../components/AppShell';
 import styles from './ThemePage.module.css';
 
 export function ThemePage() {
@@ -8,7 +7,6 @@ export function ThemePage() {
   const isDarkMode = resolvedMode === 'dark';
 
   return (
-    <AppShell>
     <div className={`bg-primary ${styles.pageWrapper}`} data-testid="theme-page">
       <div className="p-24 border-bottom bg-surface">
         <h1 className={`fw-700 text-primary m-0 mb-8 ${styles.pageTitle}`}>Theme System</h1>
@@ -81,7 +79,6 @@ export function ThemePage() {
         </div>
       </div>
     </div>
-    </AppShell>
   );
 }
 

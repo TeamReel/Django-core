@@ -4,7 +4,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { fetchAllPages } from '../utils/fetchAllPages';
 import { periodPathKey } from '../utils/periodPath';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { getApiV1BaseUrl } from '../utils/apiFetch';
 import {
   type AppProjectRow,
   type AppPeriodRow,
@@ -13,6 +13,13 @@ import {
   APP_LAST_CTX_KEY,
   parseAppPath,
 } from './appSelectionParser';
+
+/** Minimal organisation shape for UUID→slug resolution. */
+interface OrganisationRow {
+  id: string | number;
+  slug: string;
+  name?: string;
+}
 
 export function useAppSelection(): AppSelection {
   const location = useLocation();
@@ -128,7 +135,7 @@ export function useAppSelection(): AppSelection {
         console.time(`[AppSelection] Computation ${auditId}`);
     }
 
-    const apiBaseUrl = getApiBaseUrl();
+    const apiBaseUrl = getApiV1BaseUrl();
 
     const isUuid = (value: unknown) =>
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
@@ -193,8 +200,8 @@ export function useAppSelection(): AppSelection {
         // Organisation API lookup_field is `slug`, so using UUID will 404.
         if (isUuid(orgSlug) || isNumericId(orgSlug)) {
           try {
-            const orgs = await fetchAllPages<any>(
-              `${apiBaseUrl}/api/v1/organisations/?page_size=250`,
+            const orgs = await fetchAllPages<OrganisationRow>(
+              `${apiBaseUrl}/organisations/?page_size=250`,
               { credentials: 'include' },
               { ttlMs: 120_000 },
             );
@@ -215,12 +222,12 @@ export function useAppSelection(): AppSelection {
         // Fetch accessible clubs + teams for this organisation.
         const [clubs, teams] = await Promise.all([
           fetchAllPages<AppProjectRow>(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=500&parent_project__isnull=true`,
+            `${apiBaseUrl}/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=500&parent_project__isnull=true`,
             { credentials: 'include' },
             { ttlMs: 120_000 }
           ),
           fetchAllPages<AppProjectRow>(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=2000&parent_project__isnull=false`,
+            `${apiBaseUrl}/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=2000&parent_project__isnull=false`,
             { credentials: 'include' },
             { ttlMs: 120_000 }
           ),
@@ -309,7 +316,7 @@ export function useAppSelection(): AppSelection {
         if (selectedTeam) {
           try {
             const seasons = await fetchAllPages<AppPeriodRow>(
-              `${apiBaseUrl}/api/v1/periods/?page_size=250&project_id=${encodeURIComponent(String(selectedTeam.id))}&type=season`,
+              `${apiBaseUrl}/periods/?page_size=250&project_id=${encodeURIComponent(String(selectedTeam.id))}&type=season`,
               { credentials: 'include' },
               { ttlMs: 120_000, cacheKey: `GET:seasons:${orgSlug}:${selectedTeam.id}` }
             );

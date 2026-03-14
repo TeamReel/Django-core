@@ -90,7 +90,7 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} aria-live="polite" aria-atomic="false">
       {toasts.map((t) => (
         <div
           key={t.id}

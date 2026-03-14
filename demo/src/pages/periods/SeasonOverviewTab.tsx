@@ -11,8 +11,8 @@ import ov from './SeasonOverviewTab.module.css';
 export interface SeasonOverviewTabProps {
   season: Period | null;
   competitions: Period[];
-  members: any[];
-  matches: any[];
+  members: Record<string, unknown>[];
+  matches: Record<string, unknown>[];
   matchesLoading: boolean;
   navigateToTab: (tabId: string) => void;
   isTeamRoute: boolean;

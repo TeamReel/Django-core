@@ -163,7 +163,7 @@ export function MemberEditSheet({
   };
 
   return (
-    <div className={st.overlay} onClick={onClose}>
+    <div className={st.overlay} onClick={onClose} role="presentation">
       <div className={st.sheet} onClick={(e) => e.stopPropagation()} role="dialog">
         {/* ── Handle ── */}
         <div className={st.handleRow}>

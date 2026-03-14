@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Badge, Button } from '../../../shims/design-system';
-import { ListDetail } from '../../../shims/page-templates';
+import { Card, Badge, Button } from '@/shims/design-system';
+import { ListDetail } from '@/shims/page-templates';
 import { MOCK_TASKS } from './mockData';
 
 export function ListDetailTabPanel() {

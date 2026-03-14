@@ -3,10 +3,54 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Button } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
 import { PageContent } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
 import { SkeletonDetailPage } from '../../components/Skeleton';
 import { api } from '@/api';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
+
+/** Activity/match record from /activities/:id/ */
+interface MatchResponse {
+  id?: string;
+  slug?: string;
+  period?: { id?: string };
+  period_id?: string;
+  organisation?: { slug?: string; id?: string };
+  project?: {
+    slug?: string;
+    id?: string;
+    organisation?: { slug?: string; id?: string };
+    parent_project?: { slug?: string; id?: string } | string | number;
+    parent?: { slug?: string; id?: string } | string | number;
+    parent_project_id?: string | number;
+    parent_id?: string | number;
+  };
+}
+/** Period record from /periods/:id/ */
+interface PeriodResponse {
+  id?: string;
+  slug?: string;
+  name?: string;
+  parent_period?: { id?: string };
+  parent_period_id?: string;
+  organisation?: { slug?: string; id?: string };
+  start_date?: string;
+  end_date?: string;
+}
+/** Organisation record from /organisations/:id/ */
+interface OrgResponse {
+  id?: string;
+  slug?: string;
+  name?: string;
+}
+/** Project record from /projects/:id/ */
+interface ProjectResponse {
+  id?: string;
+  slug?: string;
+  name?: string;
+  parent_project?: { slug?: string; id?: string } | string | number;
+  parent?: { slug?: string; id?: string } | string | number;
+  parent_project_id?: string | number;
+  parent_id?: string | number;
+}
 
 const getEnvelopeData = <T,>(raw: unknown): T => raw as T;
 
@@ -39,8 +83,8 @@ export default function LegacyMatchRedirectPage() {
         setError(null);
 
         // 1) Fetch match
-        const matchRes = await api.get<any>(`/activities/${encodeURIComponent(id)}/`);
-        const match = getEnvelopeData<any>(matchRes);
+        const matchRes = await api.get<MatchResponse>(`/activities/${encodeURIComponent(id)}/`);
+        const match = getEnvelopeData<MatchResponse>(matchRes);
         const matchKeyOrId = String(match?.slug || match?.id || id).trim();
 
         // 2) Fetch competition (match.period)
@@ -50,8 +94,8 @@ export default function LegacyMatchRedirectPage() {
           return;
         }
 
-        const competitionData = await api.get<any>(`/periods/${encodeURIComponent(competitionId)}/`);
-        const competition = getEnvelopeData<any>(competitionData);
+        const competitionData = await api.get<PeriodResponse>(`/periods/${encodeURIComponent(competitionId)}/`);
+        const competition = getEnvelopeData<PeriodResponse>(competitionData);
         const competitionKeyOrId = String(periodPathKey(competition) || competitionId).trim();
 
         const seasonUuid = String(competition?.parent_period?.id || competition?.parent_period_id || '').trim();
@@ -60,8 +104,8 @@ export default function LegacyMatchRedirectPage() {
           return;
         }
 
-        const seasonData = await api.get<any>(`/periods/${encodeURIComponent(seasonUuid)}/`).catch(() => null);
-        const season = seasonData ? getEnvelopeData<any>(seasonData) : null;
+        const seasonData = await api.get<PeriodResponse>(`/periods/${encodeURIComponent(seasonUuid)}/`).catch(() => null);
+        const season = seasonData ? getEnvelopeData<PeriodResponse>(seasonData) : null;
         const seasonKeyOrId = (season && periodPathKey(season)) || seasonUuid;
 
         // 3) Determine org
@@ -87,7 +131,7 @@ export default function LegacyMatchRedirectPage() {
         let orgKeyOrId = orgSlugOrId;
         if (looksLikeUuid(orgSlugOrId)) {
           try {
-            const org = await api.get<any>(`/organisations/${encodeURIComponent(orgSlugOrId)}/`);
+            const org = await api.get<OrgResponse>(`/organisations/${encodeURIComponent(orgSlugOrId)}/`);
             const resolved = String(org?.slug || org?.id || orgSlugOrId).trim();
             if (resolved) orgKeyOrId = resolved;
           } catch {
@@ -124,13 +168,13 @@ export default function LegacyMatchRedirectPage() {
           try {
             // Prefer org-scoped endpoint; global /projects/:id might not resolve numeric IDs.
             try {
-              const club = await api.get<any>(
+              const club = await api.get<ProjectResponse>(
                 `/organisations/${encodeURIComponent(orgKeyOrId)}/projects/${encodeURIComponent(embeddedParentId)}/`,
               );
               clubSlugOrId = String(club?.slug || club?.id || embeddedParentId).trim() || null;
             } catch {
               try {
-                const club = await api.get<any>(`/projects/${encodeURIComponent(embeddedParentId)}/`);
+                const club = await api.get<ProjectResponse>(`/projects/${encodeURIComponent(embeddedParentId)}/`);
                 clubSlugOrId = String(club?.slug || club?.id || embeddedParentId).trim() || null;
               } catch {
                 clubSlugOrId = embeddedParentId;

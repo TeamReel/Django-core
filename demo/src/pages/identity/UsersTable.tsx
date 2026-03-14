@@ -7,6 +7,7 @@ import { Table } from '../../shims/design-system';
 import styles from './UsersTable.module.css';
 import { routes } from '../../routes';
 import type { UserProject, UserRowItem, UsersTableProps, UserRowProps } from './UsersTable.types';
+import type { User } from './useUsersData';
 import { UserActions } from './UsersTableActions';
 
 export const UsersTable: React.FC<UsersTableProps> = ({
@@ -99,7 +100,7 @@ const UserRow: React.FC<UserRowProps & { item: UserRowItem }> = ({
   fetchUsers,
 }) => {
   const isMembership = !!item.user;
-  const user: any = isMembership ? item.user : item;
+  const user = (isMembership ? item.user : item) as User;
   const userOrgs = user.organisations || [];
   const userProjects = user.projects || [];
   const displayRole = user.role || 'User';

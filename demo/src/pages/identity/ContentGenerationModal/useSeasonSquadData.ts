@@ -5,7 +5,7 @@
  * getMemberAssetUrl/getMemberNameById helpers.
  */
 import { useState, useEffect, useMemo } from 'react';
-import { projectsApi } from '../../../api';
+import { projectsApi } from '@/api';
 import { logger } from '@/utils/logger';
 import type { ContentTemplate, Participation } from './types';
 import { ASSET_TYPE_TO_MEDIA_KEY } from './constants';

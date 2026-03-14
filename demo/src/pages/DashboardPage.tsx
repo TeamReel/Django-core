@@ -36,6 +36,8 @@ export default function DashboardPage() {
     () => import('./identity/DirectoryPage'),
     () => import('./identity/SeasonDetailPage'),
     () => import('./activities/MatchDetailWrapper'),
+    () => import('./aistudio/AIStudioPage'),
+    () => import('./ApprovalsPage'),
   ]);
 
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(

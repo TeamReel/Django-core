@@ -1,4 +1,4 @@
-import { api } from '../api';
+import { api } from '@/api';
 
 export type ActiveContextKind =
   | 'organisation'
@@ -27,6 +27,6 @@ export async function setActiveContext(kind: ActiveContextKind, id?: string | nu
 }
 
 export async function getActiveContext() {
-  const raw = await api.get<any>('/auth/active-context/');
+  const raw = await api.get<Record<string, unknown>>('/auth/active-context/');
   return raw?.data ?? raw;
 }

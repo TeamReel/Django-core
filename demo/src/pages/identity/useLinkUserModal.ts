@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { logger } from '@/utils/logger';
 import { fetchAllPages } from '../../utils/fetchAllPages';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { api, ApiError } from '../../api';
+import { getApiV1BaseUrl } from '../../utils/apiFetch';
+import { api, ApiError } from '@/api';
+import type { OrgMembershipListItem } from '@/types/api/organisation';
+import type { ProjectMembership } from '@/types/api/project';
 import type { Organisation, ProjectOption, User, PeriodOption, LinkUserModalProps } from './linkUserModalTypes';
 
 type HookProps = Pick<LinkUserModalProps, 'opened' | 'user' | 'organisations' | 'clubs' | 'teams' | 'initialOrganisationSlugOrId' | 'onSuccess' | 'onClose'>;
@@ -30,7 +32,7 @@ export function useLinkUserModal({
   const [error, setError] = useState<string | null>(null);
   const [successNote, setSuccessNote] = useState<string | null>(null);
 
-  const apiBaseUrl = getApiBaseUrl();
+  const apiBaseUrl = getApiV1BaseUrl();
 
   // ── derived / memos ────────────────────────────────────────
   const userDisplayName = useMemo(() => {
@@ -146,7 +148,7 @@ export function useLinkUserModal({
     let cancelled = false;
     (async () => {
       try {
-        const url = `${apiBaseUrl}/api/v1/periods/?page_size=250&project_id=${encodeURIComponent(tid)}&type=season`;
+        const url = `${apiBaseUrl}/periods/?page_size=250&project_id=${encodeURIComponent(tid)}&type=season`;
         const results = await fetchAllPages<PeriodOption>(
           url,
           { credentials: 'include' },
@@ -235,8 +237,8 @@ export function useLinkUserModal({
     const orgSlugOrId = resolveOrgSlugOrIdForApi();
     if (!orgSlugOrId) throw new Error('Federation slug/id missing');
 
-    const members = await fetchAllPages<any>(
-      `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/members/?page_size=500`,
+    const members = await fetchAllPages<OrgMembershipListItem>(
+      `${apiBaseUrl}/organisations/${encodeURIComponent(orgSlugOrId)}/members/?page_size=500`,
       { credentials: 'include' },
       { ttlMs: 5_000, cacheKey: `org:${orgSlugOrId}:members:lookup:${String(user.id)}`, maxPages: 50, maxItems: 10_000 },
     );
@@ -270,8 +272,8 @@ export function useLinkUserModal({
     const direct = String(projectMembershipIdByProjectId.get(pid) || '').trim();
     if (direct) return direct;
 
-    const members = await fetchAllPages<any>(
-      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/?page_size=500`,
+    const members = await fetchAllPages<ProjectMembership>(
+      `${apiBaseUrl}/projects/${encodeURIComponent(pid)}/members/?page_size=500`,
       { credentials: 'include' },
       { ttlMs: 5_000, cacheKey: `project:${pid}:members:lookup:${String(user.id)}`, maxPages: 50, maxItems: 10_000 },
     );

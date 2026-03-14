@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
+import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
 
 export default defineConfig({
@@ -47,13 +48,42 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Heavy icon library — own chunk, cached long-term
-          'lucide-vendor': ['lucide-react'],
-          // Recharts charting library
-          'recharts-vendor': ['recharts'],
+        manualChunks(id) {
+          // ── Vendor splits ──
+          if (id.includes('node_modules')) {
+            if (id.includes('react-dom')) return 'vendor-react';
+            if (id.includes('react-router-dom')) return 'vendor-router';
+            if (id.includes('lucide-react')) return 'vendor-icons';
+            if (id.includes('recharts') || id.includes('d3-')) return 'vendor-recharts';
+            if (id.includes('react-window')) return 'vendor-virtualization';
+            return 'vendor';
+          }
+          // ── Feature area splits ──
+          if (id.includes('/pages/identity/') || id.includes('/pages/organisations/')) return 'chunk-identity';
+          if (id.includes('/pages/periods/')) return 'chunk-periods';
+          if (id.includes('/pages/config/')) return 'chunk-config';
+          if (id.includes('/pages/platform/')) return 'chunk-platform';
+          if (id.includes('/pages/frontend/')) return 'chunk-frontend-dev';
+          if (id.includes('/pages/docs/')) return 'chunk-docs';
+          if (id.includes('/pages/activities/')) return 'chunk-activities';
+          if (id.includes('/pages/aistudio/')) return 'chunk-aistudio';
+          if (id.includes('/pages/studio/')) return 'chunk-studio';
+          if (id.includes('/pages/medialib/')) return 'chunk-medialib';
+          if (id.includes('/pages/work/')) return 'chunk-work';
+          if (id.includes('/components/CreateWizard/')) return 'chunk-create-wizard';
+          if (id.includes('/components/MatchWizardV2/')) return 'chunk-match-wizard';
         },
       },
+      plugins: [
+        // Bundle analysis — run with: ANALYZE=true pnpm build
+        ...(process.env.ANALYZE ? [visualizer({
+          open: true,
+          filename: 'bundle-stats.html',
+          gzipSize: true,
+          brotliSize: true,
+          template: 'treemap',
+        })] : []),
+      ],
     },
   },
   test: {

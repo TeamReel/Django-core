@@ -11,13 +11,14 @@
  * - Sports categories
  */
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, useReducer } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { formReducer, makeSetter } from '../utils/formReducer';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useSports } from './useSports';
 import { fetchAllPages } from '../utils/fetchAllPages';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { getApiV1BaseUrl } from '../utils/apiFetch';
 import { api } from '@/api';
 import { isUuid, isNumericId, buildSeasonOptions } from '../utils/directoryHelpers';
 import { logger } from '@/utils/logger';
@@ -59,47 +60,77 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
 
   // ── State ──────────────────────────────────────────────────────────
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  interface DirFiltersState {
+    isLoading: boolean;
+    error: string | null;
+    organisations: OrganisationOption[];
+    clubs: ProjectOption[];
+    teams: ProjectOption[];
+    lockedOrgSlug: string;
+    selectedOrgId: string;
+    selectedClubId: string;
+    selectedTeamId: string;
+    statusFilter: string;
+    sportFilter: string;
+    variantFilter: string;
+    selectedSeasonName: string;
+    seasons: Period[];
+    selectedCompetitionId: string;
+    competitions: Period[];
+    refreshKey: number;
+  }
 
-  const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
-  const [clubs, setClubs] = useState<ProjectOption[]>([]);
-  const [teams, setTeams] = useState<ProjectOption[]>([]);
+  const [s, dispatch] = useReducer(formReducer<DirFiltersState>, {
+    isLoading: true,
+    error: null,
+    organisations: [],
+    clubs: [],
+    teams: [],
+    lockedOrgSlug: '',
+    selectedOrgId: preselectedOrgId ? String(preselectedOrgId) : '',
+    selectedClubId: preselectedClubId ? String(preselectedClubId) : '',
+    selectedTeamId: preselectedTeamId ? String(preselectedTeamId) : '',
+    statusFilter: 'all',
+    sportFilter: 'all',
+    variantFilter: 'all',
+    selectedSeasonName: '',
+    seasons: [],
+    selectedCompetitionId: '',
+    competitions: [],
+    refreshKey: 0,
+  });
 
-  const [lockedOrgSlug, setLockedOrgSlug] = useState<string>('');
+  const setIsLoading       = useMemo(() => makeSetter(dispatch, 'isLoading'), [dispatch]);
+  const setError           = useMemo(() => makeSetter(dispatch, 'error'), [dispatch]);
+  const setOrganisations   = useMemo(() => makeSetter(dispatch, 'organisations'), [dispatch]);
+  const setClubs           = useMemo(() => makeSetter(dispatch, 'clubs'), [dispatch]);
+  const setTeams           = useMemo(() => makeSetter(dispatch, 'teams'), [dispatch]);
+  const setLockedOrgSlug   = useMemo(() => makeSetter(dispatch, 'lockedOrgSlug'), [dispatch]);
+  const _setSelectedOrgId  = useMemo(() => makeSetter(dispatch, 'selectedOrgId'), [dispatch]);
+  const _setSelectedClubId = useMemo(() => makeSetter(dispatch, 'selectedClubId'), [dispatch]);
+  const _setSelectedTeamId = useMemo(() => makeSetter(dispatch, 'selectedTeamId'), [dispatch]);
+  const setStatusFilter    = useMemo(() => makeSetter(dispatch, 'statusFilter'), [dispatch]);
+  const setSportFilter     = useMemo(() => makeSetter(dispatch, 'sportFilter'), [dispatch]);
+  const setVariantFilter   = useMemo(() => makeSetter(dispatch, 'variantFilter'), [dispatch]);
+  const setSelectedSeasonName     = useMemo(() => makeSetter(dispatch, 'selectedSeasonName'), [dispatch]);
+  const setSeasons                = useMemo(() => makeSetter(dispatch, 'seasons'), [dispatch]);
+  const setSelectedCompetitionId  = useMemo(() => makeSetter(dispatch, 'selectedCompetitionId'), [dispatch]);
+  const setCompetitions           = useMemo(() => makeSetter(dispatch, 'competitions'), [dispatch]);
+  const setRefreshKey             = useMemo(() => makeSetter(dispatch, 'refreshKey'), [dispatch]);
 
-  const [selectedOrgId, _setSelectedOrgId] = useState<string>(() =>
-    preselectedOrgId ? String(preselectedOrgId) : '',
-  );
-  const [selectedClubId, _setSelectedClubId] = useState<string>(
-    preselectedClubId ? String(preselectedClubId) : '',
-  );
-  const [selectedTeamId, _setSelectedTeamId] = useState<string>(
-    preselectedTeamId ? String(preselectedTeamId) : '',
-  );
-
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sportFilter, setSportFilter] = useState<string>('all');
-  const [variantFilter, setVariantFilter] = useState<string>('all');
-
-  // Season/competition cascade
-  const [selectedSeasonName, setSelectedSeasonName] = useState<string>('');
-  const [seasons, setSeasons] = useState<Period[]>([]);
-  const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>('');
-  const [competitions, setCompetitions] = useState<Period[]>([]);
-
-  const [refreshKey, setRefreshKey] = useState(0);
-  const triggerRefresh = useCallback(() => setRefreshKey((k) => k + 1), []);
+  const triggerRefresh = useCallback(() => setRefreshKey((k) => k + 1), [setRefreshKey]);
 
   // ── Cascading setters ──────────────────────────────────────────────
 
   const setSelectedOrgId = useCallback(
     (v: string) => {
-      _setSelectedOrgId(v);
-      if (!clubLocked) _setSelectedClubId('');
-      if (!teamLocked) _setSelectedTeamId('');
-      if (showSeasonFilter) setSelectedSeasonName('');
-      if (showCompetitionFilter) setSelectedCompetitionId('');
+      dispatch({ type: 'patch', payload: {
+        selectedOrgId: v,
+        ...(!clubLocked ? { selectedClubId: '' } : {}),
+        ...(!teamLocked ? { selectedTeamId: '' } : {}),
+        ...(showSeasonFilter ? { selectedSeasonName: '' } : {}),
+        ...(showCompetitionFilter ? { selectedCompetitionId: '' } : {}),
+      }});
     },
     [clubLocked, teamLocked, showSeasonFilter, showCompetitionFilter],
   );
@@ -107,10 +138,12 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
   const setSelectedClubId = useCallback(
     (v: string) => {
       if (clubLocked) return;
-      _setSelectedClubId(v);
-      if (!teamLocked) _setSelectedTeamId('');
-      if (showSeasonFilter) setSelectedSeasonName('');
-      if (showCompetitionFilter) setSelectedCompetitionId('');
+      dispatch({ type: 'patch', payload: {
+        selectedClubId: v,
+        ...(!teamLocked ? { selectedTeamId: '' } : {}),
+        ...(showSeasonFilter ? { selectedSeasonName: '' } : {}),
+        ...(showCompetitionFilter ? { selectedCompetitionId: '' } : {}),
+      }});
     },
     [clubLocked, teamLocked, showSeasonFilter, showCompetitionFilter],
   );
@@ -118,92 +151,96 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
   const setSelectedTeamId = useCallback(
     (v: string) => {
       if (teamLocked) return;
-      _setSelectedTeamId(v);
-      if (showSeasonFilter) setSelectedSeasonName('');
-      if (showCompetitionFilter) setSelectedCompetitionId('');
+      dispatch({ type: 'patch', payload: {
+        selectedTeamId: v,
+        ...(showSeasonFilter ? { selectedSeasonName: '' } : {}),
+        ...(showCompetitionFilter ? { selectedCompetitionId: '' } : {}),
+      }});
     },
     [teamLocked, showSeasonFilter, showCompetitionFilter],
   );
 
   const clearAll = useCallback(() => {
-    if (!clubLocked) _setSelectedClubId('');
-    if (!teamLocked) _setSelectedTeamId('');
-    setStatusFilter('all');
-    setSportFilter('all');
-    if (showVariantFilter) setVariantFilter('all');
-    if (showSeasonFilter) setSelectedSeasonName('');
-    if (showCompetitionFilter) setSelectedCompetitionId('');
-    if (isSuperAdmin && !orgLocked) _setSelectedOrgId('');
+    dispatch({ type: 'patch', payload: {
+      ...(!clubLocked ? { selectedClubId: '' } : {}),
+      ...(!teamLocked ? { selectedTeamId: '' } : {}),
+      statusFilter: 'all',
+      sportFilter: 'all',
+      ...(showVariantFilter ? { variantFilter: 'all' } : {}),
+      ...(showSeasonFilter ? { selectedSeasonName: '' } : {}),
+      ...(showCompetitionFilter ? { selectedCompetitionId: '' } : {}),
+      ...(isSuperAdmin && !orgLocked ? { selectedOrgId: '' } : {}),
+    }});
   }, [clubLocked, teamLocked, showVariantFilter, showSeasonFilter, showCompetitionFilter, isSuperAdmin, orgLocked]);
 
   // ── Org slug helpers ───────────────────────────────────────────────
 
   const getSelectedOrgSlugForApi = useCallback(() => {
-    const selectedOrg = selectedOrgId
-      ? organisations.find(
-          (o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId),
+    const selectedOrg = s.selectedOrgId
+      ? s.organisations.find(
+          (o) => String(o.id) === String(s.selectedOrgId) || String(o.slug) === String(s.selectedOrgId),
         )
       : null;
 
-    if (selectedOrgId && !selectedOrg) return '';
+    if (s.selectedOrgId && !selectedOrg) return '';
 
     if (orgLocked) {
-      return selectedOrg?.slug || lockedOrgSlug || '';
+      return selectedOrg?.slug || s.lockedOrgSlug || '';
     }
 
     return (
       selectedOrg?.slug ||
-      (!selectedOrgId ? context.organisation?.slug : '') ||
+      (!s.selectedOrgId ? context.organisation?.slug : '') ||
       ''
     );
-  }, [selectedOrgId, organisations, orgLocked, lockedOrgSlug, context.organisation?.slug]);
+  }, [s.selectedOrgId, s.organisations, orgLocked, s.lockedOrgSlug, context.organisation?.slug]);
 
   const getSelectedOrgIdForApi = useCallback(() => {
-    const selectedOrg = selectedOrgId
-      ? organisations.find(
-          (o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId),
+    const selectedOrg = s.selectedOrgId
+      ? s.organisations.find(
+          (o) => String(o.id) === String(s.selectedOrgId) || String(o.slug) === String(s.selectedOrgId),
         )
       : null;
     const resolved = selectedOrg ? String(selectedOrg.id ?? '') : '';
     if (resolved && isUuid(resolved)) return resolved;
-    if (selectedOrgId && isUuid(selectedOrgId)) return String(selectedOrgId);
+    if (s.selectedOrgId && isUuid(s.selectedOrgId)) return String(s.selectedOrgId);
     return '';
-  }, [selectedOrgId, organisations]);
+  }, [s.selectedOrgId, s.organisations]);
 
   // Route key
   const orgKeyForRoutes = useMemo(() => {
-    const selectedOrg = selectedOrgId
-      ? organisations.find(
-          (o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId),
+    const selectedOrg = s.selectedOrgId
+      ? s.organisations.find(
+          (o) => String(o.id) === String(s.selectedOrgId) || String(o.slug) === String(s.selectedOrgId),
         )
       : null;
-    const orgSlugOrId = selectedOrg?.slug || selectedOrg?.id || selectedOrgId;
+    const orgSlugOrId = selectedOrg?.slug || selectedOrg?.id || s.selectedOrgId;
     return String(
       orgSlugOrId ||
         context?.organisation?.slug ||
         context?.organisation?.id ||
         '',
     ).trim();
-  }, [selectedOrgId, organisations, context]);
+  }, [s.selectedOrgId, s.organisations, context]);
 
   // ── Season options (Competitions + Matches) ────────────────────────
 
   const seasonOptions = useMemo(
-    () => (showSeasonFilter ? buildSeasonOptions(seasons) : []),
-    [seasons, showSeasonFilter],
+    () => (showSeasonFilter ? buildSeasonOptions(s.seasons) : []),
+    [s.seasons, showSeasonFilter],
   );
 
   const selectedSeasonIds = useMemo(() => {
-    if (!selectedSeasonName) return [] as string[];
+    if (!s.selectedSeasonName) return [] as string[];
     // If selectedSeasonName is an ID (from URL), match by id first.
-    const byId = seasons.find((s) => String(s.id) === String(selectedSeasonName));
+    const byId = s.seasons.find((ss) => String(ss.id) === String(s.selectedSeasonName));
     if (byId?.name) {
       const match = seasonOptions.find((o: SeasonOption) => o.name === String(byId.name));
       return match?.ids || [String(byId.id)];
     }
-    const match = seasonOptions.find((o: SeasonOption) => o.name === selectedSeasonName);
+    const match = seasonOptions.find((o: SeasonOption) => o.name === s.selectedSeasonName);
     return match?.ids || [];
-  }, [selectedSeasonName, seasonOptions, seasons]);
+  }, [s.selectedSeasonName, seasonOptions, s.seasons]);
 
   // ── Effects: init from preselected / URL ───────────────────────────
 
@@ -250,7 +287,7 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
 
   useEffect(() => {
     if (!orgLocked) {
-      if (lockedOrgSlug) setLockedOrgSlug('');
+      if (s.lockedOrgSlug) setLockedOrgSlug('');
       return;
     }
 
@@ -262,7 +299,7 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
       return;
     }
 
-    const fromList = organisations.find(
+    const fromList = s.organisations.find(
       (o) => String(o.id) === String(rawLockedId),
     )?.slug;
     if (fromList) {
@@ -286,20 +323,20 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
     return () => {
       cancelled = true;
     };
-  }, [orgLocked, preselectedOrgId, organisations]);
+  }, [orgLocked, preselectedOrgId, s.organisations]);
 
   // ── Fetch organisations ────────────────────────────────────────────
 
   useEffect(() => {
     const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
+      const apiBaseUrl = getApiV1BaseUrl();
       try {
         const myOrgIds = myOrganisations.map((o) => String(o.id));
 
-        const orgs = await fetchAllPages<any>(
-          `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
+        const orgs = await fetchAllPages<OrganisationOption>(
+          `${apiBaseUrl}/organisations/?page_size=100`,
           { credentials: 'include' },
-          { ttlMs: 120_000, bypass: refreshKey > 0 },
+          { ttlMs: 120_000, bypass: s.refreshKey > 0 },
         );
 
         const filteredOrgs = isSuperAdmin
@@ -332,7 +369,7 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
     };
 
     load();
-  }, [isSuperAdmin, myOrganisations, refreshKey]);
+  }, [isSuperAdmin, myOrganisations, s.refreshKey]);
 
   // ── Fetch clubs + teams ────────────────────────────────────────────
 
@@ -340,7 +377,7 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
     const load = async () => {
       setIsLoading(true);
       setError(null);
-      const apiBaseUrl = getApiBaseUrl();
+      const apiBaseUrl = getApiV1BaseUrl();
 
       try {
         const orgSlugForApi = getSelectedOrgSlugForApi();
@@ -354,14 +391,14 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
         if (orgSlugForApi) {
           const [allClubs, allTeams] = await Promise.all([
             fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=500&include_archived=true&parent_project__isnull=true`,
+              `${apiBaseUrl}/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=500&include_archived=true&parent_project__isnull=true`,
               { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
+              { ttlMs: 120_000, bypass: s.refreshKey > 0 },
             ),
             fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`,
+              `${apiBaseUrl}/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`,
               { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
+              { ttlMs: 120_000, bypass: s.refreshKey > 0 },
             ),
           ]);
           setClubs(allClubs);
@@ -369,14 +406,14 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
         } else if (!orgLocked) {
           const [allClubs, allTeams] = await Promise.all([
             fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
+              `${apiBaseUrl}/projects/?page_size=200&parent_project__isnull=true`,
               { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
+              { ttlMs: 120_000, bypass: s.refreshKey > 0 },
             ),
             fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
+              `${apiBaseUrl}/projects/?page_size=200&parent_project__isnull=false`,
               { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
+              { ttlMs: 120_000, bypass: s.refreshKey > 0 },
             ),
           ]);
           setClubs(allClubs);
@@ -391,7 +428,7 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
     };
 
     load();
-  }, [context.organisation?.slug, organisations, refreshKey, selectedOrgId, orgLocked, lockedOrgSlug, getSelectedOrgSlugForApi]);
+  }, [context.organisation?.slug, s.organisations, s.refreshKey, s.selectedOrgId, orgLocked, s.lockedOrgSlug, getSelectedOrgSlugForApi]);
 
   // ── Return ─────────────────────────────────────────────────────────
 
@@ -401,22 +438,22 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
     orgLocked,
     clubLocked,
     teamLocked,
-    organisations,
-    clubs,
-    teams,
-    selectedOrgId,
-    selectedClubId,
-    selectedTeamId,
-    statusFilter,
-    sportFilter,
-    variantFilter,
-    selectedSeasonName,
+    organisations: s.organisations,
+    clubs: s.clubs,
+    teams: s.teams,
+    selectedOrgId: s.selectedOrgId,
+    selectedClubId: s.selectedClubId,
+    selectedTeamId: s.selectedTeamId,
+    statusFilter: s.statusFilter,
+    sportFilter: s.sportFilter,
+    variantFilter: s.variantFilter,
+    selectedSeasonName: s.selectedSeasonName,
     seasonOptions,
     selectedSeasonIds,
-    seasons,
+    seasons: s.seasons,
     setSeasons,
-    selectedCompetitionId,
-    competitions,
+    selectedCompetitionId: s.selectedCompetitionId,
+    competitions: s.competitions,
     setCompetitions,
     setSelectedOrgId,
     setSelectedClubId,
@@ -427,12 +464,12 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
     setSelectedSeasonName,
     setSelectedCompetitionId,
     clearAll,
-    isLoading,
-    error,
+    isLoading: s.isLoading,
+    error: s.error,
     setError,
-    refreshKey,
+    refreshKey: s.refreshKey,
     triggerRefresh,
-    lockedOrgSlug,
+    lockedOrgSlug: s.lockedOrgSlug,
     getSelectedOrgSlugForApi,
     getSelectedOrgIdForApi,
     orgKeyForRoutes,

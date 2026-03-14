@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import AppShell from '../../components/AppShell';
 import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Card, Badge, Spinner } from '@django-core/design-system';
@@ -58,7 +57,7 @@ export function DocsPage() {
   };
 
   return (
-    <AppShell>
+    <>
       <PageHeader title="Documentation Browser" subtitle="B21 Module Documentation & Status" />
       <PageContent>
         <div className="page-container" data-testid="docs-page">
@@ -106,7 +105,7 @@ export function DocsPage() {
           )}
         </div>
       </PageContent>
-    </AppShell>
+    </>
   );
 }
 

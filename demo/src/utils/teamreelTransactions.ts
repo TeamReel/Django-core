@@ -1,4 +1,4 @@
-import { api, ApiError } from '../api';
+import { api, ApiError } from '@/api';
 
 type CreateTeamreelTransactionScope = 'club' | 'team' | 'season' | 'match' | 'user';
 

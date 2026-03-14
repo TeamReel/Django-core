@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   Card,
@@ -14,7 +15,6 @@ import {
 } from '@django-core/page-templates';
 import { apiFetch } from '../../utils/apiFetch';
 import styles from './SecurityPage.module.css';
-// import AppShell from '../../components/AppShell';
 
 /**
  * T018 - Security Page
@@ -175,7 +175,7 @@ export const SecurityPage: React.FC = () => {
         }
       } catch (err) {
         logger.error('Security fetch error', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch security data');
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
       }

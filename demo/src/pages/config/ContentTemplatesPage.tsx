@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card, Button, Badge, Input, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { TYPE_LABELS, SUBTYPE_LABELS, TEMPLATE_CATEGORIES } from './contentTemplatesData';
 import { useContentTemplatesData } from './useContentTemplatesData';
@@ -37,7 +36,7 @@ export default function ContentTemplatesPage() {
   } = useContentTemplatesData();
 
   return (
-    <AppShell>
+    <>
       <PageHeader
         title={pageTitle}
         subtitle="Manage AI content generation templates"
@@ -311,6 +310,6 @@ export default function ContentTemplatesPage() {
           }}
         />
       )}
-    </AppShell>
+    </>
   );
 }

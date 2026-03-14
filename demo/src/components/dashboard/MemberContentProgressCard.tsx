@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Users, ChevronRight, CheckCircle2, Circle } from 'lucide-react';
 import { api } from '@/api';
+import type { ProjectMembership } from '@/types/api/project';
+import type { GenerationRequest } from '@/types/api/generative';
 import styles from './MemberContentProgressCard.module.css';
 
 /** Expected member content types for a complete profile */
@@ -57,7 +59,7 @@ export const MemberContentProgressCard: React.FC = () => {
         setLoading(true);
 
         // Fetch team members
-        const { results: memberList } = await api.list<any>(
+        const { results: memberList } = await api.list<ProjectMembership>(
           `/organisations/${org.slug}/projects/${project.slug}/members/`,
           { pageSize: 50 },
         );
@@ -68,7 +70,7 @@ export const MemberContentProgressCard: React.FC = () => {
         }
 
         // Fetch completed member generation requests
-        const { results: genItems } = await api.list<any>('/generative/requests/', {
+        const { results: genItems } = await api.list<GenerationRequest>('/generative/requests/', {
           params: { status: 'completed', project: project.id },
           pageSize: 500,
         });

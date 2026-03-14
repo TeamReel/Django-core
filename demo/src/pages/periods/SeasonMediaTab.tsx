@@ -81,7 +81,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
     cropGuestCloseup,
     batchBrandAssets,
     batchMembers,
-  } = useSeasonMediaTabData({ members, project, apiBaseUrl, brandLogoUrl, brandSponsorUrl, batchBrandKits });
+  } = useSeasonMediaTabData({ members, project, apiBaseUrl, brandLogoUrl, brandSponsorUrl, batchBrandKits, onMembersReload });
 
   const isMobile = useIsMobile();
 
@@ -272,7 +272,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
         }}
         onAssetSaved={() => {
           setShowGuestAiModal(false);
-          setTimeout(() => { window.location.reload(); }, 1500);
+          setTimeout(() => { onMembersReload(); }, 1500);
         }}
       />
 

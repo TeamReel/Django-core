@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Badge } from '../../../shims/design-system';
+import { Card, Badge } from '@/shims/design-system';
 
 export function TablesTabPanel() {
   return (

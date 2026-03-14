@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import {
   Button,
   Card,
@@ -14,11 +15,11 @@ import {
   useBreadcrumbContextSwitcher,
 } from '../../shims/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import AppShell from '../../components/AppShell';
 import { Organisation } from '../../types';
 import type { OrganisationDetail } from '../../types/api';
-import { organisationsApi } from '../../api';
+import { organisationsApi } from '@/api';
 import { routes } from '../../routes';
+import { useFormFields } from '@/hooks/useFormFields';
 import styles from './OrganisationEditPage.module.css';
 
 /**
@@ -30,9 +31,12 @@ export const OrganisationEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { organisations } = useContextSwitcher();
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [isActive, setIsActive] = useState(true);
+
+  const { fields: form, setField, setFields } = useFormFields({
+    name: '',
+    description: '',
+    isActive: true as boolean,
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,12 +64,14 @@ export const OrganisationEditPage: React.FC = () => {
       try {
         setLoading(true);
         const data = await organisationsApi.get(currentOrgSlug);
-        setName(data.name);
-        setDescription(data.description || '');
-        setIsActive(data.is_active !== undefined ? data.is_active : true);
+        setFields({
+          name: data.name,
+          description: data.description || '',
+          isActive: data.is_active !== undefined ? data.is_active : true,
+        });
       } catch (err: unknown) {
         logger.error('Failed to load organisation', err);
-        setError(err instanceof Error ? err.message : 'Failed to load organisation');
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
       }
@@ -83,15 +89,15 @@ export const OrganisationEditPage: React.FC = () => {
 
     try {
       const updated = await organisationsApi.update(currentOrgSlug!, {
-        name,
-        description,
-        is_active: isActive,
+        name: form.name,
+        description: form.description,
+        is_active: form.isActive,
       } as Partial<OrganisationDetail>);
       const slugOrId = updated?.slug || updated?.id || resolvedOrg?.slug || id;
       navigate(routes.orgDetailLegacy({ orgId: String(slugOrId) }));
     } catch (err: unknown) {
       logger.error('Failed to update organisation', err);
-      setError(err instanceof Error ? err.message : 'Failed to update organisation');
+      setError(getErrorMessage(err));
     } finally {
       setSaving(false);
     }
@@ -103,7 +109,7 @@ export const OrganisationEditPage: React.FC = () => {
         <PageHeader
           title="Edit Organisation"
           breadcrumbs={[
-            { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+            { label: 'Dashboard', onClick: () => navigate(routes.dashboard()) },
             { label: 'Edit Organisation', current: true },
           ]}
         />
@@ -117,9 +123,9 @@ export const OrganisationEditPage: React.FC = () => {
   return (
     <>
       <PageHeader
-        title={`Edit ${name}`}
+        title={`Edit ${form.name}`}
         breadcrumbs={[
-          { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+          { label: 'Dashboard', onClick: () => navigate(routes.dashboard()) },
           {
             label: (
               <BreadcrumbContextSwitcher
@@ -149,8 +155,8 @@ export const OrganisationEditPage: React.FC = () => {
               </label>
               <Input
                 id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={form.name}
+                onChange={(e) => setField('name', e.target.value)}
                 placeholder="e.g. Acme Corp"
                 required
                 disabled={saving}
@@ -164,8 +170,8 @@ export const OrganisationEditPage: React.FC = () => {
               </label>
               <Input
                 id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={form.description}
+                onChange={(e) => setField('description', e.target.value)}
                 placeholder="Optional description"
                 disabled={saving}
                 className="w-full"
@@ -176,8 +182,8 @@ export const OrganisationEditPage: React.FC = () => {
               <input
                 type="checkbox"
                 id="is_active"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
+                checked={form.isActive}
+                onChange={(e) => setField('isActive', e.target.checked)}
                 disabled={saving}
                 className={styles.checkbox}
               />

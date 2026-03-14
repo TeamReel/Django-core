@@ -6,7 +6,7 @@
  * Extracted from useMediaLibData.tsx during Phase 26 refactoring.
  */
 import { useState, useCallback } from 'react';
-import { api } from '../../api';
+import { api } from '@/api';
 import { logger } from '@/utils/logger';
 import type { BrandAsset } from '../../hooks/useBrandAssets';
 import type { MemberMediaItem } from './medialibHelpers';

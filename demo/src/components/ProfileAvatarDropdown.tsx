@@ -182,7 +182,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
           {/* Menu Items */}
           <button
             role="menuitem"
-            onClick={() => handleNavigate('/preferences?tab=profile')}
+            onClick={() => handleNavigate('/profile')}
             className={styles.menuItem}
           >
             <User size={16} />
@@ -191,7 +191,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
 
           <button
             role="menuitem"
-            onClick={() => handleNavigate('/preferences')}
+            onClick={() => handleNavigate('/profile')}
             className={styles.menuItem}
           >
             <Settings size={16} />
@@ -200,7 +200,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
 
           <button
             role="menuitem"
-            onClick={() => handleNavigate('/credits?wallet=personal')}
+            onClick={() => handleNavigate('/profile')}
             className={styles.menuItem}
           >
             <Wallet size={16} />

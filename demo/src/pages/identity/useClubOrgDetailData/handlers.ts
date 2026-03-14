@@ -7,7 +7,7 @@ import { useCallback } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import type { BreadcrumbSwitcherOption } from '@django-core/page-templates';
 import type { Organisation } from '../clubOrgDetailHelpers';
-import { routes } from '../../../routes';
+import { routes } from '@/routes';
 
 interface UseClubOrgHandlersParams {
   org: Organisation | null;

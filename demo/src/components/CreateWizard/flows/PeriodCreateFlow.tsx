@@ -11,7 +11,7 @@
  *   - Competition: { ..., parent_period_id, metadata: { type: 'competition' } }
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { getErrorMessage } from '../../../utils/errorHelpers';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import { logger } from '@/utils/logger';
 
 import { WizardProvider, WizardShell, WizardStep, type WizardStepConfig } from '../../Wizard';
@@ -21,7 +21,7 @@ import { PeriodTypeStep, type PeriodTypeData, type PeriodType, type SeasonOption
 import { PeriodDetailsStep, type PeriodDetailsData, type SportVariantOption } from '../steps/PeriodDetailsStep';
 import { PeriodConfirmStep, type PeriodConfirmData } from '../steps/PeriodConfirmStep';
 import { api } from '@/api';
-import { useSports } from '../../../hooks/useSports';
+import { useSports } from '@/hooks/useSports';
 
 // ─── Step config ──────────────────────────────────────────
 

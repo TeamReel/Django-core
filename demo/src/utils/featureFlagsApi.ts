@@ -33,7 +33,7 @@ export async function fetchFlags(orgId: string | null, projectId?: string | null
   if (orgId) params.organisation_id = orgId;
   if (projectId) params.project_id = projectId;
 
-  const data = await api.get<any>(`${API_BASE}/resolve-all/`, { params });
+  const data = await api.get<ApiFeatureFlag[] | { results: ApiFeatureFlag[] }>(`${API_BASE}/resolve-all/`, { params });
   // Handle various response shapes
   return data?.results || (Array.isArray(data) ? data : []);
 }

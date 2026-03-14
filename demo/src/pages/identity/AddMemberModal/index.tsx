@@ -8,7 +8,7 @@ import { NewUserTab } from './NewUserTab';
 import { LEVEL_LABEL } from './types';
 import type { AddMemberModalProps } from './types';
 import modalStyles from './AddMemberModal.module.css';
-import { useEscapeKey } from '../../../hooks/useEscapeKey';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 // Re-export types for backward compatibility
 export type { AddMemberModalProps, ContextLevel, UserResult, NewUserFormData } from './types';
@@ -23,7 +23,7 @@ export default function AddMemberModal(props: AddMemberModalProps) {
   const levelLabel = LEVEL_LABEL[contextLevel];
 
   return (
-    <div className={`modal-backdrop overflow-y-auto p-16 ${modalStyles.backdrop}`} onClick={onClose}>
+    <div className={`modal-backdrop overflow-y-auto p-16 ${modalStyles.backdrop}`} onClick={onClose} role="presentation">
       <div onClick={(e) => e.stopPropagation()} className={`bg-surface p-24 rounded-12 text-primary flex-col ${modalStyles.panel}`} role="dialog">
         {/* Header */}
         <div className="flex-between mb-4">

@@ -7,8 +7,8 @@ vi.mock('@/api', () => ({
 }));
 vi.mock('@/utils/logger', () => ({ logger: { error: vi.fn() } }));
 
-import { useMemberBatchAction } from '../../../pages/identity/useMemberBatchAction';
-import type { BatchMemberEntry, TeamOption } from '../../../pages/identity/memberBatchAction.types';
+import { useMemberBatchAction } from '@/pages/identity/useMemberBatchAction';
+import type { BatchMemberEntry, TeamOption } from '@/pages/identity/memberBatchAction.types';
 
 const member = (id: string, name = 'User'): BatchMemberEntry => ({
   id,

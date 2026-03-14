@@ -4,6 +4,7 @@ import { api } from '@/api';
 import { Palette, Image, Type, Circle, Square, Hash } from 'lucide-react';
 import styles from './BrandProfileCard.module.css';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 
 interface DesignToken {
   id: string;
@@ -91,7 +92,7 @@ const BrandProfileCard = memo(function BrandProfileCard({
         }
 
         // Fetch brand profile for this entity
-        const { results } = await api.list<any>('/branding/profiles/', {
+        const { results } = await api.list<BrandProfile>('/branding/profiles/', {
           params: projectId
             ? { project: projectId }
             : { organisation: organisationId! },
@@ -114,7 +115,7 @@ const BrandProfileCard = memo(function BrandProfileCard({
         }
       } catch (err) {
         logger.error('Failed to load brand profile', err);
-        setError(err instanceof Error ? err.message : 'Failed to load brand profile');
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
       }

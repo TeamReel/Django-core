@@ -24,6 +24,7 @@ import {
   pollProcessingResult,
 } from './memberDetailUtils';
 import type { AssetVariantsMap, MembershipRecord } from './memberDetailUtils';
+import { useToast } from '@/components/ui/Toast';
 
 export interface MemberMediaActionsParams {
   membership: MembershipRecord | null;
@@ -78,6 +79,7 @@ export function useMemberMediaActions({
   org,
   apiBaseUrl,
 }: MemberMediaActionsParams): MemberMediaActions {
+  const { pushToast } = useToast();
   const [form, setForm] = useState<MemberMediaForm>(() => createEmptyMediaForm());
   const [videoVariants, setVideoVariants] = useState<AssetVariantsMap>(() => createEmptyVideoVariants());
   const [presignedCache, setPresignedCache] = useState<Record<string, string>>({});
@@ -151,18 +153,18 @@ export function useMemberMediaActions({
 
   const handleProfilePhotoUpload = useCallback(async (file: File) => {
     const userId = membership?.user?.id || membership?.user_id;
-    if (!userId) { alert('Geen user ID gevonden.'); return; }
+    if (!userId) { pushToast({ message: 'Geen user ID gevonden.', type: 'error' }); return; }
     setProfileUploading(true);
     setProfilePreview(URL.createObjectURL(file));
     try {
       const fd = new FormData();
       fd.append('avatar', file);
       await api.post(`/admin/users/${userId}/avatar/`, fd);
-      const memberData = await api.get<any>(`/projects/${project?.id}/members/${membershipId}/`);
+      const memberData = await api.get<MembershipRecord>(`/projects/${project?.id}/members/${membershipId}/`);
       if (memberData) setMembership(memberData);
     } catch (err) {
       logger.error('Profile photo upload error', err);
-      alert(err instanceof Error ? err.message : 'Upload mislukt');
+      pushToast({ message: err instanceof Error ? err.message : 'Upload mislukt', type: 'error' });
     } finally {
       setProfileUploading(false);
     }
@@ -174,9 +176,9 @@ export function useMemberMediaActions({
   const [legacyPhotoPreview, setLegacyPhotoPreview] = useState<string | null>(null);
 
   const handleLegacyPhotoUpload = useCallback(async (file: File) => {
-    if (!membershipId) { alert('Membership ID ontbreekt.'); return; }
+    if (!membershipId) { pushToast({ message: 'Membership ID ontbreekt.', type: 'error' }); return; }
     const organizationId = org?.id || project?.organisation?.id;
-    if (!organizationId) { alert('Organization ID ontbreekt.'); return; }
+    if (!organizationId) { pushToast({ message: 'Organization ID ontbreekt.', type: 'error' }); return; }
     setLegacyPhotoUploading(true);
     setLegacyPhotoPreview(URL.createObjectURL(file));
     try {
@@ -184,7 +186,7 @@ export function useMemberMediaActions({
       fd.append('file', file);
       fd.append('path_prefix', `members/${membershipId}/media/legacy_photo`);
       fd.append('organization', organizationId);
-      const uploadData = await api.post<any>('/files/', fd);
+      const uploadData = await api.post<{ storage_path?: string; presigned_url?: string }>('/files/', fd);
       const storagePath = uploadData?.storage_path;
       if (!storagePath) throw new Error('Geen storage path ontvangen');
 
@@ -204,14 +206,14 @@ export function useMemberMediaActions({
       const uploadedPresignedUrl = uploadData?.presigned_url;
       if (uploadedPresignedUrl) setPresignedCache(prev => ({ ...prev, [storagePath]: uploadedPresignedUrl }));
 
-      const memberData = await api.get<any>(`/projects/${project?.id}/members/${membershipId}/`);
+      const memberData = await api.get<MembershipRecord>(`/projects/${project?.id}/members/${membershipId}/`);
       if (memberData) setMembership(memberData);
 
       setLegacyPhotoPreview(null);
-      alert('Legacy foto succesvol geüpload!');
+      pushToast({ message: 'Legacy foto succesvol geüpload!', type: 'success' });
     } catch (err) {
       logger.error('Legacy photo upload error', err);
-      alert(err instanceof Error ? err.message : 'Upload mislukt');
+      pushToast({ message: err instanceof Error ? err.message : 'Upload mislukt', type: 'error' });
     } finally {
       setLegacyPhotoUploading(false);
     }
@@ -221,7 +223,7 @@ export function useMemberMediaActions({
   const [croppingCloseup, setCroppingCloseup] = useState<Record<string, boolean>>({});
 
   const cropCloseupFromFullbody = useCallback(async (kitType: string) => {
-    if (!membershipId) { alert('Membership ID ontbreekt.'); return; }
+    if (!membershipId) { pushToast({ message: 'Membership ID ontbreekt.', type: 'error' }); return; }
     setCroppingCloseup(prev => ({ ...prev, [kitType]: true }));
     try {
       const result = await api.post<Record<string, string>>('/generative/assets/crop-closeup/', { membership_id: membershipId, kit_type: kitType });
@@ -233,7 +235,7 @@ export function useMemberMediaActions({
       }));
     } catch (err) {
       logger.error('Closeup crop error', err);
-      alert(err instanceof Error ? err.message : 'Crop mislukt');
+      pushToast({ message: err instanceof Error ? err.message : 'Crop mislukt', type: 'error' });
     } finally {
       setCroppingCloseup(prev => ({ ...prev, [kitType]: false }));
     }
@@ -243,7 +245,7 @@ export function useMemberMediaActions({
   const [croppingHalfbody, setCroppingHalfbody] = useState<Record<string, boolean>>({});
 
   const cropHalfbodyFromFullbody = useCallback(async (kitType: string) => {
-    if (!membershipId) { alert('Membership ID ontbreekt.'); return; }
+    if (!membershipId) { pushToast({ message: 'Membership ID ontbreekt.', type: 'error' }); return; }
     setCroppingHalfbody(prev => ({ ...prev, [kitType]: true }));
     try {
       const result = await api.post<Record<string, string>>('/generative/assets/crop-halfbody/', { membership_id: membershipId, kit_type: kitType });
@@ -255,7 +257,7 @@ export function useMemberMediaActions({
       }));
     } catch (err) {
       logger.error('Halfbody crop error', err);
-      alert(err instanceof Error ? err.message : 'Crop mislukt');
+      pushToast({ message: err instanceof Error ? err.message : 'Crop mislukt', type: 'error' });
     } finally {
       setCroppingHalfbody(prev => ({ ...prev, [kitType]: false }));
     }
@@ -278,7 +280,7 @@ export function useMemberMediaActions({
     setSaving(true);
     setSaveError(null);
     try {
-      const result = await api.patch<any>(`/projects/${project.id}/members/${idToUse}/`, { metadata: newMetadata });
+      const result = await api.patch<MembershipRecord>(`/projects/${project.id}/members/${idToUse}/`, { metadata: newMetadata });
       setMembership(result);
     } catch (e) {
       logger.error('Metadata update failed', e);

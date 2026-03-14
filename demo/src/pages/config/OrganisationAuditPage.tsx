@@ -6,7 +6,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
 import type { AuditEvent } from '../../types';
-import { api, ApiError } from '../../api';
+import { api, ApiError } from '@/api';
 import { unwrapEnvelope as unwrap, extractList } from '../../utils/apiEnvelope';
 
 export const OrganisationAuditPage: React.FC = () => {
@@ -51,8 +51,8 @@ export const OrganisationAuditPage: React.FC = () => {
         // Backend expects this key (used by AuditLogPage as well)
         params.set('organization', organisationId);
 
-        const raw = await api.get<any>(`/activity/?${params.toString()}`);
-        const data = unwrap<any>(raw);
+        const raw = await api.get<Record<string, unknown>>(`/activity/?${params.toString()}`);
+        const data = unwrap<Record<string, unknown>>(raw);
         const list = extractList(data);
         const next = (list as AuditEvent[]).sort((a, b) => String(b?.timestamp || '').localeCompare(String(a?.timestamp || '')));
 

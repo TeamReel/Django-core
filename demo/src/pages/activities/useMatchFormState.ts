@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import type { Period, SeasonProject as Project } from '../../types/season';
@@ -9,8 +9,90 @@ import { logger } from '@/utils/logger';
 import type { MatchDetail, ContentItem, OrgMember, ProjectMember } from './matchDetailTypes';
 import type { ContentTemplate } from '../identity/ContentGenerationModal';
 import type { MatchMediaItem } from '../../components/MediaAssetCard';
+import { formReducer, makeSetter } from '../../utils/formReducer';
 
-// ─── Hook: all useState + provider context + sync effects ────────────────────
+// ─── State interface ─────────────────────────────────────────────────────────
+
+interface MatchFormState {
+  opponentClub: Project | null;
+  competition: Period | null;
+  match: MatchDetail | null;
+  resolvedCompetitionUuid: string;
+  loading: boolean;
+  error: string | null;
+  activatingContext: boolean;
+  activeContext: unknown | null;
+  isCreateTxnModalOpen: boolean;
+  isMatchDetailModalOpen: boolean;
+  isMatchEditModalOpen: boolean;
+  isContentModalOpen: boolean;
+  selectedTemplate: ContentTemplate | null;
+  selectedContentTypeLabel: string;
+  availableTemplates: Record<string, ContentTemplate[]>;
+  templatesLoading: boolean;
+  templateFlagMap: Record<string, boolean>;
+  templateFlagsLoading: boolean;
+  contentItems: ContentItem[];
+  contentItemsLoading: boolean;
+  selectedContentItem: ContentItem | null;
+  isContentPreviewOpen: boolean;
+  matchMedia: MatchMediaItem[];
+  matchMediaLoading: boolean;
+  savedAssetPreview: { title: string; url: string; isVideo: boolean; subtitle?: string } | null;
+  toasts: { id: string; message: string; type: 'success' | 'info' | 'warning' | 'error' }[];
+  eligibleMembers: OrgMember[];
+  orgMembersAll: OrgMember[];
+  teamProjectMembers: ProjectMember[];
+  clubProjectMembers: ProjectMember[];
+  rosterLoading: boolean;
+  rosterError: string | null;
+  addHomeMemberId: string;
+  addAwayMemberId: string;
+  lineupBulkSubmitting: boolean;
+  lineupEligibleSearchHome: string;
+  lineupEligibleSearchAway: string;
+  selectedEligibleLineupMemberIdsHome: Set<string>;
+  selectedEligibleLineupMemberIdsAway: Set<string>;
+  selectedLineupParticipationIdsHome: Set<string>;
+  selectedLineupParticipationIdsAway: Set<string>;
+  lineupFormation: string;
+  lineupSlots: Record<string, string[]>;
+  lineupSquad: Record<string, Record<string, unknown>[]>;
+  lineupSquadLoading: boolean;
+  lineupSaving: boolean;
+  lineupSaveSuccess: boolean;
+  lineupBenchStatus: Record<string, string>;
+}
+
+const initialMatchFormState: MatchFormState = {
+  opponentClub: null, competition: null, match: null,
+  resolvedCompetitionUuid: '', loading: true, error: null,
+  activatingContext: false, activeContext: null,
+  isCreateTxnModalOpen: false, isMatchDetailModalOpen: false,
+  isMatchEditModalOpen: false, isContentModalOpen: false,
+  selectedTemplate: null, selectedContentTypeLabel: '',
+  availableTemplates: {}, templatesLoading: false,
+  templateFlagMap: {}, templateFlagsLoading: false,
+  contentItems: [], contentItemsLoading: false,
+  selectedContentItem: null, isContentPreviewOpen: false,
+  matchMedia: [], matchMediaLoading: false, savedAssetPreview: null,
+  toasts: [],
+  eligibleMembers: [], orgMembersAll: [],
+  teamProjectMembers: [], clubProjectMembers: [],
+  rosterLoading: false, rosterError: null,
+  addHomeMemberId: '', addAwayMemberId: '',
+  lineupBulkSubmitting: false,
+  lineupEligibleSearchHome: '', lineupEligibleSearchAway: '',
+  selectedEligibleLineupMemberIdsHome: new Set(), selectedEligibleLineupMemberIdsAway: new Set(),
+  selectedLineupParticipationIdsHome: new Set(), selectedLineupParticipationIdsAway: new Set(),
+  lineupFormation: '4-3-3',
+  lineupSlots: { goalkeeper: [], player: [] },
+  lineupSquad: { goalkeeper: [], player: [], coach: [], assistant: [] },
+  lineupSquadLoading: false, lineupSaving: false, lineupSaveSuccess: false,
+  lineupBenchStatus: {},
+};
+
+// ─── Hook: useReducer + provider context + sync effects ──────────────────────
 
 export function useMatchFormState() {
   const navigate = useNavigate();
@@ -28,80 +110,65 @@ export function useMatchFormState() {
 
   const { competitionId, matchId } = useParams<{ competitionId: string; matchId: string }>();
 
-  // ── Core match data ──
-  const [opponentClub, setOpponentClub] = useState<Project | null>(null);
+  /* ── Reducer state ── */
+  const [s, dispatch] = useReducer(formReducer<MatchFormState>, initialMatchFormState);
 
+  /* ── Backward-compatible setters (stable identity — dispatch never changes) ── */
+  const setOpponentClub = useMemo(() => makeSetter<MatchFormState, 'opponentClub'>(dispatch, 'opponentClub'), [dispatch]);
+  const setCompetition = useMemo(() => makeSetter<MatchFormState, 'competition'>(dispatch, 'competition'), [dispatch]);
+  const setMatch = useMemo(() => makeSetter<MatchFormState, 'match'>(dispatch, 'match'), [dispatch]);
+  const setResolvedCompetitionUuid = useMemo(() => makeSetter<MatchFormState, 'resolvedCompetitionUuid'>(dispatch, 'resolvedCompetitionUuid'), [dispatch]);
+  const setLoading = useMemo(() => makeSetter<MatchFormState, 'loading'>(dispatch, 'loading'), [dispatch]);
+  const setError = useMemo(() => makeSetter<MatchFormState, 'error'>(dispatch, 'error'), [dispatch]);
+  const setActivatingContext = useMemo(() => makeSetter<MatchFormState, 'activatingContext'>(dispatch, 'activatingContext'), [dispatch]);
+  const setActiveContextState = useMemo(() => makeSetter<MatchFormState, 'activeContext'>(dispatch, 'activeContext'), [dispatch]);
+  const setIsCreateTxnModalOpen = useMemo(() => makeSetter<MatchFormState, 'isCreateTxnModalOpen'>(dispatch, 'isCreateTxnModalOpen'), [dispatch]);
+  const setIsMatchDetailModalOpen = useMemo(() => makeSetter<MatchFormState, 'isMatchDetailModalOpen'>(dispatch, 'isMatchDetailModalOpen'), [dispatch]);
+  const setIsMatchEditModalOpen = useMemo(() => makeSetter<MatchFormState, 'isMatchEditModalOpen'>(dispatch, 'isMatchEditModalOpen'), [dispatch]);
+  const setIsContentModalOpen = useMemo(() => makeSetter<MatchFormState, 'isContentModalOpen'>(dispatch, 'isContentModalOpen'), [dispatch]);
+  const setSelectedTemplate = useMemo(() => makeSetter<MatchFormState, 'selectedTemplate'>(dispatch, 'selectedTemplate'), [dispatch]);
+  const setSelectedContentTypeLabel = useMemo(() => makeSetter<MatchFormState, 'selectedContentTypeLabel'>(dispatch, 'selectedContentTypeLabel'), [dispatch]);
+  const setAvailableTemplates = useMemo(() => makeSetter<MatchFormState, 'availableTemplates'>(dispatch, 'availableTemplates'), [dispatch]);
+  const setTemplatesLoading = useMemo(() => makeSetter<MatchFormState, 'templatesLoading'>(dispatch, 'templatesLoading'), [dispatch]);
+  const setTemplateFlagMap = useMemo(() => makeSetter<MatchFormState, 'templateFlagMap'>(dispatch, 'templateFlagMap'), [dispatch]);
+  const setTemplateFlagsLoading = useMemo(() => makeSetter<MatchFormState, 'templateFlagsLoading'>(dispatch, 'templateFlagsLoading'), [dispatch]);
+  const setContentItems = useMemo(() => makeSetter<MatchFormState, 'contentItems'>(dispatch, 'contentItems'), [dispatch]);
+  const setContentItemsLoading = useMemo(() => makeSetter<MatchFormState, 'contentItemsLoading'>(dispatch, 'contentItemsLoading'), [dispatch]);
+  const setSelectedContentItem = useMemo(() => makeSetter<MatchFormState, 'selectedContentItem'>(dispatch, 'selectedContentItem'), [dispatch]);
+  const setIsContentPreviewOpen = useMemo(() => makeSetter<MatchFormState, 'isContentPreviewOpen'>(dispatch, 'isContentPreviewOpen'), [dispatch]);
+  const setMatchMedia = useMemo(() => makeSetter<MatchFormState, 'matchMedia'>(dispatch, 'matchMedia'), [dispatch]);
+  const setMatchMediaLoading = useMemo(() => makeSetter<MatchFormState, 'matchMediaLoading'>(dispatch, 'matchMediaLoading'), [dispatch]);
+  const setSavedAssetPreview = useMemo(() => makeSetter<MatchFormState, 'savedAssetPreview'>(dispatch, 'savedAssetPreview'), [dispatch]);
+  const setToasts = useMemo(() => makeSetter<MatchFormState, 'toasts'>(dispatch, 'toasts'), [dispatch]);
+  const setEligibleMembers = useMemo(() => makeSetter<MatchFormState, 'eligibleMembers'>(dispatch, 'eligibleMembers'), [dispatch]);
+  const setOrgMembersAll = useMemo(() => makeSetter<MatchFormState, 'orgMembersAll'>(dispatch, 'orgMembersAll'), [dispatch]);
+  const setTeamProjectMembers = useMemo(() => makeSetter<MatchFormState, 'teamProjectMembers'>(dispatch, 'teamProjectMembers'), [dispatch]);
+  const setClubProjectMembers = useMemo(() => makeSetter<MatchFormState, 'clubProjectMembers'>(dispatch, 'clubProjectMembers'), [dispatch]);
+  const setRosterLoading = useMemo(() => makeSetter<MatchFormState, 'rosterLoading'>(dispatch, 'rosterLoading'), [dispatch]);
+  const setRosterError = useMemo(() => makeSetter<MatchFormState, 'rosterError'>(dispatch, 'rosterError'), [dispatch]);
+  const setAddHomeMemberId = useMemo(() => makeSetter<MatchFormState, 'addHomeMemberId'>(dispatch, 'addHomeMemberId'), [dispatch]);
+  const setAddAwayMemberId = useMemo(() => makeSetter<MatchFormState, 'addAwayMemberId'>(dispatch, 'addAwayMemberId'), [dispatch]);
+  const setLineupBulkSubmitting = useMemo(() => makeSetter<MatchFormState, 'lineupBulkSubmitting'>(dispatch, 'lineupBulkSubmitting'), [dispatch]);
+  const setLineupEligibleSearchHome = useMemo(() => makeSetter<MatchFormState, 'lineupEligibleSearchHome'>(dispatch, 'lineupEligibleSearchHome'), [dispatch]);
+  const setLineupEligibleSearchAway = useMemo(() => makeSetter<MatchFormState, 'lineupEligibleSearchAway'>(dispatch, 'lineupEligibleSearchAway'), [dispatch]);
+  const setSelectedEligibleLineupMemberIdsHome = useMemo(() => makeSetter<MatchFormState, 'selectedEligibleLineupMemberIdsHome'>(dispatch, 'selectedEligibleLineupMemberIdsHome'), [dispatch]);
+  const setSelectedEligibleLineupMemberIdsAway = useMemo(() => makeSetter<MatchFormState, 'selectedEligibleLineupMemberIdsAway'>(dispatch, 'selectedEligibleLineupMemberIdsAway'), [dispatch]);
+  const setSelectedLineupParticipationIdsHome = useMemo(() => makeSetter<MatchFormState, 'selectedLineupParticipationIdsHome'>(dispatch, 'selectedLineupParticipationIdsHome'), [dispatch]);
+  const setSelectedLineupParticipationIdsAway = useMemo(() => makeSetter<MatchFormState, 'selectedLineupParticipationIdsAway'>(dispatch, 'selectedLineupParticipationIdsAway'), [dispatch]);
+  const setLineupFormation = useMemo(() => makeSetter<MatchFormState, 'lineupFormation'>(dispatch, 'lineupFormation'), [dispatch]);
+  const setLineupSlots = useMemo(() => makeSetter<MatchFormState, 'lineupSlots'>(dispatch, 'lineupSlots'), [dispatch]);
+  const setLineupSquad = useMemo(() => makeSetter<MatchFormState, 'lineupSquad'>(dispatch, 'lineupSquad'), [dispatch]);
+  const setLineupSquadLoading = useMemo(() => makeSetter<MatchFormState, 'lineupSquadLoading'>(dispatch, 'lineupSquadLoading'), [dispatch]);
+  const setLineupSaving = useMemo(() => makeSetter<MatchFormState, 'lineupSaving'>(dispatch, 'lineupSaving'), [dispatch]);
+  const setLineupSaveSuccess = useMemo(() => makeSetter<MatchFormState, 'lineupSaveSuccess'>(dispatch, 'lineupSaveSuccess'), [dispatch]);
+  const setLineupBenchStatus = useMemo(() => makeSetter<MatchFormState, 'lineupBenchStatus'>(dispatch, 'lineupBenchStatus'), [dispatch]);
+
+  /* ── Derived hooks that depend on reducer state ── */
   const opponentClubBrand = useBrandProfile({
-    projectId: opponentClub?.id ? String(opponentClub.id) : undefined,
+    projectId: s.opponentClub?.id ? String(s.opponentClub.id) : undefined,
     organisationId: org?.id ? String(org.id) : undefined,
-    autoFetch: !!opponentClub?.id,
+    autoFetch: !!s.opponentClub?.id,
   });
-
-  const [competition, setCompetition] = useState<Period | null>(null);
-  const [match, setMatch] = useState<MatchDetail | null>(null);
-  const [resolvedCompetitionUuid, setResolvedCompetitionUuid] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // ── Context / activation ──
-  const [activatingContext, setActivatingContext] = useState(false);
-  const [activeContext, setActiveContextState] = useState<any | null>(null);
-
-  // ── Modal state ──
-  const [isCreateTxnModalOpen, setIsCreateTxnModalOpen] = useState(false);
-  const [isMatchDetailModalOpen, setIsMatchDetailModalOpen] = useState(false);
-  const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
-  const [isContentModalOpen, setIsContentModalOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
-  const [selectedContentTypeLabel, setSelectedContentTypeLabel] = useState('');
-
-  // ── Templates ──
-  const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
-  const [templatesLoading, setTemplatesLoading] = useState(false);
-  const [templateFlagMap, setTemplateFlagMap] = useState<Record<string, boolean>>({});
-  const [templateFlagsLoading, setTemplateFlagsLoading] = useState(false);
-
-  // ── Content items ──
-  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
-  const [contentItemsLoading, setContentItemsLoading] = useState(false);
-  const [selectedContentItem, setSelectedContentItem] = useState<ContentItem | null>(null);
-  const [isContentPreviewOpen, setIsContentPreviewOpen] = useState(false);
-
-  // ── Match media ──
-  const [matchMedia, setMatchMedia] = useState<MatchMediaItem[]>([]);
-  const [matchMediaLoading, setMatchMediaLoading] = useState(false);
-  const [savedAssetPreview, setSavedAssetPreview] = useState<{ title: string; url: string; isVideo: boolean; subtitle?: string } | null>(null);
-
-  // ── Toasts ──
-  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'info' | 'warning' | 'error' }[]>([]);
-
-  // ── Roster ──
-  const [eligibleMembers, setEligibleMembers] = useState<OrgMember[]>([]);
-  const [orgMembersAll, setOrgMembersAll] = useState<OrgMember[]>([]);
-  const [teamProjectMembers, setTeamProjectMembers] = useState<ProjectMember[]>([]);
-  const [clubProjectMembers, setClubProjectMembers] = useState<ProjectMember[]>([]);
-  const [rosterLoading, setRosterLoading] = useState(false);
-  const [rosterError, setRosterError] = useState<string | null>(null);
-  const [addHomeMemberId, setAddHomeMemberId] = useState('');
-  const [addAwayMemberId, setAddAwayMemberId] = useState('');
-
-  // ── Lineup bulk selection ──
-  const [lineupBulkSubmitting, setLineupBulkSubmitting] = useState(false);
-  const [lineupEligibleSearchHome, setLineupEligibleSearchHome] = useState('');
-  const [lineupEligibleSearchAway, setLineupEligibleSearchAway] = useState('');
-  const [selectedEligibleLineupMemberIdsHome, setSelectedEligibleLineupMemberIdsHome] = useState<Set<string>>(new Set());
-  const [selectedEligibleLineupMemberIdsAway, setSelectedEligibleLineupMemberIdsAway] = useState<Set<string>>(new Set());
-  const [selectedLineupParticipationIdsHome, setSelectedLineupParticipationIdsHome] = useState<Set<string>>(new Set());
-  const [selectedLineupParticipationIdsAway, setSelectedLineupParticipationIdsAway] = useState<Set<string>>(new Set());
-
-  // ── Formation lineup editor ──
-  const [lineupFormation, setLineupFormation] = useState('4-3-3');
-  const [lineupSlots, setLineupSlots] = useState<Record<string, string[]>>({ goalkeeper: [], player: [] });
-  const [lineupSquad, setLineupSquad] = useState<Record<string, any[]>>({ goalkeeper: [], player: [], coach: [], assistant: [] });
-  const [lineupSquadLoading, setLineupSquadLoading] = useState(false);
-  const [lineupSaving, setLineupSaving] = useState(false);
-  const [lineupSaveSuccess, setLineupSaveSuccess] = useState(false);
-  const [lineupBenchStatus, setLineupBenchStatus] = useState<Record<string, string>>({});
 
   // ── Provider sync ──
   useEffect(() => {
@@ -144,49 +211,49 @@ export function useMatchFormState() {
     seasonKeyOrId, effectiveCompetitionIdVal, effectiveMatchIdVal,
     effectiveSeasonId, pendingClubSlugResolve, clubSlugRedirectTarget,
     // Opponent
-    opponentClub, setOpponentClub, opponentClubBrand,
+    opponentClub: s.opponentClub, setOpponentClub, opponentClubBrand,
     // Match data
-    competition, setCompetition, match, setMatch,
-    resolvedCompetitionUuid, setResolvedCompetitionUuid,
-    loading, setLoading, error, setError,
+    competition: s.competition, setCompetition, match: s.match, setMatch,
+    resolvedCompetitionUuid: s.resolvedCompetitionUuid, setResolvedCompetitionUuid,
+    loading: s.loading, setLoading, error: s.error, setError,
     // Context activation
-    activatingContext, setActivatingContext, activeContext, setActiveContextState,
+    activatingContext: s.activatingContext, setActivatingContext, activeContext: s.activeContext, setActiveContextState,
     // Modals
-    isCreateTxnModalOpen, setIsCreateTxnModalOpen,
-    isMatchDetailModalOpen, setIsMatchDetailModalOpen,
-    isMatchEditModalOpen, setIsMatchEditModalOpen,
-    isContentModalOpen, setIsContentModalOpen,
-    selectedTemplate, setSelectedTemplate,
-    selectedContentTypeLabel, setSelectedContentTypeLabel,
+    isCreateTxnModalOpen: s.isCreateTxnModalOpen, setIsCreateTxnModalOpen,
+    isMatchDetailModalOpen: s.isMatchDetailModalOpen, setIsMatchDetailModalOpen,
+    isMatchEditModalOpen: s.isMatchEditModalOpen, setIsMatchEditModalOpen,
+    isContentModalOpen: s.isContentModalOpen, setIsContentModalOpen,
+    selectedTemplate: s.selectedTemplate, setSelectedTemplate,
+    selectedContentTypeLabel: s.selectedContentTypeLabel, setSelectedContentTypeLabel,
     // Templates
-    availableTemplates, setAvailableTemplates, templatesLoading, setTemplatesLoading,
-    templateFlagMap, setTemplateFlagMap, templateFlagsLoading, setTemplateFlagsLoading,
+    availableTemplates: s.availableTemplates, setAvailableTemplates, templatesLoading: s.templatesLoading, setTemplatesLoading,
+    templateFlagMap: s.templateFlagMap, setTemplateFlagMap, templateFlagsLoading: s.templateFlagsLoading, setTemplateFlagsLoading,
     // Content items
-    contentItems, setContentItems, contentItemsLoading, setContentItemsLoading,
-    selectedContentItem, setSelectedContentItem,
-    isContentPreviewOpen, setIsContentPreviewOpen,
+    contentItems: s.contentItems, setContentItems, contentItemsLoading: s.contentItemsLoading, setContentItemsLoading,
+    selectedContentItem: s.selectedContentItem, setSelectedContentItem,
+    isContentPreviewOpen: s.isContentPreviewOpen, setIsContentPreviewOpen,
     // Media
-    matchMedia, setMatchMedia, matchMediaLoading, setMatchMediaLoading,
-    savedAssetPreview, setSavedAssetPreview,
+    matchMedia: s.matchMedia, setMatchMedia, matchMediaLoading: s.matchMediaLoading, setMatchMediaLoading,
+    savedAssetPreview: s.savedAssetPreview, setSavedAssetPreview,
     // Toasts
-    toasts, setToasts,
+    toasts: s.toasts, setToasts,
     // Roster
-    eligibleMembers, setEligibleMembers, orgMembersAll, setOrgMembersAll,
-    teamProjectMembers, setTeamProjectMembers, clubProjectMembers, setClubProjectMembers,
-    rosterLoading, setRosterLoading, rosterError, setRosterError,
-    addHomeMemberId, setAddHomeMemberId, addAwayMemberId, setAddAwayMemberId,
+    eligibleMembers: s.eligibleMembers, setEligibleMembers, orgMembersAll: s.orgMembersAll, setOrgMembersAll,
+    teamProjectMembers: s.teamProjectMembers, setTeamProjectMembers, clubProjectMembers: s.clubProjectMembers, setClubProjectMembers,
+    rosterLoading: s.rosterLoading, setRosterLoading, rosterError: s.rosterError, setRosterError,
+    addHomeMemberId: s.addHomeMemberId, setAddHomeMemberId, addAwayMemberId: s.addAwayMemberId, setAddAwayMemberId,
     // Lineup
-    lineupBulkSubmitting, setLineupBulkSubmitting,
-    lineupEligibleSearchHome, setLineupEligibleSearchHome,
-    lineupEligibleSearchAway, setLineupEligibleSearchAway,
-    selectedEligibleLineupMemberIdsHome, setSelectedEligibleLineupMemberIdsHome,
-    selectedEligibleLineupMemberIdsAway, setSelectedEligibleLineupMemberIdsAway,
-    selectedLineupParticipationIdsHome, setSelectedLineupParticipationIdsHome,
-    selectedLineupParticipationIdsAway, setSelectedLineupParticipationIdsAway,
+    lineupBulkSubmitting: s.lineupBulkSubmitting, setLineupBulkSubmitting,
+    lineupEligibleSearchHome: s.lineupEligibleSearchHome, setLineupEligibleSearchHome,
+    lineupEligibleSearchAway: s.lineupEligibleSearchAway, setLineupEligibleSearchAway,
+    selectedEligibleLineupMemberIdsHome: s.selectedEligibleLineupMemberIdsHome, setSelectedEligibleLineupMemberIdsHome,
+    selectedEligibleLineupMemberIdsAway: s.selectedEligibleLineupMemberIdsAway, setSelectedEligibleLineupMemberIdsAway,
+    selectedLineupParticipationIdsHome: s.selectedLineupParticipationIdsHome, setSelectedLineupParticipationIdsHome,
+    selectedLineupParticipationIdsAway: s.selectedLineupParticipationIdsAway, setSelectedLineupParticipationIdsAway,
     // Formation
-    lineupFormation, setLineupFormation, lineupSlots, setLineupSlots,
-    lineupSquad, setLineupSquad, lineupSquadLoading, setLineupSquadLoading,
-    lineupSaving, setLineupSaving, lineupSaveSuccess, setLineupSaveSuccess,
-    lineupBenchStatus, setLineupBenchStatus,
+    lineupFormation: s.lineupFormation, setLineupFormation, lineupSlots: s.lineupSlots, setLineupSlots,
+    lineupSquad: s.lineupSquad, setLineupSquad, lineupSquadLoading: s.lineupSquadLoading, setLineupSquadLoading,
+    lineupSaving: s.lineupSaving, setLineupSaving, lineupSaveSuccess: s.lineupSaveSuccess, setLineupSaveSuccess,
+    lineupBenchStatus: s.lineupBenchStatus, setLineupBenchStatus,
   };
 }

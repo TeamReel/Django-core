@@ -12,7 +12,7 @@ import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { Badge, Button, Card } from '@django-core/design-system';
 
 import { unwrapEnvelope as unwrap } from '../../types/season';
-import { projectsApi } from '../../api';
+import { projectsApi } from '@/api';
 import { useMemberMediaActions } from './useMemberMediaActions';
 import { MemberAiModal, type MemberAiModalHandle } from './MemberAiModal';
 import { MemberAssetsTab } from './MemberAssetsTab';
@@ -300,7 +300,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
 
       {/* Video preview overlay */}
       {videoPreviewUrl && (
-        <div className={styles.videoOverlay} onClick={() => setVideoPreviewUrl(null)}>
+        <div className={styles.videoOverlay} onClick={() => setVideoPreviewUrl(null)} role="presentation">
           <video src={videoPreviewUrl} controls autoPlay className={styles.videoPlayer} onClick={(e) => e.stopPropagation()} />
         </div>
       )}

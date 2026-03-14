@@ -8,10 +8,10 @@ import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useWizard } from '../../Wizard';
 import { useMatchWizard } from '../MatchWizardContext';
-import { MembersStep } from '../../../pages/identity/ContentGenerationModal/MembersStep';
-import { ConfirmStep } from '../../../pages/identity/ContentGenerationModal/ConfirmStep';
-import type { ContentTemplate, Participation } from '../../../pages/identity/ContentGenerationModal/types';
-import type { BackgroundItem } from '../../../pages/identity/ContentGenerationModal/BackgroundSelector';
+import { MembersStep } from '@/pages/identity/ContentGenerationModal/MembersStep';
+import { ConfirmStep } from '@/pages/identity/ContentGenerationModal/ConfirmStep';
+import type { ContentTemplate, Participation } from '@/pages/identity/ContentGenerationModal/types';
+import type { BackgroundItem } from '@/pages/identity/ContentGenerationModal/BackgroundSelector';
 import styles from '../MatchWizardV2.module.css';
 
 // Subtypes that show MembersStep (lineup config: formation, closeup, animation, background)

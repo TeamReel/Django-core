@@ -6,6 +6,7 @@ import {
   Modal,
 } from '@django-core/design-system';
 import { api } from '@/api';
+import type { User as ApiUser } from '@/types/api/user';
 import { logger } from '@/utils/logger';
 import type { PreferencesDataReturn } from './usePreferencesData';
 import styles from './PreferencesModals.module.css';
@@ -133,7 +134,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   setProfileSaving(true);
                   setProfileError(null);
 
-                  const updatedUser = await api.patch<any>('/auth/profile/', {
+                  const updatedUser = await api.patch<ApiUser>('/auth/profile/', {
                     first_name: profileFirstName,
                     last_name: profileLastName,
                     email: profileEmail,
@@ -333,7 +334,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   setAvatarSaving(true);
                   setAvatarError(null);
 
-                  const updatedUser = await api.upload<any>('/auth/avatar/', avatarFile);
+                  const updatedUser = await api.upload<ApiUser>('/auth/avatar/', avatarFile);
 
                   if (typeof setUser === 'function') {
                     setUser(updatedUser);

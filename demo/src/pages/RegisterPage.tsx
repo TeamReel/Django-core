@@ -1,51 +1,58 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import type React from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useSignUp, useAuth } from '@django-core/auth-ui';
+import { routes } from '../routes';
 import { logger } from '@/utils/logger';
+import { useFormFields } from '@/hooks/useFormFields';
 import styles from './RegisterPage.module.css';
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [validationError, setValidationError] = useState('');
+  const { fields, setField } = useFormFields({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    firstName: '',
+    lastName: '',
+    validationError: '',
+  });
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const { signUp, isLoading, error } = useSignUp();
   const { user } = useAuth();
 
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      const next = searchParams.get('next');
+      navigate(next || routes.dashboard());
     }
-  }, [user, navigate]);
+  }, [user, navigate, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setValidationError('');
+    setField('validationError', '');
 
     // Client-side validation
-    if (password !== confirmPassword) {
-      setValidationError('Passwords do not match');
+    if (fields.password !== fields.confirmPassword) {
+      setField('validationError', 'Passwords do not match');
       return;
     }
 
-    if (password.length < 8) {
-      setValidationError('Password must be at least 8 characters long');
+    if (fields.password.length < 8) {
+      setField('validationError', 'Password must be at least 8 characters long');
       return;
     }
 
     try {
-      await signUp(email, password, firstName, lastName);
+      await signUp(fields.email, fields.password, fields.firstName, fields.lastName);
     } catch (err) {
       // Error is already handled by useSignUp hook
       logger.error('Registration failed', err);
     }
   };
 
-  const displayError = validationError || (error?.formErrors?.[0]) || '';
+  const displayError = fields.validationError || (error?.formErrors?.[0]) || '';
 
   // Show field-specific errors
   const emailError = error?.fieldErrors?.email?.[0] || '';
@@ -65,16 +72,6 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* Debug: Show full error object */}
-        {error && (
-          <div className={`p-10 rounded-4 fs-12 ${styles.debugBox}`}>
-            <details>
-              <summary>Debug Error Info</summary>
-              <pre>{JSON.stringify(error, null, 2)}</pre>
-            </details>
-          </div>
-        )}
-
         <div className="flex-row gap-10">
           <div className="flex-1">
             <label htmlFor="firstName" className={`block fw-500 ${styles.label}`}>
@@ -84,8 +81,8 @@ export default function RegisterPage() {
               id="firstName"
               type="text"
               placeholder="First name"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              value={fields.firstName}
+              onChange={(e) => setField('firstName', e.target.value)}
               className={`w-full p-10 rounded-4 fs-16 ${firstNameError ? styles.inputError : styles.input}`}
             />
             {firstNameError && <div className="fs-12 text-error">{firstNameError}</div>}
@@ -98,8 +95,8 @@ export default function RegisterPage() {
               id="lastName"
               type="text"
               placeholder="Last name"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              value={fields.lastName}
+              onChange={(e) => setField('lastName', e.target.value)}
               className={`w-full p-10 rounded-4 fs-16 ${lastNameError ? styles.inputError : styles.input}`}
             />
             {lastNameError && <div className="fs-12 text-error">{lastNameError}</div>}
@@ -114,8 +111,8 @@ export default function RegisterPage() {
             id="email"
             type="email"
             placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={fields.email}
+            onChange={(e) => setField('email', e.target.value)}
             required
             autoComplete="email"
             className={`w-full p-10 rounded-4 fs-16 ${emailError ? styles.inputError : styles.input}`}
@@ -131,8 +128,8 @@ export default function RegisterPage() {
             id="password"
             type="password"
             placeholder="Password (min 8 characters)"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={fields.password}
+            onChange={(e) => setField('password', e.target.value)}
             required
             autoComplete="new-password"
             className={`w-full p-10 rounded-4 fs-16 ${passwordError ? styles.inputError : styles.input}`}
@@ -148,8 +145,8 @@ export default function RegisterPage() {
             id="confirmPassword"
             type="password"
             placeholder="Confirm password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            value={fields.confirmPassword}
+            onChange={(e) => setField('confirmPassword', e.target.value)}
             required
             autoComplete="new-password"
             className={`w-full p-10 rounded-4 fs-16 ${styles.input}`}

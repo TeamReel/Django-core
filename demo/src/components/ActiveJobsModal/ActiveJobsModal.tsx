@@ -58,7 +58,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const data = await api.get<any>('/video/jobs/active-processing-jobs/', {
+      const data = await api.get<{ jobs: ActiveJob[] }>('/video/jobs/active-processing-jobs/', {
         params: { project: projectId },
       });
       setJobs(data.jobs || []);

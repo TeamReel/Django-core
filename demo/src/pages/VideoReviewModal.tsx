@@ -17,8 +17,8 @@ interface VideoReviewModalProps {
   onClose: () => void;
   onActionComplete: () => void;
   pushToast: (msg: string, type: 'success' | 'error') => void;
-  approveJob: (jobId: string) => Promise<any>;
-  rejectJob: (jobId: string) => Promise<any>;
+  approveJob: (jobId: string) => Promise<void>;
+  rejectJob: (jobId: string) => Promise<void>;
 }
 
 export function VideoReviewModal({ job, onClose, onActionComplete, pushToast, approveJob, rejectJob }: VideoReviewModalProps) {

@@ -1,22 +1,22 @@
 /**
  * useApiBase Hook
  *
- * Centralized hook for getting the API base URL.
+ * Centralized hook for getting the API v1 base URL.
  * This replaces scattered import.meta.env.VITE_API_BASE_URL usages.
  */
 
 import { useMemo } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { getApiV1BaseUrl } from '../utils/apiFetch';
 
 /**
- * Returns the API base URL, memoized for performance.
+ * Returns the API v1 base URL (including /api/v1), memoized for performance.
  *
  * @example
  * const apiBaseUrl = useApiBase();
- * const response = await fetch(`${apiBaseUrl}/api/v1/organisations/`);
+ * const response = await fetch(`${apiBaseUrl}/organisations/`);
  */
 export function useApiBase(): string {
-  return useMemo(() => getApiBaseUrl(), []);
+  return useMemo(() => getApiV1BaseUrl(), []);
 }
 
 export default useApiBase;

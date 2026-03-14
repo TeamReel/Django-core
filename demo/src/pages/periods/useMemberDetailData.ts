@@ -17,7 +17,7 @@ import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext, setActiveContext } from
 import { useSeasonContext } from '../../providers/SeasonProvider';
 import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
 import { unwrapEnvelope as unwrap } from '../../types/season';
-import { projectsApi } from '../../api';
+import { projectsApi } from '@/api';
 import { routes } from '../../routes';
 import { UUID_RE, getUserDisplayName, mergeAssetsIntoMetadata } from './memberDetailUtils';
 import type { AssetVariantsMap, MembershipRecord } from './memberDetailUtils';
@@ -233,7 +233,7 @@ export function useMemberDetailData(): MemberDetailData {
       : { label: 'Team' };
     const seasonLabel = season?.name || 'Season';
     return [
-      { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+      { label: 'Dashboard', onClick: () => navigate(routes.dashboard()) },
       orgCrumb,
       ...(clubCrumb ? [clubCrumb] : []),
       teamCrumb,

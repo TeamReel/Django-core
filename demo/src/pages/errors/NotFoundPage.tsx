@@ -1,7 +1,10 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { routes } from '../../routes';
 import styles from './NotFoundPage.module.css';
 
 export default function NotFoundPage() {
+  const navigate = useNavigate();
+
   return (
     <>
       <div className={styles.container}>
@@ -22,14 +25,14 @@ export default function NotFoundPage() {
 
         <div className={styles.actions}>
           <Link
-            to="/dashboard"
+            to={routes.dashboard()}
             className={styles.dashboardLink}
           >
             Go to Dashboard
           </Link>
 
           <button
-            onClick={() => window.history.back()}
+            onClick={() => window.history.length > 1 ? navigate(-1) : navigate(routes.dashboard())}
             className={styles.backButton}
           >
             Go Back

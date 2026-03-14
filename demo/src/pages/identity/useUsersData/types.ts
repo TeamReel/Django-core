@@ -5,7 +5,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import type { useAuth } from '@django-core/auth-ui';
 import type { BreadcrumbSwitcherOption } from '@django-core/page-templates';
-import type { Organisation as SharedOrganisation } from '../../../types';
+import type { Organisation as SharedOrganisation } from '@/types';
 
 export interface User {
   id: string;

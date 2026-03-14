@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@django-core/design-system';
-import { api } from '../../api';
+import { api } from '@/api';
 import styles from './OrgEditMemberRoleModal.module.css';
 import { logger } from '@/utils/logger';
 

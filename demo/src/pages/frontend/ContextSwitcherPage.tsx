@@ -1,10 +1,8 @@
 import { Card, Badge } from '@django-core/design-system';
-import AppShell from '../../components/AppShell';
 import cs from './ContextSwitcherPage.module.css';
 
 export function ContextSwitcherPage() {
   return (
-    <AppShell>
     <div className="bg-primary min-h-screen" data-testid="context-switcher-page">
       <div className="p-24 border-bottom bg-surface">
         <h1 className={`fw-700 ${cs.pageTitle}`}>Context Switcher</h1>
@@ -35,7 +33,6 @@ export function ContextSwitcherPage() {
         </Card>
       </div>
     </div>
-    </AppShell>
   );
 }
 

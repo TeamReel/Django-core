@@ -9,6 +9,57 @@ import { api, ApiError } from '@/api';
 import { logger } from '@/utils/logger';
 import type { BatchMember, MemberParams, MemberJobStatus } from './batchTypes';
 
+/** Response from /video/jobs/process-all-variants/ */
+interface ProcessVariantsResponse {
+  status?: string;
+  total_queued?: number;
+  [key: string]: unknown;
+}
+/** Member detail from /projects/:id/members/:id/ */
+interface MemberDetailResponse {
+  id?: string;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+/** Shape of a single variant from generation response. */
+interface GenerationVariant {
+  error?: string;
+  storage_path?: string;
+  storage_info?: { storage_path?: string; file_size_bytes?: number };
+  presigned_url?: string;
+  video_url?: string;
+  image_base64?: string;
+  filename?: string;
+  mime_type?: string;
+  label?: string;
+  [key: string]: unknown;
+}
+
+/** Response from /generative/assets/generate/ */
+interface GenerateResponse {
+  task_id?: string;
+  variants?: Record<string, unknown>[];
+  [key: string]: unknown;
+}
+/** Response from /generative/assets/generate/:id/status/ */
+interface GenerateStatusResponse {
+  status?: string;
+  error?: string;
+  data?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+/** Response from /generative/assets/save/ */
+interface SaveAssetResponse {
+  storage_path?: string;
+  [key: string]: unknown;
+}
+/** Response from PATCH /projects/:id/members/:id/ */
+interface MemberPatchResponse {
+  id?: string;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 type SetJobStatuses = React.Dispatch<React.SetStateAction<Record<string, MemberJobStatus>>>;
 
 export interface BatchContext {
@@ -115,7 +166,7 @@ async function tryProcessExistingVariant(
   }));
 
   try {
-    const procJson = await api.post<any>('/video/jobs/process-all-variants/', {
+    const procJson = await api.post<ProcessVariantsResponse>('/video/jobs/process-all-variants/', {
       membership_id: member.id, asset_type: selectedTemplate.category,
     });
 
@@ -160,7 +211,7 @@ async function pollVariantProcessing(
     await new Promise((r) => setTimeout(r, POLL_INTERVAL));
     if (abortRef.current) break;
 
-    const mData = await api.get<any>(
+    const mData = await api.get<MemberDetailResponse>(
       `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
     ).catch(() => null);
     if (!mData) continue;
@@ -235,7 +286,7 @@ async function generateForMember(
     else inputImageUrls[key] = safeVal;
   }
 
-  const responseData = await api.post<any>('/generative/assets/generate/', {
+  const responseData = await api.post<GenerateResponse>('/generative/assets/generate/', {
     template_id: selectedTemplate.id,
     params,
     variant_count: 1,
@@ -273,7 +324,7 @@ async function generateForMember(
       if (abortRef.current) break;
 
       try {
-        const statusData = await api.get<any>(`/generative/assets/generate/${taskId}/status/`);
+        const statusData = await api.get<GenerateStatusResponse>(`/generative/assets/generate/${taskId}/status/`);
         if (statusData.status === 'completed') { pollResult = statusData.data || {}; break; }
         if (statusData.status === 'failed') throw new Error(statusData.error || 'Video generatie mislukt');
       } catch (e) {
@@ -309,7 +360,7 @@ async function handleGenerationResult(
   setJobStatuses: SetJobStatuses,
 ): Promise<void> {
   const variants = (responseData.variants || []) as Record<string, unknown>[];
-  const variant = variants[0] as any;
+  const variant = variants[0] as GenerationVariant | undefined;
   if (!variant || variant.error) throw new Error(variant?.error || 'No variant returned');
 
   // Auto-save the variant
@@ -320,7 +371,7 @@ async function handleGenerationResult(
     const isVideo = selectedTemplate.outputType === 'video' ||
       variant.mime_type?.startsWith('video/') || !!variant.video_url;
 
-    const saveData = await api.post<any>('/generative/assets/save/', {
+    const saveData = await api.post<SaveAssetResponse>('/generative/assets/save/', {
       storage_path: storagePath,
       presigned_url: variant.presigned_url,
       video_url: variant.video_url,
@@ -404,7 +455,7 @@ export async function updateMembershipMetadata(
 
     const updatedMeta = { ...existingMeta, teamreel_assets: updatedTr };
 
-    const res = await api.patch<any>(
+    const res = await api.patch<MemberPatchResponse>(
       `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
       { metadata: updatedMeta },
     );

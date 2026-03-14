@@ -5,9 +5,10 @@
  * Returns the fetched data + loading/error state + refresh trigger.
  */
 import { useEffect, useState } from 'react';
-import { api } from '../../../api/client';
-import { organisationsApi } from '../../../api';
+import { api } from '@/api/client';
+import { organisationsApi } from '@/api';
 import { logger } from '@/utils/logger';
+import type { Organisation, OrgMembershipListItem } from '@/types/api/organisation';
 import type { OrganisationOption, ProjectOption } from './usersListTypes';
 import { normalizeRoleName, getUserTeamreelRoleNames } from './usersListHelpers';
 
@@ -126,7 +127,7 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
         }
         const load = async () => {
             try {
-                const orgs = await api.listAll<any>('/organisations/', {
+                const orgs = await api.listAll<Organisation>('/organisations/', {
                     pageSize: 100,
                 });
                 setOrganisations(
@@ -285,7 +286,7 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                 }
 
                 const url = `/organisations/${orgSlug}/members/`;
-                const { results: rawList } = await api.list<any>(url, {
+                const { results: rawList } = await api.list<OrgMembershipListItem>(url, {
                     params: {
                         include_project_memberships: 'true',
                         include_project_membership_details: 'true',

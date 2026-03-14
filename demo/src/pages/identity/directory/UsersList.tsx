@@ -8,8 +8,8 @@
  */
 import React from 'react';
 import { Alert } from '@django-core/design-system';
-import { SkeletonList } from '../../../components/Skeleton';
-import SmartEmptyState from '../../../components/SmartEmptyState';
+import { SkeletonList } from '@/components/Skeleton';
+import SmartEmptyState from '@/components/SmartEmptyState';
 import UserDetailModal from '../UserDetailModal';
 import UserEditModal from '../UserEditModal';
 import AddMemberModal from '../AddMemberModal';

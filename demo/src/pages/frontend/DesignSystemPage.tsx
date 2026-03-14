@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Button, Card, Badge, Input, Alert } from '@django-core/design-system';
-import AppShell from '../../components/AppShell';
 import '../../styles/design-system-interactive.css';
 import { FormComponentsSection, LayoutComponentsSection, InteractiveComponentsSection } from './DesignSystemStaticSections';
 import styles from './DesignSystemPage.module.css';
@@ -29,7 +28,6 @@ export function DesignSystemPage() {
   };
 
   return (
-    <AppShell>
     <div className="min-h-screen bg-primary" data-testid="design-system-page" onKeyDown={handleKeyDown} tabIndex={0}>
       <div className="p-24 border-bottom bg-surface">
         <h1 className="m-0 mb-8 fs-24 fw-700">Design System</h1>
@@ -336,7 +334,6 @@ export function DesignSystemPage() {
         </Card>
       </div>
     </div>
-    </AppShell>
   );
 }
 

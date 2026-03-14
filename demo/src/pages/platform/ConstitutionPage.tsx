@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   Card,
   Badge,
@@ -11,7 +11,7 @@ import {
 } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
 import { apiFetch } from '../../utils/apiFetch';
-// import AppShell from '../../components/AppShell';
+import { useAsync } from '@/hooks/useAsync';
 
 /**
  * T017 - Constitution Page
@@ -39,37 +39,19 @@ interface ConstitutionData {
 }
 
 export const ConstitutionPage: React.FC = () => {
-  const [constitution, setConstitution] = useState<ConstitutionData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchConstitution = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await apiFetch('/api/constitution/rules/');
-
-        if (response.ok) {
-          const json = await response.json();
-          // Handle B13 envelope (data.data) or direct response
-          // The backend EnvelopeJSONRenderer wraps the response in a 'data' field
-          const data = json.data ? json.data : json;
-          setConstitution(data);
-        } else {
-          throw new Error(`Failed to fetch constitution rules (${response.status})`);
-        }
-      } catch (err) {
-        logger.error('Constitution fetch error', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch constitution rules');
-      } finally {
-        setLoading(false);
+  const { data: constitution, loading, error } = useAsync(
+    async (signal) => {
+      const response = await apiFetch('/api/constitution/rules/', { signal });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch constitution rules (${response.status})`);
       }
-    };
-
-    fetchConstitution();
-  }, []);
+      const json = await response.json();
+      // Handle B13 envelope (data.data) or direct response
+      const data = json.data ? json.data : json;
+      return data as ConstitutionData;
+    },
+    [],
+  );
 
   if (loading) {
     return (

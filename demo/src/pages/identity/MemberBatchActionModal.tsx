@@ -37,7 +37,7 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className={`fixed inset-0 flex-center p-20 ${styles.overlay}`} onClick={() => d.step !== 'running' && onClose()}>
+        <div className={`fixed inset-0 flex-center p-20 ${styles.overlay}`} onClick={() => d.step !== 'running' && onClose()} role="presentation">
             <div className={`w-full flex-col rounded-12 border ${styles.modal}`} onClick={(e) => e.stopPropagation()} role="dialog">
                 {/* ── Header ── */}
                 <div className="flex-between border-bottom py-20 px-24">
@@ -81,7 +81,7 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                         <>
                             <Button variant="secondary" onClick={onClose}>Annuleren</Button>
                             <Button
-                                variant={d.selectedAction === 'delete' ? 'danger' as any : 'primary'}
+                                variant={d.selectedAction === 'delete' ? 'destructive' : 'primary'}
                                 disabled={!d.canProceed}
                                 onClick={d.executeBatch}
                             >

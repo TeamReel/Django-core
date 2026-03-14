@@ -14,10 +14,6 @@ vi.mock('@django-core/page-templates', () => ({
   PageContent: ({ children }: any) => <div>{children}</div>,
 }));
 
-vi.mock('../../components/AppShell', () => ({
-  default: ({ children }: any) => <div>{children}</div>,
-}));
-
 vi.mock('../../api', () => ({
   api: { get: vi.fn().mockResolvedValue({ id: '1', first_name: 'Test', last_name: 'User', email: 'test@test.com' }) },
   ApiError: class ApiError extends Error {},

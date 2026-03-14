@@ -126,8 +126,8 @@ export function ShareButton({
  */
 function QRModal({ url, onClose }: { url: string; onClose: () => void }) {
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.modalOverlay} onClick={onClose} role="presentation">
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog">
         <div className={styles.modalHeader}>
           <h3>QR-code</h3>
           <button

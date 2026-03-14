@@ -10,7 +10,7 @@ vi.mock('@/api', () => ({
 }));
 vi.mock('@/utils/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn() } }));
 
-import { useVideoJobPolling } from '../../../../pages/identity/ContentGenerationModal/useVideoJobPolling';
+import { useVideoJobPolling } from '@/pages/identity/ContentGenerationModal/useVideoJobPolling';
 
 describe('useVideoJobPolling', () => {
   beforeEach(() => vi.clearAllMocks());

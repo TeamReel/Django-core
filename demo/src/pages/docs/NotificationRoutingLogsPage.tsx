@@ -13,9 +13,10 @@ import {
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
-import { api, ApiError } from '../../api';
+import { api, ApiError } from '@/api';
 import styles from './NotificationRoutingLogsPage.module.css';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 
 interface RoutingLog {
   id: string;
@@ -96,7 +97,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
           path += `?org_id=${currentOrgId}`;
         }
 
-        const data = await api.get<any>(path);
+        const data = await api.get<RoutingLog[] | { results: RoutingLog[] }>(path);
 
           let rawResults: Record<string, unknown>[] = [];
           if (Array.isArray(data)) {
@@ -164,7 +165,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
           setLogs(demoLogs);
         } else {
         logger.error('Routing logs fetch error', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch routing logs');
+        setError(getErrorMessage(err));
         }
       } finally {
         setLoading(false);

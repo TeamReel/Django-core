@@ -103,3 +103,17 @@
 .createButton:active {
   transform: scale(0.93);
 }
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .tab,
+  .iconPill,
+  .createButton {
+    transition: none;
+  }
+
+  .tab:active,
+  .createButton:active {
+    transform: none;
+  }
+}

@@ -2,11 +2,11 @@
  * Data fetching for useCompetitionDetailData hook
  */
 import { useEffect } from 'react';
-import { api } from '../../../api/client';
+import { api } from '@/api/client';
 import { logger } from '@/utils/logger';
-import { looksLikeUuid, periodPathKey } from '../../../utils/periodPath';
-import type { Period, SeasonProject as Project } from '../../../types/season';
-import type { Activity } from '../../../types/api/activity';
+import { looksLikeUuid, periodPathKey } from '@/utils/periodPath';
+import type { Period, SeasonProject as Project } from '@/types/season';
+import type { Activity } from '@/types/api/activity';
 import type { MemberRef } from '../useCompetitionMutations';
 import type { MatchMetadata } from './types';
 

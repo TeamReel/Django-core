@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import React, { useEffect, useMemo, useReducer, type Dispatch, type SetStateAction } from 'react';
 import { logger } from '@/utils/logger';
+import { formReducer, makeSetter } from '@/utils/formReducer';
 import type {
   OrgOption,
   ProjectOption,
   UserOption,
   SeasonSquadAddMemberModalProps,
 } from './seasonSquadAddMember.types';
-import { api } from '../../api';
+import { api } from '@/api';
 
 type HookProps = Omit<SeasonSquadAddMemberModalProps, 'onClose'>;
 
@@ -20,6 +21,13 @@ interface RawUserRecord {
   full_name?: string;
   email?: string;
   name?: string;
+}
+/** Membership record returned by /members/ endpoints. */
+interface MembershipRecord {
+  user?: RawUserRecord;
+  user_id?: string | number;
+  role?: string;
+  [key: string]: unknown;
 }
 
 const normalizeUser = (u: RawUserRecord): UserOption | null => {
@@ -74,42 +82,68 @@ export function useSeasonSquadAddMemberData({
   organisations = [], clubs = [], teams = [],
   initialOrganisationId = '', initialClubId = '', initialTeamId = '',
 }: HookProps): UseSeasonSquadAddMemberDataReturn {
-  const [selectedOrganisationId, setSelectedOrganisationId] = useState('');
-  const [selectedClubId, setSelectedClubId] = useState('');
-  const [selectedTeamId, setSelectedTeamId] = useState('');
+  interface SquadAddState {
+    selectedOrganisationId: string;
+    selectedClubId: string;
+    selectedTeamId: string;
+    userSearch: string;
+    userOptions: UserOption[];
+    selectedUserId: string;
+    position: string;
+    shirtNumber: string;
+    remoteOrganisations: OrgOption[];
+    remoteClubs: ProjectOption[];
+    remoteTeams: ProjectOption[];
+    loadingOrganisations: boolean;
+    loadingClubs: boolean;
+    loadingTeams: boolean;
+    loadingUsers: boolean;
+    saving: boolean;
+    error: string | null;
+  }
 
-  const [userSearch, setUserSearch] = useState('');
-  const [userOptions, setUserOptions] = useState<UserOption[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState('');
+  const [s, dispatch] = useReducer(formReducer<SquadAddState>, {
+    selectedOrganisationId: '', selectedClubId: '', selectedTeamId: '',
+    userSearch: '', userOptions: [], selectedUserId: '',
+    position: '', shirtNumber: '',
+    remoteOrganisations: [], remoteClubs: [], remoteTeams: [],
+    loadingOrganisations: false, loadingClubs: false, loadingTeams: false,
+    loadingUsers: false, saving: false, error: null,
+  });
 
-  const [position, setPosition] = useState('');
-  const [shirtNumber, setShirtNumber] = useState('');
-
-  const [remoteOrganisations, setRemoteOrganisations] = useState<OrgOption[]>([]);
-  const [remoteClubs, setRemoteClubs] = useState<ProjectOption[]>([]);
-  const [remoteTeams, setRemoteTeams] = useState<ProjectOption[]>([]);
-  const [loadingOrganisations, setLoadingOrganisations] = useState(false);
-  const [loadingClubs, setLoadingClubs] = useState(false);
-  const [loadingTeams, setLoadingTeams] = useState(false);
-  const [loadingUsers, setLoadingUsers] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const setSelectedOrganisationId = useMemo(() => makeSetter<SquadAddState, 'selectedOrganisationId'>(dispatch, 'selectedOrganisationId'), [dispatch]);
+  const setSelectedClubId = useMemo(() => makeSetter<SquadAddState, 'selectedClubId'>(dispatch, 'selectedClubId'), [dispatch]);
+  const setSelectedTeamId = useMemo(() => makeSetter<SquadAddState, 'selectedTeamId'>(dispatch, 'selectedTeamId'), [dispatch]);
+  const setUserSearch = useMemo(() => makeSetter<SquadAddState, 'userSearch'>(dispatch, 'userSearch'), [dispatch]);
+  const setUserOptions = useMemo(() => makeSetter<SquadAddState, 'userOptions'>(dispatch, 'userOptions'), [dispatch]);
+  const setSelectedUserId = useMemo(() => makeSetter<SquadAddState, 'selectedUserId'>(dispatch, 'selectedUserId'), [dispatch]);
+  const setPosition = useMemo(() => makeSetter<SquadAddState, 'position'>(dispatch, 'position'), [dispatch]);
+  const setShirtNumber = useMemo(() => makeSetter<SquadAddState, 'shirtNumber'>(dispatch, 'shirtNumber'), [dispatch]);
+  const setRemoteOrganisations = useMemo(() => makeSetter<SquadAddState, 'remoteOrganisations'>(dispatch, 'remoteOrganisations'), [dispatch]);
+  const setRemoteClubs = useMemo(() => makeSetter<SquadAddState, 'remoteClubs'>(dispatch, 'remoteClubs'), [dispatch]);
+  const setRemoteTeams = useMemo(() => makeSetter<SquadAddState, 'remoteTeams'>(dispatch, 'remoteTeams'), [dispatch]);
+  const setLoadingOrganisations = useMemo(() => makeSetter<SquadAddState, 'loadingOrganisations'>(dispatch, 'loadingOrganisations'), [dispatch]);
+  const setLoadingClubs = useMemo(() => makeSetter<SquadAddState, 'loadingClubs'>(dispatch, 'loadingClubs'), [dispatch]);
+  const setLoadingTeams = useMemo(() => makeSetter<SquadAddState, 'loadingTeams'>(dispatch, 'loadingTeams'), [dispatch]);
+  const setLoadingUsers = useMemo(() => makeSetter<SquadAddState, 'loadingUsers'>(dispatch, 'loadingUsers'), [dispatch]);
+  const setSaving = useMemo(() => makeSetter<SquadAddState, 'saving'>(dispatch, 'saving'), [dispatch]);
+  const setError = useMemo(() => makeSetter<SquadAddState, 'error'>(dispatch, 'error'), [dispatch]);
 
   // ── Derived option lists ──
 
   const organisationsOptions = useMemo(
-    () => (remoteOrganisations.length ? remoteOrganisations : organisations),
-    [remoteOrganisations, organisations],
+    () => (s.remoteOrganisations.length ? s.remoteOrganisations : organisations),
+    [s.remoteOrganisations, organisations],
   );
   const selectedOrganisationSlug = useMemo(() => {
-    const orgId = String(selectedOrganisationId || '').trim();
+    const orgId = String(s.selectedOrganisationId || '').trim();
     if (!orgId) return '';
     const org = organisationsOptions.find((o) => String(o.id) === String(orgId));
     return String(org?.slug || '').trim();
-  }, [organisationsOptions, selectedOrganisationId]);
+  }, [organisationsOptions, s.selectedOrganisationId]);
 
-  const clubsOptions = useMemo(() => (remoteClubs.length ? remoteClubs : clubs), [remoteClubs, clubs]);
-  const teamsOptions = useMemo(() => (remoteTeams.length ? remoteTeams : teams), [remoteTeams, teams]);
+  const clubsOptions = useMemo(() => (s.remoteClubs.length ? s.remoteClubs : clubs), [s.remoteClubs, clubs]);
+  const teamsOptions = useMemo(() => (s.remoteTeams.length ? s.remoteTeams : teams), [s.remoteTeams, teams]);
   const sortedOrganisations = useMemo(
     () => [...organisationsOptions].sort((a, b) => String(a.name).localeCompare(String(b.name))),
     [organisationsOptions],
@@ -130,7 +164,7 @@ export function useSeasonSquadAddMemberData({
   };
 
   const filteredClubs = useMemo(() => {
-    const orgId = selectedOrganisationId;
+    const orgId = s.selectedOrganisationId;
     const list = orgId
       ? clubsOptions.filter((c) => {
           const cOrg = typeof c.organisation === 'string' || typeof c.organisation === 'number' ? c.organisation : c.organisation?.id;
@@ -138,31 +172,33 @@ export function useSeasonSquadAddMemberData({
         })
       : clubsOptions;
     return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  }, [clubsOptions, selectedOrganisationId]);
+  }, [clubsOptions, s.selectedOrganisationId]);
 
   const filteredTeams = useMemo(() => {
-    const clubId = selectedClubId;
+    const clubId = s.selectedClubId;
     const list = clubId ? teamsOptions.filter((t) => getTeamParentId(t) === String(clubId)) : teamsOptions;
     return [...list].sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  }, [teamsOptions, selectedClubId]);
+  }, [teamsOptions, s.selectedClubId]);
 
   // ── Cascade helpers ──
 
   const applyOrganisationSelection = (orgId: string) => {
-    setSelectedOrganisationId(orgId);
-    setSelectedClubId(''); setSelectedTeamId(''); setSelectedUserId(''); setUserOptions([]);
+    dispatch({ type: 'patch', payload: {
+      selectedOrganisationId: orgId, selectedClubId: '', selectedTeamId: '',
+      selectedUserId: '', userOptions: [],
+    } });
   };
 
   const applyClubSelection = (clubId: string) => {
-    setSelectedClubId(clubId);
-    setSelectedTeamId(''); setSelectedUserId(''); setUserOptions([]);
+    dispatch({ type: 'patch', payload: {
+      selectedClubId: clubId, selectedTeamId: '', selectedUserId: '', userOptions: [],
+    } });
     const orgId = clubId ? getClubOrganisationId(clubId) : null;
     if (orgId) setSelectedOrganisationId(orgId);
   };
 
   const applyTeamSelection = (teamId: string) => {
-    setSelectedTeamId(teamId);
-    setSelectedUserId(''); setUserOptions([]);
+    dispatch({ type: 'patch', payload: { selectedTeamId: teamId, selectedUserId: '', userOptions: [] } });
     const team = teamsOptions.find((t) => String(t.id) === String(teamId));
     if (!team) return;
     const clubId = getTeamParentId(team);
@@ -179,11 +215,13 @@ export function useSeasonSquadAddMemberData({
     if (!opened) return;
     setError(null); setSaving(false); setLoadingUsers(false);
     setRemoteOrganisations([]); setRemoteClubs([]); setRemoteTeams([]);
-    setSelectedOrganisationId(String(initialOrganisationId || ''));
-    setSelectedClubId(String(initialClubId || ''));
-    setSelectedTeamId(String(initialTeamId || ''));
-    setUserSearch(''); setUserOptions([]); setSelectedUserId('');
-    setPosition(''); setShirtNumber('');
+    dispatch({ type: 'patch', payload: {
+      selectedOrganisationId: String(initialOrganisationId || ''),
+      selectedClubId: String(initialClubId || ''),
+      selectedTeamId: String(initialTeamId || ''),
+      userSearch: '', userOptions: [], selectedUserId: '',
+      position: '', shirtNumber: '',
+    } });
   }, [opened, initialOrganisationId, initialClubId, initialTeamId]);
 
   // Fetch federations
@@ -208,7 +246,7 @@ export function useSeasonSquadAddMemberData({
   // Fetch clubs
   useEffect(() => {
     if (!opened) return;
-    const orgId = String(selectedOrganisationId || '').trim();
+    const orgId = String(s.selectedOrganisationId || '').trim();
     const orgSlug = String(selectedOrganisationSlug || '').trim();
     let cancelled = false;
     const abortController = new AbortController();
@@ -219,7 +257,7 @@ export function useSeasonSquadAddMemberData({
         const path = orgId
           ? `/organisations/${encodeURIComponent(orgSlug)}/projects/`
           : '/projects/';
-        const rawList = await api.listAll<any>(path, { pageSize: 200, params: { parent_project__isnull: true }, maxItems: 1000, signal: abortController.signal });
+        const rawList = await api.listAll<ProjectOption>(path, { pageSize: 200, params: { parent_project__isnull: true }, maxItems: 1000, signal: abortController.signal });
         const list = rawList.map((p: ProjectOption) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
         const unique = [...new Map(list.map((p) => [String(p.id), p])).values()];
         if (!cancelled) setRemoteClubs(unique);
@@ -227,13 +265,13 @@ export function useSeasonSquadAddMemberData({
     };
     load();
     return () => { cancelled = true; abortController.abort(); };
-  }, [opened, apiBaseUrl, selectedOrganisationId, selectedOrganisationSlug]);
+  }, [opened, apiBaseUrl, s.selectedOrganisationId, selectedOrganisationSlug]);
 
   // Fetch teams
   useEffect(() => {
     if (!opened) return;
-    const clubId = String(selectedClubId || '').trim();
-    const orgId = String(selectedOrganisationId || '').trim();
+    const clubId = String(s.selectedClubId || '').trim();
+    const orgId = String(s.selectedOrganisationId || '').trim();
     const orgSlug = String(selectedOrganisationSlug || '').trim();
     let cancelled = false;
     const abortController = new AbortController();
@@ -249,7 +287,7 @@ export function useSeasonSquadAddMemberData({
         const params: Record<string, string | number | boolean | undefined> = clubId
           ? { parent_project: clubId }
           : { parent_project__isnull: false };
-        const rawList = await api.listAll<any>(path, { pageSize: 200, params, maxItems: 1000, signal: abortController.signal });
+        const rawList = await api.listAll<ProjectOption>(path, { pageSize: 200, params, maxItems: 1000, signal: abortController.signal });
         const list = rawList.map((p: ProjectOption) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
         const unique = [...new Map(list.map((p) => [String(p.id), p])).values()];
         if (!cancelled) setRemoteTeams(unique);
@@ -257,14 +295,14 @@ export function useSeasonSquadAddMemberData({
     };
     load();
     return () => { cancelled = true; abortController.abort(); };
-  }, [opened, apiBaseUrl, selectedClubId, selectedOrganisationId, selectedOrganisationSlug]);
+  }, [opened, apiBaseUrl, s.selectedClubId, s.selectedOrganisationId, selectedOrganisationSlug]);
 
   // Fetch users
   useEffect(() => {
     if (!opened) return;
-    const teamId = String(selectedTeamId || '').trim();
-    const clubId = String(selectedClubId || '').trim();
-    const orgId = String(selectedOrganisationId || '').trim();
+    const teamId = String(s.selectedTeamId || '').trim();
+    const clubId = String(s.selectedClubId || '').trim();
+    const orgId = String(s.selectedOrganisationId || '').trim();
     const orgSlug = String(selectedOrganisationSlug || '').trim();
     const season = String(seasonId || '').trim();
 
@@ -282,21 +320,21 @@ export function useSeasonSquadAddMemberData({
         if (teamId) {
           if (!season) throw new Error('Missing season context');
           const queryParams: Record<string, string | number | boolean | undefined> = { period: season, scope_project_id: clubId || undefined };
-          const data = await api.list<any>(`/projects/${encodeURIComponent(teamId)}/members/searchable-users/`, { pageSize: 500, params: queryParams, signal: abortController.signal });
+          const data = await api.list<RawUserRecord>(`/projects/${encodeURIComponent(teamId)}/members/searchable-users/`, { pageSize: 500, params: queryParams, signal: abortController.signal });
           usersRaw = data.results;
         } else if (clubId) {
-          const data = await api.list<any>(`/projects/${encodeURIComponent(clubId)}/members/`, { pageSize: 500, signal: abortController.signal });
-          usersRaw = data.results.map((m: { user?: unknown }) => m?.user).filter(Boolean);
+          const data = await api.list<MembershipRecord>(`/projects/${encodeURIComponent(clubId)}/members/`, { pageSize: 500, signal: abortController.signal });
+          usersRaw = data.results.map((m) => m?.user).filter(Boolean);
         } else {
-          const data = await api.list<any>(`/organisations/${encodeURIComponent(orgSlug)}/members/`, { pageSize: 500, params: { include_project_memberships: true }, signal: abortController.signal });
-          usersRaw = data.results.map((m: { user?: unknown }) => m?.user).filter(Boolean);
+          const data = await api.list<MembershipRecord>(`/organisations/${encodeURIComponent(orgSlug)}/members/`, { pageSize: 500, params: { include_project_memberships: true }, signal: abortController.signal });
+          usersRaw = data.results.map((m) => m?.user).filter(Boolean);
         }
 
         const normalized = usersRaw.map((u) => normalizeUser(u as RawUserRecord)).filter(Boolean) as UserOption[];
         const unique = [...new Map(normalized.map((u) => [String(u.id), u])).values()];
         if (!cancelled) {
           setUserOptions(unique);
-          const selected = String(selectedUserId || '').trim();
+          const selected = String(s.selectedUserId || '').trim();
           if (selected && !unique.some((u) => String(u.id) === selected)) setSelectedUserId('');
         }
       } catch (e: unknown) {
@@ -311,40 +349,40 @@ export function useSeasonSquadAddMemberData({
     };
     load();
     return () => { cancelled = true; abortController.abort(); };
-  }, [opened, selectedTeamId, selectedClubId, selectedOrganisationId, selectedOrganisationSlug, seasonId, apiBaseUrl, selectedUserId]);
+  }, [opened, s.selectedTeamId, s.selectedClubId, s.selectedOrganisationId, selectedOrganisationSlug, seasonId, apiBaseUrl, s.selectedUserId]);
 
   // ── Submit ──
 
   const filteredUserOptions = useMemo(() => {
-    const q = String(userSearch || '').trim().toLowerCase();
-    if (!q) return userOptions;
-    return userOptions.filter((u) => {
+    const q = String(s.userSearch || '').trim().toLowerCase();
+    if (!q) return s.userOptions;
+    return s.userOptions.filter((u) => {
       const name = String(u.full_name || u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || '').toLowerCase();
       const email = String(u.email || '').toLowerCase();
       return name.includes(q) || email.includes(q);
     });
-  }, [userOptions, userSearch]);
+  }, [s.userOptions, s.userSearch]);
 
-  const missingTeam = !String(selectedTeamId || '').trim();
-  const missingUser = !String(selectedUserId || '').trim();
-  const canSubmit = !missingTeam && !missingUser && !saving;
+  const missingTeam = !String(s.selectedTeamId || '').trim();
+  const missingUser = !String(s.selectedUserId || '').trim();
+  const canSubmit = !missingTeam && !missingUser && !s.saving;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError(null);
     try {
-      const teamId = String(selectedTeamId || '').trim();
-      const userId = String(selectedUserId || '').trim();
+      const teamId = String(s.selectedTeamId || '').trim();
+      const userId = String(s.selectedUserId || '').trim();
       if (!teamId) throw new Error('Select a team first.');
       if (!userId) throw new Error('Select a user first.');
       await onAdd({
-        organisation_id: String(selectedOrganisationId || '').trim() || undefined,
-        club_id: String(selectedClubId || '').trim() || undefined,
+        organisation_id: String(s.selectedOrganisationId || '').trim() || undefined,
+        club_id: String(s.selectedClubId || '').trim() || undefined,
         project_id: teamId,
         user_id: userId,
-        position: String(position || '').trim() || undefined,
-        shirt_number: String(shirtNumber || '').trim() || undefined,
+        position: String(s.position || '').trim() || undefined,
+        shirt_number: String(s.shirtNumber || '').trim() || undefined,
       });
       // Will be closed by caller
     } catch (e) {
@@ -359,9 +397,10 @@ export function useSeasonSquadAddMemberData({
     // Dropdowns
     sortedOrganisations, filteredClubs, filteredTeams, filteredUserOptions,
     // State
-    selectedOrganisationId, selectedClubId, selectedTeamId,
-    userSearch, selectedUserId, position, shirtNumber,
-    loadingOrganisations, loadingClubs, loadingTeams, loadingUsers, saving, error,
+    selectedOrganisationId: s.selectedOrganisationId, selectedClubId: s.selectedClubId, selectedTeamId: s.selectedTeamId,
+    userSearch: s.userSearch, selectedUserId: s.selectedUserId, position: s.position, shirtNumber: s.shirtNumber,
+    loadingOrganisations: s.loadingOrganisations, loadingClubs: s.loadingClubs, loadingTeams: s.loadingTeams,
+    loadingUsers: s.loadingUsers, saving: s.saving, error: s.error,
     missingTeam, missingUser, canSubmit,
     // Setters
     setUserSearch, setSelectedUserId, setPosition, setShirtNumber,

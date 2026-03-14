@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Badge, Button } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../api';
+import { api } from '@/api';
 import SmartEmptyState from '../../components/SmartEmptyState';
 import { routes } from '../../routes';
 import { logger } from '@/utils/logger';
@@ -51,7 +51,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
     const fetchMatches = async () => {
       try {
         setIsLoading(true);
-        const data = await api.get<any>(`/activities/?project=${projectId}&activity_type=match&page_size=100`);
+        const data = await api.get<{ results?: Match[] } & Record<string, unknown>>(`/activities/?project=${projectId}&activity_type=match&page_size=100`);
         const results = data.results || data; // Handle pagination or list
 
         // Sort by start_time

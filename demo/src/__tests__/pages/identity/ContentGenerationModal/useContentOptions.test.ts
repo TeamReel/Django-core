@@ -6,7 +6,7 @@ vi.mock('@/api/client', () => ({
 }));
 vi.mock('@/utils/logger', () => ({ logger: { warn: vi.fn(), error: vi.fn() } }));
 
-import { useContentOptions } from '../../../../pages/identity/ContentGenerationModal/useContentOptions';
+import { useContentOptions } from '@/pages/identity/ContentGenerationModal/useContentOptions';
 
 describe('useContentOptions', () => {
   beforeEach(() => vi.clearAllMocks());

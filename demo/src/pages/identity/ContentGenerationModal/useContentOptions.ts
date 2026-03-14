@@ -3,9 +3,10 @@
  *
  * Extracted from useContentGeneration to keep the orchestrator under 500 lines.
  */
-import { useState, useEffect } from 'react';
-import { api } from '../../../api/client';
+import { useMemo, useReducer, useEffect } from 'react';
+import { api } from '@/api/client';
 import { logger } from '@/utils/logger';
+import { formReducer, makeSetter } from '@/utils/formReducer';
 
 interface ContentOptionsConfig {
   isOpen: boolean;
@@ -13,40 +14,74 @@ interface ContentOptionsConfig {
 }
 
 export function useContentOptions({ isOpen, matchData }: ContentOptionsConfig) {
-  // ─── Lineup options ─────────────────────────────────────
-  const [lineupFormation, setLineupFormation] = useState<string>((matchData?.metadata as Record<string, unknown>)?.formation as string || '4-3-3');
-  const [lineupCloseupStyle, setLineupCloseupStyle] = useState<'popout' | 'badge'>('popout');
-  const [lineupAnimationStyle, setLineupAnimationStyle] = useState<'slide_up' | 'appear' | 'slide_in' | 'zoom' | 'fade'>('slide_up');
-  const [lineupIntroStyle, setLineupIntroStyle] = useState<'per_line' | 'per_player'>('per_line');
-  const [selectedBackgroundUrl, setSelectedBackgroundUrl] = useState<string | null>(null);
-  const [appBackgrounds, setAppBackgrounds] = useState<Array<{ id: string; url: string; label?: string; profile_name?: string }>>([]);
+  interface ContentOptionsState {
+    lineupFormation: string;
+    lineupCloseupStyle: 'popout' | 'badge';
+    lineupAnimationStyle: 'slide_up' | 'appear' | 'slide_in' | 'zoom' | 'fade';
+    lineupIntroStyle: 'per_line' | 'per_player';
+    selectedBackgroundUrl: string | null;
+    appBackgrounds: Array<{ id: string; url: string; label?: string; profile_name?: string }>;
+    matchFlyerVariant: 'modern' | 'action' | 'stadium';
+    flyerMemberId: string | null;
+    flyerActionStyle: string;
+    flyerPhotoLayout: 'single' | 'triple' | 'hero_duo';
+    flyerPhotoSlots: Array<{ member_id: string | null; style_variant: string }>;
+    goalScoreHome: number;
+    goalScoreAway: number;
+    goalScorerId: string | null;
+    summaryScoreHome: number;
+    summaryScoreAway: number;
+    summaryGoalScorers: string;
+  }
 
-  // ─── Flyer options ──────────────────────────────────────
-  const [matchFlyerVariant, setMatchFlyerVariant] = useState<'modern' | 'action' | 'stadium'>('modern');
-  const [flyerMemberId, setFlyerMemberId] = useState<string | null>(null);
-  const [flyerActionStyle, setFlyerActionStyle] = useState<string>('dribbling');
-  const [flyerPhotoLayout, setFlyerPhotoLayout] = useState<'single' | 'triple' | 'hero_duo'>('single');
-  const [flyerPhotoSlots, setFlyerPhotoSlots] = useState<Array<{ member_id: string | null; style_variant: string }>>([
-    { member_id: null, style_variant: 'dribbling' },
-    { member_id: null, style_variant: 'dribbling' },
-    { member_id: null, style_variant: 'dribbling' },
-  ]);
+  const [s, dispatch] = useReducer(formReducer<ContentOptionsState>, {
+    lineupFormation: (matchData?.metadata as Record<string, unknown>)?.formation as string || '4-3-3',
+    lineupCloseupStyle: 'popout',
+    lineupAnimationStyle: 'slide_up',
+    lineupIntroStyle: 'per_line',
+    selectedBackgroundUrl: null,
+    appBackgrounds: [],
+    matchFlyerVariant: 'modern',
+    flyerMemberId: null,
+    flyerActionStyle: 'dribbling',
+    flyerPhotoLayout: 'single',
+    flyerPhotoSlots: [
+      { member_id: null, style_variant: 'dribbling' },
+      { member_id: null, style_variant: 'dribbling' },
+      { member_id: null, style_variant: 'dribbling' },
+    ],
+    goalScoreHome: 0,
+    goalScoreAway: 0,
+    goalScorerId: null,
+    summaryScoreHome: 0,
+    summaryScoreAway: 0,
+    summaryGoalScorers: '',
+  });
 
-  // ─── Goal / Summary options ─────────────────────────────
-  const [goalScoreHome, setGoalScoreHome] = useState<number>(0);
-  const [goalScoreAway, setGoalScoreAway] = useState<number>(0);
-  const [goalScorerId, setGoalScorerId] = useState<string | null>(null);
-
-  const [summaryScoreHome, setSummaryScoreHome] = useState<number>(0);
-  const [summaryScoreAway, setSummaryScoreAway] = useState<number>(0);
-  const [summaryGoalScorers, setSummaryGoalScorers] = useState<string>('');
+  const setLineupFormation = useMemo(() => makeSetter<ContentOptionsState, 'lineupFormation'>(dispatch, 'lineupFormation'), [dispatch]);
+  const setLineupCloseupStyle = useMemo(() => makeSetter<ContentOptionsState, 'lineupCloseupStyle'>(dispatch, 'lineupCloseupStyle'), [dispatch]);
+  const setLineupAnimationStyle = useMemo(() => makeSetter<ContentOptionsState, 'lineupAnimationStyle'>(dispatch, 'lineupAnimationStyle'), [dispatch]);
+  const setLineupIntroStyle = useMemo(() => makeSetter<ContentOptionsState, 'lineupIntroStyle'>(dispatch, 'lineupIntroStyle'), [dispatch]);
+  const setSelectedBackgroundUrl = useMemo(() => makeSetter<ContentOptionsState, 'selectedBackgroundUrl'>(dispatch, 'selectedBackgroundUrl'), [dispatch]);
+  const setAppBackgrounds = useMemo(() => makeSetter<ContentOptionsState, 'appBackgrounds'>(dispatch, 'appBackgrounds'), [dispatch]);
+  const setMatchFlyerVariant = useMemo(() => makeSetter<ContentOptionsState, 'matchFlyerVariant'>(dispatch, 'matchFlyerVariant'), [dispatch]);
+  const setFlyerMemberId = useMemo(() => makeSetter<ContentOptionsState, 'flyerMemberId'>(dispatch, 'flyerMemberId'), [dispatch]);
+  const setFlyerActionStyle = useMemo(() => makeSetter<ContentOptionsState, 'flyerActionStyle'>(dispatch, 'flyerActionStyle'), [dispatch]);
+  const setFlyerPhotoLayout = useMemo(() => makeSetter<ContentOptionsState, 'flyerPhotoLayout'>(dispatch, 'flyerPhotoLayout'), [dispatch]);
+  const setFlyerPhotoSlots = useMemo(() => makeSetter<ContentOptionsState, 'flyerPhotoSlots'>(dispatch, 'flyerPhotoSlots'), [dispatch]);
+  const setGoalScoreHome = useMemo(() => makeSetter<ContentOptionsState, 'goalScoreHome'>(dispatch, 'goalScoreHome'), [dispatch]);
+  const setGoalScoreAway = useMemo(() => makeSetter<ContentOptionsState, 'goalScoreAway'>(dispatch, 'goalScoreAway'), [dispatch]);
+  const setGoalScorerId = useMemo(() => makeSetter<ContentOptionsState, 'goalScorerId'>(dispatch, 'goalScorerId'), [dispatch]);
+  const setSummaryScoreHome = useMemo(() => makeSetter<ContentOptionsState, 'summaryScoreHome'>(dispatch, 'summaryScoreHome'), [dispatch]);
+  const setSummaryScoreAway = useMemo(() => makeSetter<ContentOptionsState, 'summaryScoreAway'>(dispatch, 'summaryScoreAway'), [dispatch]);
+  const setSummaryGoalScorers = useMemo(() => makeSetter<ContentOptionsState, 'summaryGoalScorers'>(dispatch, 'summaryGoalScorers'), [dispatch]);
 
   // ─── Fetch app backgrounds ──────────────────────────────
   useEffect(() => {
     if (!isOpen) return;
     const fetchBackgrounds = async () => {
       try {
-        const data = await api.get<any>('/branding/assets/app-backgrounds/');
+        const data = await api.get<Record<string, unknown>>('/branding/assets/app-backgrounds/');
         const items = Array.isArray(data) ? data : (data?.results || []);
         setAppBackgrounds(
           items.filter((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => a.url).map((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => ({
@@ -61,22 +96,22 @@ export function useContentOptions({ isOpen, matchData }: ContentOptionsConfig) {
   }, [isOpen]);
 
   return {
-    lineupFormation, setLineupFormation,
-    lineupCloseupStyle, setLineupCloseupStyle,
-    lineupAnimationStyle, setLineupAnimationStyle,
-    lineupIntroStyle, setLineupIntroStyle,
-    selectedBackgroundUrl, setSelectedBackgroundUrl,
-    appBackgrounds,
-    matchFlyerVariant, setMatchFlyerVariant,
-    flyerMemberId, setFlyerMemberId,
-    flyerActionStyle, setFlyerActionStyle,
-    flyerPhotoLayout, setFlyerPhotoLayout,
-    flyerPhotoSlots, setFlyerPhotoSlots,
-    goalScoreHome, setGoalScoreHome,
-    goalScoreAway, setGoalScoreAway,
-    goalScorerId, setGoalScorerId,
-    summaryScoreHome, setSummaryScoreHome,
-    summaryScoreAway, setSummaryScoreAway,
-    summaryGoalScorers, setSummaryGoalScorers,
+    lineupFormation: s.lineupFormation, setLineupFormation,
+    lineupCloseupStyle: s.lineupCloseupStyle, setLineupCloseupStyle,
+    lineupAnimationStyle: s.lineupAnimationStyle, setLineupAnimationStyle,
+    lineupIntroStyle: s.lineupIntroStyle, setLineupIntroStyle,
+    selectedBackgroundUrl: s.selectedBackgroundUrl, setSelectedBackgroundUrl,
+    appBackgrounds: s.appBackgrounds,
+    matchFlyerVariant: s.matchFlyerVariant, setMatchFlyerVariant,
+    flyerMemberId: s.flyerMemberId, setFlyerMemberId,
+    flyerActionStyle: s.flyerActionStyle, setFlyerActionStyle,
+    flyerPhotoLayout: s.flyerPhotoLayout, setFlyerPhotoLayout,
+    flyerPhotoSlots: s.flyerPhotoSlots, setFlyerPhotoSlots,
+    goalScoreHome: s.goalScoreHome, setGoalScoreHome,
+    goalScoreAway: s.goalScoreAway, setGoalScoreAway,
+    goalScorerId: s.goalScorerId, setGoalScorerId,
+    summaryScoreHome: s.summaryScoreHome, setSummaryScoreHome,
+    summaryScoreAway: s.summaryScoreAway, setSummaryScoreAway,
+    summaryGoalScorers: s.summaryGoalScorers, setSummaryGoalScorers,
   };
 }

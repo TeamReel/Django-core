@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { CheckCircle2, Circle } from 'lucide-react';
-import SlotIcon from '../../../components/SlotIcon';
+import SlotIcon from '@/components/SlotIcon';
 import type {
   AssetStat,
   BrandAssetItem,

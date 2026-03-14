@@ -1,6 +1,7 @@
 /** ContentGenerationModal — Orchestrator hook composing sub-modules. */
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { formReducer, makeSetter } from '../../../utils/formReducer';
 import type {
   ContentTemplate,
   GeneratedVariant,
@@ -39,22 +40,57 @@ export function useContentGeneration({
   const { pushToast } = useToast();
   const navigate = useNavigate();
   // ─── Step & template state ──────────────────────────────
-  const [step, setStep] = useState<StepType>('type');
-  const [selectedType, setSelectedType] = useState<{ type: string; subtype: string; label: string } | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
-  const [templates, setTemplates] = useState<ContentTemplate[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  // ─── Generation state ───────────────────────────────────
-  const [progress, setProgress] = useState(0);
-  const [generationStartedAtMs, setGenerationStartedAtMs] = useState<number | null>(null);
-  const [generationError, setGenerationError] = useState<string | null>(null);
-  const [generatedOutput, setGeneratedOutput] = useState<GeneratedOutput | null>(null);
-  const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[]>([]);
-  const [selectedVariantIndex, setSelectedVariantIndex] = useState<number>(0);
-  const [savingAsset, setSavingAsset] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [savedVariantIndices, setSavedVariantIndices] = useState<Set<number>>(new Set());
+  interface ContentGenState {
+    step: StepType;
+    selectedType: { type: string; subtype: string; label: string } | null;
+    selectedTemplate: ContentTemplate | null;
+    templates: ContentTemplate[];
+    loading: boolean;
+    error: string | null;
+    progress: number;
+    generationStartedAtMs: number | null;
+    generationError: string | null;
+    generatedOutput: GeneratedOutput | null;
+    generatedVariants: GeneratedVariant[];
+    selectedVariantIndex: number;
+    savingAsset: boolean;
+    saveSuccess: boolean;
+    savedVariantIndices: Set<number>;
+  }
+
+  const [s, dispatch] = useReducer(formReducer<ContentGenState>, {
+    step: 'type',
+    selectedType: null,
+    selectedTemplate: null,
+    templates: [],
+    loading: false,
+    error: null,
+    progress: 0,
+    generationStartedAtMs: null,
+    generationError: null,
+    generatedOutput: null,
+    generatedVariants: [],
+    selectedVariantIndex: 0,
+    savingAsset: false,
+    saveSuccess: false,
+    savedVariantIndices: new Set<number>(),
+  });
+
+  const setStep                 = useMemo(() => makeSetter(dispatch, 'step'), [dispatch]);
+  const setSelectedType         = useMemo(() => makeSetter(dispatch, 'selectedType'), [dispatch]);
+  const setSelectedTemplate     = useMemo(() => makeSetter(dispatch, 'selectedTemplate'), [dispatch]);
+  const setTemplates            = useMemo(() => makeSetter(dispatch, 'templates'), [dispatch]);
+  const setLoading              = useMemo(() => makeSetter(dispatch, 'loading'), [dispatch]);
+  const setError                = useMemo(() => makeSetter(dispatch, 'error'), [dispatch]);
+  const setProgress             = useMemo(() => makeSetter(dispatch, 'progress'), [dispatch]);
+  const setGenerationStartedAtMs = useMemo(() => makeSetter(dispatch, 'generationStartedAtMs'), [dispatch]);
+  const setGenerationError      = useMemo(() => makeSetter(dispatch, 'generationError'), [dispatch]);
+  const setGeneratedOutput      = useMemo(() => makeSetter(dispatch, 'generatedOutput'), [dispatch]);
+  const setGeneratedVariants    = useMemo(() => makeSetter(dispatch, 'generatedVariants'), [dispatch]);
+  const setSelectedVariantIndex = useMemo(() => makeSetter(dispatch, 'selectedVariantIndex'), [dispatch]);
+  const setSavingAsset          = useMemo(() => makeSetter(dispatch, 'savingAsset'), [dispatch]);
+  const setSaveSuccess          = useMemo(() => makeSetter(dispatch, 'saveSuccess'), [dispatch]);
+  const setSavedVariantIndices  = useMemo(() => makeSetter(dispatch, 'savedVariantIndices'), [dispatch]);
   // ─── Option states (sub-hook) ───────────────────────────
   const {
     lineupFormation, setLineupFormation,
@@ -76,12 +112,12 @@ export function useContentGeneration({
     summaryGoalScorers, setSummaryGoalScorers,
   } = useContentOptions({ isOpen, matchData });
   // ─── Sub-hooks ──────────────────────────────────────────
-  const squad = useSeasonSquadData({ isOpen, projectId, seasonId: season?.id, selectedTemplate });
-  const videoPoll = useVideoJobPolling({ isOpen, step, onGenerated });
+  const squad = useSeasonSquadData({ isOpen, projectId, seasonId: season?.id, selectedTemplate: s.selectedTemplate });
+  const videoPoll = useVideoJobPolling({ isOpen, step: s.step, onGenerated });
   // ─── Generation dispatch (extracted) ────────────────────
   const { handleGenerateInternal } = useGenerationDispatch({
     matchData, season, organisationId, assetType, onGenerated,
-    selectedType, selectedTemplate,
+    selectedType: s.selectedType, selectedTemplate: s.selectedTemplate,
     setStep, setProgress, setGenerationStartedAtMs, setGenerationError,
     setGeneratedOutput, setGeneratedVariants, setSelectedVariantIndex,
     setSaveSuccess, setSavedVariantIndices,
@@ -94,19 +130,19 @@ export function useContentGeneration({
   // ─── Save handlers (extracted) ──────────────────────────
   const { handleSaveVariantByIndex, handleSaveAsAsset, handleSaveAllAsAssets } = useSaveHandlers({
     matchData, organisationId, assetType, onGenerated, onClose,
-    selectedType, selectedTemplate,
-    generatedVariants, generatedOutput, selectedVariantIndex, savedVariantIndices,
+    selectedType: s.selectedType, selectedTemplate: s.selectedTemplate,
+    generatedVariants: s.generatedVariants, generatedOutput: s.generatedOutput, selectedVariantIndex: s.selectedVariantIndex, savedVariantIndices: s.savedVariantIndices,
     setGeneratedVariants, setSavingAsset, setSaveSuccess, setSavedVariantIndices,
     setGenerationError, pushToast, navigate,
   });
   // ─── Derived values ─────────────────────────────────────
   const isLineupFlow =
-    selectedType?.subtype === 'lineup' ||
-    selectedType?.subtype === 'lineup_flyer' ||
-    selectedType?.subtype === 'poster' ||
-    selectedTemplate?.template_subtype === 'lineup' ||
-    selectedTemplate?.template_subtype === 'lineup_flyer' ||
-    selectedTemplate?.template_subtype === 'poster' ||
+    s.selectedType?.subtype === 'lineup' ||
+    s.selectedType?.subtype === 'lineup_flyer' ||
+    s.selectedType?.subtype === 'poster' ||
+    s.selectedTemplate?.template_subtype === 'lineup' ||
+    s.selectedTemplate?.template_subtype === 'lineup_flyer' ||
+    s.selectedTemplate?.template_subtype === 'poster' ||
     initialTemplate?.template_subtype === 'lineup' ||
     initialTemplate?.template_subtype === 'lineup_flyer' ||
     initialTemplate?.template_subtype === 'poster';
@@ -119,16 +155,18 @@ export function useContentGeneration({
     lastOpenStateRef.current = isOpen;
     if (isOpen) {
       // Always reset transient state
-      setProgress(0);
-      setGenerationStartedAtMs(null);
-      setError(null);
-      setGenerationError(null);
-      setGeneratedOutput(null);
-      setGeneratedVariants([]);
-      setSelectedVariantIndex(0);
-      setSavingAsset(false);
-      setSaveSuccess(false);
-      setSavedVariantIndices(new Set());
+      dispatch({ type: 'patch', payload: {
+        progress: 0,
+        generationStartedAtMs: null,
+        error: null,
+        generationError: null,
+        generatedOutput: null,
+        generatedVariants: [],
+        selectedVariantIndex: 0,
+        savingAsset: false,
+        saveSuccess: false,
+        savedVariantIndices: new Set<number>(),
+      }});
       videoPoll.resetVideo();
       if (freshOpen && !hasInitializedRef.current) {
         hasInitializedRef.current = true;
@@ -195,11 +233,11 @@ export function useContentGeneration({
   // Auto-generate: when opening from MatchWizard with all data ready,
   // skip confirm and start generation immediately.
   useEffect(() => {
-    if (autoGenerateRef.current && step === 'generating' && selectedTemplate) {
+    if (autoGenerateRef.current && s.step === 'generating' && s.selectedTemplate) {
       autoGenerateRef.current = false;
       handleGenerateInternal();
     }
-  }, [step]);
+  }, [s.step]);
   // ─── Fetch templates ────────────────────────────────────
   const doFetchTemplates = async (templateType: string, templateSubtype: string) => {
     setLoading(true);
@@ -235,30 +273,30 @@ export function useContentGeneration({
     setStep(needsMembers ? 'members' : 'confirm');
   };
 
-  const handleGenerate = () => { if (selectedTemplate) handleGenerateInternal(); };
+  const handleGenerate = () => { if (s.selectedTemplate) handleGenerateInternal(); };
   const handleBack = () => {
     // When opened from MatchWizard (initialTemplate set), back always
     // closes this modal and returns to the MatchWizard review step.
     // The modal's internal type/template steps are not part of the flow.
     if (initialTemplate) { onClose(); return; }
 
-    if (step === 'template') {
+    if (s.step === 'template') {
       setStep('type'); setSelectedType(null); setTemplates([]);
-    } else if (step === 'members') {
-      if (selectedType?.subtype === 'poster') {
+    } else if (s.step === 'members') {
+      if (s.selectedType?.subtype === 'poster') {
         setStep('type'); setSelectedType(null); setSelectedTemplate(null);
       } else {
         setStep('template'); setSelectedTemplate(null);
       }
-    } else if (step === 'lineup_squad') {
+    } else if (s.step === 'lineup_squad') {
       setStep('members');
-    } else if (step === 'confirm') {
-      const needsMembers = selectedTemplate?.input_requirements?.members &&
-        Object.entries(selectedTemplate.input_requirements.members).some(([key, val]) =>
+    } else if (s.step === 'confirm') {
+      const needsMembers = s.selectedTemplate?.input_requirements?.members &&
+        Object.entries(s.selectedTemplate.input_requirements.members).some(([key, val]) =>
           key !== 'use_formation' && val && typeof val !== 'boolean' && val.count > 0,
         );
-      const isLineup = selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'poster';
-      const isGoal = selectedType?.subtype === 'goal';
+      const isLineup = s.selectedType?.subtype === 'lineup' || s.selectedType?.subtype === 'lineup_flyer' || s.selectedType?.subtype === 'poster' || s.selectedTemplate?.template_subtype === 'lineup' || s.selectedTemplate?.template_subtype === 'lineup_flyer' || s.selectedTemplate?.template_subtype === 'poster';
+      const isGoal = s.selectedType?.subtype === 'goal';
       if (isGoal) { setStep('type'); setSelectedType(null); }
       else if (isLineup && needsMembers) setStep('lineup_squad');
       else if (needsMembers) setStep('members');
@@ -267,10 +305,10 @@ export function useContentGeneration({
   };
 
   return {
-    step, setStep, selectedType, selectedTemplate, progress, generationError,
-    generatedOutput, loading, error, templates,
-    generatedVariants, selectedVariantIndex, setSelectedVariantIndex,
-    savingAsset, saveSuccess, savedVariantIndices,
+    step: s.step, setStep, selectedType: s.selectedType, selectedTemplate: s.selectedTemplate, progress: s.progress, generationError: s.generationError,
+    generatedOutput: s.generatedOutput, loading: s.loading, error: s.error, templates: s.templates,
+    generatedVariants: s.generatedVariants, selectedVariantIndex: s.selectedVariantIndex, setSelectedVariantIndex,
+    savingAsset: s.savingAsset, saveSuccess: s.saveSuccess, savedVariantIndices: s.savedVariantIndices,
     seasonSquad: squad.seasonSquad, selectedMembers: squad.selectedMembers,
     setSelectedMembers: squad.setSelectedMembers,
     lineupFormation, setLineupFormation, lineupCloseupStyle, setLineupCloseupStyle,

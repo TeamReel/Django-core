@@ -17,8 +17,8 @@ vi.mock('../../../pages/identity/orgDataHelpers', () => ({
 }));
 vi.mock('@/utils/logger', () => ({ logger: { error: vi.fn() } }));
 
-import { useOrgActions } from '../../../pages/identity/useOrgActions';
-import type { Organisation } from '../../../types';
+import { useOrgActions } from '@/pages/identity/useOrgActions';
+import type { Organisation } from '@/types';
 
 const makeParams = (overrides: Record<string, unknown> = {}) => ({
   org: { id: '1', name: 'Test Org', slug: 'test-org', metadata: { type: 'federation', country: 'NL' } } as Organisation & Record<string, any>,

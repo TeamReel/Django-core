@@ -9,20 +9,24 @@ import {
 import { Table } from '@/shims/design-system';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { useConfirm } from '../../../components/ui/ConfirmDialog';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 // Adjust imports to point to parent directory
-import { canPerformAction } from '../../../utils/permissions';
+import { canPerformAction } from '@/utils/permissions';
 import OrganisationDetailModal from '../OrganisationDetailModal';
 import OrganisationEditModal from '../OrganisationEditModal';
 import OrganisationCreateModal from '../OrganisationCreateModal';
 import { api } from '@/api';
-import { routes } from '../../../routes';
+import { routes } from '@/routes';
 import { logger } from '@/utils/logger';
-import { useSports } from '../../../hooks/useSports';
-import type { Organisation } from '../../../types';
+import { useToast } from '@/components/ui/Toast';
+import { getErrorMessage } from '@/utils/errorHelpers';
+import { useSports } from '@/hooks/useSports';
+import { useCrudModals } from '@/hooks/useModalState';
+import type { Organisation } from '@/types';
 import styles from './FederationsList.module.css';
 
 export const FederationsList: React.FC = () => {
+  const { pushToast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
   const confirm = useConfirm();
@@ -39,11 +43,7 @@ export const FederationsList: React.FC = () => {
   const [sportFilter, setSportFilter] = useState<string>('all');
 
   // Modal state
-  const [detailOrganisation, setDetailOrganisation] = useState<Organisation | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [editOrganisation, setEditOrganisation] = useState<Organisation | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const modals = useCrudModals<Organisation>();
 
   const userRole = String(user?.role || '').toLowerCase();
   const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
@@ -72,7 +72,7 @@ export const FederationsList: React.FC = () => {
         setOrganisations(results);
       } catch (err) {
         logger.error('Failed to fetch organisations', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch organisations');
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
       }
@@ -96,7 +96,7 @@ export const FederationsList: React.FC = () => {
       setRefreshKey(k => k + 1);
     } catch (err) {
       logger.error('Delete error', err);
-      alert('Failed to delete organisation');
+      pushToast({ message: 'Failed to delete organisation', type: 'error' });
     }
   };
 
@@ -148,7 +148,7 @@ export const FederationsList: React.FC = () => {
           Clear
         </Button>
         {isSuperAdmin && (
-          <Button variant="primary" size="md" onClick={() => setIsCreateModalOpen(true)}>
+          <Button variant="primary" size="md" onClick={() => modals.create.open()}>
             Create Organisation
           </Button>
         )}
@@ -275,20 +275,14 @@ export const FederationsList: React.FC = () => {
                         <td className="dir-td">
                           <div className="dir-actions">
                             <button
-                              onClick={() => {
-                                setDetailOrganisation(org);
-                                setIsDetailModalOpen(true);
-                              }}
+                              onClick={() => modals.detail.open(org)}
                               className="action-btn action-btn-primary"
                             >
                               View
                             </button>
                             {userCanEdit && (
                               <button
-                                onClick={() => {
-                                  setEditOrganisation(org);
-                                  setIsEditModalOpen(true);
-                                }}
+                                onClick={() => modals.edit.open(org)}
                                 className="action-btn action-btn-warning"
                               >
                                 Edit
@@ -315,25 +309,25 @@ export const FederationsList: React.FC = () => {
       })()}
 
       <OrganisationDetailModal
-        opened={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        organisation={detailOrganisation}
+        opened={modals.detail.isOpen}
+        onClose={modals.detail.close}
+        organisation={modals.detail.item}
       />
 
       <OrganisationEditModal
-        opened={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        organisation={editOrganisation}
+        opened={modals.edit.isOpen}
+        onClose={modals.edit.close}
+        organisation={modals.edit.item}
         onSave={async (orgData) => {
-          if (!editOrganisation) return;
-          await api.patch(`/organisations/${editOrganisation.slug}/`, orgData);
+          if (!modals.edit.item) return;
+          await api.patch(`/organisations/${modals.edit.item.slug}/`, orgData);
           setRefreshKey(prev => prev + 1);
         }}
       />
 
       <OrganisationCreateModal
-        opened={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        opened={modals.create.isOpen}
+        onClose={modals.create.close}
         onCreate={async (orgData) => {
           await api.post('/organisations/', orgData);
 

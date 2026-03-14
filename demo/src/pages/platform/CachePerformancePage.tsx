@@ -3,7 +3,8 @@ import { Card, Button, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
-// import AppShell from '../../components/AppShell';
+import { useToast } from '@/components/ui/Toast';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import {
   LineChart,
   Line,
@@ -55,6 +56,7 @@ interface BenchmarkResult {
 }
 
 export const CachePerformancePage: React.FC = () => {
+  const { pushToast } = useToast();
   const [metrics, setMetrics] = useState<CacheMetricsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +79,7 @@ export const CachePerformancePage: React.FC = () => {
       setMetrics(data);
     } catch (err) {
       logger.error('[CachePerformancePage] Fetch error', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch metrics');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -88,14 +90,14 @@ export const CachePerformancePage: React.FC = () => {
       setActionLoading('clear');
       setError(null);
 
-      const result = await api.post<any>('/system/cache/clear/');
-      alert(`Cache cleared successfully! ${result.cleared_keys} keys removed.`);
+      const result = await api.post<{ cleared_keys: number }>('/system/cache/clear/');
+      pushToast({ message: `Cache cleared successfully! ${result.cleared_keys} keys removed.`, type: 'success' });
 
       // Refresh metrics
       await fetchMetrics();
     } catch (err) {
       logger.error('Failed to clear cache', err);
-      setError(err instanceof Error ? err.message : 'Failed to clear cache');
+      setError(getErrorMessage(err));
     } finally {
       setActionLoading(null);
     }
@@ -111,7 +113,7 @@ export const CachePerformancePage: React.FC = () => {
       setBenchmarkResult(result);
     } catch (err) {
       logger.error('Failed to run benchmark', err);
-      setError(err instanceof Error ? err.message : 'Failed to run benchmark');
+      setError(getErrorMessage(err));
     } finally {
       setActionLoading(null);
     }

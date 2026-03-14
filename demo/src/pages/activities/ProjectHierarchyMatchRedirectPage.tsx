@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
-import { organisationsApi } from '../../api';
+import { organisationsApi } from '@/api';
 
 type Project = {
   id: string;

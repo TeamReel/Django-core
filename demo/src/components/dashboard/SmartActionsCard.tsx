@@ -11,6 +11,7 @@
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { routes } from '../../routes';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   Zap, ChevronRight, Shirt, Camera, Image, FileImage,
@@ -72,7 +73,7 @@ export const SmartActionsCard: React.FC = () => {
           navigate(`${base}?tab=${encodeURIComponent(action.mode.tab)}`);
         } else {
           // Fallback: just go to dashboard
-          navigate('/dashboard');
+          navigate(routes.dashboard());
         }
         break;
       }
@@ -97,12 +98,12 @@ export const SmartActionsCard: React.FC = () => {
         const computed: SmartAction[] = [];
 
         // ── 1. Fetch member count + generation requests in parallel ──
-        const fetches: Promise<any>[] = [];
+        const fetches: Promise<unknown>[] = [];
 
         // Members (if project context)
         if (project) {
           fetches.push(
-            api.list<any>(`/organisations/${org.slug}/projects/${project.slug}/members/`, { pageSize: 100 })
+            api.list<Record<string, unknown>>(`/organisations/${org.slug}/projects/${project.slug}/members/`, { pageSize: 100 })
               .catch(() => null)
           );
         } else {
@@ -112,7 +113,7 @@ export const SmartActionsCard: React.FC = () => {
         // Generation requests (completed member content)
         if (project) {
           fetches.push(
-            api.list<any>('/generative/requests/', { params: { status: 'completed', project: project.id }, pageSize: 500 })
+            api.list<Record<string, unknown>>('/generative/requests/', { params: { status: 'completed', project: project.id }, pageSize: 500 })
               .catch(() => null)
           );
         } else {
@@ -122,7 +123,7 @@ export const SmartActionsCard: React.FC = () => {
         // Upcoming match
         const now = new Date().toISOString();
         fetches.push(
-          api.list<any>('/activities/', {
+          api.list<Record<string, unknown>>('/activities/', {
             params: { activity_type: 'match', start_time__gte: now, ordering: 'start_time', ...(project ? { project: project.id } : {}) },
             pageSize: 1,
           }).catch(() => null)

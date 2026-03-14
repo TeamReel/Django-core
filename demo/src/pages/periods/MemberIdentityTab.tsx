@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
-import { api, projectsApi } from '../../api';
+import { api, projectsApi } from '@/api';
 import type { SeasonProject as Project } from '../../types/season';
 import { getUserDisplayName } from './memberDetailUtils';
 import type { MembershipRecord } from './memberDetailUtils';

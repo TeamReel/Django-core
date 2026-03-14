@@ -6,6 +6,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>TeamReel</title>
 
+    <!-- Theme init: prevent FOUC by setting data-theme before first paint -->
+    <script>
+      (function() {
+        try {
+          var raw = localStorage.getItem('django_core_theme');
+          if (raw) {
+            var pref = JSON.parse(raw);
+            var mode = pref.mode;
+            if (mode === 'system') {
+              mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            if (mode === 'dark' || mode === 'light') {
+              document.documentElement.setAttribute('data-theme', mode);
+              // Update theme-color meta for browser chrome
+              var mc = document.querySelector('meta[name="theme-color"]');
+              if (mc) mc.setAttribute('content', mode === 'dark' ? '#0A192F' : '#3B82F6');
+            }
+            if (pref.brand) {
+              document.documentElement.setAttribute('data-brand', pref.brand);
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- Critical dark-mode styles: prevent FOUC before CSS modules load -->
+    <style>
+      html[data-theme="dark"] { background-color: #0A192F; color: #EDF6FF; }
+      html[data-theme="dark"] body { background-color: #0A192F; color: #EDF6FF; }
+    </style>
+
     <!-- PWA Meta Tags -->
     <meta name="description" content="Team highlights and player profiles for football clubs" />
     <meta name="theme-color" content="#3B82F6" />

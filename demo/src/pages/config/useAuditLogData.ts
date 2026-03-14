@@ -4,7 +4,7 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import type { AuditEvent } from '../../types';
 import { apiFetch } from '../../utils/apiFetch';
-import { api } from '../../api/client';
+import { api } from '@/api/client';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { logger } from '@/utils/logger';
 

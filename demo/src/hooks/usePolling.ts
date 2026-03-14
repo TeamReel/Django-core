@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { apiFetch } from '@/utils/apiFetch';
 import { logger } from '@/utils/logger';
 
 /**
@@ -88,13 +89,7 @@ export function usePolling<T = unknown>(
       setError(null);
       setLoading(true);
 
-      const response = await fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        credentials: 'include',
-      });
+      const response = await apiFetch(url);
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);

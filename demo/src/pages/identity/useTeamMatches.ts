@@ -38,7 +38,7 @@ export function useTeamMatches({
 
       setContentCountLoading(true);
       try {
-        const { count } = await api.list<any>('/generation-requests/', {
+        const { count } = await api.list<Record<string, unknown>>('/generation-requests/', {
           params: { project: teamId },
           pageSize: 1,
         });
@@ -65,7 +65,7 @@ export function useTeamMatches({
 
       setTeamMatchesLoading(true);
       try {
-        const list = await api.listAll<any>('/activities/', {
+        const list = await api.listAll<TeamMatchRecord>('/activities/', {
           params: {
             project_id: teamId,
             activity_type: 'match',

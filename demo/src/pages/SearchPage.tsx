@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useSearch, type GroupedSearchResults, type PaginatedSearchResults, type SearchResult } from '../hooks/useSearch';
-import AppShell from '../components/AppShell';
 import HierarchyTreeView from '../components/HierarchyTreeView';
 import { BottomSheet, Button } from '@django-core/design-system';
 import SmartEmptyState from '../components/SmartEmptyState';
@@ -107,7 +106,7 @@ export default function SearchPage() {
     : paginatedResults?.count || 0;
 
   return (
-    <AppShell>
+    <>
       <div className="page-container">
         <div className="mb-24">
           <div className="flex-between mb-8 flex-wrap gap-12">
@@ -334,6 +333,6 @@ export default function SearchPage() {
           ))}
         </div>
       </BottomSheet>
-    </AppShell>
+    </>
   );
 }

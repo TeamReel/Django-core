@@ -29,7 +29,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = (props)
   if (!isOpen) return null;
 
   return (
-    <div style={overlayStyle} onClick={onClose} className={styles.overlay}>
+    <div style={overlayStyle} onClick={onClose} className={styles.overlay} role="presentation">
       <div style={modalStyle} onClick={(e) => e.stopPropagation()} className={styles.modal} role="dialog">
         {/* Drag handle (mobile) */}
         <div className={styles.dragHandle}><div className={styles.dragHandleBar} /></div>

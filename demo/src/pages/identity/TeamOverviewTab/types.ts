@@ -23,8 +23,8 @@ export interface MatchRecord {
   name?: string;
   date?: string;
   start_time?: string;
-  metadata?: Record<string, any>;
-  [key: string]: any;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 export interface HierarchyData {
@@ -44,7 +44,7 @@ export interface OverviewMember {
   first_name?: string;
   last_name?: string;
   email?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface OverviewMembersData {

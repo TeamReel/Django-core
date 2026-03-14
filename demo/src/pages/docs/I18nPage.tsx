@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import AppShell from '../../components/AppShell';
 import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Card, Alert } from '@django-core/design-system';
@@ -67,7 +66,7 @@ export function I18nPage() {
   const currentLangInfo = languages.find(l => l.code === language);
 
   return (
-    <AppShell>
+    <>
       <PageHeader title="Internationalization" subtitle="B04 i18n & B12 Language Preferences" />
       <PageContent>
         <div className={`page-container ${styles.page}`} data-testid="i18n-page">
@@ -122,6 +121,6 @@ export function I18nPage() {
           </Card>
         </div>
       </PageContent>
-    </AppShell>
+    </>
   );
 }

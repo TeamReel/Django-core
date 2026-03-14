@@ -6,12 +6,14 @@ import { Table } from '../../shims/design-system';
 import { periodPathKey } from '../../utils/periodPath';
 import type { UserDetailDataReturn } from './useUserDetailData';
 import type { Activity } from '../../types';
+import { useToast } from '@/components/ui/Toast';
 
 interface Props {
   data: UserDetailDataReturn;
 }
 
 export function UserDetailActivityTabs({ data }: Props) {
+  const { pushToast } = useToast();
   const {
     activeTab, navigate,
     teamMemberships, clubSlugById, primaryOrgSlug,
@@ -219,7 +221,7 @@ export function UserDetailActivityTabs({ data }: Props) {
                         <button type="button" className="app-action-button action-btn action-btn-danger" onClick={async () => {
                           if (!m?.id) return;
                           if (!window.confirm(`Delete match ${m.title || m.id}?`)) return;
-                          try { await deleteMatch(m as Activity); } catch (e) { alert(e instanceof Error ? e.message : 'Failed'); }
+                          try { await deleteMatch(m as Activity); } catch (e) { pushToast({ message: e instanceof Error ? e.message : 'Failed', type: 'error' }); }
                         }}>Delete</button>
                       </div>
                     </td>

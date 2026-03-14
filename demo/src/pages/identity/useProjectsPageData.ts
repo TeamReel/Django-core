@@ -1,19 +1,19 @@
 /**
  * useProjectsPageData — State, fetch, mutations, and permission logic for ProjectsPage.
  */
-import { useEffect, useState, type Dispatch, type SetStateAction, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useReducer, type Dispatch, type SetStateAction, type ChangeEvent } from 'react';
 import { useSearchParams, useParams, useNavigate, type NavigateFunction } from 'react-router-dom';
+import { formReducer, makeSetter } from '../../utils/formReducer';
 import { useBreadcrumbContextSwitcher } from '@django-core/page-templates';
-import { useContextSwitcher } from '@django-core/context-switcher';
+import { useContextSwitcher, type UserContext } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { Project } from '../../types';
 import { canCreateProject, canEditProject, canDeleteProject } from '../../utils/permissions';
 import { logger } from '@/utils/logger';
-import { fetchAllPages } from '../../utils/fetchAllPages';
+import { useToast } from '@/components/ui/Toast';
 import { OrganisationOption, ProjectOption } from '../work/WorkFilterBar';
 import { routes } from '../../routes';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { api } from '../../api';
+import { api } from '@/api';
 
 export interface UseProjectsPageDataReturn {
   // Context
@@ -24,7 +24,7 @@ export interface UseProjectsPageDataReturn {
   currentOrgSlug: string | undefined;
   currentOrgId: string | number | undefined;
   displayOrgName: string;
-  context: { organisation?: { id: string | number; name: string; slug?: string }; isLoading?: boolean };
+  context: UserContext;
   // Data
   projects: Project[];
   loading: boolean;
@@ -77,6 +77,7 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
   const navigate = useNavigate();
   const { context, organisations, switchContext } = useContextSwitcher();
   const { user } = useAuth();
+  const { pushToast } = useToast();
 
   // Resolve org from URL
   const resolvedOrg = orgId
@@ -85,29 +86,57 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
   const currentOrgSlug = resolvedOrg?.slug;
   const currentOrgId = resolvedOrg?.id;
 
-  const [orgName, setOrgName] = useState('');
+  interface ProjectsPageState {
+    orgName: string;
+    projects: Project[];
+    loading: boolean;
+    error: string | null;
+    statusFilter: string;
+    selectedOrgId: string;
+    selectedClubId: string;
+    selectedTeamId: string;
+    filterOrganisationOptions: OrganisationOption[];
+    clubs: ProjectOption[];
+    teams: ProjectOption[];
+    orgNavigationIndex: Array<{ id: string; slug?: string }>;
+    isEditModalOpen: boolean;
+    selectedProject: Project | null;
+    isDetailModalOpen: boolean;
+    detailProject: Project | null;
+    isOrgSelectionModalOpen: boolean;
+    successMessage: string | null;
+  }
+
+  const [s, dispatch] = useReducer(formReducer<ProjectsPageState>, {
+    orgName: '', projects: [], loading: true, error: null,
+    statusFilter: 'active', selectedOrgId: '', selectedClubId: '', selectedTeamId: '',
+    filterOrganisationOptions: [], clubs: [], teams: [],
+    orgNavigationIndex: [],
+    isEditModalOpen: false, selectedProject: null,
+    isDetailModalOpen: false, detailProject: null,
+    isOrgSelectionModalOpen: false, successMessage: null,
+  });
+
+  const setOrgName = useMemo(() => makeSetter<ProjectsPageState, 'orgName'>(dispatch, 'orgName'), [dispatch]);
+  const setProjects = useMemo(() => makeSetter<ProjectsPageState, 'projects'>(dispatch, 'projects'), [dispatch]);
+  const setLoading = useMemo(() => makeSetter<ProjectsPageState, 'loading'>(dispatch, 'loading'), [dispatch]);
+  const setError = useMemo(() => makeSetter<ProjectsPageState, 'error'>(dispatch, 'error'), [dispatch]);
+  const setStatusFilter = useMemo(() => makeSetter<ProjectsPageState, 'statusFilter'>(dispatch, 'statusFilter'), [dispatch]);
+  const setSelectedOrgId = useMemo(() => makeSetter<ProjectsPageState, 'selectedOrgId'>(dispatch, 'selectedOrgId'), [dispatch]);
+  const setSelectedClubId = useMemo(() => makeSetter<ProjectsPageState, 'selectedClubId'>(dispatch, 'selectedClubId'), [dispatch]);
+  const setSelectedTeamId = useMemo(() => makeSetter<ProjectsPageState, 'selectedTeamId'>(dispatch, 'selectedTeamId'), [dispatch]);
+  const setFilterOrganisationOptions = useMemo(() => makeSetter<ProjectsPageState, 'filterOrganisationOptions'>(dispatch, 'filterOrganisationOptions'), [dispatch]);
+  const setClubs = useMemo(() => makeSetter<ProjectsPageState, 'clubs'>(dispatch, 'clubs'), [dispatch]);
+  const setTeams = useMemo(() => makeSetter<ProjectsPageState, 'teams'>(dispatch, 'teams'), [dispatch]);
+  const setOrgNavigationIndex = useMemo(() => makeSetter<ProjectsPageState, 'orgNavigationIndex'>(dispatch, 'orgNavigationIndex'), [dispatch]);
+  const setIsEditModalOpen = useMemo(() => makeSetter<ProjectsPageState, 'isEditModalOpen'>(dispatch, 'isEditModalOpen'), [dispatch]);
+  const setSelectedProject = useMemo(() => makeSetter<ProjectsPageState, 'selectedProject'>(dispatch, 'selectedProject'), [dispatch]);
+  const setIsDetailModalOpen = useMemo(() => makeSetter<ProjectsPageState, 'isDetailModalOpen'>(dispatch, 'isDetailModalOpen'), [dispatch]);
+  const setDetailProject = useMemo(() => makeSetter<ProjectsPageState, 'detailProject'>(dispatch, 'detailProject'), [dispatch]);
+  const setIsOrgSelectionModalOpen = useMemo(() => makeSetter<ProjectsPageState, 'isOrgSelectionModalOpen'>(dispatch, 'isOrgSelectionModalOpen'), [dispatch]);
+  const setSuccessMessage = useMemo(() => makeSetter<ProjectsPageState, 'successMessage'>(dispatch, 'successMessage'), [dispatch]);
+
   const [searchParams, setSearchParams] = useSearchParams();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Filters
-  const [statusFilter, setStatusFilter] = useState('active');
-  const [selectedOrgId, setSelectedOrgId] = useState('');
-  const [selectedClubId, setSelectedClubId] = useState('');
-  const [selectedTeamId, setSelectedTeamId] = useState('');
-  const [filterOrganisationOptions, setFilterOrganisationOptions] = useState<OrganisationOption[]>([]);
-  const [clubs, setClubs] = useState<ProjectOption[]>([]);
-  const [teams, setTeams] = useState<ProjectOption[]>([]);
-  const [orgNavigationIndex, setOrgNavigationIndex] = useState<Array<{ id: string; slug?: string }>>([]);
-
-  // Modal state
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [detailProject, setDetailProject] = useState<Project | null>(null);
-  const [isOrgSelectionModalOpen, setIsOrgSelectionModalOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Breadcrumb context
   const { organisationOptions, handleOrganisationSwitch } = useBreadcrumbContextSwitcher({
@@ -118,7 +147,7 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
     basePath: '',
   });
 
-  const displayOrgName = currentOrgSlug ? orgName : '';
+  const displayOrgName = currentOrgSlug ? s.orgName : '';
   const apiOrgSlug = orgId ? currentOrgSlug : undefined;
 
   // Permissions
@@ -146,7 +175,6 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
       return;
     }
     const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
       try {
         const res = await api.list<{ id: string; name: string; slug?: string }>('/organisations/', { pageSize: 100 });
         const orgs = res.results || [];
@@ -164,11 +192,10 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
   // Club/Team options
   useEffect(() => {
     const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
       try {
         const [allClubs, allTeams] = await Promise.all([
-          fetchAllPages<ProjectOption>(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`, { credentials: 'include' }),
-          fetchAllPages<ProjectOption>(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`, { credentials: 'include' }),
+          api.listAll<ProjectOption>('/projects/', { params: { parent_project__isnull: true }, pageSize: 200 }),
+          api.listAll<ProjectOption>('/projects/', { params: { parent_project__isnull: false }, pageSize: 200 }),
         ]);
         setClubs(allClubs);
         setTeams(allTeams);
@@ -188,7 +215,6 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
     try {
       setLoading(true);
       setError(null);
-      const apiBaseUrl = getApiBaseUrl();
 
       if (resolvedOrg) {
         setOrgName(resolvedOrg.name);
@@ -227,19 +253,19 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
   // ── Mutations ─────────────────────────────────────────────────
 
   const handleSaveProject = async (projectData: Partial<Project>) => {
-    if (!selectedProject) return;
+    if (!s.selectedProject) return;
     try {
-      const project = projects.find(p => p.id === selectedProject.id);
+      const project = s.projects.find(p => p.id === s.selectedProject!.id);
       let projectOrgSlug: string | undefined;
 
       if ((project as Project & { organisation?: { slug: string } })?.organisation?.slug) projectOrgSlug = (project as Project & { organisation?: { slug: string } }).organisation!.slug;
       else if (project?.organisation_id) projectOrgSlug = organisations.find(o => o.id === project.organisation_id)?.slug;
-      else if ((selectedProject as Project & { organisation?: { slug: string } })?.organisation?.slug) projectOrgSlug = (selectedProject as Project & { organisation?: { slug: string } }).organisation!.slug;
+      else if ((s.selectedProject as Project & { organisation?: { slug: string } })?.organisation?.slug) projectOrgSlug = (s.selectedProject as Project & { organisation?: { slug: string } }).organisation!.slug;
       else if (currentOrgSlug) projectOrgSlug = currentOrgSlug;
 
       if (!projectOrgSlug) throw new Error('Could not determine project organisation');
 
-      const projectSlug = selectedProject.slug;
+      const projectSlug = s.selectedProject.slug;
       if (!projectSlug) throw new Error('Could not determine project slug');
 
       let response;
@@ -262,25 +288,25 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
       await fetchProjects();
     } catch (err) {
       logger.error('Failed to update project', err);
-      alert(err instanceof Error ? err.message : 'Failed to update project');
+      pushToast({ message: err instanceof Error ? err.message : 'Failed to update project', type: 'error' });
     }
   };
 
   const handleDelete = async (projectId: string) => {
     if (!confirm('Are you sure you want to delete this project?')) return;
     try {
-      const projectToDelete = projects.find(p => p.id === projectId);
+      const projectToDelete = s.projects.find(p => p.id === projectId);
       const projectSlug = projectToDelete?.slug || projectId;
 
       let orgSlug: string | undefined;
       if ((projectToDelete as Project & { organisation?: { slug: string } })?.organisation?.slug) orgSlug = (projectToDelete as Project & { organisation?: { slug: string } }).organisation!.slug;
       else if (resolvedOrg) orgSlug = resolvedOrg.slug;
 
-      if (!orgSlug) { alert('Failed to delete project: missing organisation context'); return; }
+      if (!orgSlug) { pushToast({ message: 'Failed to delete project: missing organisation context', type: 'error' }); return; }
 
       await api.delete(`/organisations/${orgSlug}/projects/${projectSlug}/`);
-      setProjects(projects.filter(p => p.id !== projectId));
-    } catch { alert('Error deleting project'); }
+      setProjects(prev => prev.filter(p => p.id !== projectId));
+    } catch { pushToast({ message: 'Error deleting project', type: 'error' }); }
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -298,38 +324,38 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
   // ── Breadcrumbs ──────────────────────────────────────────────
 
   const breadcrumbItems = currentOrgId ? [
-    { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+    { label: 'Dashboard', onClick: () => navigate(routes.dashboard()) },
     { label: 'Federations', onClick: () => navigate('/federations') },
-    { label: orgName || 'Federation', onClick: () => navigate(routes.orgDetailLegacy({ orgId: String(resolvedOrg?.slug || currentOrgId) })) },
+    { label: s.orgName || 'Federation', onClick: () => navigate(routes.orgDetailLegacy({ orgId: String(resolvedOrg?.slug || currentOrgId) })) },
     { label: 'Clubs & Teams', current: true },
   ] : [
-    { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+    { label: 'Dashboard', onClick: () => navigate(routes.dashboard()) },
     { label: 'Clubs & Teams', current: true },
   ];
 
   return {
     // Context
     orgId, navigate, organisations, resolvedOrg, currentOrgSlug, currentOrgId,
-    displayOrgName, context: context as any,
+    displayOrgName, context,
     // Data
-    projects, loading, error, successMessage,
+    projects: s.projects, loading: s.loading, error: s.error, successMessage: s.successMessage,
     // Sort / search
     sort, order, search,
     // Filters
-    statusFilter, setStatusFilter,
-    selectedOrgId, setSelectedOrgId,
-    selectedClubId, setSelectedClubId,
-    selectedTeamId, setSelectedTeamId,
-    filterOrganisationOptions, clubs, teams,
-    orgNavigationIndex,
+    statusFilter: s.statusFilter, setStatusFilter,
+    selectedOrgId: s.selectedOrgId, setSelectedOrgId,
+    selectedClubId: s.selectedClubId, setSelectedClubId,
+    selectedTeamId: s.selectedTeamId, setSelectedTeamId,
+    filterOrganisationOptions: s.filterOrganisationOptions, clubs: s.clubs, teams: s.teams,
+    orgNavigationIndex: s.orgNavigationIndex,
     // Permissions
     isSuperAdmin, userCanCreateProject, userCanEditProject, userCanDeleteProject,
     // Modal state
-    isEditModalOpen, setIsEditModalOpen,
-    selectedProject, setSelectedProject,
-    isDetailModalOpen, setIsDetailModalOpen,
-    detailProject, setDetailProject,
-    isOrgSelectionModalOpen, setIsOrgSelectionModalOpen,
+    isEditModalOpen: s.isEditModalOpen, setIsEditModalOpen,
+    selectedProject: s.selectedProject, setSelectedProject,
+    isDetailModalOpen: s.isDetailModalOpen, setIsDetailModalOpen,
+    detailProject: s.detailProject, setDetailProject,
+    isOrgSelectionModalOpen: s.isOrgSelectionModalOpen, setIsOrgSelectionModalOpen,
     // Handlers
     handleSaveProject, handleDelete, handleSearch, handleSort,
     // Breadcrumbs

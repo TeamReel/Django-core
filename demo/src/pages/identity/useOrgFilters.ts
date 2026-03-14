@@ -1,82 +1,114 @@
 /**
  * Custom hook bundling all filter / search state for the Organisation Detail page.
  * Extracted from useOrgData.ts during Phase 21 refactor.
+ * Consolidated to useReducer during S3 refactor.
  */
 
-import { useState } from 'react';
+import { useReducer, useMemo } from 'react';
+import { formReducer, makeSetter } from '@/utils/formReducer';
 import type { OrgFilterState } from './orgDataTypes';
 
+interface OrgFiltersInternal {
+  memberSearch: string;
+  userRoleFilter: string;
+  userClubFilterId: string;
+  userTeamFilterId: string;
+  usersPage: number;
+  teamSearch: string;
+  teamStatusFilter: 'all' | 'active' | 'inactive';
+  teamClubFilterId: string;
+  clubSearch: string;
+  clubStatusFilter: 'all' | 'active' | 'inactive';
+  seasonSearch: string;
+  seasonClubFilterId: string;
+  seasonTeamFilterId: string;
+  competitionSearch: string;
+  compClubFilterId: string;
+  compTeamFilterId: string;
+  compSeasonFilterId: string;
+  compMatchesFilter: 'all' | 'with' | 'without';
+  matchSearch: string;
+  matchClubFilterId: string;
+  matchTeamFilterId: string;
+  matchSeasonFilterId: string;
+  matchCompFilterId: string;
+  hierarchySearch: string;
+}
+
+const initial: OrgFiltersInternal = {
+  memberSearch: '', userRoleFilter: '', userClubFilterId: '', userTeamFilterId: '',
+  usersPage: 1,
+  teamSearch: '', teamStatusFilter: 'all', teamClubFilterId: '',
+  clubSearch: '', clubStatusFilter: 'all',
+  seasonSearch: '', seasonClubFilterId: '', seasonTeamFilterId: '',
+  competitionSearch: '', compClubFilterId: '', compTeamFilterId: '', compSeasonFilterId: '',
+  compMatchesFilter: 'all',
+  matchSearch: '', matchClubFilterId: '', matchTeamFilterId: '', matchSeasonFilterId: '',
+  matchCompFilterId: '',
+  hierarchySearch: '',
+};
+
 export function useOrgFilters(): OrgFilterState {
-  /* member filters */
-  const [memberSearch, setMemberSearch] = useState('');
-  const [userRoleFilter, setUserRoleFilter] = useState<string>('');
-  const [userClubFilterId, setUserClubFilterId] = useState<string>('');
-  const [userTeamFilterId, setUserTeamFilterId] = useState<string>('');
-  const [usersPage, setUsersPage] = useState(1);
-  const usersPageSize = 25;
+  const [s, dispatch] = useReducer(formReducer<OrgFiltersInternal>, initial);
 
-  /* team filters */
-  const [teamSearch, setTeamSearch] = useState('');
-  const [teamStatusFilter, setTeamStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [teamClubFilterId, setTeamClubFilterId] = useState<string>('');
-
-  /* club filters */
-  const [clubSearch, setClubSearch] = useState('');
-  const [clubStatusFilter, setClubStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-
-  /* season filters */
-  const [seasonSearch, setSeasonSearch] = useState('');
-  const [seasonClubFilterId, setSeasonClubFilterId] = useState<string>('');
-  const [seasonTeamFilterId, setSeasonTeamFilterId] = useState<string>('');
-
-  /* competition filters */
-  const [competitionSearch, setCompetitionSearch] = useState('');
-  const [compClubFilterId, setCompClubFilterId] = useState<string>('');
-  const [compTeamFilterId, setCompTeamFilterId] = useState<string>('');
-  const [compSeasonFilterId, setCompSeasonFilterId] = useState<string>('');
-  const [compMatchesFilter, setCompMatchesFilter] = useState<'all' | 'with' | 'without'>('all');
-
-  /* match filters */
-  const [matchSearch, setMatchSearch] = useState('');
-  const [matchClubFilterId, setMatchClubFilterId] = useState<string>('');
-  const [matchTeamFilterId, setMatchTeamFilterId] = useState<string>('');
-  const [matchSeasonFilterId, setMatchSeasonFilterId] = useState<string>('');
-  const [matchCompFilterId, setMatchCompFilterId] = useState<string>('');
-
-  /* hierarchy */
-  const [hierarchySearch, setHierarchySearch] = useState('');
+  const setters = useMemo(() => ({
+    setMemberSearch: makeSetter<OrgFiltersInternal, 'memberSearch'>(dispatch, 'memberSearch'),
+    setUserRoleFilter: makeSetter<OrgFiltersInternal, 'userRoleFilter'>(dispatch, 'userRoleFilter'),
+    setUserClubFilterId: makeSetter<OrgFiltersInternal, 'userClubFilterId'>(dispatch, 'userClubFilterId'),
+    setUserTeamFilterId: makeSetter<OrgFiltersInternal, 'userTeamFilterId'>(dispatch, 'userTeamFilterId'),
+    setUsersPage: makeSetter<OrgFiltersInternal, 'usersPage'>(dispatch, 'usersPage'),
+    setTeamSearch: makeSetter<OrgFiltersInternal, 'teamSearch'>(dispatch, 'teamSearch'),
+    setTeamStatusFilter: makeSetter<OrgFiltersInternal, 'teamStatusFilter'>(dispatch, 'teamStatusFilter'),
+    setTeamClubFilterId: makeSetter<OrgFiltersInternal, 'teamClubFilterId'>(dispatch, 'teamClubFilterId'),
+    setClubSearch: makeSetter<OrgFiltersInternal, 'clubSearch'>(dispatch, 'clubSearch'),
+    setClubStatusFilter: makeSetter<OrgFiltersInternal, 'clubStatusFilter'>(dispatch, 'clubStatusFilter'),
+    setSeasonSearch: makeSetter<OrgFiltersInternal, 'seasonSearch'>(dispatch, 'seasonSearch'),
+    setSeasonClubFilterId: makeSetter<OrgFiltersInternal, 'seasonClubFilterId'>(dispatch, 'seasonClubFilterId'),
+    setSeasonTeamFilterId: makeSetter<OrgFiltersInternal, 'seasonTeamFilterId'>(dispatch, 'seasonTeamFilterId'),
+    setCompetitionSearch: makeSetter<OrgFiltersInternal, 'competitionSearch'>(dispatch, 'competitionSearch'),
+    setCompClubFilterId: makeSetter<OrgFiltersInternal, 'compClubFilterId'>(dispatch, 'compClubFilterId'),
+    setCompTeamFilterId: makeSetter<OrgFiltersInternal, 'compTeamFilterId'>(dispatch, 'compTeamFilterId'),
+    setCompSeasonFilterId: makeSetter<OrgFiltersInternal, 'compSeasonFilterId'>(dispatch, 'compSeasonFilterId'),
+    setCompMatchesFilter: makeSetter<OrgFiltersInternal, 'compMatchesFilter'>(dispatch, 'compMatchesFilter'),
+    setMatchSearch: makeSetter<OrgFiltersInternal, 'matchSearch'>(dispatch, 'matchSearch'),
+    setMatchClubFilterId: makeSetter<OrgFiltersInternal, 'matchClubFilterId'>(dispatch, 'matchClubFilterId'),
+    setMatchTeamFilterId: makeSetter<OrgFiltersInternal, 'matchTeamFilterId'>(dispatch, 'matchTeamFilterId'),
+    setMatchSeasonFilterId: makeSetter<OrgFiltersInternal, 'matchSeasonFilterId'>(dispatch, 'matchSeasonFilterId'),
+    setMatchCompFilterId: makeSetter<OrgFiltersInternal, 'matchCompFilterId'>(dispatch, 'matchCompFilterId'),
+    setHierarchySearch: makeSetter<OrgFiltersInternal, 'hierarchySearch'>(dispatch, 'hierarchySearch'),
+  }), [dispatch]);
 
   return {
-    memberSearch, setMemberSearch,
-    userRoleFilter, setUserRoleFilter,
-    userClubFilterId, setUserClubFilterId,
-    userTeamFilterId, setUserTeamFilterId,
-    usersPage, setUsersPage,
-    usersPageSize,
+    memberSearch: s.memberSearch, setMemberSearch: setters.setMemberSearch,
+    userRoleFilter: s.userRoleFilter, setUserRoleFilter: setters.setUserRoleFilter,
+    userClubFilterId: s.userClubFilterId, setUserClubFilterId: setters.setUserClubFilterId,
+    userTeamFilterId: s.userTeamFilterId, setUserTeamFilterId: setters.setUserTeamFilterId,
+    usersPage: s.usersPage, setUsersPage: setters.setUsersPage,
+    usersPageSize: 25,
 
-    teamSearch, setTeamSearch,
-    teamStatusFilter, setTeamStatusFilter,
-    teamClubFilterId, setTeamClubFilterId,
+    teamSearch: s.teamSearch, setTeamSearch: setters.setTeamSearch,
+    teamStatusFilter: s.teamStatusFilter, setTeamStatusFilter: setters.setTeamStatusFilter,
+    teamClubFilterId: s.teamClubFilterId, setTeamClubFilterId: setters.setTeamClubFilterId,
 
-    clubSearch, setClubSearch,
-    clubStatusFilter, setClubStatusFilter,
+    clubSearch: s.clubSearch, setClubSearch: setters.setClubSearch,
+    clubStatusFilter: s.clubStatusFilter, setClubStatusFilter: setters.setClubStatusFilter,
 
-    seasonSearch, setSeasonSearch,
-    seasonClubFilterId, setSeasonClubFilterId,
-    seasonTeamFilterId, setSeasonTeamFilterId,
+    seasonSearch: s.seasonSearch, setSeasonSearch: setters.setSeasonSearch,
+    seasonClubFilterId: s.seasonClubFilterId, setSeasonClubFilterId: setters.setSeasonClubFilterId,
+    seasonTeamFilterId: s.seasonTeamFilterId, setSeasonTeamFilterId: setters.setSeasonTeamFilterId,
 
-    competitionSearch, setCompetitionSearch,
-    compClubFilterId, setCompClubFilterId,
-    compTeamFilterId, setCompTeamFilterId,
-    compSeasonFilterId, setCompSeasonFilterId,
-    compMatchesFilter, setCompMatchesFilter,
+    competitionSearch: s.competitionSearch, setCompetitionSearch: setters.setCompetitionSearch,
+    compClubFilterId: s.compClubFilterId, setCompClubFilterId: setters.setCompClubFilterId,
+    compTeamFilterId: s.compTeamFilterId, setCompTeamFilterId: setters.setCompTeamFilterId,
+    compSeasonFilterId: s.compSeasonFilterId, setCompSeasonFilterId: setters.setCompSeasonFilterId,
+    compMatchesFilter: s.compMatchesFilter, setCompMatchesFilter: setters.setCompMatchesFilter,
 
-    matchSearch, setMatchSearch,
-    matchClubFilterId, setMatchClubFilterId,
-    matchTeamFilterId, setMatchTeamFilterId,
-    matchSeasonFilterId, setMatchSeasonFilterId,
-    matchCompFilterId, setMatchCompFilterId,
+    matchSearch: s.matchSearch, setMatchSearch: setters.setMatchSearch,
+    matchClubFilterId: s.matchClubFilterId, setMatchClubFilterId: setters.setMatchClubFilterId,
+    matchTeamFilterId: s.matchTeamFilterId, setMatchTeamFilterId: setters.setMatchTeamFilterId,
+    matchSeasonFilterId: s.matchSeasonFilterId, setMatchSeasonFilterId: setters.setMatchSeasonFilterId,
+    matchCompFilterId: s.matchCompFilterId, setMatchCompFilterId: setters.setMatchCompFilterId,
 
-    hierarchySearch, setHierarchySearch,
+    hierarchySearch: s.hierarchySearch, setHierarchySearch: setters.setHierarchySearch,
   };
 }

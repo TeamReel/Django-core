@@ -2,8 +2,7 @@
  * Data fetching for useCreditsData hook
  */
 import { useEffect, useCallback } from 'react';
-import { createApiClient } from '@django-core/api-client';
-import { getApiBaseUrl } from '../../../../utils/apiBase';
+import { api, ApiError } from '@/api';
 import { logger } from '@/utils/logger';
 import type { CreditsBalance, UserCreditsBalance, Transaction, TabType } from '../creditsTypes';
 import { parseTransactionEnvelope } from '../creditsTypes';
@@ -66,26 +65,21 @@ export function useCreditsFetchers(params: UseCreditsFetchersParams) {
       if (activeTab !== 'transactions' || !currentOrgId) return;
 
       setTransactionsLoading(true);
-      const client = createApiClient({ baseUrl: getApiBaseUrl() });
 
       try {
-        const params = buildFilterParams();
-        const response = await client.get<Transaction[]>(
-          `/api/v1/transactions/transactions/?${params.toString()}`
-        );
+        const filterParams = buildFilterParams();
+        const data = await api.get<unknown>('/transactions/transactions/', {
+          params: Object.fromEntries(filterParams.entries()),
+        });
 
-        if (response.error) {
-          if (response.error.code === 401) {
-            window.location.href = '/login';
-            return;
-          }
-          setTransactions([]);
-        } else if (response.data) {
-          const all = parseTransactionEnvelope(response.data);
-          const creditTransactions = all.filter((txn: Transaction) => !txn.project_name);
-          setTransactions(creditTransactions);
-        }
+        const all = parseTransactionEnvelope(data);
+        const creditTransactions = all.filter((txn: Transaction) => !txn.project_name);
+        setTransactions(creditTransactions);
       } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
         logger.error('[CreditsPage] Transactions fetch exception', err);
         setTransactions([]);
       } finally {
@@ -101,22 +95,20 @@ export function useCreditsFetchers(params: UseCreditsFetchersParams) {
     if (scope !== 'org') return;
     if (!currentOrgId) return;
 
-    const client = createApiClient({ baseUrl: getApiBaseUrl() });
-
     try {
-      const response = await client.get<Transaction[]>(
-        `/api/v1/transactions/transactions/?organization_id=${currentOrgId}`
-      );
+      const data = await api.get<unknown>('/transactions/transactions/', {
+        params: { organization_id: currentOrgId },
+      });
 
-      if (!response.error && response.data) {
-        const all = parseTransactionEnvelope(response.data);
-        const creditTransactions = all.filter((txn: Transaction) => !txn.project && !txn.project_name);
-        setAllTransactions(creditTransactions);
-        setRecentTransactions(creditTransactions.slice(0, 5));
-      } else if (response.error && response.error.code === 401) {
-        window.location.href = '/login';
-      }
+      const all = parseTransactionEnvelope(data);
+      const creditTransactions = all.filter((txn: Transaction) => !txn.project && !txn.project_name);
+      setAllTransactions(creditTransactions);
+      setRecentTransactions(creditTransactions.slice(0, 5));
     } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
       logger.error('[CreditsPage] Recent transactions fetch exception', err);
     }
   }, [scope, currentOrgId, setAllTransactions, setRecentTransactions]);
@@ -150,32 +142,27 @@ export function useCreditsFetchers(params: UseCreditsFetchersParams) {
         }
       }
 
-      const client = createApiClient({ baseUrl: getApiBaseUrl() });
-
       try {
         setLoading(true);
         setError(null);
 
-        const response = await client.get<CreditsBalance>(
-          `/api/v1/credits/?organisation_id=${currentOrgId}`
-        );
-
-        if (response.error) {
-          if (response.error.code === 404) {
+        const creditsData = await api.get<CreditsBalance>('/credits/', {
+          params: { organisation_id: currentOrgId },
+        });
+        setCredits(creditsData);
+      } catch (err: unknown) {
+        if (err instanceof ApiError) {
+          if (err.status === 404) {
             setError('No credits balance found for this organisation');
-          } else if (response.error.code === 403) {
+          } else if (err.status === 403) {
             setError('You do not have permission to view credits for this organisation');
           } else {
-            setError(response.error.message || 'Failed to load credits balance');
+            setError('Failed to load credits balance');
           }
-          setCredits(null);
-        } else if (response.data) {
-          const creditsData = (response.data as CreditsBalance & { data?: CreditsBalance }).data || response.data;
-          setCredits(creditsData);
+        } else {
+          logger.error('[CreditsPage] Credits fetch exception', err);
+          setError(err instanceof Error ? err.message : 'Failed to load credits balance');
         }
-      } catch (err: unknown) {
-        logger.error('[CreditsPage] Credits fetch exception', err);
-        setError(err instanceof Error ? err.message : 'Failed to load credits balance');
         setCredits(null);
       } finally {
         setLoading(false);
@@ -197,35 +184,27 @@ export function useCreditsFetchers(params: UseCreditsFetchersParams) {
         return;
       }
 
-      const client = createApiClient({ baseUrl: getApiBaseUrl() });
-
       try {
         setPersonalLoading(true);
         setPersonalError(null);
 
-        const response = await client.get<UserCreditsBalance>(
-          `/api/v1/credits/me/?organisation_id=${currentOrgId}`
-        );
-
-        if (response.error) {
-          if (response.error.code === 404) {
+        const creditsData = await api.get<UserCreditsBalance>('/credits/me/', {
+          params: { organisation_id: currentOrgId },
+        });
+        setPersonalCredits(creditsData);
+      } catch (err: unknown) {
+        if (err instanceof ApiError) {
+          if (err.status === 404) {
             setPersonalError('No personal credits balance found for this organisation.');
-          } else if (response.error.code === 403) {
+          } else if (err.status === 403) {
             setPersonalError('You do not have permission to view personal credits for this organisation.');
           } else {
-            setPersonalError(response.error.message || 'Failed to load personal credits balance');
+            setPersonalError('Failed to load personal credits balance');
           }
-          setPersonalCredits(null);
-          return;
+        } else {
+          logger.error('[CreditsPage] Personal credits fetch exception', err);
+          setPersonalError(err instanceof Error ? err.message : 'Failed to load personal credits balance');
         }
-
-        if (response.data) {
-          const creditsData = (response.data as UserCreditsBalance & { data?: UserCreditsBalance }).data || response.data;
-          setPersonalCredits(creditsData);
-        }
-      } catch (err: unknown) {
-        logger.error('[CreditsPage] Personal credits fetch exception', err);
-        setPersonalError(err instanceof Error ? err.message : 'Failed to load personal credits balance');
         setPersonalCredits(null);
       } finally {
         setPersonalLoading(false);
@@ -244,29 +223,21 @@ export function useCreditsFetchers(params: UseCreditsFetchersParams) {
         return;
       }
 
-      const client = createApiClient({ baseUrl: getApiBaseUrl() });
-
       try {
-        const params = new URLSearchParams();
-        params.append('organization_id', currentOrgId);
-        params.append('charged_user_id', String(user.id));
+        const data = await api.get<unknown>('/transactions/transactions/', {
+          params: {
+            organization_id: currentOrgId,
+            charged_user_id: String(user.id),
+          },
+        });
 
-        const response = await client.get<Transaction[]>(
-          `/api/v1/transactions/transactions/?${params.toString()}`
-        );
-
-        if (response.error) {
-          if (response.error.code === 401) {
-            window.location.href = '/login';
-            return;
-          }
-          setPersonalRecentTransactions([]);
-          return;
-        }
-
-        const txns = parseTransactionEnvelope(response.data);
+        const txns = parseTransactionEnvelope(data);
         setPersonalRecentTransactions(txns.slice(0, 5));
       } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
         logger.error('[CreditsPage] Personal transactions fetch exception', err);
         setPersonalRecentTransactions([]);
       }

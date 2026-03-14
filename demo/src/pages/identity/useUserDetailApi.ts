@@ -13,6 +13,7 @@ import { useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import type { Organisation, Project } from '../../types';
 
@@ -33,6 +34,8 @@ export interface UserDetailApiParams {
 
 export function useUserDetailApi(params: UserDetailApiParams) {
     const { apiBaseUrl, userId, orgId, navigate } = params;
+
+    const { pushToast } = useToast();
 
     /* ---------- core state --------------------------------------- */
     const [user, setUser] = useState<Record<string, unknown> | null>(null);
@@ -73,7 +76,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
             );
         } catch (e) {
           logger.error('Failed to save user changes', e);
-            alert('Failed to save user changes');
+            pushToast({ message: 'Failed to save user changes', type: 'error' });
             throw e;
         }
     };
@@ -88,7 +91,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
             navigate(orgId ? `/organisations/${orgId}/users` : '/users');
         } catch (e) {
           logger.error('Failed to delete user', e);
-            alert(e instanceof Error ? e.message : 'Failed to delete user');
+            pushToast({ message: e instanceof Error ? e.message : 'Failed to delete user', type: 'error' });
         }
     };
 
@@ -110,7 +113,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         if (directMembershipId) return directMembershipId;
 
         const members = await fetchAllPages<Record<string, unknown>>(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(slugOrId)}/members/?page_size=500`,
+            `${apiBaseUrl}/organisations/${encodeURIComponent(slugOrId)}/members/?page_size=500`,
             { credentials: 'include' },
             {
                 ttlMs: 5_000,
@@ -148,9 +151,10 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         );
 
         if ((res as Record<string, unknown>)?.data && String(((res as Record<string, unknown>).data as Record<string, unknown>)?.detail).includes('Promotion requested')) {
-            alert(
-                'Role change requested. The user must accept the promotion before it takes effect.',
-            );
+            pushToast({
+                message: 'Role change requested. The user must accept the promotion before it takes effect.',
+                type: 'info',
+            });
         }
 
         await fetchUser();
@@ -182,7 +186,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         if (!user) throw new Error('User missing');
 
         const members = await fetchAllPages<Record<string, unknown>>(
-            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(projectId))}/members/?page_size=500`,
+            `${apiBaseUrl}/projects/${encodeURIComponent(String(projectId))}/members/?page_size=500`,
             { credentials: 'include' },
             {
                 ttlMs: 5_000,
@@ -237,9 +241,10 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         );
 
         if ((res as Record<string, unknown>)?.data && String(((res as Record<string, unknown>).data as Record<string, unknown>)?.detail).includes('Promotion requested')) {
-            alert(
-                'Role change requested. The user must accept the promotion before it takes effect.',
-            );
+            pushToast({
+                message: 'Role change requested. The user must accept the promotion before it takes effect.',
+                type: 'info',
+            });
         }
 
         await fetchUser();
@@ -287,17 +292,17 @@ export function useUserDetailApi(params: UserDetailApiParams) {
 
             const [orgs, clubs, teams] = await Promise.all([
                 fetchAllPages<Organisation>(
-                    `${apiBaseUrl}/api/v1/organisations/?page_size=200`,
+                    `${apiBaseUrl}/organisations/?page_size=200`,
                     { credentials: 'include' },
                     { ttlMs: 60_000, cacheKey: 'user-detail:link:orgs', maxItems: 5000 },
                 ),
                 fetchAllPages<Project>(
-                    `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
+                    `${apiBaseUrl}/projects/?page_size=200&parent_project__isnull=true`,
                     { credentials: 'include' },
                     { ttlMs: 60_000, cacheKey: 'user-detail:link:clubs', maxItems: 20_000 },
                 ),
                 fetchAllPages<Project>(
-                    `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
+                    `${apiBaseUrl}/projects/?page_size=200&parent_project__isnull=false`,
                     { credentials: 'include' },
                     { ttlMs: 60_000, cacheKey: 'user-detail:link:teams', maxItems: 50_000 },
                 ),

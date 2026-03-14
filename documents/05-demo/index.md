@@ -51,6 +51,8 @@ Complete documentation for the TeamReel web application — frontend design syst
 | [features/project-hierarchy.md](features/project-hierarchy.md) | **Project hierarchy** — club→team nesting, membership, invites, functional roles |
 | [features/rbac-permissions.md](features/rbac-permissions.md) | **RBAC permissions** — Permission registry, role scopes, hierarchical evaluator |
 | [features/content-templates.md](features/content-templates.md) | **Content templates** — 25+ subtypes, generation lifecycle, approval workflow |
+| [features/ux-flows.md](features/ux-flows.md) | **UX Flows** — complete route map, navigation shell, create wizards, user journeys |
+| [features/optimalisatie-analyse.md](features/optimalisatie-analyse.md) | **Optimalisatie analyse** — codebase health scan, code splitting, a11y, actieplan |
 
 ### Media & AI Pipeline
 

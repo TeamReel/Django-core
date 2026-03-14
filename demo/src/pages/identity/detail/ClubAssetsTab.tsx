@@ -1,16 +1,17 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, Button, Card, Input } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
-import SlotIcon from '../../../components/SlotIcon';
+import { useToast } from '@/components/ui/Toast';
+import SlotIcon from '@/components/SlotIcon';
 import {
   CLUB_ASSET_SLOTS,
   type ClubAssets,
   type ClubAssetSlot,
   canGenerateClubTenue,
-} from '../../../constants/clubAssets';
-import { projectsApi } from '../../../api';
-import type { ProjectDetail } from '../../../types/api';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+} from '@/constants/clubAssets';
+import { projectsApi } from '@/api';
+import type { ProjectDetail } from '@/types/api';
+import { getApiBaseUrl } from '@/utils/apiBase';
 import styles from './ClubAssetsTab.module.css';
 
 interface ClubAssetsTabProps {
@@ -26,6 +27,7 @@ export default function ClubAssetsTab({
   clubMetadata,
   onAssetsUpdated,
 }: ClubAssetsTabProps) {
+  const { pushToast } = useToast();
   const apiBaseUrl = getApiBaseUrl();
 
   // Extract current assets from metadata
@@ -108,14 +110,10 @@ export default function ClubAssetsTab({
     try {
       // For now, just show a placeholder message
       // In the future, this will call a content generation API
-      alert(
-        'Tenue generation will be implemented with the content generation backend.\n\n' +
-          'This will combine:\n' +
-          '• Tenue template\n' +
-          '• Club logo\n' +
-          '• Sponsor logo (if available)\n\n' +
-          'To generate optimized kit images.'
-      );
+      pushToast({
+        message: 'Tenue generation will be implemented with the content generation backend. This will combine tenue template, club logo, and sponsor logo to generate optimized kit images.',
+        type: 'info',
+      });
     } catch (e) {
       logger.error('Generation failed', e);
       setGenerateError(e instanceof Error ? e.message : 'Generation failed');

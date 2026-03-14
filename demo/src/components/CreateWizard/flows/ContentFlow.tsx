@@ -21,7 +21,7 @@ import { useMatchesData } from '../../MatchWizardV2/hooks';
 import { useCreateWizard } from '../CreateWizardContext';
 import { ChooseFlowStep } from '../steps/ChooseFlowStep';
 import { SmartMatchStep } from '../steps/SmartMatchStep';
-import type { Activity } from '../../../hooks/useActivities';
+import type { Activity } from '@/hooks/useActivities';
 
 // ─── Step config ──────────────────────────────────────────
 // Replaces 'match' from MATCH_WIZARD_STEPS with 'smartMatch' + 'choose'.

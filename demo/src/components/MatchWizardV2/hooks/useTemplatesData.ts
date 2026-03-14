@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
 import { useMatchWizard } from '../MatchWizardContext';
-import type { ContentTemplate } from '../../../pages/identity/ContentGenerationModal/types';
+import type { ContentTemplate } from '@/pages/identity/ContentGenerationModal/types';
 
 // ============================================================================
 // Return type

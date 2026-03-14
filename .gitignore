@@ -104,3 +104,4 @@ demo/test-results/
 # Archive data (local reference only)
 documents/05-demo/archive/csv-files/
 documents/05-demo/archive/temp-docs/
+demo/bundle-stats.html

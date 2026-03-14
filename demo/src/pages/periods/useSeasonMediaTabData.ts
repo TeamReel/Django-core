@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { logger } from '@/utils/logger';
-import { generativeApi } from '../../api';
+import { useToast } from '@/components/ui/Toast';
+import { generativeApi } from '@/api';
 import type { BatchMember } from '../../components/BatchGenerationModal';
 import type { SeasonProject } from '../../types/season';
 
@@ -40,6 +41,7 @@ interface UseSeasonMediaTabDataParams {
   brandLogoUrl: string | null;
   brandSponsorUrl: string | null;
   batchBrandKits: Record<string, string | null>;
+  onMembersReload?: () => void;
 }
 
 export function useSeasonMediaTabData({
@@ -49,7 +51,9 @@ export function useSeasonMediaTabData({
   brandLogoUrl,
   brandSponsorUrl,
   batchBrandKits,
+  onMembersReload,
 }: UseSeasonMediaTabDataParams) {
+  const { pushToast } = useToast();
   // ── Tab-local state ──
   const [batchSelectedMemberIds, setBatchSelectedMemberIds] = useState<Set<string>>(new Set());
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
@@ -100,7 +104,7 @@ export function useSeasonMediaTabData({
   const cropGuestCloseup = useCallback(async (kitType: string = 'home') => {
     const projectId = String(project?.id || '');
     if (!projectId) {
-      alert('Project ID ontbreekt.');
+      pushToast({ message: 'Project ID ontbreekt.', type: 'error' });
       return;
     }
     setCroppingGuestCloseup(true);
@@ -108,10 +112,10 @@ export function useSeasonMediaTabData({
       await generativeApi.cropCloseup({ project_id: projectId, kit_type: kitType });
 
       setGuestPlayer((prev) => prev ? { ...prev, has_closeup: true } : prev);
-      setTimeout(() => { window.location.reload(); }, 500);
+      if (onMembersReload) setTimeout(() => { onMembersReload(); }, 500);
     } catch (err) {
       logger.error('Guest closeup crop error', err);
-      alert(err instanceof Error ? err.message : 'Crop mislukt');
+      pushToast({ message: err instanceof Error ? err.message : 'Crop mislukt', type: 'error' });
     } finally {
       setCroppingGuestCloseup(false);
     }

@@ -1,5 +1,5 @@
 /** useMatchWizardData — Slim orchestrator for MatchWizard state & handlers. */
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useReducer, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useActivities, Activity } from '../hooks/useActivities';
 import { api } from '@/api';
@@ -18,8 +18,52 @@ import { fetchSquadMembers, fetchContentTemplates, saveLineupToApi, resolveTempl
 import { executeGeneration } from './matchWizardGeneration';
 import { executeSaveVariant } from './matchWizardSaving';
 import { logger } from '@/utils/logger';
+import { formReducer, makeSetter } from '@/utils/formReducer';
 
 export type { UseMatchWizardDataReturn } from './matchWizardTypes';
+
+// ── State interface ──────────────────────────────────────────────────────────
+
+interface WizardState {
+  currentStep: WizardStep;
+  selectedMatch: Activity | null;
+  lineupSlots: { goalkeeper: string[]; player: string[] };
+  lineupFormation: string;
+  squadGroups: Record<string, SquadMember[]>;
+  guestPlayers: SquadMember[];
+  squadLoading: boolean;
+  selectedContentPhase: ContentPhase;
+  editingPosition: number | null;
+  lineupSaving: boolean;
+  templatesError: string | null;
+  squadError: string | null;
+  saveError: string | null;
+  pendingContent: { key: string; label: string; subtype: string; templateType: string } | null;
+  selectedTemplate: ContentTemplate | null;
+  selectedContentTypeLabel: string;
+  availableTemplates: Record<string, ContentTemplate[]>;
+  progress: number;
+  generationError: string | null;
+  generatedOutput: GeneratedOutput | null;
+  generatedVariants: GeneratedVariant[];
+  selectedVariantIndex: number;
+  savingAsset: boolean;
+  saveSuccess: boolean;
+  savedVariantIndices: Set<number>;
+}
+
+const initialWizardState: WizardState = {
+  currentStep: 'match', selectedMatch: null,
+  lineupSlots: { goalkeeper: [], player: [] }, lineupFormation: '4-3-3',
+  squadGroups: { goalkeeper: [], player: [] }, guestPlayers: [],
+  squadLoading: false, selectedContentPhase: 'pre',
+  editingPosition: null, lineupSaving: false,
+  templatesError: null, squadError: null, saveError: null,
+  pendingContent: null, selectedTemplate: null, selectedContentTypeLabel: '',
+  availableTemplates: {}, progress: 0, generationError: null,
+  generatedOutput: null, generatedVariants: [], selectedVariantIndex: 0,
+  savingAsset: false, saveSuccess: false, savedVariantIndices: new Set(),
+};
 
 export function useMatchWizardData(
   isOpen: boolean, onClose: () => void, initialMatchId?: string,
@@ -27,67 +71,72 @@ export function useMatchWizardData(
   const navigate = useNavigate();
   const { pushToast } = useToast();
 
-  const [currentStep, setCurrentStep] = useState<WizardStep>('match');
-  const [selectedMatch, setSelectedMatch] = useState<Activity | null>(null);
-  const [lineupSlots, setLineupSlots] = useState<{ goalkeeper: string[]; player: string[] }>({ goalkeeper: [], player: [] });
-  const [lineupFormation, setLineupFormation] = useState('4-3-3');
-  const [squadGroups, setSquadGroups] = useState<Record<string, SquadMember[]>>({ goalkeeper: [], player: [] });
-  const [guestPlayers, setGuestPlayers] = useState<SquadMember[]>([]);
-  const [squadLoading, setSquadLoading] = useState(false);
-  const [selectedContentPhase, setSelectedContentPhase] = useState<ContentPhase>('pre');
-  const [editingPosition, setEditingPosition] = useState<number | null>(null);
-  const [lineupSaving, setLineupSaving] = useState(false);
-  const { activities, loading: matchesLoading, error: matchesLoadError } = useActivities({ limit: 10 });
-  const [templatesError, setTemplatesError] = useState<string | null>(null);
-  const [squadError, setSquadError] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const matchesError = matchesLoadError ? 'Kon wedstrijden niet laden. Controleer je verbinding.' : null;
-  const [pendingContent, setPendingContent] = useState<{ key: string; label: string; subtype: string; templateType: string } | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
-  const [selectedContentTypeLabel, setSelectedContentTypeLabel] = useState('');
-  const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
-  const [progress, setProgress] = useState(0);
-  const [generationError, setGenerationError] = useState<string | null>(null);
-  const [generatedOutput, setGeneratedOutput] = useState<GeneratedOutput | null>(null);
-  const [generatedVariants, setGeneratedVariants] = useState<GeneratedVariant[]>([]);
-  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
-  const [savingAsset, setSavingAsset] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [savedVariantIndices, setSavedVariantIndices] = useState<Set<number>>(new Set());
+  /* ── Reducer state ── */
+  const [s, dispatch] = useReducer(formReducer<WizardState>, initialWizardState);
 
-  const matchDataForApi = useMemo(() => selectedMatch ? {
-    id: String(selectedMatch.id), title: selectedMatch.title, project: selectedMatch.project,
-    opponent_project: selectedMatch.opponent_project ?? undefined,
-    participations: selectedMatch.participations,
-    start_time: selectedMatch.start_time, location: selectedMatch.location,
-    metadata: { ...(selectedMatch.metadata || {}), formation: lineupFormation,
-      lineup: { formation: lineupFormation, goalkeeper: lineupSlots.goalkeeper, player: lineupSlots.player } },
-  } : null, [selectedMatch, lineupFormation, lineupSlots]);
+  /* ── Backward-compatible setters ── */
+  const setCurrentStep = useMemo(() => makeSetter<WizardState, 'currentStep'>(dispatch, 'currentStep'), [dispatch]);
+  const setSelectedMatch = useMemo(() => makeSetter<WizardState, 'selectedMatch'>(dispatch, 'selectedMatch'), [dispatch]);
+  const setLineupSlots = useMemo(() => makeSetter<WizardState, 'lineupSlots'>(dispatch, 'lineupSlots'), [dispatch]);
+  const setLineupFormation = useMemo(() => makeSetter<WizardState, 'lineupFormation'>(dispatch, 'lineupFormation'), [dispatch]);
+  const setSquadGroups = useMemo(() => makeSetter<WizardState, 'squadGroups'>(dispatch, 'squadGroups'), [dispatch]);
+  const setGuestPlayers = useMemo(() => makeSetter<WizardState, 'guestPlayers'>(dispatch, 'guestPlayers'), [dispatch]);
+  const setSquadLoading = useMemo(() => makeSetter<WizardState, 'squadLoading'>(dispatch, 'squadLoading'), [dispatch]);
+  const setSelectedContentPhase = useMemo(() => makeSetter<WizardState, 'selectedContentPhase'>(dispatch, 'selectedContentPhase'), [dispatch]);
+  const setEditingPosition = useMemo(() => makeSetter<WizardState, 'editingPosition'>(dispatch, 'editingPosition'), [dispatch]);
+  const setLineupSaving = useMemo(() => makeSetter<WizardState, 'lineupSaving'>(dispatch, 'lineupSaving'), [dispatch]);
+  const setTemplatesError = useMemo(() => makeSetter<WizardState, 'templatesError'>(dispatch, 'templatesError'), [dispatch]);
+  const setSquadError = useMemo(() => makeSetter<WizardState, 'squadError'>(dispatch, 'squadError'), [dispatch]);
+  const setSaveError = useMemo(() => makeSetter<WizardState, 'saveError'>(dispatch, 'saveError'), [dispatch]);
+  const setPendingContent = useMemo(() => makeSetter<WizardState, 'pendingContent'>(dispatch, 'pendingContent'), [dispatch]);
+  const setSelectedTemplate = useMemo(() => makeSetter<WizardState, 'selectedTemplate'>(dispatch, 'selectedTemplate'), [dispatch]);
+  const setSelectedContentTypeLabel = useMemo(() => makeSetter<WizardState, 'selectedContentTypeLabel'>(dispatch, 'selectedContentTypeLabel'), [dispatch]);
+  const setAvailableTemplates = useMemo(() => makeSetter<WizardState, 'availableTemplates'>(dispatch, 'availableTemplates'), [dispatch]);
+  const setProgress = useMemo(() => makeSetter<WizardState, 'progress'>(dispatch, 'progress'), [dispatch]);
+  const setGenerationError = useMemo(() => makeSetter<WizardState, 'generationError'>(dispatch, 'generationError'), [dispatch]);
+  const setGeneratedOutput = useMemo(() => makeSetter<WizardState, 'generatedOutput'>(dispatch, 'generatedOutput'), [dispatch]);
+  const setGeneratedVariants = useMemo(() => makeSetter<WizardState, 'generatedVariants'>(dispatch, 'generatedVariants'), [dispatch]);
+  const setSelectedVariantIndex = useMemo(() => makeSetter<WizardState, 'selectedVariantIndex'>(dispatch, 'selectedVariantIndex'), [dispatch]);
+  const setSavingAsset = useMemo(() => makeSetter<WizardState, 'savingAsset'>(dispatch, 'savingAsset'), [dispatch]);
+  const setSaveSuccess = useMemo(() => makeSetter<WizardState, 'saveSuccess'>(dispatch, 'saveSuccess'), [dispatch]);
+  const setSavedVariantIndices = useMemo(() => makeSetter<WizardState, 'savedVariantIndices'>(dispatch, 'savedVariantIndices'), [dispatch]);
+
+  const { activities, loading: matchesLoading, error: matchesLoadError } = useActivities({ limit: 10 });
+  const matchesError = matchesLoadError ? 'Kon wedstrijden niet laden. Controleer je verbinding.' : null;
+
+  const matchDataForApi = useMemo(() => s.selectedMatch ? {
+    id: String(s.selectedMatch.id), title: s.selectedMatch.title, project: s.selectedMatch.project,
+    opponent_project: s.selectedMatch.opponent_project ?? undefined,
+    participations: s.selectedMatch.participations,
+    start_time: s.selectedMatch.start_time, location: s.selectedMatch.location,
+    metadata: { ...(s.selectedMatch.metadata || {}), formation: s.lineupFormation,
+      lineup: { formation: s.lineupFormation, goalkeeper: s.lineupSlots.goalkeeper, player: s.lineupSlots.player } },
+  } : null, [s.selectedMatch, s.lineupFormation, s.lineupSlots]);
 
   const options = useContentOptions({ isOpen, matchData: matchDataForApi });
-  useEffect(() => { options.setLineupFormation(lineupFormation); }, [lineupFormation]);
+  useEffect(() => { options.setLineupFormation(s.lineupFormation); }, [s.lineupFormation]);
 
-  const projectId = selectedMatch?.project?.id || undefined;
-  const seasonSquad = useSeasonSquadData({ isOpen: isOpen && !!selectedMatch, projectId: projectId ? String(projectId) : null, seasonId: null, selectedTemplate });
+  const projectId = s.selectedMatch?.project?.id || undefined;
+  const seasonSquad = useSeasonSquadData({ isOpen: isOpen && !!s.selectedMatch, projectId: projectId ? String(projectId) : null, seasonId: null, selectedTemplate: s.selectedTemplate });
 
-  const lineupSlotsRef = useRef(lineupSlots);
-  lineupSlotsRef.current = lineupSlots;
+  const lineupSlotsRef = useRef(s.lineupSlots);
+  lineupSlotsRef.current = s.lineupSlots;
   useEffect(() => {
-    if (selectedMatch && ['options', 'review', 'generating'].includes(currentStep))
+    if (s.selectedMatch && ['options', 'review', 'generating'].includes(s.currentStep))
       seasonSquad.setSelectedMembers({ goalkeeper: lineupSlotsRef.current.goalkeeper.filter(Boolean), player: lineupSlotsRef.current.player.filter(Boolean), coach: [], assistant: [] });
-  }, [currentStep, selectedMatch]);
-  const videoPoll = useVideoJobPolling({ isOpen, step: currentStep, onGenerated: undefined });
+  }, [s.currentStep, s.selectedMatch]);
+  const videoPoll = useVideoJobPolling({ isOpen, step: s.currentStep, onGenerated: undefined });
 
   const upcomingMatches = activities.filter(a => a.activity_type.toLowerCase().includes('match') && new Date(a.start_time) > new Date());
-  const allPlayers = [...(squadGroups.goalkeeper || []), ...(squadGroups.player || []), ...guestPlayers];
-  const filledPositions = lineupSlots.goalkeeper.filter(Boolean).length + lineupSlots.player.filter(Boolean).length;
+  const allPlayers = [...(s.squadGroups.goalkeeper || []), ...(s.squadGroups.player || []), ...s.guestPlayers];
+  const filledPositions = s.lineupSlots.goalkeeper.filter(Boolean).length + s.lineupSlots.player.filter(Boolean).length;
   const totalPositions = POSITIONS.length;
-  const selectedType = useMemo(() => pendingContent
-    ? { type: pendingContent.templateType, subtype: pendingContent.subtype, label: pendingContent.label } : null, [pendingContent]);
-  const isLineupFlow = pendingContent ? ['lineup', 'lineup_flyer', 'poster'].includes(pendingContent.subtype) : false;
+  const selectedType = useMemo(() => s.pendingContent
+    ? { type: s.pendingContent.templateType, subtype: s.pendingContent.subtype, label: s.pendingContent.label } : null, [s.pendingContent]);
+  const isLineupFlow = s.pendingContent ? ['lineup', 'lineup_flyer', 'poster'].includes(s.pendingContent.subtype) : false;
   const homeTeamName = matchDataForApi?.project?.name || 'Thuis';
   const awayTeamName = matchDataForApi?.opponent_project?.name || 'Uit';
-  const organisationId = selectedMatch?.project?.organisation_id || selectedMatch?.organisation?.id || null;
+  const organisationId = s.selectedMatch?.project?.organisation_id || s.selectedMatch?.organisation?.id || null;
 
   useEffect(() => {
     if (!isOpen || selectedMatch) return;
@@ -95,39 +144,44 @@ export function useMatchWizardData(
       const m = activities.find(a => a.id === initialMatchId || a.slug === initialMatchId);
       if (m) { setSelectedMatch(m); setCurrentStep('content'); }
       else if (!matchesLoading) {
-        api.get<any>(`/activities/${encodeURIComponent(initialMatchId)}/`)
+        api.get<Activity>(`/activities/${encodeURIComponent(initialMatchId)}/`)
           .then(data => { if (data?.id) { setSelectedMatch(data as Activity); setCurrentStep('content'); } })
           .catch(err => logger.error('[MatchWizard] Failed to fetch match by id', err));
       }
     } else if (upcomingMatches.length > 0) setSelectedMatch(upcomingMatches[0]);
-  }, [isOpen, activities, initialMatchId, upcomingMatches, selectedMatch, matchesLoading]);
+  }, [isOpen, activities, initialMatchId, upcomingMatches, s.selectedMatch, matchesLoading]);
 
   // Reset when wizard closes
   useEffect(() => {
     if (isOpen) return;
-    setSelectedMatch(null); setCurrentStep('match'); setSelectedContentPhase('pre');
-    setPendingContent(null); setSelectedTemplate(null); setSelectedContentTypeLabel('');
-    setProgress(0); setGenerationError(null); setGeneratedOutput(null);
-    setGeneratedVariants([]); setSelectedVariantIndex(0);
-    setSavingAsset(false); setSaveSuccess(false); setSavedVariantIndices(new Set());
+    dispatch({
+      type: 'patch',
+      payload: {
+        selectedMatch: null, currentStep: 'match', selectedContentPhase: 'pre',
+        pendingContent: null, selectedTemplate: null, selectedContentTypeLabel: '',
+        progress: 0, generationError: null, generatedOutput: null,
+        generatedVariants: [], selectedVariantIndex: 0,
+        savingAsset: false, saveSuccess: false, savedVariantIndices: new Set(),
+      },
+    });
     videoPoll.resetVideo();
   }, [isOpen]);
 
   // Load saved lineup from match metadata
   useEffect(() => {
-    if (!selectedMatch) return;
-    const s = selectedMatch.metadata?.lineup as { formation?: string; goalkeeper?: string[]; player?: string[] } | undefined;
-    if (s) {
-      if (s.formation) setLineupFormation(s.formation);
-      if (s.goalkeeper || s.player) setLineupSlots({ goalkeeper: s.goalkeeper || [], player: s.player || [] });
-    } else if (selectedMatch.metadata?.formation) setLineupFormation(String(selectedMatch.metadata.formation));
-  }, [selectedMatch]);
+    if (!s.selectedMatch) return;
+    const meta = s.selectedMatch.metadata?.lineup as { formation?: string; goalkeeper?: string[]; player?: string[] } | undefined;
+    if (meta) {
+      if (meta.formation) setLineupFormation(meta.formation);
+      if (meta.goalkeeper || meta.player) setLineupSlots({ goalkeeper: meta.goalkeeper || [], player: meta.player || [] });
+    } else if (s.selectedMatch.metadata?.formation) setLineupFormation(String(s.selectedMatch.metadata.formation));
+  }, [s.selectedMatch]);
 
-  useEffect(() => { if (selectedMatch && currentStep === 'lineup') fetchSquad(); }, [selectedMatch, currentStep]);
-  useEffect(() => { if (selectedMatch && currentStep === 'content') fetchTemplates(); }, [selectedMatch, currentStep]);
+  useEffect(() => { if (s.selectedMatch && s.currentStep === 'lineup') fetchSquad(); }, [s.selectedMatch, s.currentStep]);
+  useEffect(() => { if (s.selectedMatch && s.currentStep === 'content') fetchTemplates(); }, [s.selectedMatch, s.currentStep]);
 
   const fetchSquad = async () => {
-    const pid = selectedMatch?.project?.id;
+    const pid = s.selectedMatch?.project?.id;
     if (!pid) return;
     setSquadLoading(true); setSquadError(null);
     try { setSquadGroups(await fetchSquadMembers(String(pid))); }
@@ -142,37 +196,37 @@ export function useMatchWizardData(
   };
 
   const saveLineup = async () => {
-    if (!selectedMatch) return;
+    if (!s.selectedMatch) return;
     setLineupSaving(true); setSaveError(null);
-    try { await saveLineupToApi(String(selectedMatch.slug || selectedMatch.id), selectedMatch.metadata || {}, lineupFormation, lineupSlots); }
+    try { await saveLineupToApi(String(s.selectedMatch.slug || s.selectedMatch.id), s.selectedMatch.metadata || {}, s.lineupFormation, s.lineupSlots); }
     catch { setSaveError('Opslaan mislukt. Probeer opnieuw.'); }
     finally { setLineupSaving(false); }
   };
   const handleSelectPlayer = (positionIdx: number, isGoalkeeper: boolean, memberId: string | null) => {
     if (isGoalkeeper) {
-      const newGk = [...lineupSlots.goalkeeper];
+      const newGk = [...s.lineupSlots.goalkeeper];
       newGk[positionIdx] = memberId || '';
-      setLineupSlots({ ...lineupSlots, goalkeeper: newGk.filter(Boolean) as string[] });
+      setLineupSlots({ ...s.lineupSlots, goalkeeper: newGk.filter(Boolean) as string[] });
     } else {
-      const newPlayers = [...lineupSlots.player];
+      const newPlayers = [...s.lineupSlots.player];
       while (newPlayers.length <= positionIdx) newPlayers.push('');
       newPlayers[positionIdx] = memberId || '';
-      setLineupSlots({ ...lineupSlots, player: newPlayers });
+      setLineupSlots({ ...s.lineupSlots, player: newPlayers });
     }
     setEditingPosition(null);
   };
   const handleContentSelect = (contentKey: string, contentLabel: string, subtype: string, templateType: string) => {
-    if (!selectedMatch) return;
+    if (!s.selectedMatch) return;
     setPendingContent({ key: contentKey, label: contentLabel, subtype, templateType });
     setSelectedContentTypeLabel(contentLabel);
-    setSelectedTemplate(resolveTemplate(availableTemplates, subtype, lineupFormation));
+    setSelectedTemplate(resolveTemplate(s.availableTemplates, subtype, s.lineupFormation));
     if (LINEUP_REQUIRED_SUBTYPES.has(subtype)) setCurrentStep('lineup');
     else if (HAS_OPTIONS_SUBTYPES.has(subtype)) setCurrentStep('options');
     else setCurrentStep('review');
   };
   const handleLineupConfirm = () => {
     saveLineup();
-    if (pendingContent && HAS_OPTIONS_SUBTYPES.has(pendingContent.subtype)) setCurrentStep('options');
+    if (s.pendingContent && HAS_OPTIONS_SUBTYPES.has(s.pendingContent.subtype)) setCurrentStep('options');
     else setCurrentStep('review');
   };
 
@@ -185,9 +239,9 @@ export function useMatchWizardData(
     videoPoll.resetVideo();
     await executeGeneration(
       {
-        subtype: pendingContent?.subtype || '', pendingContent, lineupFormation, lineupSlots,
+        subtype: s.pendingContent?.subtype || '', pendingContent: s.pendingContent, lineupFormation: s.lineupFormation, lineupSlots: s.lineupSlots,
         projectId: projectId ? String(projectId) : undefined,
-        matchDataForApi, seasonSquad, options, selectedTemplate, selectedType, organisationId,
+        matchDataForApi, seasonSquad, options, selectedTemplate: s.selectedTemplate, selectedType, organisationId,
       },
       {
         setCurrentStep, setProgress, setGenerationError, setGeneratedOutput, setGeneratedVariants,
@@ -206,21 +260,21 @@ export function useMatchWizardData(
   };
 
   const handleSaveVariantByIndex = async (variantIdx: number, opts?: { skipAutoClose?: boolean }) => {
-    const variant = generatedVariants[variantIdx];
+    const variant = s.generatedVariants[variantIdx];
     if (!variant) return;
     setSavingAsset(true);
     try {
       const { updatedVariant } = await executeSaveVariant({
-        variant, variantIdx, totalVariants: generatedVariants.length,
-        selectedType, selectedTemplate, matchDataForApi, organisationId, assetType: null,
+        variant, variantIdx, totalVariants: s.generatedVariants.length,
+        selectedType, selectedTemplate: s.selectedTemplate, matchDataForApi, organisationId, assetType: null,
       });
       setSavedVariantIndices(prev => new Set([...prev, variantIdx]));
       if (updatedVariant !== variant) {
-        const arr = [...generatedVariants]; arr[variantIdx] = updatedVariant; setGeneratedVariants(arr);
+        const arr = [...s.generatedVariants]; arr[variantIdx] = updatedVariant; setGeneratedVariants(arr);
       }
-      if (!opts?.skipAutoClose && generatedVariants.length <= 1) {
+      if (!opts?.skipAutoClose && s.generatedVariants.length <= 1) {
         setSaveSuccess(true);
-        _saveToast(`${pendingContent?.label || 'Content'} opgeslagen!`, variant.presigned_url || generatedOutput?.presigned_url);
+        _saveToast(`${s.pendingContent?.label || 'Content'} opgeslagen!`, variant.presigned_url || s.generatedOutput?.presigned_url);
         setTimeout(() => handleClose(), 1200);
       }
     } catch (err) {
@@ -228,45 +282,47 @@ export function useMatchWizardData(
       setGenerationError(err instanceof Error ? err.message : 'Opslaan mislukt');
     } finally { setSavingAsset(false); }
   };
-  const handleSaveAsAsset = async () => { await handleSaveVariantByIndex(selectedVariantIndex); };
+  const handleSaveAsAsset = async () => { await handleSaveVariantByIndex(s.selectedVariantIndex); };
   const handleSaveAllAsAssets = async () => {
     setSavingAsset(true); setSaveSuccess(false);
-    for (let i = 0; i < generatedVariants.length; i++) {
-      if (!savedVariantIndices.has(i)) await handleSaveVariantByIndex(i, { skipAutoClose: true });
+    for (let i = 0; i < s.generatedVariants.length; i++) {
+      if (!s.savedVariantIndices.has(i)) await handleSaveVariantByIndex(i, { skipAutoClose: true });
     }
     setSaveSuccess(true); setSavingAsset(false);
-    _saveToast(`${generatedVariants.length} varianten opgeslagen!`, generatedVariants[0]?.presigned_url || generatedOutput?.presigned_url);
+    _saveToast(`${s.generatedVariants.length} varianten opgeslagen!`, s.generatedVariants[0]?.presigned_url || s.generatedOutput?.presigned_url);
     setTimeout(() => handleClose(), 1200);
   };
   const handleBack = () => {
-    if (currentStep === 'error') setCurrentStep('review');
-    else if (currentStep === 'review') {
-      if (pendingContent && HAS_OPTIONS_SUBTYPES.has(pendingContent.subtype)) setCurrentStep('options');
-      else if (pendingContent && LINEUP_REQUIRED_SUBTYPES.has(pendingContent.subtype)) setCurrentStep('lineup');
+    if (s.currentStep === 'error') setCurrentStep('review');
+    else if (s.currentStep === 'review') {
+      if (s.pendingContent && HAS_OPTIONS_SUBTYPES.has(s.pendingContent.subtype)) setCurrentStep('options');
+      else if (s.pendingContent && LINEUP_REQUIRED_SUBTYPES.has(s.pendingContent.subtype)) setCurrentStep('lineup');
       else setCurrentStep('content');
-    } else if (currentStep === 'options') {
-      if (pendingContent && LINEUP_REQUIRED_SUBTYPES.has(pendingContent.subtype)) setCurrentStep('lineup');
+    } else if (s.currentStep === 'options') {
+      if (s.pendingContent && LINEUP_REQUIRED_SUBTYPES.has(s.pendingContent.subtype)) setCurrentStep('lineup');
       else setCurrentStep('content');
-    } else if (currentStep === 'lineup') { setPendingContent(null); setCurrentStep('content'); }
-    else if (currentStep === 'content') setCurrentStep('match');
+    } else if (s.currentStep === 'lineup') { setPendingContent(null); setCurrentStep('content'); }
+    else if (s.currentStep === 'content') setCurrentStep('match');
     else handleClose();
   };
   const handleClose = () => {
-    setCurrentStep('match'); setSelectedMatch(null);
-    setLineupSlots({ goalkeeper: [], player: [] }); setSquadGroups({ goalkeeper: [], player: [] });
-    setGuestPlayers([]); setEditingPosition(null);
-    setPendingContent(null); setSelectedTemplate(null); setSelectedContentTypeLabel('');
+    dispatch({ type: 'patch', payload: {
+      currentStep: 'match', selectedMatch: null,
+      lineupSlots: { goalkeeper: [], player: [] }, squadGroups: { goalkeeper: [], player: [] },
+      guestPlayers: [], editingPosition: null,
+      pendingContent: null, selectedTemplate: null, selectedContentTypeLabel: '',
+    } });
     onClose();
   };
 
   const STEP_TITLES: Record<WizardStep, string> = {
     match: 'Selecteer wedstrijd', content: 'Kies content',
-    lineup: pendingContent ? `Opstelling — ${pendingContent.label}` : 'Opstelling',
-    options: pendingContent?.label ? `${pendingContent.label} instellen` : 'Opties',
+    lineup: s.pendingContent ? `Opstelling — ${s.pendingContent.label}` : 'Opstelling',
+    options: s.pendingContent?.label ? `${s.pendingContent.label} instellen` : 'Opties',
     review: 'Bevestig generatie', generating: 'Bezig met genereren...',
     video_queued: 'In de wachtrij', success: 'Content klaar', error: 'Fout opgetreden',
   };
-  const getStepTitle = (): string => STEP_TITLES[currentStep];
+  const getStepTitle = (): string => STEP_TITLES[s.currentStep];
 
   const addGuestPlayer = (name: string, jerseyNumber?: string) => {
     setGuestPlayers(prev => [...prev, {
@@ -288,24 +344,24 @@ export function useMatchWizardData(
 
   return {
     navigate,
-    currentStep, setCurrentStep, selectedMatch, setSelectedMatch,
-    lineupSlots, lineupFormation, setLineupFormation, squadGroups, squadLoading,
-    editingPosition, setEditingPosition, lineupSaving, filledPositions, totalPositions, allPlayers,
-    selectedContentPhase, setSelectedContentPhase, pendingContent,
-    selectedTemplate, selectedContentTypeLabel, selectedType, isLineupFlow,
+    currentStep: s.currentStep, setCurrentStep, selectedMatch: s.selectedMatch, setSelectedMatch,
+    lineupSlots: s.lineupSlots, lineupFormation: s.lineupFormation, setLineupFormation, squadGroups: s.squadGroups, squadLoading: s.squadLoading,
+    editingPosition: s.editingPosition, setEditingPosition, lineupSaving: s.lineupSaving, filledPositions, totalPositions, allPlayers,
+    selectedContentPhase: s.selectedContentPhase, setSelectedContentPhase, pendingContent: s.pendingContent,
+    selectedTemplate: s.selectedTemplate, selectedContentTypeLabel: s.selectedContentTypeLabel, selectedType, isLineupFlow,
     options,
-    progress, generationError, generatedOutput,
-    generatedVariants, selectedVariantIndex, setSelectedVariantIndex,
-    savingAsset, saveSuccess, savedVariantIndices,
+    progress: s.progress, generationError: s.generationError, generatedOutput: s.generatedOutput,
+    generatedVariants: s.generatedVariants, selectedVariantIndex: s.selectedVariantIndex, setSelectedVariantIndex,
+    savingAsset: s.savingAsset, saveSuccess: s.saveSuccess, savedVariantIndices: s.savedVariantIndices,
     seasonSquad, videoPoll,
     homeTeamName, awayTeamName, matchDataForApi, organisationId,
-    matchesError, templatesError, squadError, saveError,
-    matchesLoading, upcomingMatches,
+    matchesError: s.matchesError, templatesError: s.templatesError, squadError: s.squadError, saveError: s.saveError,
+    matchesLoading: s.matchesLoading, upcomingMatches,
     handleSelectPlayer, handleContentSelect, handleLineupConfirm,
     handleOptionsConfirm, handleReviewConfirm,
     handleGenerate, handleSaveAsAsset, handleSaveAllAsAssets, handleSaveVariantByIndex,
     handleBack, handleClose,
-    guestPlayers, addGuestPlayer, removeGuestPlayer,
+    guestPlayers: s.guestPlayers, addGuestPlayer, removeGuestPlayer,
     getStepTitle, getMemberName, getMemberJersey, getMemberById,
     retrySquad: fetchSquad, retryTemplates: fetchTemplates,
   };

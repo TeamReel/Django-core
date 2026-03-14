@@ -12,10 +12,10 @@ import React from 'react';
 import { ChevronRight, CalendarClock, Zap, Calendar } from 'lucide-react';
 import { useWizard } from '../../Wizard';
 import { useCreateWizard } from '../CreateWizardContext';
-import { useSmartMatch } from '../../../hooks/useSmartMatch';
-import { formatRelativeTime, getDateUrgency } from '../../../utils/relativeTime';
+import { useSmartMatch } from '@/hooks/useSmartMatch';
+import { formatRelativeTime, getDateUrgency } from '@/utils/relativeTime';
 import { WizardEmptyState, WizardErrorState } from '../shared/WizardEmptyState';
-import type { Activity } from '../../../hooks/useActivities';
+import type { Activity } from '@/hooks/useActivities';
 import styles from '../CreateWizard.module.css';
 
 export interface SmartMatchStepProps {

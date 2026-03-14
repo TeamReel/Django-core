@@ -47,7 +47,7 @@ export default function ProjectSeasonSquadPage() {
       : { label: 'Team' };
 
     return [
-      { label: 'Dashboard', onClick: () => d.navigate('/dashboard') },
+      { label: 'Dashboard', onClick: () => d.navigate(routes.dashboard()) },
       orgCrumb,
       ...(clubCrumb ? [clubCrumb] : []),
       projectCrumb,

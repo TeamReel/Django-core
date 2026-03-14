@@ -1,6 +1,6 @@
 import React from 'react';
-import GovernanceSummaryCard from '../../../components/Governance/GovernanceSummaryCard';
-import TransactionsPanel from '../../../components/transactions/TransactionsPanel';
+import GovernanceSummaryCard from '@/components/Governance/GovernanceSummaryCard';
+import TransactionsPanel from '@/components/transactions/TransactionsPanel';
 import type { Organisation, MatchDetail, Project } from './types';
 
 interface MatchTransactionsTabProps {

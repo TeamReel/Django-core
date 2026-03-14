@@ -8,6 +8,10 @@
 export { Modal } from './Modal';
 export type { ModalProps, ModalSize } from './Modal';
 
+// NavigationSheet — universal slide-in sheet for inline sub-navigation
+export { NavigationSheet } from './NavigationSheet';
+export type { NavigationSheetProps } from './NavigationSheet';
+
 // Avatar — circular avatar with image/initials fallback + status dot
 export { Avatar } from './Avatar';
 export type { AvatarProps, AvatarSize } from './Avatar';

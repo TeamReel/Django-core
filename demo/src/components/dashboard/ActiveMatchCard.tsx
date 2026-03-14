@@ -86,7 +86,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
         // Count content items for this match (gracefully handle 500s)
         if (closest) {
           try {
-            const mediaData = await api.list<any>('/media/items/', {
+            const mediaData = await api.list<Record<string, unknown>>('/media/items/', {
               params: { activity: closest.id },
               pageSize: 1,
             });

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Alert, Button } from '@django-core/design-system';
-import AppShell from '../../components/AppShell';
 import { logger } from '@/utils/logger';
 import styles from './IntegrationPatternsPage.module.css';
 import { INTEGRATION_PATTERNS, type PatternData } from './integrationPatternsData';
@@ -103,7 +102,7 @@ export function IntegrationPatternsPage() {
   const patterns = INTEGRATION_PATTERNS;
 
   return (
-    <AppShell>
+    <>
       <div className={`flex-row ${styles.pageContainer}`}>
         {/* Sidebar Navigation */}
         <div
@@ -146,7 +145,7 @@ export function IntegrationPatternsPage() {
           ))}
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }
 

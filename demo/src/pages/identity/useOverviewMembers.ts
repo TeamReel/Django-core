@@ -51,7 +51,7 @@ export function useOverviewMembers({
       setOverviewMembersError(null);
 
       try {
-        const { results: rawList, count } = await api.list<any>(
+        const { results: rawList, count } = await api.list<OrgMemberItem>(
           `/organisations/${encodeURIComponent(orgSlug)}/members/`,
           {
             params: {

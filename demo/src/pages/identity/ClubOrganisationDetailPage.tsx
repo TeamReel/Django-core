@@ -7,7 +7,7 @@ import { ShareButton } from '../../components/ShareButton';
 
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 
-import { api } from '../../api';
+import { api } from '@/api';
 
 import MobileTabBar from '../../components/MobileTabBar';
 import { useUserRole } from '../../components/PermissionGuards';
@@ -26,6 +26,7 @@ import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 import { useClubOrgDetailData } from './useClubOrgDetailData';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import s from './ClubOrganisationDetailPage.module.css';
+import { useToast } from '@/components/ui/Toast';
 
 /* ═══════════════════════════════════════════════════════════════
    ClubOrganisationDetailPage  —  Premium rebuild
@@ -35,6 +36,7 @@ import s from './ClubOrganisationDetailPage.module.css';
 
 export default function ClubOrganisationDetailPage() {
   const { isPlayer, isSupporter } = useUserRole();
+  const { pushToast } = useToast();
   const {
     org, club, loading, error, navigate, apiBaseUrl,
     activeContext, setActiveContextState, activatingContext, setActivatingContext,
@@ -46,6 +48,7 @@ export default function ClubOrganisationDetailPage() {
     backToOrgHref,
     overviewLoading, overviewError, overviewTeams, overviewSeasons, overviewMembers, overviewCounts,
     brandLogoUrl, brandProfileId,
+    refetch,
   } = useClubOrgDetailData();
 
   const confirm = useConfirm();
@@ -180,7 +183,7 @@ export default function ClubOrganisationDetailPage() {
                           await api.delete(`/projects/${encodeURIComponent(String(club.id))}/`);
                           navigate(backToOrgHref);
                         } catch {
-                          alert('Kon club niet verwijderen');
+                          pushToast({ message: 'Kon club niet verwijderen', type: 'error' });
                         }
                         setOverflowOpen(false);
                       }}
@@ -288,7 +291,7 @@ export default function ClubOrganisationDetailPage() {
       <EntityEditModal
         isOpen={isProjectEditModalOpen}
         onClose={() => setIsProjectEditModalOpen(false)}
-        onSaved={() => window.location.reload()}
+        onSaved={() => refetch()}
         entityType="club"
         entityId={club?.slug || club?.id || ''}
         entityName={club?.name}

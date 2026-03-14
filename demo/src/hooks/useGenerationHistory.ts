@@ -113,7 +113,7 @@ export function useGenerationHistory(): UseGenerationHistoryReturn {
     try {
       // Fetch both template types in parallel
       const [assetData, contentData] = await Promise.all([
-        api.get<any>('/generative/assets/templates/', controller.signal).catch(() => null),
+        api.get<{ templates?: AssetTemplate[]; results?: AssetTemplate[] }>('/generative/assets/templates/', controller.signal).catch(() => null),
         api.list<ContentTemplate>('/content-generation/templates/', {
           signal: controller.signal,
           params: orgId ? { organisation: orgId } : undefined,
@@ -142,7 +142,7 @@ export function useGenerationHistory(): UseGenerationHistoryReturn {
     setError(null);
 
     try {
-      const data = await api.get<any>('/generative/assets/history/');
+      const data = await api.get<{ history?: GenerationHistoryItem[]; results?: GenerationHistoryItem[] }>('/generative/assets/history/');
       const arr = Array.isArray(data?.history) ? data.history : Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
       setHistory(arr);
     } catch (err: unknown) {

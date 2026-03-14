@@ -1,21 +1,22 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { periodPathKey } from '../../../utils/periodPath';
+import { periodPathKey } from '@/utils/periodPath';
 import { Badge } from '@django-core/design-system';
-import { routes } from '../../../routes';
+import { routes } from '@/routes';
 import PeriodDetailModal from '../PeriodDetailModal';
 import PeriodEditModal from '../PeriodEditModal';
 import PeriodCreateModal from '../PeriodCreateModal';
 import {
     resolveRowContext,
-} from '../../../utils/directoryHelpers';
-import type { DirectoryListProps, RowContextConfig } from '../../../utils/directoryHelpers';
-import { useDirectoryFilters } from '../../../hooks/useDirectoryFilters';
-import { useSeasonsData } from '../../../hooks/useSeasonsData';
-import { DirectoryFilterBar } from '../../../components/DirectoryFilterBar';
-import { DirectoryTableShell } from '../../../components/DirectoryTableShell';
+} from '@/utils/directoryHelpers';
+import type { DirectoryListProps, RowContextConfig } from '@/utils/directoryHelpers';
+import { useDirectoryFilters } from '@/hooks/useDirectoryFilters';
+import { useSeasonsData } from '@/hooks/useSeasonsData';
+import { useCrudModals } from '@/hooks/useModalState';
+import { DirectoryFilterBar } from '@/components/DirectoryFilterBar';
+import { DirectoryTableShell } from '@/components/DirectoryTableShell';
 
-import type { Period } from '../../../utils/directoryHelpers';
+import type { Period } from '@/utils/directoryHelpers';
 import styles from './SeasonsList.module.css';
 
 export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
@@ -41,11 +42,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
   } = useSeasonsData(filters);
 
   // Modal state
-  const [detailSeason, setDetailSeason] = useState<Period | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [editSeason, setEditSeason] = useState<Period | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const modals = useCrudModals<Period>();
 
   const rowConfig = useMemo<RowContextConfig>(() => ({
     organisations, clubs, teams,
@@ -59,7 +56,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
       <DirectoryFilterBar
         filters={filters}
         createButtonLabel="Create Season"
-        onCreateClick={() => setIsCreateModalOpen(true)}
+        onCreateClick={() => modals.create.open()}
       />
 
       <DirectoryTableShell
@@ -181,10 +178,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                           ) : (
                             <button
                               type="button"
-                              onClick={() => {
-                                setDetailSeason(season);
-                                setIsDetailModalOpen(true);
-                              }}
+                              onClick={() => modals.detail.open(season)}
                               className={`bg-transparent border-none p-0 m-0 cursor-pointer ${styles.seasonNameBtn}`}
                             >
                               {season.name}
@@ -241,19 +235,13 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                         <td className="dir-td">
                           <div className="dir-actions">
                             <button
-                                onClick={() => {
-                                    setDetailSeason(season);
-                                    setIsDetailModalOpen(true);
-                                }}
+                                onClick={() => modals.detail.open(season)}
                                 className="action-btn action-btn-primary"
                             >
                                 View
                             </button>
                             <button
-                              onClick={() => {
-                                setEditSeason(season);
-                                setIsEditModalOpen(true);
-                              }}
+                              onClick={() => modals.edit.open(season)}
                               className="action-btn action-btn-warning"
                             >
                               Edit
@@ -273,8 +261,8 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
       </DirectoryTableShell>
 
       <PeriodCreateModal
-        opened={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        opened={modals.create.isOpen}
+        onClose={modals.create.close}
         title="Create Season"
         organisations={organisations}
         clubs={clubs}
@@ -291,19 +279,19 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
       />
 
       <PeriodDetailModal
-        opened={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        period={detailSeason}
+        opened={modals.detail.isOpen}
+        onClose={modals.detail.close}
+        period={modals.detail.item}
       />
 
       <PeriodEditModal
-        opened={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        period={editSeason}
+        opened={modals.edit.isOpen}
+        onClose={modals.edit.close}
+        period={modals.edit.item}
         showSportVariant={false}
         onSave={async (payload) => {
-          if (!editSeason) return;
-          await savePeriodEdits(editSeason.id, payload);
+          if (!modals.edit.item) return;
+          await savePeriodEdits(modals.edit.item.id, payload);
           triggerRefresh();
         }}
       />

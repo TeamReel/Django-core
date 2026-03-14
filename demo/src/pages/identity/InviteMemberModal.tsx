@@ -4,8 +4,9 @@ import {
   Input,
   Modal,
 } from '@django-core/design-system';
-import { organisationsApi, ApiError } from '../../api';
+import { organisationsApi, ApiError } from '@/api';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import styles from './InviteMemberModal.module.css';
 
 interface InviteMemberModalProps {
@@ -32,7 +33,7 @@ export default function InviteMemberModal({ opened, onClose, orgSlug, onInviteSu
       await organisationsApi.addMember(orgSlug, {
         email: email,
         role: role,
-      } as any);
+      });
 
       onInviteSuccess();
       onClose();
@@ -44,7 +45,7 @@ export default function InviteMemberModal({ opened, onClose, orgSlug, onInviteSu
         const body = err.body as { email?: string[]; detail?: string } | undefined;
         setError(body?.email?.[0] || body?.detail || 'Failed to invite member');
       } else {
-        setError(err instanceof Error ? err.message : 'Failed to invite member');
+        setError(getErrorMessage(err));
       }
     } finally {
       setLoading(false);

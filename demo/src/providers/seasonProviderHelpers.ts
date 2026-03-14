@@ -6,6 +6,8 @@
  */
 import type { useBrandProfile } from '../hooks/useBrandProfile';
 import type { Period, SeasonProject, SeasonOrganisation } from '../types/season';
+import type { Organisation } from '../types';
+import type { PermissionContext } from '../utils/permissions';
 
 export type { Period, SeasonProject, SeasonOrganisation } from '../types/season';
 
@@ -93,8 +95,8 @@ export interface SeasonContextValue {
 
   // Permissions
   isSuperAdmin: boolean;
-  orgForPermissions: any;
-  permissionContext: { currentOrganisation: any; isSuperAdmin: boolean };
+  orgForPermissions: Organisation | null;
+  permissionContext: PermissionContext;
   userCanEditProject: boolean;
   userCanDeleteProject: boolean;
 

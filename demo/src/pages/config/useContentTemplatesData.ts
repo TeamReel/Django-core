@@ -1,7 +1,9 @@
-import { useEffect, useState, useMemo, type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useReducer, useMemo, type Dispatch, type SetStateAction } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { api } from '../../api';
+import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
+import { formReducer, makeSetter } from '@/utils/formReducer';
 import {
   TEMPLATE_CATEGORIES,
   SUBTYPE_LABELS,
@@ -96,62 +98,87 @@ export interface UseContentTemplatesDataReturn {
 }
 
 export function useContentTemplatesData(): UseContentTemplatesDataReturn {
+  const { pushToast } = useToast();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const [templates, setTemplates] = useState<ContentTemplate[]>([]);
-  const [sports, setSports] = useState<Sport[]>([]);
-  const [formations, setFormations] = useState<Formation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  interface TemplatesState {
+    templates: ContentTemplate[];
+    sports: Sport[];
+    formations: Formation[];
+    loading: boolean;
+    error: string | null;
+    searchQuery: string;
+    showInactive: boolean;
+    selectedFormation: string;
+    selectedStyle: string;
+    selectedSport: string;
+    selectedSubtype: string;
+    selectedType: string;
+    isCreateModalOpen: boolean;
+    editingTemplate: ContentTemplate | null;
+    saving: boolean;
+    modalTab: 'basic' | 'requirements';
+    editForm: EditFormState;
+  }
+
+  const [s, dispatch] = useReducer(formReducer<TemplatesState>, {
+    templates: [], sports: [], formations: [],
+    loading: true, error: null,
+    searchQuery: '', showInactive: false,
+    selectedFormation: 'all', selectedStyle: 'all', selectedSport: 'all',
+    selectedSubtype: 'all', selectedType: 'all',
+    isCreateModalOpen: false, editingTemplate: null, saving: false,
+    modalTab: 'basic', editForm: INITIAL_EDIT_FORM,
+  });
+
+  const setTemplates = useMemo(() => makeSetter<TemplatesState, 'templates'>(dispatch, 'templates'), [dispatch]);
+  const setSports = useMemo(() => makeSetter<TemplatesState, 'sports'>(dispatch, 'sports'), [dispatch]);
+  const setFormations = useMemo(() => makeSetter<TemplatesState, 'formations'>(dispatch, 'formations'), [dispatch]);
+  const setLoading = useMemo(() => makeSetter<TemplatesState, 'loading'>(dispatch, 'loading'), [dispatch]);
+  const setError = useMemo(() => makeSetter<TemplatesState, 'error'>(dispatch, 'error'), [dispatch]);
+  const setSearchQuery = useMemo(() => makeSetter<TemplatesState, 'searchQuery'>(dispatch, 'searchQuery'), [dispatch]);
+  const setShowInactive = useMemo(() => makeSetter<TemplatesState, 'showInactive'>(dispatch, 'showInactive'), [dispatch]);
+  const setSelectedFormation = useMemo(() => makeSetter<TemplatesState, 'selectedFormation'>(dispatch, 'selectedFormation'), [dispatch]);
+  const setSelectedStyle = useMemo(() => makeSetter<TemplatesState, 'selectedStyle'>(dispatch, 'selectedStyle'), [dispatch]);
+  const setSelectedSport = useMemo(() => makeSetter<TemplatesState, 'selectedSport'>(dispatch, 'selectedSport'), [dispatch]);
+  const setSelectedSubtype = useMemo(() => makeSetter<TemplatesState, 'selectedSubtype'>(dispatch, 'selectedSubtype'), [dispatch]);
+  const setSelectedType = useMemo(() => makeSetter<TemplatesState, 'selectedType'>(dispatch, 'selectedType'), [dispatch]);
+  const setIsCreateModalOpen = useMemo(() => makeSetter<TemplatesState, 'isCreateModalOpen'>(dispatch, 'isCreateModalOpen'), [dispatch]);
+  const setEditingTemplate = useMemo(() => makeSetter<TemplatesState, 'editingTemplate'>(dispatch, 'editingTemplate'), [dispatch]);
+  const setSaving = useMemo(() => makeSetter<TemplatesState, 'saving'>(dispatch, 'saving'), [dispatch]);
+  const setModalTab = useMemo(() => makeSetter<TemplatesState, 'modalTab'>(dispatch, 'modalTab'), [dispatch]);
+  const setEditForm = useMemo(() => makeSetter<TemplatesState, 'editForm'>(dispatch, 'editForm'), [dispatch]);
 
   // Get selected category from URL query param
   const selectedCategory = searchParams.get('tab') || 'all';
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showInactive, setShowInactive] = useState(false);
-  const [selectedFormation, setSelectedFormation] = useState<string>('all');
-  const [selectedStyle, setSelectedStyle] = useState<string>('all');
-  const [selectedSport, setSelectedSport] = useState<string>('all');
-  const [selectedSubtype, setSelectedSubtype] = useState<string>('all');
-  const [selectedType, setSelectedType] = useState<string>('all');
-
-  // Modal state
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<ContentTemplate | null>(null);
-  const [saving, setSaving] = useState(false);
-
-  // Modal tab state
-  const [modalTab, setModalTab] = useState<'basic' | 'requirements'>('basic');
-
-  // Edit form state
-  const [editForm, setEditForm] = useState<EditFormState>(INITIAL_EDIT_FORM);
 
   // Update form when editing template changes
   useEffect(() => {
-    if (editingTemplate) {
-      const currentSport = sports.find(s => s.id === editingTemplate.sport);
+    if (s.editingTemplate) {
+      const currentSport = s.sports.find(sp => sp.id === s.editingTemplate!.sport);
       const categoryId = currentSport?.parent_sport_id || (currentSport?.is_category ? currentSport.id : null);
 
       setEditForm({
-        name: editingTemplate.name,
-        description: editingTemplate.description || '',
-        template_type: editingTemplate.template_type,
-        template_subtype: editingTemplate.template_subtype || '',
-        sport: editingTemplate.sport,
+        name: s.editingTemplate.name,
+        description: s.editingTemplate.description || '',
+        template_type: s.editingTemplate.template_type,
+        template_subtype: s.editingTemplate.template_subtype || '',
+        sport: s.editingTemplate.sport,
         sport_category: categoryId,
-        formation_code: editingTemplate.formation_detail?.code || '',
-        style_variant: editingTemplate.style_variant || '',
-        ai_workflow_id: editingTemplate.ai_workflow_id,
-        is_active: editingTemplate.is_active,
-        credits_required: editingTemplate.credits_required ?? 1,
-        input_requirements: editingTemplate.input_requirements || {},
+        formation_code: s.editingTemplate.formation_detail?.code || '',
+        style_variant: s.editingTemplate.style_variant || '',
+        ai_workflow_id: s.editingTemplate.ai_workflow_id,
+        is_active: s.editingTemplate.is_active,
+        credits_required: s.editingTemplate.credits_required ?? 1,
+        input_requirements: s.editingTemplate.input_requirements || {},
       });
       setModalTab('basic');
     } else {
       setEditForm(INITIAL_EDIT_FORM);
       setModalTab('basic');
     }
-  }, [editingTemplate, sports]);
+  }, [s.editingTemplate, s.sports]);
 
   // Load templates, sports and formations
   useEffect(() => {
@@ -183,10 +210,10 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
   // ── Derived data ──────────────────────────────────────────────────────
 
   const sportCategories = useMemo(() => {
-    const categories = sports.filter(s => s.is_category);
-    const variants = sports.filter(s => s.is_variant);
-    return { categories, variants };
-  }, [sports]);
+    const cats = s.sports.filter(sp => sp.is_category);
+    const vars = s.sports.filter(sp => sp.is_variant);
+    return { categories: cats, variants: vars };
+  }, [s.sports]);
 
   const getVariantsForCategory = (categoryId: number | null) => {
     if (!categoryId) return [];
@@ -203,51 +230,51 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
   };
 
   const formationsForSelectedSport = useMemo(() => {
-    if (!editForm.sport) return formations;
-    return formations.filter(f => f.sport_id === editForm.sport);
-  }, [formations, editForm.sport]);
+    if (!s.editForm.sport) return s.formations;
+    return s.formations.filter(f => f.sport_id === s.editForm.sport);
+  }, [s.formations, s.editForm.sport]);
 
   const availableFormations = useMemo(() => {
     const formationMap = new Map<string, { code: string; name: string }>();
-    templates.forEach(t => {
+    s.templates.forEach(t => {
       if (t.formation_detail) {
         formationMap.set(t.formation_detail.code, t.formation_detail);
       }
     });
     return Array.from(formationMap.values());
-  }, [templates]);
+  }, [s.templates]);
 
   const availableStyles = useMemo(() => {
     const styles = new Set<string>();
-    templates.forEach(t => {
+    s.templates.forEach(t => {
       if (t.style_variant) styles.add(t.style_variant);
     });
     return Array.from(styles).sort();
-  }, [templates]);
+  }, [s.templates]);
 
   const availableSports = useMemo(() => {
     const sportMap = new Map<number, { id: number; name: string }>();
-    templates.forEach(t => {
+    s.templates.forEach(t => {
       if (t.sport_detail) sportMap.set(t.sport_detail.id, t.sport_detail);
     });
     return Array.from(sportMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [templates]);
+  }, [s.templates]);
 
   const availableTypes = useMemo(() => {
     const typeSet = new Set<string>();
-    templates.forEach(t => {
+    s.templates.forEach(t => {
       if (t.template_type) typeSet.add(t.template_type);
     });
     return Array.from(typeSet).sort();
-  }, [templates]);
+  }, [s.templates]);
 
   const availableSubtypes = useMemo(() => {
     const category = TEMPLATE_CATEGORIES.find(c => c.id === selectedCategory);
     const subtypeSet = new Set<string>();
-    templates.forEach(t => {
+    s.templates.forEach(t => {
       if (t.template_subtype) {
-        if (selectedType !== 'all') {
-          if (t.template_type === selectedType) subtypeSet.add(t.template_subtype);
+        if (s.selectedType !== 'all') {
+          if (t.template_type === s.selectedType) subtypeSet.add(t.template_subtype);
         } else if (category?.types) {
           if (category.types.includes(t.template_type)) subtypeSet.add(t.template_subtype);
         } else {
@@ -256,24 +283,24 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
       }
     });
     return Array.from(subtypeSet).sort();
-  }, [templates, selectedCategory, selectedType]);
+  }, [s.templates, selectedCategory, s.selectedType]);
 
   const filteredTemplates = useMemo(() => {
-    let result = templates;
+    let result = s.templates;
 
     const category = TEMPLATE_CATEGORIES.find(c => c.id === selectedCategory);
     if (category?.types) {
       result = result.filter(t => category.types!.includes(t.template_type));
     }
 
-    if (selectedType !== 'all') result = result.filter(t => t.template_type === selectedType);
-    if (selectedSport !== 'all') result = result.filter(t => t.sport_detail?.id === parseInt(selectedSport));
-    if (selectedSubtype !== 'all') result = result.filter(t => t.template_subtype === selectedSubtype);
-    if (selectedFormation !== 'all') result = result.filter(t => t.formation_detail?.code === selectedFormation);
-    if (selectedStyle !== 'all') result = result.filter(t => t.style_variant === selectedStyle);
+    if (s.selectedType !== 'all') result = result.filter(t => t.template_type === s.selectedType);
+    if (s.selectedSport !== 'all') result = result.filter(t => t.sport_detail?.id === parseInt(s.selectedSport));
+    if (s.selectedSubtype !== 'all') result = result.filter(t => t.template_subtype === s.selectedSubtype);
+    if (s.selectedFormation !== 'all') result = result.filter(t => t.formation_detail?.code === s.selectedFormation);
+    if (s.selectedStyle !== 'all') result = result.filter(t => t.style_variant === s.selectedStyle);
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (s.searchQuery) {
+      const query = s.searchQuery.toLowerCase();
       result = result.filter(t =>
         t.name.toLowerCase().includes(query) ||
         t.description?.toLowerCase().includes(query) ||
@@ -281,9 +308,9 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
       );
     }
 
-    if (!showInactive) result = result.filter(t => t.is_active);
+    if (!s.showInactive) result = result.filter(t => t.is_active);
     return result;
-  }, [templates, selectedCategory, selectedType, selectedSport, selectedSubtype, selectedFormation, selectedStyle, searchQuery, showInactive]);
+  }, [s.templates, selectedCategory, s.selectedType, s.selectedSport, s.selectedSubtype, s.selectedFormation, s.selectedStyle, s.searchQuery, s.showInactive]);
 
   const groupedBySubtype = useMemo(() => {
     const groups: Record<string, ContentTemplate[]> = {};
@@ -319,31 +346,31 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
   const handleSaveTemplate = async () => {
     setSaving(true);
     try {
-      const isEditing = !!editingTemplate;
+      const isEditing = !!s.editingTemplate;
       let formationId: number | null = null;
-      if (editForm.formation_code) {
+      if (s.editForm.formation_code) {
         const matchingFormation = formationsForSelectedSport.find(
-          f => f.code.toLowerCase() === editForm.formation_code.toLowerCase()
+          f => f.code.toLowerCase() === s.editForm.formation_code.toLowerCase()
         );
         formationId = matchingFormation?.id || null;
       }
 
       const body = {
-        name: editForm.name,
-        description: editForm.description || null,
-        template_type: editForm.template_type,
-        template_subtype: editForm.template_subtype || null,
-        sport: editForm.sport,
+        name: s.editForm.name,
+        description: s.editForm.description || null,
+        template_type: s.editForm.template_type,
+        template_subtype: s.editForm.template_subtype || null,
+        sport: s.editForm.sport,
         formation: formationId,
-        style_variant: editForm.style_variant || null,
-        ai_workflow_id: editForm.ai_workflow_id || null,
-        is_active: editForm.is_active,
-        credits_required: editForm.credits_required,
-        input_requirements: editForm.input_requirements,
+        style_variant: s.editForm.style_variant || null,
+        ai_workflow_id: s.editForm.ai_workflow_id || null,
+        is_active: s.editForm.is_active,
+        credits_required: s.editForm.credits_required,
+        input_requirements: s.editForm.input_requirements,
       };
 
       const saved = isEditing
-        ? await api.patch<ContentTemplate>(`/content-generation/templates/${editingTemplate.id}/`, body)
+        ? await api.patch<ContentTemplate>(`/content-generation/templates/${s.editingTemplate!.id}/`, body)
         : await api.post<ContentTemplate>('/content-generation/templates/', body);
 
       if (isEditing) {
@@ -355,7 +382,7 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
       setEditingTemplate(null);
     } catch (e) {
       logger.error('Failed to save template', e);
-      alert('Failed to save template');
+      pushToast({ message: 'Failed to save template', type: 'error' });
     } finally {
       setSaving(false);
     }
@@ -368,27 +395,27 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
 
   return {
     // Data
-    templates, filteredTemplates, groupedBySubtype,
-    sports, formations, formationsForSelectedSport,
-    sportCategories, loading, error,
+    templates: s.templates, filteredTemplates, groupedBySubtype,
+    sports: s.sports, formations: s.formations, formationsForSelectedSport,
+    sportCategories, loading: s.loading, error: s.error,
 
     // Filter state
-    selectedCategory, searchQuery, setSearchQuery,
-    showInactive, setShowInactive,
-    selectedFormation, setSelectedFormation,
-    selectedStyle, setSelectedStyle,
-    selectedSport, setSelectedSport,
-    selectedSubtype, setSelectedSubtype,
-    selectedType, setSelectedType,
+    selectedCategory, searchQuery: s.searchQuery, setSearchQuery,
+    showInactive: s.showInactive, setShowInactive,
+    selectedFormation: s.selectedFormation, setSelectedFormation,
+    selectedStyle: s.selectedStyle, setSelectedStyle,
+    selectedSport: s.selectedSport, setSelectedSport,
+    selectedSubtype: s.selectedSubtype, setSelectedSubtype,
+    selectedType: s.selectedType, setSelectedType,
 
     // Filter options
     availableFormations, availableStyles, availableSports, availableTypes, availableSubtypes,
 
     // Modal state
-    isCreateModalOpen, setIsCreateModalOpen,
-    editingTemplate, setEditingTemplate,
-    saving, modalTab, setModalTab,
-    editForm, setEditForm,
+    isCreateModalOpen: s.isCreateModalOpen, setIsCreateModalOpen,
+    editingTemplate: s.editingTemplate, setEditingTemplate,
+    saving: s.saving, modalTab: s.modalTab, setModalTab,
+    editForm: s.editForm, setEditForm,
 
     // Helpers
     getVariantsForCategory, getSubtypesForType,

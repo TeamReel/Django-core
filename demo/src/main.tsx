@@ -6,6 +6,7 @@ import { AuthProvider } from '@django-core/auth-ui';
 import type { AuthConfig } from '@django-core/auth-ui';
 import { ThemeProvider, LocalStorageAdapter } from '@django-core/theme-system';
 import { router } from './router';
+import { routes } from './routes';
 import '@django-core/design-system/tokens.css';
 import '@django-core/theme-system/dist/style.css';
 import './index.css';
@@ -15,19 +16,19 @@ import './styles/utility.css';
 const themeStorage = new LocalStorageAdapter('django_core_theme');
 
 const authConfig: AuthConfig = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '', // Use env var for prod, relative for dev proxy
+  apiBaseUrl: (import.meta.env.VITE_API_BASE_URL || '') + '/api/v1', // Centralised prefix — endpoints are relative to /api/v1
   endpoints: {
-    signIn: '/api/v1/auth/login/',
-    signUp: '/api/v1/auth/register/',
-    signOut: '/api/v1/auth/logout/',
-    requestPasswordReset: '/api/v1/auth/password-reset/',
-    confirmPasswordReset: '/api/v1/auth/password-reset-confirm/',
-    me: '/api/v1/auth/me/',
-    profile: '/api/v1/auth/profile/'
+    signIn: '/auth/login/',
+    signUp: '/auth/register/',
+    signOut: '/auth/logout/',
+    requestPasswordReset: '/auth/password-reset/',
+    confirmPasswordReset: '/auth/password-reset-confirm/',
+    me: '/auth/me/',
+    profile: '/auth/profile/'
   },
   routes: {
     login: '/login',
-    defaultAfterLogin: '/dashboard',
+    defaultAfterLogin: routes.dashboard(),
     afterLogout: '/login'
   }
 };

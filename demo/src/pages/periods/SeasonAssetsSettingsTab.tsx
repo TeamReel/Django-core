@@ -2,7 +2,7 @@ import React from 'react';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
 import { AssetsTab } from '../../components/AssetsTab';
-import { periodsApi } from '../../api';
+import { periodsApi } from '@/api';
 import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
 
 type PeriodWithMetadata = Period & { metadata?: Record<string, unknown> };

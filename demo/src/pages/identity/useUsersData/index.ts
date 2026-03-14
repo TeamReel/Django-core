@@ -4,17 +4,19 @@
  */
 import { useEffect, useCallback } from 'react';
 import { logger } from '@/utils/logger';
-import { api } from '../../../api';
+import { api } from '@/api';
 import { useUsersState } from './state';
 import { useUsersFetchers } from './fetchers';
 import { normalizeRole, mapMembershipRoleToDisplayRole } from './helpers';
-import { routes } from '../../../routes';
+import { routes } from '@/routes';
 import type { UseUsersDataReturn, User, UserListEntry, UserProjectRef } from './types';
 
 export type { UseUsersDataReturn, User, UserListEntry, UserProjectRef, OrganisationOption, ProjectOption } from './types';
 export { getCookie, normalizeRole, mapMembershipRoleToDisplayRole } from './helpers';
+import { useToast } from '@/components/ui/Toast';
 
 export function useUsersData(): UseUsersDataReturn {
+  const { pushToast } = useToast();
   const state = useUsersState();
 
   const { fetchUsers } = useUsersFetchers({
@@ -116,13 +118,13 @@ export function useUsersData(): UseUsersDataReturn {
       await api.patch(`/admin/users/${state.editingUser.id}/`, updatedData);
     } catch (e) {
       logger.error('Failed to save user changes', e);
-      alert('Failed to save user changes');
+      pushToast({ message: 'Failed to save user changes', type: 'error' });
       throw e;
     }
   };
 
   // ── Breadcrumbs ────────────────────────────────────────────────────
-  const breadcrumbs: Array<{ label: string; href?: string; onClick?: () => void; current?: boolean }> = [{ label: 'Dashboard', href: '/dashboard' }];
+  const breadcrumbs: Array<{ label: string; href?: string; onClick?: () => void; current?: boolean }> = [{ label: 'Dashboard', href: routes.dashboard() }];
   if (state.orgIdParam) {
     breadcrumbs.push({ label: 'Federations', onClick: () => state.navigate('/federations') });
     breadcrumbs.push({

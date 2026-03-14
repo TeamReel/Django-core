@@ -38,7 +38,7 @@ export const ContentBreakdownCard: React.FC = () => {
         };
         if (project) params.project = project.id;
 
-        const { results: items } = await api.list<any>('/generative/requests/', {
+        const { results: items } = await api.list<{ template?: { template_type?: string }; template_type?: string }>('/generative/requests/', {
           params,
           pageSize: 200,
         });

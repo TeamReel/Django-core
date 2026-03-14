@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { organisationsApi, ApiError } from '../../api';
+import { organisationsApi, ApiError } from '@/api';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import type { Organisation as SharedOrganisation } from '../../types';
 import styles from './AssignUserToOrgModal.module.css';
 
@@ -50,7 +51,7 @@ if (!selectedOrg?.slug) return;
       await organisationsApi.addMember(selectedOrg.slug, {
         email: user.email,
         role: role,
-      } as any);
+      });
 
       onSuccess();
       onClose();
@@ -60,7 +61,7 @@ if (!selectedOrg?.slug) return;
         const body = err.body as { email?: string[]; detail?: string } | undefined;
         setError(body?.email?.[0] || body?.detail || 'Failed to assign user to organisation');
       } else {
-        setError(err instanceof Error ? err.message : 'Failed to assign user');
+        setError(getErrorMessage(err));
       }
     } finally {
       setLoading(false);

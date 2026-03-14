@@ -1,13 +1,14 @@
 import React from 'react';
-import { Card, Button } from '../../../shims/design-system';
-import { Dashboard } from '../../../shims/page-templates';
+import { Card, Button } from '@/shims/design-system';
+import { Dashboard } from '@/shims/page-templates';
+import { routes } from '../../../routes';
 
 export function DashboardTabPanel() {
   return (
     <>
       <div className="bg-gray-50 p-4 border-b border-gray-200">
         <p className="text-sm text-gray-900 font-medium">Dashboard: Used for high-level overviews with metrics and activity.</p>
-        <p className="text-xs text-gray-500 mt-1">Used in: <a href="/dashboard" className="hover:underline">Dashboard</a></p>
+        <p className="text-xs text-gray-500 mt-1">Used in: <a href={routes.dashboard()} className="hover:underline">Dashboard</a></p>
       </div>
       <div className="h-full">
         <Dashboard>

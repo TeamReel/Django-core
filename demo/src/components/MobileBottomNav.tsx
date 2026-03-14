@@ -1,14 +1,14 @@
 /**
  * MobileBottomNav - Bottom tab bar for mobile navigation (4 + 1 pattern)
  *
- * Layout: [ Home ] [ Season ] [ + Create ] [ Gallery ] [ Profile ]
+ * Layout: [ Home ] [ My Team ] [ + Create ] [ Studio ] [ Profile ]
  *
  * The center + button is raised above the bar and opens the MatchWizard
  * as a modal bottom sheet. The other 4 tabs navigate to core destinations.
  * Active tab shows a filled pill background in the theme primary color.
  *
- * Uses the active context API to resolve season paths.
- * Match access: via Dashboard card + floating banner on matchday.
+ * My Team resolves to the user's active team/season via context API,
+ * falling back to /directory?tab=clubs when no team is selected.
  * Only visible on mobile (<640px).
  */
 import { memo, useState, useEffect, useCallback } from 'react';
@@ -18,6 +18,7 @@ import { getActiveContext, ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeC
 import { useAppSelection } from '../hooks/useAppSelection';
 import { useHapticFeedback } from '../hooks/useHapticFeedback';
 import { useCreateContext } from '../hooks/useCreateContext';
+import { preloadRoutes } from '../utils/preloadRoute';
 import { routes } from '../routes';
 import CreateWizard from './CreateWizard';
 import type { CreateFlowType } from './CreateWizard/CreateWizardContext';
@@ -51,6 +52,18 @@ const MobileBottomNav = memo(function MobileBottomNav() {
     return () => window.removeEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, handler);
   }, [fetchContext]);
 
+  // Preload chunks for the 4 fixed bottom tabs on idle
+  useEffect(() => {
+    const preload = () => preloadRoutes(['/dashboard', '/studio', '/profile', '/approvals']);
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(preload, { timeout: 5000 });
+      return () => window.cancelIdleCallback(id);
+    } else {
+      const timer = setTimeout(preload, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   // Listen for external open-quick-create events (e.g. SmartEmptyState, match cards)
   useEffect(() => {
     const handler = (e: Event) => {
@@ -72,27 +85,22 @@ const MobileBottomNav = memo(function MobileBottomNav() {
       ? routes.club({ orgId: orgSlug, clubId: clubSlugOrId })
       : routes.dashboard();
 
-  // Season tab: active season under the current team, or fallback to team page
+  // Season tab: active season under the current team, or fallback to directory
   const seasonPath = activeSeasonSlug && teamPath !== routes.dashboard()
     ? `${teamPath}/${encodeURIComponent(activeSeasonSlug)}`
-    : teamPath;
+    : teamPath !== routes.dashboard()
+      ? teamPath
+      : '/directory?tab=clubs';
 
-  // Dynamic label: "Team" when on the team page itself, "Season" when deeper
-  const isOnTeamPage = (() => {
-    const segs = location.pathname.split('/').filter(Boolean);
-    if (teamPath !== routes.dashboard() && location.pathname === teamPath) return true;
-    // Exactly 3 segments = org/club/team (no season)
-    if (segs.length === 3 && teamPath !== routes.dashboard()) return true;
-    return false;
-  })();
-  const hierarchyLabel = isOnTeamPage ? 'Team' : 'Season';
+  // Stable label — always "My Team" regardless of depth
+  const hierarchyLabel = 'My Team';
 
   // ── Tab definitions (excluding center + button) ─────────────────────
   const tabs = [
     { id: 'home', icon: Home, label: 'Home', path: routes.dashboard() },
     { id: 'season', icon: CalendarDays, label: hierarchyLabel, path: seasonPath },
     // center + button is rendered separately
-    { id: 'gallery', icon: Images, label: 'Gallery', path: routes.studio() },
+    { id: 'gallery', icon: Images, label: 'Studio', path: routes.studio() },
     { id: 'profile', icon: UserCircle, label: 'Profile', path: routes.profile() },
   ];
 
@@ -118,7 +126,7 @@ const MobileBottomNav = memo(function MobileBottomNav() {
     const currentPath = location.pathname;
 
     if (tab.id === 'home') {
-      return ['/', '/dashboard', '/recents', '/favorites', '/directory'].includes(currentPath);
+      return ['/', routes.dashboard(), '/recents', '/favorites'].includes(currentPath);
     }
 
     if (tab.id === 'season') {
@@ -126,7 +134,9 @@ const MobileBottomNav = memo(function MobileBottomNav() {
       if (teamPath !== routes.dashboard()) {
         return currentPath === teamPath || currentPath.startsWith(teamPath + '/');
       }
-      // Fallback for cold deeplinks: detect vanity hierarchy paths before useAppSelection resolves
+      // Fallback: directory page (when no team selected yet)
+      if (currentPath.startsWith('/directory')) return true;
+      // Cold deeplinks: detect vanity hierarchy paths before useAppSelection resolves
       return looksLikeHierarchyPath(currentPath);
     }
 

@@ -10,7 +10,7 @@ vi.mock('@/utils/periodPath', () => ({
 }));
 vi.mock('@/utils/logger', () => ({ logger: { error: vi.fn() } }));
 
-import { useResolvedOrgId } from '../../../pages/identity/org-context/useResolvedOrgId';
+import { useResolvedOrgId } from '@/pages/identity/org-context/useResolvedOrgId';
 
 describe('useResolvedOrgId', () => {
   beforeEach(() => vi.clearAllMocks());

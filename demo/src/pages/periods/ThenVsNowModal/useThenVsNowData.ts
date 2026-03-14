@@ -3,7 +3,7 @@
  */
 import { useState, useEffect } from 'react';
 import { logger } from '@/utils/logger';
-import { api } from '../../../api';
+import { api } from '@/api';
 import type {
   ThenVsNowModalProps,
   ModalStep,
@@ -39,7 +39,7 @@ export function useThenVsNowData({
   useEffect(() => {
     (async () => {
       try {
-        const data = await api.get<any>('/branding/assets/app-backgrounds/');
+        const data = await api.get<Record<string, unknown>>('/branding/assets/app-backgrounds/');
         const items = Array.isArray(data) ? data : (data?.data || data?.results || []);
         const bgs = items
           .filter((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => a.url)
@@ -78,7 +78,7 @@ export function useThenVsNowData({
         compositionStyle = 'overlay';
       }
 
-      const data = await api.post<any>('/video/jobs/then-vs-now-compilation/', {
+      const data = await api.post<{ id?: string; data?: { id?: string } }>('/video/jobs/then-vs-now-compilation/', {
         project_id: projectId,
         video_type: apiVideoType,
         ...(compositionStyle ? { composition_style: compositionStyle } : {}),

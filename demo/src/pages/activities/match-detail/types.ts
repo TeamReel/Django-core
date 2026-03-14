@@ -40,7 +40,7 @@ export type ActivityEvent = {
   team_project?: { id: string; name: string };
   member?: { id: string; user_name?: string };
   related_member?: { id: string; user_name?: string };
-  data?: any;
+  data?: Record<string, unknown>;
 };
 
 export type OrgMember = {
@@ -61,7 +61,7 @@ export type SeasonSquadParticipation = {
   period?: { id: string; name?: string };
   role?: string;
   status?: string;
-  data?: any;
+  data?: Record<string, unknown>;
 };
 
 export type ProjectMember = {

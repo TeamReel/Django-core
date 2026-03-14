@@ -7,6 +7,8 @@
 
 import React from 'react';
 import type { AssetGenerationModalProps, ModalStep } from './assetGenHelpers';
+import type { UseAssetGenerationReturn } from '../../hooks/useAssetGeneration';
+import type { AssetTemplate } from '../../constants/assetTemplates';
 import {
   VIDEO_MODELS,
   IMAGE_MODELS,
@@ -283,8 +285,8 @@ function ModalFooter({
 }: {
   modalStep: string;
   setModalStep: (s: string) => void;
-  generation: any;
-  selectedTemplate: any;
+  generation: UseAssetGenerationReturn;
+  selectedTemplate: AssetTemplate | null;
   selectedVariantIdx: number | null;
   saving: boolean;
   variantCount: number;

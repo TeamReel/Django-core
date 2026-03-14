@@ -1,0 +1,47 @@
+/* NotificationsSheetContent — compact notification list inside ProfileSheet */
+
+.notificationItem {
+  padding: var(--space-3);
+  background: var(--app-surface);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--notification-border-color, var(--app-primary));
+}
+
+.notificationItem[data-unread="true"] {
+  cursor: pointer;
+}
+
+.notificationItem:not([data-unread="true"]) {
+  opacity: 0.6;
+}
+
+.notificationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.notificationTitle {
+  font-size: var(--text-sm);
+}
+
+.notificationTitle[data-unread="true"] {
+  font-weight: var(--font-bold);
+}
+
+.unreadDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--app-primary);
+  margin-left: var(--space-2);
+  vertical-align: middle;
+}
+
+.emptyCard {
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--app-muted-text);
+}

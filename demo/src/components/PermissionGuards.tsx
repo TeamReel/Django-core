@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { SkeletonDashboard } from './Skeleton';
 
@@ -70,17 +70,18 @@ export function useUserRole() {
 export function AdminOnlyRoute({ children }: PermissionGuardProps) {
   const { user, isLoading } = useAuth();
   const { isSystemAdmin, isLandAdmin } = useUserRole();
+  const location = useLocation();
 
   if (isLoading) {
     return <SkeletonDashboard />;
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
   if (!isSystemAdmin && !isLandAdmin) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={`/403?from=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
   return <>{children}</>;
@@ -93,17 +94,18 @@ export function AdminOnlyRoute({ children }: PermissionGuardProps) {
 export function OrgAdminRoute({ children }: PermissionGuardProps) {
   const { user, isLoading } = useAuth();
   const { isSystemAdmin, isOrgAdmin } = useUserRole();
+  const location = useLocation();
 
   if (isLoading) {
     return <SkeletonDashboard />;
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
   if (!isSystemAdmin && !isOrgAdmin) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={`/403?from=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
   return <>{children}</>;
@@ -115,17 +117,18 @@ export function OrgAdminRoute({ children }: PermissionGuardProps) {
 export function SecurityRoute({ children }: PermissionGuardProps) {
   const { user, isLoading } = useAuth();
   const { isSystemAdmin, hasOrgRole } = useUserRole();
+  const location = useLocation();
 
   if (isLoading) {
     return <SkeletonDashboard />;
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
   if (!isSystemAdmin && !hasOrgRole) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={`/403?from=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
   return <>{children}</>;
@@ -137,13 +140,14 @@ export function SecurityRoute({ children }: PermissionGuardProps) {
  */
 export function ProtectedRoute({ children }: PermissionGuardProps) {
   const { user, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return <SkeletonDashboard />;
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
   return <>{children}</>;

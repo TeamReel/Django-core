@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { Card } from '@django-core/design-system';
-import { getJobTypeDisplay, type VideoJob } from '../../../hooks/useVideoJobs';
+import { getJobTypeDisplay, type VideoJob } from '@/hooks/useVideoJobs';
 import s from '../ProjectSeasonDetailPage.module.css';
 
 interface SeasonVideoJobsCardProps {

@@ -3,7 +3,7 @@
  * Composes state, handlers, derived values, and fetchers.
  */
 import { useEffect } from 'react';
-import { api } from '../../../../api/client';
+import { api } from '@/api/client';
 import type { User, ProjectOption, UsersListProps, OrganisationOption } from '../usersListTypes';
 import { AVAILABLE_ROLES } from '../usersListTypes';
 import { useUsersListFetchers } from '../useUsersListFetchers';
@@ -73,7 +73,7 @@ export function useUsersListData(props: UsersListProps) {
     setStatusFilter: state.setStatusFilter,
     setRoleFilter: state.setRoleFilter,
     setIsAddMemberOpen: state.setIsAddMemberOpen,
-    setSearchParams: state.setSearchParams as any,
+    setSearchParams: (params: URLSearchParams | Record<string, string>) => state.setSearchParams(params),
     setEditUser: state.setEditUser,
     setIsEditModalOpen: state.setIsEditModalOpen,
     setUsers,

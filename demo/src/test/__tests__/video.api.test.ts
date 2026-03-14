@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { installFetchMock, restoreFetch, mockApiResponse, mockApiList, mockApiError } from '../api-mock';
-import { videoApi } from '../../api';
+import { videoApi } from '@/api';
 import { buildVideoJob } from '../factories';
 
 beforeEach(() => installFetchMock());

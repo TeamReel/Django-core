@@ -1,14 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { Alert, Button } from '@django-core/design-system';
+import React, { useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
-import {
-  Check, Pencil, Eye, Trash2, MoreHorizontal,
-} from 'lucide-react';
-import { ShareButton } from '../../components/ShareButton';
-
-import { setActiveContext, getActiveContext } from '../../utils/activeContext';
-import { api } from '@/api';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { useUserRole } from '../../components/PermissionGuards';
 
@@ -16,9 +8,6 @@ import TeamCreditsTab from './detail/TeamCreditsTab';
 import MobileTabBar from '../../components/MobileTabBar';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
-import { AssetsTab } from '../../components/AssetsTab';
-import { KitsTab } from '../../components/KitsTab';
-
 import { useTeamDetailData } from './useTeamDetailData';
 import type { Project } from './teamDetailTypes';
 import { useTeamTabData } from './useTeamTabData';
@@ -26,6 +15,8 @@ import { TeamOverviewTab } from './TeamOverviewTab';
 import { TeamHierarchyTab } from './TeamHierarchyTab';
 import { TeamSelectieTab } from './TeamSelectieTab';
 import { TeamMediaTab } from './TeamMediaTab';
+import { TeamPageHeader } from './TeamPageHeader';
+import { IdentitySubtab } from './IdentitySubtab';
 import s from './TeamOrganisationDetailPage.module.css';
 import { routes } from '../../routes';
 
@@ -48,6 +39,7 @@ export default function TeamOrganisationDetailPage() {
     teamBreadcrumbOptions, handleTeamSwitch,
     backToClubHref, federationClubsHref,
     apiBaseUrl, isPlayer,
+    refetch,
   } = useTeamDetailData();
 
   // ── Stack navigation: back arrow → club ──
@@ -110,19 +102,6 @@ export default function TeamOrganisationDetailPage() {
   }, [currentUserId, tabData.fullMembers, isPlayer, isGlobalAdmin]);
 
   /* ── Overflow menu ── */
-  const [overflowOpen, setOverflowOpen] = useState(false);
-  const overflowRef = useRef<HTMLDivElement>(null);
-
-  /* ── Identity sub-tab (Assets | Kits) ── */
-  const [identitySubtab, setIdentitySubtab] = useState<'assets' | 'kits'>('assets');
-  useEffect(() => {
-    if (!overflowOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (overflowRef.current && !overflowRef.current.contains(e.target as Node)) setOverflowOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [overflowOpen]);
 
   if (loading) {
     return (
@@ -160,103 +139,21 @@ export default function TeamOrganisationDetailPage() {
     <>
       <div className={s.page}>
         {/* ── Header ── */}
-        <div className={s.headerRow}>
-          <div className={s.titleBlock}>
-            <Link to={backToClubHref} className={s.parentLink}>
-              {club?.name || 'Club'}
-            </Link>
-            <h1>{team.name}</h1>
-            <p>{team?.team_type === 'legends' ? 'Legends Team' : 'Team'}</p>
-          </div>
-
-          <div className={s.actions}>
-            <button
-              type="button"
-              className={`${s.activeBtn} ${isActive ? s.activeBtnOn : ''}`}
-              disabled={activatingContext || isActive}
-              onClick={async () => {
-                if (!team || isActive) return;
-                try {
-                  setActivatingContext(true);
-                  await setActiveContext('team', String(team.id));
-                  const context = await getActiveContext();
-                  setActiveContextState(context);
-                } finally {
-                  setActivatingContext(false);
-                }
-              }}
-              title="Stel dit team in als actieve context"
-            >
-              {isActive && <Check size={14} />}
-              {isActive ? 'Actief' : 'Activeren'}
-            </button>
-
-            {!isPlayer && (
-              <button
-                type="button"
-                className={s.iconBtn}
-                onClick={() => setIsProjectEditModalOpen(true)}
-                title="Bewerken"
-              >
-                <Pencil size={16} />
-              </button>
-            )}
-
-            {/* Share link */}
-            <ShareButton compact />
-
-            <div className={s.overflowWrap} ref={overflowRef}>
-              <button type="button" className={s.iconBtn} onClick={() => setOverflowOpen((v) => !v)} title="Meer">
-                <MoreHorizontal size={16} />
-              </button>
-              {overflowOpen && (
-                <div className={s.overflowMenu}>
-                  <button type="button" onClick={() => { setIsProjectDetailModalOpen(true); setOverflowOpen(false); }}>
-                    <Eye size={14} /> Bekijken
-                  </button>
-                  <button type="button" onClick={() => { navigate(backToClubHref); setOverflowOpen(false); }}>
-                    <Eye size={14} /> Terug naar club
-                  </button>
-                  {!isPlayer && (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const newType = team?.team_type === 'legends' ? 'regular' : 'legends';
-                        try {
-                          await api.patch(`/projects/${encodeURIComponent(String(team.id))}/`, { team_type: newType });
-                          setTeam((prev) => prev ? { ...prev, team_type: newType } : prev);
-                        } catch {
-                          alert('Kon team type niet opslaan');
-                        }
-                        setOverflowOpen(false);
-                      }}
-                    >
-                      {team?.team_type === 'legends' ? '⚽ Maak Regulier' : '⭐ Maak Legends'}
-                    </button>
-                  )}
-                  {!isPlayer && (
-                    <button
-                      type="button"
-                      className={s.overflowDanger}
-                      onClick={async () => {
-                        if (!window.confirm(`Weet je zeker dat je team ${team.name} wilt verwijderen?`)) return;
-                        try {
-                          await api.delete(`/projects/${encodeURIComponent(String(team.id))}/`);
-                          navigate(backToClubHref);
-                        } catch {
-                          alert('Kon team niet verwijderen');
-                        }
-                        setOverflowOpen(false);
-                      }}
-                    >
-                      <Trash2 size={14} /> Verwijderen
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <TeamPageHeader
+          team={team}
+          club={club}
+          org={org}
+          isActive={isActive}
+          activatingContext={activatingContext}
+          setActivatingContext={setActivatingContext}
+          activeContextState={activeContextState}
+          setActiveContextState={setActiveContextState}
+          isPlayer={isPlayer}
+          backToClubHref={backToClubHref}
+          setTeam={setTeam}
+          onEditClick={() => setIsProjectEditModalOpen(true)}
+          onDetailClick={() => setIsProjectDetailModalOpen(true)}
+        />
 
         {/* ── Tab Bar ── */}
         <MobileTabBar
@@ -361,51 +258,13 @@ export default function TeamOrganisationDetailPage() {
           )}
 
           {activeTabFromUrl === 'identity' && team && org && (
-            <div>
-              <div className={s.identityToggle}>
-                <button
-                  type="button"
-                  className={`${s.identityToggleBtn} ${identitySubtab === 'assets' ? s.identityToggleBtnActive : ''}`}
-                  onClick={() => setIdentitySubtab('assets')}
-                >
-                  Assets
-                </button>
-                <button
-                  type="button"
-                  className={`${s.identityToggleBtn} ${identitySubtab === 'kits' ? s.identityToggleBtnActive : ''}`}
-                  onClick={() => setIdentitySubtab('kits')}
-                >
-                  Kits
-                </button>
-              </div>
-              {identitySubtab === 'assets' && (
-                <AssetsTab
-                  level="team"
-                  organisationId={String(org.id)}
-                  projectId={String(team.id)}
-                  parentProjectId={club ? String(club.id) : undefined}
-                  entityName={team.name}
-                  sponsorMode={((team?.metadata as Record<string, unknown>)?.sponsor_mode as 'club' | 'custom') || 'club'}
-                  onSponsorModeChange={async (mode) => {
-                    if (!team) return;
-                    try {
-                      const updated = await api.patch<Project>(`/projects/${encodeURIComponent(String(team.id))}/`, { metadata: { ...(team?.metadata || {}), sponsor_mode: mode } });
-                      setTeam((prev) => ({ ...prev, ...updated }));
-                    } catch {
-                      // Silently ignore — matches original behaviour
-                    }
-                  }}
-                />
-              )}
-              {identitySubtab === 'kits' && (
-                <KitsTab
-                  projectSlug={team.slug || String(team.id)}
-                  projectName={team.name}
-                  brandProfileId={brandProfileId}
-                  orgId={String(org.id)}
-                />
-              )}
-            </div>
+            <IdentitySubtab
+              org={org}
+              team={team}
+              setTeam={setTeam}
+              brandProfileId={brandProfileId}
+              club={club}
+            />
           )}
         </div>
       </div>
@@ -419,7 +278,7 @@ export default function TeamOrganisationDetailPage() {
       <EntityEditModal
         isOpen={isProjectEditModalOpen}
         onClose={() => setIsProjectEditModalOpen(false)}
-        onSaved={() => window.location.reload()}
+        onSaved={() => refetch()}
         entityType="team"
         entityId={team?.slug || team?.id || ''}
         entityName={team?.name}

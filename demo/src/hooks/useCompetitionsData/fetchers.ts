@@ -4,7 +4,7 @@
  */
 
 import { fetchAllPages } from '../../utils/fetchAllPages';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { chunkArray, getTeamParentId } from '../../utils/directoryHelpers';
 import type { Period } from '../../utils/directoryHelpers';
 import type { PeriodWithMeta } from './types';
@@ -29,11 +29,11 @@ export async function fetchSeasons({
   refreshKey,
   getSelectedOrgIdForApi,
 }: FetchSeasonsParams): Promise<Period[]> {
-  const apiBaseUrl = getApiBaseUrl();
+  const apiBaseUrl = getApiV1BaseUrl();
 
   const fetchSeasonsWithParams = async (params: URLSearchParams) => {
-    const results = await fetchAllPages<any>(
-      `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+    const results = await fetchAllPages<Period>(
+      `${apiBaseUrl}/periods/?${params.toString()}`,
       { credentials: 'include' },
       { ttlMs: 120_000, bypass: refreshKey > 0 },
     );
@@ -159,7 +159,7 @@ export async function fetchCompetitions({
   refreshKey,
   getSelectedOrgIdForApi,
 }: FetchCompetitionsParams): Promise<Period[]> {
-  const apiBaseUrl = getApiBaseUrl();
+  const apiBaseUrl = getApiV1BaseUrl();
 
   const explicitTeamScope = selectedTeamId ? [String(selectedTeamId)] : null;
 
@@ -241,8 +241,8 @@ export async function fetchCompetitions({
           params.delete('project_id');
           params.delete('project_id__in');
           params.set('project_id__in', ids.join(','));
-          return await fetchAllPages<any>(
-            `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+          return await fetchAllPages<Period>(
+            `${apiBaseUrl}/periods/?${params.toString()}`,
             { credentials: 'include' },
             { ttlMs: 120_000, bypass: refreshKey > 0 },
           );
@@ -272,8 +272,8 @@ export async function fetchCompetitions({
         const fallback = await maybeFallbackUntyped(params, scopedTeamIds);
         return [...typed, ...fallback];
       }
-      return await fetchAllPages<any>(
-        `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+      return await fetchAllPages<Period>(
+        `${apiBaseUrl}/periods/?${params.toString()}`,
         { credentials: 'include' },
         { ttlMs: 120_000, bypass: refreshKey > 0 },
       );
@@ -292,8 +292,8 @@ export async function fetchCompetitions({
     return [...new Map(merged.map((c: Period) => [String(c.id), c])).values()];
   }
 
-  const results = await fetchAllPages<any>(
-    `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
+  const results = await fetchAllPages<Period>(
+    `${apiBaseUrl}/periods/?${params.toString()}`,
     { credentials: 'include' },
     { ttlMs: 120_000, bypass: refreshKey > 0 },
   );

@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, PullToRefresh } from '@django-core/design-system';
 import { PageHeader } from '../components/ui/PageHeader';
 import { useSetBackNavigation } from '../providers/BackNavigationProvider';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { useAsync } from '@/hooks/useAsync';
 import SwipeableCard from '../components/SwipeableCard';
 import styles from './NotificationsPage.module.css';
 
@@ -50,9 +51,13 @@ const safeSearchParams = (search: string) => {
 export default function NotificationsPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: notifications, setData: setNotifications, loading, error, reload } = useAsync(
+    async () => {
+      const { results } = await api.list<Notification>('/user-notifications/');
+      return results;
+    },
+    [],
+  );
   useSetBackNavigation({ label: 'Profile', path: '/profile' });
 
   useEffect(() => {
@@ -68,28 +73,11 @@ export default function NotificationsPage() {
     [notifications]
   );
 
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  const fetchNotifications = useCallback(async () => {
-    try {
-      const { results } = await api.list<Notification>('/user-notifications/');
-      setNotifications(results);
-      setError(null);
-    } catch (err) {
-      logger.error('Error fetching notifications', err);
-      setError(err instanceof Error ? err.message : 'Failed to load notifications');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   const markAsRead = async (notificationId: string) => {
     // Optimistic update: mark as read in local state immediately
-    const previousNotifications = [...notifications];
+    const previousNotifications = [...(notifications || [])];
     setNotifications(prev =>
-      prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+      (prev || []).map(n => n.id === notificationId ? { ...n, is_read: true } : n)
     );
     window.dispatchEvent(new Event('notificationChanged'));
 
@@ -100,7 +88,7 @@ export default function NotificationsPage() {
 
       // Reconcile with server response
       setNotifications(prev =>
-        prev.map(n => n.id === notificationId ? updatedNotification : n)
+        (prev || []).map(n => n.id === notificationId ? updatedNotification : n)
       );
     } catch (err) {
       logger.error('Error marking notification as read', err);
@@ -112,8 +100,8 @@ export default function NotificationsPage() {
 
   const markAllAsRead = async () => {
     // Optimistic: mark all as read immediately
-    const previousNotifications = [...notifications];
-    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    const previousNotifications = [...(notifications || [])];
+    setNotifications(prev => (prev || []).map(n => ({ ...n, is_read: true })));
     window.dispatchEvent(new Event('notificationChanged'));
 
     try {
@@ -122,7 +110,7 @@ export default function NotificationsPage() {
       await api.post('/user-notifications/mark-all-read/');
 
       // Reconcile with server
-      await fetchNotifications();
+      reload();
     } catch (err) {
       logger.error('Error marking all as read', err);
       // Rollback on failure
@@ -136,7 +124,7 @@ export default function NotificationsPage() {
       await api.post('/user-notifications/mark-all-unread/');
 
       // Refetch notifications
-      await fetchNotifications();
+      reload();
 
       // Trigger event for badge update
       window.dispatchEvent(new Event('notificationChanged'));
@@ -183,7 +171,7 @@ export default function NotificationsPage() {
         />
 
         <PullToRefresh
-          onRefresh={fetchNotifications}
+          onRefresh={reload}
           pullText="Trek om te vernieuwen"
           releaseText="Laat los om te vernieuwen"
           refreshingText="Vernieuwen..."

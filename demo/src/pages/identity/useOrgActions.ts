@@ -3,8 +3,9 @@ import type { Organisation, Project, User } from '../../types';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { getApiV1BaseUrl } from './orgDataHelpers';
-import { api } from '../../api';
+import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,8 @@ export function useOrgActions(params: UseOrgActionsParams) {
     inviteEmail, inviteRole, editName, editType, editCountry,
   } = params;
 
+  const { pushToast } = useToast();
+
   const handleActivateContext = async () => {
     try {
       setActivatingContext(true);
@@ -74,7 +77,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
         p.set('include_project_membership_details', 'true');
         p.set('page_size', '250');
         const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${p.toString()}`;
-        const allMembers = await fetchAllPages<any>(
+        const allMembers = await fetchAllPages<User>(
           membersUrl,
           { headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-Organisation-ID': String(org?.id || currentOrgId || '') }, credentials: 'include' },
           { bypass: true },
@@ -82,10 +85,10 @@ export function useOrgActions(params: UseOrgActionsParams) {
         setMembers(allMembers);
       } catch { /* ignore */ }
       setInviteEmail('');
-      alert('Member added successfully');
+      pushToast({ message: 'Member added successfully', type: 'success' });
     } catch (err) {
       logger.error('Invite error', err);
-      alert(err instanceof Error ? err.message : 'Failed to invite member');
+      pushToast({ message: err instanceof Error ? err.message : 'Failed to invite member', type: 'error' });
     } finally {
       setInviteLoading(false);
     }
@@ -99,7 +102,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
       navigate('/federations');
     } catch (err) {
       logger.error('Delete error', err);
-      alert('Failed to delete organisation');
+      pushToast({ message: 'Failed to delete organisation', type: 'error' });
     } finally {
       setDeleteLoading(false);
     }
@@ -120,7 +123,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
   };
 
   const handleSaveEdit = async () => {
-    if (!org || !editName.trim()) { alert('Organisation name is required'); return; }
+    if (!org || !editName.trim()) { pushToast({ message: 'Organisation name is required', type: 'error' }); return; }
     try {
       setSaving(true);
       const updatedOrg = await api.patch<Organisation>(`/organisations/${currentOrgSlug}/`, { name: editName.trim(), metadata: { ...org.metadata, type: editType.trim(), country: editCountry.trim() } });
@@ -128,7 +131,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
       setIsEditMode(false);
     } catch (err) {
       logger.error('Update error', err);
-      alert('Failed to update organisation');
+      pushToast({ message: 'Failed to update organisation', type: 'error' });
     } finally {
       setSaving(false);
     }

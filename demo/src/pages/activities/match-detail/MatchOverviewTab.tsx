@@ -2,7 +2,7 @@ import React from 'react';
 import { Badge } from '@django-core/design-system';
 import { CONTENT_TYPES } from '../../identity/ContentGenerationModal';
 import styles from './MatchOverviewTab.module.css';
-import type { MatchMediaItem } from '../../../components/MediaAssetCard';
+import type { MatchMediaItem } from '@/components/MediaAssetCard';
 import type {
   Organisation,
   MatchDetail,

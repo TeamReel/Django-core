@@ -65,7 +65,7 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
 
   const breadcrumbs = useMemo(
     () => [
-      { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+      { label: 'Dashboard', onClick: () => navigate(routes.dashboard()) },
       { label: org?.name || 'Federation', onClick: () => navigate(routes.orgDetailLegacy({ orgId: orgSlugOrId })) },
       ...(isTeamRoute
         ? [
@@ -109,9 +109,9 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
         setError(null);
 
         const [orgJson, projectJson, competitionJson, participationRes, clubJson] = await Promise.all([
-          api.get<any>(`/organisations/${orgSlugOrId}/`),
-          api.get<any>(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`),
-          api.get<any>(`/periods/${effectiveCompetitionId}/`),
+          api.get<Organisation>(`/organisations/${orgSlugOrId}/`),
+          api.get<Project>(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`),
+          api.get<Period>(`/periods/${effectiveCompetitionId}/`),
           api.list<Participation>('/participations/', {
             params: { period_id: effectiveCompetitionId },
             pageSize: 250,

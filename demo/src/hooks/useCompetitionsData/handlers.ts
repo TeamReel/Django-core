@@ -8,6 +8,7 @@ import { api } from '@/api';
 import { invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import type { Period } from '../../utils/directoryHelpers';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 
 interface UseCompetitionHandlersParams {
   selectedOrgId: string;
@@ -24,6 +25,8 @@ export function useCompetitionHandlers({
   triggerRefresh,
   setCompetitions,
 }: UseCompetitionHandlersParams) {
+  const { pushToast } = useToast();
+
   const savePeriodEdits = useCallback(async (periodId: string, payload: Record<string, unknown>) => {
     await api.patch(`/periods/${periodId}/`, payload);
   }, []);
@@ -68,7 +71,7 @@ export function useCompetitionHandlers({
       setCompetitions((prev) => prev.filter((c) => c.id !== compId));
     } catch (err) {
       logger.error('Failed to delete competition', err);
-      alert('Failed to delete competition');
+      pushToast({ message: 'Failed to delete competition', type: 'error' });
     }
   }, [setCompetitions]);
 

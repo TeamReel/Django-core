@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SmartEmptyState from '../../components/SmartEmptyState';
-import { organisationsApi } from '../../api';
+import { organisationsApi } from '@/api';
+import { useAsync } from '@/hooks/useAsync';
 import type { Organisation } from '../../types';
 import styles from './OrganisationListPage.module.css';
 
@@ -11,21 +11,10 @@ type OrganisationCard = Organisation & {
 };
 
 export default function OrganisationListPage() {
-  const [organisations, setOrganisations] = useState<OrganisationCard[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    organisationsApi.list()
-      .then(({ results }) => {
-        setOrganisations(results as OrganisationCard[]);
-        setIsLoading(false);
-      })
-      .catch(err => {
-        setError(err instanceof Error ? err.message : 'Failed to fetch organisations');
-        setIsLoading(false);
-      });
-  }, []);
+  const { data: organisations, loading: isLoading, error } = useAsync(
+    () => organisationsApi.list().then(({ results }) => results as OrganisationCard[]),
+    [],
+  );
 
   // Context will be set automatically by OrganisationDetailPage after navigation
 
@@ -43,7 +32,7 @@ export default function OrganisationListPage() {
           </div>
         )}
 
-        {!isLoading && !error && organisations.length === 0 && (
+        {!isLoading && !error && (!organisations || organisations.length === 0) && (
           <SmartEmptyState
             type="generic"
             title="Geen organisaties gevonden"
@@ -53,7 +42,7 @@ export default function OrganisationListPage() {
         )}
 
         <div className={`grid gap-20 ${styles.grid}`}>
-          {organisations.map(org => (
+          {(organisations || []).map(org => (
             <div
               key={org.id}
               className={`border rounded-8 p-20 bg-surface ${styles.card}`}

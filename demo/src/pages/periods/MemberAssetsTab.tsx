@@ -3,6 +3,7 @@ import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { isLineupReady, isProcessing } from '../../constants/assetProcessingSpecs';
 import { AssetsTab } from '../../components/AssetsTab';
 import type { MemberTabCommonProps } from './memberDetailUtils';
+import { clickableProps } from '@/utils/a11y';
 import {
   getUserDisplayName,
   getVariantDisplayUrl,
@@ -96,6 +97,7 @@ export function MemberAssetsTab({
                 <div className={`${s.variantCard} ${m.variantCardBorder}`} data-border={fbLineupReady ? 'ready' : fbUrl ? 'has-url' : 'empty'}>
                   <div
                     onClick={() => { const url = resolveDisplayUrl(fbUrl); if (url) window.open(url, '_blank'); }}
+                    {...clickableProps(() => { const url = resolveDisplayUrl(fbUrl); if (url) window.open(url, '_blank'); })}
                     className={`${s.variantPreview34} ${m.previewBgContain}`}
                     data-has-url={String(!!fbUrl)}
                     style={fbUrl ? { '--preview-url': `url(${resolveDisplayUrl(fbUrl)})` } as React.CSSProperties : undefined}>
@@ -147,6 +149,7 @@ export function MemberAssetsTab({
                 <div className={`${s.variantCard} ${m.variantCardBorder}`} data-border={hbLineupReady ? 'ready' : hbUrl ? 'has-url' : 'empty'}>
                   <div
                     onClick={() => { const url = resolveDisplayUrl(hbUrl); if (url) window.open(url, '_blank'); }}
+                    {...clickableProps(() => { const url = resolveDisplayUrl(hbUrl); if (url) window.open(url, '_blank'); })}
                     className={`${s.variantPreview34} ${m.previewBgContain}`}
                     data-has-url={String(!!hbUrl)}
                     style={hbUrl ? { '--preview-url': `url(${resolveDisplayUrl(hbUrl)})` } as React.CSSProperties : undefined}>
@@ -183,6 +186,7 @@ export function MemberAssetsTab({
                 <div className={`${s.variantCard} ${m.variantCardBorder}`} data-border={cuLineupReady ? 'ready' : cuUrl ? 'has-url' : 'empty'}>
                   <div
                     onClick={() => { const url = resolveDisplayUrl(cuUrl); if (url) window.open(url, '_blank'); }}
+                    {...clickableProps(() => { const url = resolveDisplayUrl(cuUrl); if (url) window.open(url, '_blank'); })}
                     className={`${s.variantPreview34} ${m.previewBgContain} ${m.closeupPreview}`}
                     data-has-url={String(!!cuUrl)}
                     style={cuUrl ? { '--preview-url': `url(${resolveDisplayUrl(cuUrl)})` } as React.CSSProperties : undefined}>

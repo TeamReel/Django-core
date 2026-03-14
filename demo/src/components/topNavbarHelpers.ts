@@ -63,8 +63,8 @@ export function isPlatformRoute(pathname: string): boolean {
 export function checkIsNonAppRoute(pathname: string): boolean {
   return (
     pathname === '/' ||
-    pathname === '/dashboard' ||
-    pathname.startsWith('/dashboard/') ||
+    pathname === routes.dashboard() ||
+    pathname.startsWith(`${routes.dashboard()}/`) ||
     pathname === '/directory' ||
     pathname.startsWith('/directory/') ||
     pathname === '/apps' ||

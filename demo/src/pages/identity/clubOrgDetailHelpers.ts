@@ -12,6 +12,10 @@ export type Project = {
   slug?: string;
   organisation_id?: string;
   organisation?: { id?: string; slug?: string };
+  parent_id?: string | number | null;
+  parent_project_id?: string | number | null;
+  parent_project?: { id?: string | number } | string | number | null;
+  parent?: { id?: string | number } | string | number | null;
   description?: string;
   is_active?: boolean;
   metadata?: Record<string, unknown>;
@@ -26,6 +30,7 @@ export type Period = {
   parent_period_id?: string | number | null;
   parent_period?: { id?: string | number } | null;
   type?: string;
+  activities_count?: number;
   data?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
 };

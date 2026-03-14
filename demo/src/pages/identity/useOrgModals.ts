@@ -1,50 +1,89 @@
 /**
  * Custom hook bundling all modal state for the Organisation Detail page.
  * Extracted from useOrgData.ts during Phase 21 refactor.
+ * Consolidated to useReducer during S3 refactor.
  */
 
-import { useState } from 'react';
-import type { Project } from '../../types';
+import { useReducer, useMemo } from 'react';
+import { formReducer, makeSetter } from '@/utils/formReducer';
+import type { Project, User } from '../../types';
 import type { OrgModalState } from './orgDataTypes';
 
+interface OrgModalsInternal {
+  selectedClub: Project | null;
+  isClubModalOpen: boolean;
+  detailProject: Project | null;
+  isDetailModalOpen: boolean;
+  selectedEditProject: Project | null;
+  isEditModalOpen: boolean;
+  isCreateClubModalOpen: boolean;
+  isCreateTeamModalOpen: boolean;
+  isAddMemberModalOpen: boolean;
+  isCreateSeasonModalOpen: boolean;
+  isCreateCompetitionModalOpen: boolean;
+  isCreateMatchModalOpen: boolean;
+  isEditMemberRoleModalOpen: boolean;
+  editingMember: Record<string, unknown> | null;
+  isOrgDetailModalOpen: boolean;
+  isOrgEditModalOpen: boolean;
+  detailUser: User | null;
+  isUserDetailModalOpen: boolean;
+}
+
+const initial: OrgModalsInternal = {
+  selectedClub: null, isClubModalOpen: false,
+  detailProject: null, isDetailModalOpen: false,
+  selectedEditProject: null, isEditModalOpen: false,
+  isCreateClubModalOpen: false, isCreateTeamModalOpen: false,
+  isAddMemberModalOpen: false, isCreateSeasonModalOpen: false,
+  isCreateCompetitionModalOpen: false, isCreateMatchModalOpen: false,
+  isEditMemberRoleModalOpen: false, editingMember: null,
+  isOrgDetailModalOpen: false, isOrgEditModalOpen: false,
+  detailUser: null, isUserDetailModalOpen: false,
+};
+
 export function useOrgModals(): OrgModalState {
-  const [selectedClub, setSelectedClub] = useState<Project | null>(null);
-  const [isClubModalOpen, setIsClubModalOpen] = useState(false);
-  const [detailProject, setDetailProject] = useState<Project | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedEditProject, setSelectedEditProject] = useState<Project | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isCreateClubModalOpen, setIsCreateClubModalOpen] = useState(false);
-  const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
-  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
-  const [isCreateSeasonModalOpen, setIsCreateSeasonModalOpen] = useState(false);
-  const [isCreateCompetitionModalOpen, setIsCreateCompetitionModalOpen] = useState(false);
-  const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
-  const [isEditMemberRoleModalOpen, setIsEditMemberRoleModalOpen] = useState(false);
-  const [editingMember, setEditingMember] = useState<any | null>(null);
-  const [isOrgDetailModalOpen, setIsOrgDetailModalOpen] = useState(false);
-  const [isOrgEditModalOpen, setIsOrgEditModalOpen] = useState(false);
-  const [detailUser, setDetailUser] = useState<any | null>(null);
-  const [isUserDetailModalOpen, setIsUserDetailModalOpen] = useState(false);
+  const [s, dispatch] = useReducer(formReducer<OrgModalsInternal>, initial);
+
+  const setters = useMemo(() => ({
+    setSelectedClub: makeSetter<OrgModalsInternal, 'selectedClub'>(dispatch, 'selectedClub'),
+    setIsClubModalOpen: makeSetter<OrgModalsInternal, 'isClubModalOpen'>(dispatch, 'isClubModalOpen'),
+    setDetailProject: makeSetter<OrgModalsInternal, 'detailProject'>(dispatch, 'detailProject'),
+    setIsDetailModalOpen: makeSetter<OrgModalsInternal, 'isDetailModalOpen'>(dispatch, 'isDetailModalOpen'),
+    setSelectedEditProject: makeSetter<OrgModalsInternal, 'selectedEditProject'>(dispatch, 'selectedEditProject'),
+    setIsEditModalOpen: makeSetter<OrgModalsInternal, 'isEditModalOpen'>(dispatch, 'isEditModalOpen'),
+    setIsCreateClubModalOpen: makeSetter<OrgModalsInternal, 'isCreateClubModalOpen'>(dispatch, 'isCreateClubModalOpen'),
+    setIsCreateTeamModalOpen: makeSetter<OrgModalsInternal, 'isCreateTeamModalOpen'>(dispatch, 'isCreateTeamModalOpen'),
+    setIsAddMemberModalOpen: makeSetter<OrgModalsInternal, 'isAddMemberModalOpen'>(dispatch, 'isAddMemberModalOpen'),
+    setIsCreateSeasonModalOpen: makeSetter<OrgModalsInternal, 'isCreateSeasonModalOpen'>(dispatch, 'isCreateSeasonModalOpen'),
+    setIsCreateCompetitionModalOpen: makeSetter<OrgModalsInternal, 'isCreateCompetitionModalOpen'>(dispatch, 'isCreateCompetitionModalOpen'),
+    setIsCreateMatchModalOpen: makeSetter<OrgModalsInternal, 'isCreateMatchModalOpen'>(dispatch, 'isCreateMatchModalOpen'),
+    setIsEditMemberRoleModalOpen: makeSetter<OrgModalsInternal, 'isEditMemberRoleModalOpen'>(dispatch, 'isEditMemberRoleModalOpen'),
+    setEditingMember: makeSetter<OrgModalsInternal, 'editingMember'>(dispatch, 'editingMember'),
+    setIsOrgDetailModalOpen: makeSetter<OrgModalsInternal, 'isOrgDetailModalOpen'>(dispatch, 'isOrgDetailModalOpen'),
+    setIsOrgEditModalOpen: makeSetter<OrgModalsInternal, 'isOrgEditModalOpen'>(dispatch, 'isOrgEditModalOpen'),
+    setDetailUser: makeSetter<OrgModalsInternal, 'detailUser'>(dispatch, 'detailUser'),
+    setIsUserDetailModalOpen: makeSetter<OrgModalsInternal, 'isUserDetailModalOpen'>(dispatch, 'isUserDetailModalOpen'),
+  }), [dispatch]);
 
   return {
-    selectedClub, setSelectedClub,
-    isClubModalOpen, setIsClubModalOpen,
-    detailProject, setDetailProject,
-    isDetailModalOpen, setIsDetailModalOpen,
-    selectedEditProject, setSelectedEditProject,
-    isEditModalOpen, setIsEditModalOpen,
-    isCreateClubModalOpen, setIsCreateClubModalOpen,
-    isCreateTeamModalOpen, setIsCreateTeamModalOpen,
-    isAddMemberModalOpen, setIsAddMemberModalOpen,
-    isCreateSeasonModalOpen, setIsCreateSeasonModalOpen,
-    isCreateCompetitionModalOpen, setIsCreateCompetitionModalOpen,
-    isCreateMatchModalOpen, setIsCreateMatchModalOpen,
-    isEditMemberRoleModalOpen, setIsEditMemberRoleModalOpen,
-    editingMember, setEditingMember,
-    isOrgDetailModalOpen, setIsOrgDetailModalOpen,
-    isOrgEditModalOpen, setIsOrgEditModalOpen,
-    detailUser, setDetailUser,
-    isUserDetailModalOpen, setIsUserDetailModalOpen,
+    selectedClub: s.selectedClub, setSelectedClub: setters.setSelectedClub,
+    isClubModalOpen: s.isClubModalOpen, setIsClubModalOpen: setters.setIsClubModalOpen,
+    detailProject: s.detailProject, setDetailProject: setters.setDetailProject,
+    isDetailModalOpen: s.isDetailModalOpen, setIsDetailModalOpen: setters.setIsDetailModalOpen,
+    selectedEditProject: s.selectedEditProject, setSelectedEditProject: setters.setSelectedEditProject,
+    isEditModalOpen: s.isEditModalOpen, setIsEditModalOpen: setters.setIsEditModalOpen,
+    isCreateClubModalOpen: s.isCreateClubModalOpen, setIsCreateClubModalOpen: setters.setIsCreateClubModalOpen,
+    isCreateTeamModalOpen: s.isCreateTeamModalOpen, setIsCreateTeamModalOpen: setters.setIsCreateTeamModalOpen,
+    isAddMemberModalOpen: s.isAddMemberModalOpen, setIsAddMemberModalOpen: setters.setIsAddMemberModalOpen,
+    isCreateSeasonModalOpen: s.isCreateSeasonModalOpen, setIsCreateSeasonModalOpen: setters.setIsCreateSeasonModalOpen,
+    isCreateCompetitionModalOpen: s.isCreateCompetitionModalOpen, setIsCreateCompetitionModalOpen: setters.setIsCreateCompetitionModalOpen,
+    isCreateMatchModalOpen: s.isCreateMatchModalOpen, setIsCreateMatchModalOpen: setters.setIsCreateMatchModalOpen,
+    isEditMemberRoleModalOpen: s.isEditMemberRoleModalOpen, setIsEditMemberRoleModalOpen: setters.setIsEditMemberRoleModalOpen,
+    editingMember: s.editingMember, setEditingMember: setters.setEditingMember,
+    isOrgDetailModalOpen: s.isOrgDetailModalOpen, setIsOrgDetailModalOpen: setters.setIsOrgDetailModalOpen,
+    isOrgEditModalOpen: s.isOrgEditModalOpen, setIsOrgEditModalOpen: setters.setIsOrgEditModalOpen,
+    detailUser: s.detailUser, setDetailUser: setters.setDetailUser,
+    isUserDetailModalOpen: s.isUserDetailModalOpen, setIsUserDetailModalOpen: setters.setIsUserDetailModalOpen,
   };
 }

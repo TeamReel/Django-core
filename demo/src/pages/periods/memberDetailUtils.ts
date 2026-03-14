@@ -323,7 +323,7 @@ export async function pollProcessingResult(
     if (abortSignal?.aborted) return;
 
     try {
-      const mData = await api.get<any>(
+      const mData = await api.get<MembershipRecord>(
         `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
       );
       const tr = mData?.metadata?.teamreel_assets || mData?.metadata?.teamreelAssets || {};
@@ -358,7 +358,7 @@ export async function pollProcessingResult(
         force: true,
       });
       try {
-        const mData = await api.get<any>(
+        const mData = await api.get<MembershipRecord>(
           `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
         );
         setMembershipFn(mData);

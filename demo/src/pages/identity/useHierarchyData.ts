@@ -55,7 +55,7 @@ export function useHierarchyData({
         // 1) Seasons for this team (typed query first; fallback to untyped + competition parent seasons)
         const seasonProjectIds = [teamIdForDirectoryLists, clubIdForDirectoryLists].filter(Boolean);
 
-        const typedList: Period[] = await api.listAll<any>(`/periods/`, {
+        const typedList: Period[] = await api.listAll<Period>(`/periods/`, {
           params: {
             ...(seasonProjectIds.length === 1 ? { project_id: seasonProjectIds[0] } : {}),
             ...(seasonProjectIds.length > 1 ? { project_id__in: seasonProjectIds.join(',') } : {}),
@@ -64,7 +64,7 @@ export function useHierarchyData({
           pageSize: 2000, maxItems: 5000,
         });
 
-        const untypedList: Period[] = await api.listAll<any>(`/periods/`, {
+        const untypedList: Period[] = await api.listAll<Period>(`/periods/`, {
           params: {
             ...(seasonProjectIds.length === 1 ? { project_id: seasonProjectIds[0] } : {}),
             ...(seasonProjectIds.length > 1 ? { project_id__in: seasonProjectIds.join(',') } : {}),
@@ -73,7 +73,7 @@ export function useHierarchyData({
         });
 
         // Pull season parents from competitions as a last-resort source of truth.
-        const competitionsList: Period[] = await api.listAll<any>(`/periods/`, {
+        const competitionsList: Period[] = await api.listAll<Period>(`/periods/`, {
           params: {
             project_id: teamIdForDirectoryLists,
             type: 'competition',
@@ -95,7 +95,7 @@ export function useHierarchyData({
         setHierarchySeasons(seasons);
 
         // 2) Competitions for this team (fetch all periods and group by season parent id)
-        const periodsList: Period[] = await api.listAll<any>(`/periods/`, {
+        const periodsList: Period[] = await api.listAll<Period>(`/periods/`, {
           params: { project_id: teamIdForDirectoryLists },
           pageSize: 1000, maxItems: 5000,
         });

@@ -1,13 +1,17 @@
-import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useMemo, useReducer, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate, useSearchParams, type NavigateFunction } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
-import { useSports } from '../../../hooks/useSports';
+import { useSports } from '@/hooks/useSports';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
-import { canDeleteProject, canEditProject } from '../../../utils/permissions';
-import { api } from '../../../api/client';
-import { organisationsApi, projectsApi } from '../../../api';
+import { invalidateFetchAllPagesCache } from '@/utils/fetchAllPages';
+import { canDeleteProject, canEditProject } from '@/utils/permissions';
+import { api } from '@/api/client';
+import { organisationsApi, projectsApi } from '@/api';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
+import { formReducer, makeSetter } from '@/utils/formReducer';
+import type { Organisation } from '@/types/api/organisation';
+import type { Project } from '@/types/api/project';
 import type { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 
 const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
@@ -69,6 +73,7 @@ export interface UseTeamsListDataReturn {
 }
 
 export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsListHookProps): UseTeamsListDataReturn {
+  const { pushToast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -77,33 +82,59 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
   const userRole = String(user?.role || '').toLowerCase();
   const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  interface TeamsListState {
+    isLoading: boolean;
+    error: string | null;
+    organisations: OrganisationOption[];
+    clubs: ProjectOption[];
+    teams: ProjectOption[];
+    detailProject: ProjectOption | null;
+    isDetailModalOpen: boolean;
+    editProject: ProjectOption | null;
+    isEditModalOpen: boolean;
+    refreshKey: number;
+    isCreateModalOpen: boolean;
+    selectedOrgId: string;
+    selectedClubId: string;
+    selectedTeamId: string;
+    statusFilter: string;
+    sportFilter: string;
+    lockedOrgSlug: string;
+  }
 
-  const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
-  const [clubs, setClubs] = useState<ProjectOption[]>([]);
-  const [teams, setTeams] = useState<ProjectOption[]>([]);
+  const [s, dispatch] = useReducer(formReducer<TeamsListState>, {
+    isLoading: true, error: null,
+    organisations: [], clubs: [], teams: [],
+    detailProject: null, isDetailModalOpen: false,
+    editProject: null, isEditModalOpen: false, refreshKey: 0,
+    isCreateModalOpen: false,
+    selectedOrgId: preselectedOrgId || '', selectedClubId: preselectedClubId || '',
+    selectedTeamId: '', statusFilter: 'all', sportFilter: 'all',
+    lockedOrgSlug: '',
+  });
 
-  const [detailProject, setDetailProject] = useState<ProjectOption | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-
-  const [editProject, setEditProject] = useState<ProjectOption | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const setIsLoading = useMemo(() => makeSetter<TeamsListState, 'isLoading'>(dispatch, 'isLoading'), [dispatch]);
+  const setError = useMemo(() => makeSetter<TeamsListState, 'error'>(dispatch, 'error'), [dispatch]);
+  const setOrganisations = useMemo(() => makeSetter<TeamsListState, 'organisations'>(dispatch, 'organisations'), [dispatch]);
+  const setClubs = useMemo(() => makeSetter<TeamsListState, 'clubs'>(dispatch, 'clubs'), [dispatch]);
+  const setTeams = useMemo(() => makeSetter<TeamsListState, 'teams'>(dispatch, 'teams'), [dispatch]);
+  const setDetailProject = useMemo(() => makeSetter<TeamsListState, 'detailProject'>(dispatch, 'detailProject'), [dispatch]);
+  const setIsDetailModalOpen = useMemo(() => makeSetter<TeamsListState, 'isDetailModalOpen'>(dispatch, 'isDetailModalOpen'), [dispatch]);
+  const setEditProject = useMemo(() => makeSetter<TeamsListState, 'editProject'>(dispatch, 'editProject'), [dispatch]);
+  const setIsEditModalOpen = useMemo(() => makeSetter<TeamsListState, 'isEditModalOpen'>(dispatch, 'isEditModalOpen'), [dispatch]);
+  const setRefreshKey = useMemo(() => makeSetter<TeamsListState, 'refreshKey'>(dispatch, 'refreshKey'), [dispatch]);
+  const setIsCreateModalOpen = useMemo(() => makeSetter<TeamsListState, 'isCreateModalOpen'>(dispatch, 'isCreateModalOpen'), [dispatch]);
+  const setSelectedOrgId = useMemo(() => makeSetter<TeamsListState, 'selectedOrgId'>(dispatch, 'selectedOrgId'), [dispatch]);
+  const setSelectedClubId = useMemo(() => makeSetter<TeamsListState, 'selectedClubId'>(dispatch, 'selectedClubId'), [dispatch]);
+  const setSelectedTeamId = useMemo(() => makeSetter<TeamsListState, 'selectedTeamId'>(dispatch, 'selectedTeamId'), [dispatch]);
+  const setStatusFilter = useMemo(() => makeSetter<TeamsListState, 'statusFilter'>(dispatch, 'statusFilter'), [dispatch]);
+  const setSportFilter = useMemo(() => makeSetter<TeamsListState, 'sportFilter'>(dispatch, 'sportFilter'), [dispatch]);
+  const setLockedOrgSlug = useMemo(() => makeSetter<TeamsListState, 'lockedOrgSlug'>(dispatch, 'lockedOrgSlug'), [dispatch]);
 
   const orgLocked = Boolean(preselectedOrgId);
   const clubLocked = Boolean(preselectedClubId);
-  const [selectedOrgId, setSelectedOrgId] = useState<string>(preselectedOrgId || '');
-  const [selectedClubId, setSelectedClubId] = useState<string>(preselectedClubId || '');
-  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sportFilter, setSportFilter] = useState<string>('all');
 
   const { categories } = useSports();
-
-  const [lockedOrgSlug, setLockedOrgSlug] = useState<string>('');
 
   // ── Sync preselected props ──
 
@@ -123,7 +154,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
       setLockedOrgSlug(rawLockedId);
       return;
     }
-    const fromList = organisations.find((o) => String(o.id) === String(rawLockedId))?.slug;
+    const fromList = s.organisations.find((o) => String(o.id) === String(rawLockedId))?.slug;
     if (fromList) {
       setLockedOrgSlug(String(fromList));
       return;
@@ -132,7 +163,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
     let cancelled = false;
     const loadSlug = async () => {
       try {
-        const { results: list } = await api.list<any>('/organisations/', { pageSize: 250 });
+        const { results: list } = await api.list<Organisation>('/organisations/', { pageSize: 250 });
         const match = list.find((o: { id?: string; slug?: string }) => String(o?.id || '') === String(rawLockedId));
         const slug = String(match?.slug || '').trim();
         if (!cancelled && slug) setLockedOrgSlug(slug);
@@ -140,7 +171,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
     };
     void loadSlug();
     return () => { cancelled = true; };
-  }, [orgLocked, preselectedOrgId, organisations]);
+  }, [orgLocked, preselectedOrgId, s.organisations]);
 
   useEffect(() => {
     if (preselectedClubId) setSelectedClubId(preselectedClubId);
@@ -180,12 +211,12 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
     }
     const load = async () => {
       try {
-        const orgs = await api.listAll<any>('/organisations/', { pageSize: 100 });
+        const orgs = await api.listAll<Organisation>('/organisations/', { pageSize: 100 });
         setOrganisations((orgs || []).map((o: { id: string | number; name: string; slug?: string }) => ({ id: String(o.id), name: o.name, slug: o.slug })));
       } catch { /* ignore */ }
     };
     load();
-  }, [isSuperAdmin, myOrganisations, refreshKey]);
+  }, [isSuperAdmin, myOrganisations, s.refreshKey]);
 
   // ── Load clubs + teams ──
 
@@ -195,14 +226,14 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
       setError(null);
 
       const getSelectedOrgSlugForApi = () => {
-        const selectedOrg = selectedOrgId
-          ? organisations.find(
-              (o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId),
+        const selectedOrg = s.selectedOrgId
+          ? s.organisations.find(
+              (o) => String(o.id) === String(s.selectedOrgId) || String(o.slug) === String(s.selectedOrgId),
             )
           : null;
-        if (selectedOrgId && !selectedOrg) return '';
-        if (orgLocked) return selectedOrg?.slug || lockedOrgSlug || '';
-        return selectedOrg?.slug || (!selectedOrgId ? context.organisation?.slug : '') || '';
+        if (s.selectedOrgId && !selectedOrg) return '';
+        if (orgLocked) return selectedOrg?.slug || s.lockedOrgSlug || '';
+        return selectedOrg?.slug || (!s.selectedOrgId ? context.organisation?.slug : '') || '';
       };
 
       try {
@@ -242,64 +273,64 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
       }
     };
     load();
-  }, [refreshKey, orgLocked, lockedOrgSlug, preselectedOrgId, selectedOrgId, context.organisation, organisations]);
+  }, [s.refreshKey, orgLocked, s.lockedOrgSlug, preselectedOrgId, s.selectedOrgId, context.organisation, s.organisations]);
 
   // ── Filtered + sorted teams ──
 
   const filteredTeams = useMemo(() => {
-    let list = [...teams];
+    let list = [...s.teams];
 
     const sortKey = (value: unknown) => {
-      const s = String(value ?? '').trim();
-      return s ? s.toLocaleLowerCase() : '\uffff';
+      const sk = String(value ?? '').trim();
+      return sk ? sk.toLocaleLowerCase() : '\uffff';
     };
     const getFederationName = (team: ProjectOption) => {
       const org = team?.organisation;
       if (typeof org === 'object' && org?.name) return org.name;
       const orgId = typeof org === 'string' ? org : org?.id;
-      return orgId ? (organisations.find((o) => String(o.id) === String(orgId))?.name || '') : '';
+      return orgId ? (s.organisations.find((o) => String(o.id) === String(orgId))?.name || '') : '';
     };
     const getClubName = (team: ProjectOption) => {
       const parent = team?.parent_project || team?.parent_id || team?.parent_project_id;
       const parentId = typeof parent === 'object' ? parent?.id : parent;
       const parentName = typeof parent === 'object' ? (parent?.name || parent?.slug) : '';
-      return clubs.find((c) => String(c.id) === String(parentId))?.name || parentName || '';
+      return s.clubs.find((c) => String(c.id) === String(parentId))?.name || parentName || '';
     };
 
-    const selectedOrg = selectedOrgId
-      ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
+    const selectedOrg = s.selectedOrgId
+      ? s.organisations.find((o) => String(o.id) === String(s.selectedOrgId) || String(o.slug) === String(s.selectedOrgId))
       : null;
-    const selectedOrgIdResolved = selectedOrg?.id ? String(selectedOrg.id) : selectedOrgId;
+    const selectedOrgIdResolved = selectedOrg?.id ? String(selectedOrg.id) : s.selectedOrgId;
 
-    if (selectedOrgId) {
+    if (s.selectedOrgId) {
       list = list.filter((team) => {
         const teamOrg = typeof team.organisation === 'string' ? team.organisation : team.organisation?.id;
         return String(teamOrg) === String(selectedOrgIdResolved);
       });
     }
-    if (selectedClubId) {
+    if (s.selectedClubId) {
       list = list.filter((team) => {
         const parent = team.parent_project || team.parent_id || team.parent_project_id;
         const parentId = typeof parent === 'object' ? parent?.id : parent;
-        return String(parentId) === String(selectedClubId);
+        return String(parentId) === String(s.selectedClubId);
       });
     }
-    if (selectedTeamId) {
-      list = list.filter((t) => String(t.id) === String(selectedTeamId));
+    if (s.selectedTeamId) {
+      list = list.filter((t) => String(t.id) === String(s.selectedTeamId));
     }
-    if (statusFilter === 'active') list = list.filter((c) => c.is_active !== false);
-    else if (statusFilter === 'inactive') list = list.filter((c) => c.is_active === false);
+    if (s.statusFilter === 'active') list = list.filter((c) => c.is_active !== false);
+    else if (s.statusFilter === 'inactive') list = list.filter((c) => c.is_active === false);
 
-    if (sportFilter !== 'all') {
+    if (s.sportFilter !== 'all') {
       list = list.filter((team) => {
         const nestedOrg = team?.organisation;
         const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? (nestedOrg as { sport?: { id?: string } })?.sport?.id : undefined;
-        if (nestedSportId) return String(nestedSportId) === String(sportFilter);
+        if (nestedSportId) return String(nestedSportId) === String(s.sportFilter);
         const orgId =
           (nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.id : nestedOrg) ||
           team?.organisation_id;
-        const org = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
-        return String(org?.sport?.id || '') === String(sportFilter);
+        const org = orgId ? s.organisations.find((o) => String(o.id) === String(orgId)) : undefined;
+        return String(org?.sport?.id || '') === String(s.sportFilter);
       });
     }
 
@@ -312,7 +343,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
     });
 
     return list;
-  }, [teams, selectedOrgId, selectedClubId, selectedTeamId, statusFilter, sportFilter, organisations, clubs]);
+  }, [s.teams, s.selectedOrgId, s.selectedClubId, s.selectedTeamId, s.statusFilter, s.sportFilter, s.organisations, s.clubs]);
 
   // ── Actions ──
 
@@ -321,17 +352,17 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
     try {
       await api.delete(`/organisations/${orgSlugOrId}/projects/${teamId}/`);
       setTeams((prev) => prev.filter((p) => String(p.id) !== String(teamId)));
-      if (String(selectedTeamId) === String(teamId)) setSelectedTeamId('');
+      if (String(s.selectedTeamId) === String(teamId)) setSelectedTeamId('');
     } catch (e) {
       logger.error('Error deleting team', e);
-      alert('Error deleting team');
+      pushToast({ message: 'Error deleting team', type: 'error' });
     }
   };
 
   const handleEditSave = async (projectData: Record<string, unknown>) => {
-    if (!editProject) return;
-    const projectSlugOrId = editProject.slug || editProject.id;
-    const updated = await api.patch<any>(`/projects/${projectSlugOrId}/?include_archived=true`, projectData);
+    if (!s.editProject) return;
+    const projectSlugOrId = s.editProject.slug || s.editProject.id;
+    const updated = await api.patch<Project>(`/projects/${projectSlugOrId}/?include_archived=true`, projectData);
     setTeams((prev) =>
       prev.map((p) => {
         const match = String(p?.slug || p?.id) === String(projectSlugOrId);
@@ -343,12 +374,12 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
   };
 
   const handleCreateTeam = async (projectData: Record<string, unknown>) => {
-    const orgId = String(projectData.organisation_id || selectedOrgId || '');
-    const clubId = String(projectData.parent_project_id || selectedClubId || '');
+    const orgId = String(projectData.organisation_id || s.selectedOrgId || '');
+    const clubId = String(projectData.parent_project_id || s.selectedClubId || '');
     if (!orgId) throw new Error('Select a federation first');
     if (!clubId) throw new Error('Select a club first');
 
-    const orgSlug = organisations.find((o) => String(o.id) === String(orgId))?.slug || orgId;
+    const orgSlug = s.organisations.find((o) => String(o.id) === String(orgId))?.slug || orgId;
     const created = await organisationsApi.createProject(orgSlug, {
       name: String(projectData.name || ''),
       description: String(projectData.description || ''),
@@ -377,10 +408,10 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
 
   return {
     // State
-    isLoading, error, organisations, clubs, teams, filteredTeams,
-    detailProject, isDetailModalOpen, editProject, isEditModalOpen,
-    isCreateModalOpen, selectedOrgId, selectedClubId, selectedTeamId,
-    statusFilter, sportFilter, lockedOrgSlug,
+    isLoading: s.isLoading, error: s.error, organisations: s.organisations, clubs: s.clubs, teams: s.teams, filteredTeams,
+    detailProject: s.detailProject, isDetailModalOpen: s.isDetailModalOpen, editProject: s.editProject, isEditModalOpen: s.isEditModalOpen,
+    isCreateModalOpen: s.isCreateModalOpen, selectedOrgId: s.selectedOrgId, selectedClubId: s.selectedClubId, selectedTeamId: s.selectedTeamId,
+    statusFilter: s.statusFilter, sportFilter: s.sportFilter, lockedOrgSlug: s.lockedOrgSlug,
     // Derived
     orgLocked, clubLocked, isSuperAdmin, userCanEditProject, userCanDeleteProject,
     categories, navigate,

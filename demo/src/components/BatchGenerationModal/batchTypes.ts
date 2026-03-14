@@ -13,7 +13,7 @@ export interface BatchMember {
   fullbodyUrls: Record<string, string>;
   /** Per-kit-type closeup URLs */
   closeupUrls: Record<string, string>;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface MemberParams {

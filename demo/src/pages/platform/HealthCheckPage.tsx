@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { apiFetch } from '../../utils/apiFetch';
+import { useAsync } from '@/hooks/useAsync';
 import styles from './HealthCheckPage.module.css';
-// import AppShell from '../../components/AppShell';
 
 interface DemoHealthResponse {
   timestamp: string;
@@ -25,25 +25,14 @@ interface DemoHealthResponse {
 }
 
 export const HealthCheckPage: React.FC = () => {
-  const [data, setData] = useState<DemoHealthResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    apiFetch('/api/observability/demo-health/')
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data: DemoHealthResponse) => {
-        setData(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+  const { data, loading, error } = useAsync(
+    async (signal) => {
+      const r = await apiFetch('/api/observability/demo-health/', { signal });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json() as Promise<DemoHealthResponse>;
+    },
+    [],
+  );
 
   const getStatusIcon = (status: string = 'unknown') => {
     switch (status.toLowerCase()) {

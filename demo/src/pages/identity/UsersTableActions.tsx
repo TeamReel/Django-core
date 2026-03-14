@@ -2,8 +2,9 @@
  * UserActions — action buttons per row in the identity-level UsersTable.
  */
 import React from 'react';
-import { api } from '../../api/client';
+import { api } from '@/api/client';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 import { type User } from './useUsersData';
 import type { UserRowItem, TableContext } from './UsersTable.types';
 import { routes } from '../../routes';
@@ -11,7 +12,7 @@ import styles from './UsersTable.module.css';
 
 interface UserActionsProps {
   item: UserRowItem;
-  user: any;
+  user: User;
   userOrgs: Array<{ id?: string; slug?: string; name?: string; membership_id?: string }>;
   isMembership: boolean;
   canManageUsers: boolean;
@@ -60,6 +61,7 @@ export const UserActions: React.FC<UserActionsProps> = ({
 
   const effectiveOrgSlug = String(orgIdParam || selectedOrg?.slug || context.organisation?.slug || '').toLowerCase();
   const effectiveOrgId = String(selectedOrg?.id || orgIdParam || context.organisation?.id || '');
+  const { pushToast } = useToast();
 
   const orgEntry = userOrgs.find((o) => {
     const slugMatches = o?.slug && effectiveOrgSlug && String(o.slug).toLowerCase() === effectiveOrgSlug;
@@ -77,7 +79,7 @@ export const UserActions: React.FC<UserActionsProps> = ({
       fetchUsers();
     } catch (e) {
       logger.error('Error deleting user', e);
-      alert('Error deleting user');
+      pushToast({ message: 'Error deleting user', type: 'error' });
     }
   };
 
@@ -88,7 +90,7 @@ export const UserActions: React.FC<UserActionsProps> = ({
       fetchUsers();
     } catch (e) {
       logger.error('Error removing member', e);
-      alert('Error removing member');
+      pushToast({ message: 'Error removing member', type: 'error' });
     }
   };
 

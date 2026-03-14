@@ -10,7 +10,7 @@ import { VIDEO_TYPE_LABELS, STEP_SUBTITLES } from './types';
 import type { ThenVsNowModalProps } from './types';
 import s from '../ProjectSeasonDetailPage.module.css';
 import styles from '../ThenVsNowModal.module.css';
-import { useEscapeKey } from '../../../hooks/useEscapeKey';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 // Re-export types
 export type { ThenVsNowMember, ThenVsNowVideoType, ThenVsNowModalProps } from './types';

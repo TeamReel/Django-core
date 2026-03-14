@@ -6,7 +6,7 @@ import { ChevronRight, Check, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useWizard } from '../../Wizard';
 import { useMatchWizard } from '../MatchWizardContext';
 import SmartEmptyState from '../../SmartEmptyState';
-import { formatRelativeTime, getDateUrgency } from '../../../utils/relativeTime';
+import { formatRelativeTime, getDateUrgency } from '@/utils/relativeTime';
 import styles from '../MatchWizardV2.module.css';
 
 export function MatchSelectStep() {

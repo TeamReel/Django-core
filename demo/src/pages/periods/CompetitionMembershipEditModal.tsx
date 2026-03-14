@@ -64,7 +64,7 @@ export function CompetitionMembershipEditModal({
     user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'Member';
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay} onClick={onClose} role="presentation">
       <div className={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog">
         <div className="flex-between gap-12">
           <h2 className="m-0 fs-16 fw-700">Edit user role</h2>

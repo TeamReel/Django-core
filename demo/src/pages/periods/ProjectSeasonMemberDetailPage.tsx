@@ -12,8 +12,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
-import { PageContent, PageHeader } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
+import { PageContent, PageHeader, type BreadcrumbItem } from '@django-core/page-templates';
 import { SkeletonDetailPage } from '../../components/Skeleton';
 import MobileTabBar from '../../components/MobileTabBar';
 import { WorkflowPanel } from '../../components/Workflows';
@@ -102,8 +101,8 @@ export default function ProjectSeasonMemberDetailPage() {
   // ── Player access gate ──
   if (isPlayer && !loading && membership && !isOwnProfile) {
     return (
-      <AppShell>
-        <div className={s.accessDeniedPage}>
+      <div className={s.accessDeniedPage}>
+        <div>
           <div className={`mb-16 ${s.lockIcon}`}></div>
           <h2 className={`text-primary ${s.accessDeniedTitle}`}>Geen toegang</h2>
           <p className={`text-secondary ${s.accessDeniedMessage}`}>
@@ -113,7 +112,7 @@ export default function ProjectSeasonMemberDetailPage() {
             Ga terug
           </button>
         </div>
-      </AppShell>
+      </div>
     );
   }
 
@@ -138,11 +137,11 @@ export default function ProjectSeasonMemberDetailPage() {
   };
 
   return (
-    <AppShell>
+    <>
       <div className="has-mobile-action-bar">
       <PageHeader
         title={title}
-        breadcrumbs={breadcrumbs as any}
+        breadcrumbs={breadcrumbs as BreadcrumbItem[]}
         actions={
           <div className="hide-mobile flex-row gap-8 flex-wrap">
             {(() => {
@@ -307,13 +306,13 @@ export default function ProjectSeasonMemberDetailPage() {
 
       {/* Video Preview Modal */}
       {videoPreviewUrl && (
-        <div onClick={() => setVideoPreviewUrl(null)} className={s.videoModalOverlay}>
+        <div onClick={() => setVideoPreviewUrl(null)} className={s.videoModalOverlay} role="presentation">
           <div onClick={e => e.stopPropagation()} className={s.videoModalContent} role="dialog">
             <video src={videoPreviewUrl} className={s.videoPlayer} controls autoPlay loop playsInline />
             <button onClick={() => setVideoPreviewUrl(null)} className={s.videoModalClose}>✕</button>
           </div>
         </div>
       )}
-    </AppShell>
+    </>
   );
 }

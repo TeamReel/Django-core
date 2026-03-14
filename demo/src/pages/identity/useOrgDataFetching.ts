@@ -2,7 +2,7 @@ import type { Activity, Project, User } from '../../types';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { parseListEnvelope, isSeasonPeriod, isCompetitionPeriod } from './orgDetailUtils';
 import { DEBUG_LOGS, getApiV1BaseUrl } from './orgDataHelpers';
-import { api } from '../../api';
+import { api } from '@/api';
 import { logger } from '@/utils/logger';
 
 // ─── Types ───────────────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 
 vi.mock('@/hooks/useIsMobile', () => ({ useIsMobile: vi.fn(() => false) }));
 
-import { useSeasonSquadTabState } from '../../../pages/periods/useSeasonSquadTabState';
+import { useSeasonSquadTabState } from '@/pages/periods/useSeasonSquadTabState';
 
 const m = (id: string, firstName: string, lastName: string, email = '') =>
   ({ id, user: { id, first_name: firstName, last_name: lastName, email }, metadata: {}, role: 'viewer' }) as any;

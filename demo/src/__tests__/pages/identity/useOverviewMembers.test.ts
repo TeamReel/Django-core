@@ -6,7 +6,7 @@ vi.mock('@/api/client', () => ({
 }));
 vi.mock('@/utils/logger', () => ({ logger: { error: vi.fn() } }));
 
-import { useOverviewMembers } from '../../../pages/identity/useOverviewMembers';
+import { useOverviewMembers } from '@/pages/identity/useOverviewMembers';
 
 const base = () => ({
   activeTabFromUrl: 'overview',

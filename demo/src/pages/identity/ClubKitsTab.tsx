@@ -57,7 +57,7 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
       formData.append('file', file);
       formData.append('is_public', 'true');
       const pathPrefix = `kits/${club.slug}/${kitTypeId}`;
-      const fileData = await api.upload<any>(`/files/?path_prefix=${encodeURIComponent(pathPrefix)}`, file, { is_public: 'true' }, { signal: undefined } as any);
+      const fileData = await api.upload<{ id: string; storage_path?: string; original_filename?: string }>(`/files/?path_prefix=${encodeURIComponent(pathPrefix)}`, file, { is_public: 'true' }, { signal: undefined } as Record<string, unknown>);
       const fileId = fileData?.id;
       if (!fileId) throw new Error('No file ID returned from upload');
 

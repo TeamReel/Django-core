@@ -10,9 +10,9 @@ export interface User {
   is_active: boolean;
   role?: string;
   avatar_url?: string;
-  organisations?: any[];
-  projects?: any[];
-  project_memberships?: any[];
+  organisations?: Array<{ id: string | number; slug?: string; name?: string; membership_id?: string | number }>;
+  projects?: Array<{ id?: string | number; slug?: string | null; name?: string; membership_id?: string | number | null }>;
+  project_memberships?: Array<Record<string, unknown>>;
 }
 
 export interface UserEditModalProps {

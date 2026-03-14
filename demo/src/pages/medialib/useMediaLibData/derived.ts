@@ -4,8 +4,8 @@
  */
 
 import { useMemo } from 'react';
-import { getContentType, type BrandAsset } from '../../../hooks/useBrandAssets';
-import { getFileTypeFilter, type FileAsset, type FileTypeFilter } from '../../../hooks/useFileAssets';
+import { getContentType, type BrandAsset } from '@/hooks/useBrandAssets';
+import { getFileTypeFilter, type FileAsset, type FileTypeFilter } from '@/hooks/useFileAssets';
 import { friendlyAssetLabel, getMemberContentType, type MemberMediaItem, type ProjectOption, type HierarchyTab } from '../medialibHelpers';
 
 interface UseDerivedMediaLibParams {

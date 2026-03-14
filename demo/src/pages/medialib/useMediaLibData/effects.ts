@@ -4,8 +4,10 @@
  */
 
 import { useEffect, type Dispatch, type SetStateAction } from 'react';
-import { getApiBaseUrl } from '../../../utils/apiBase';
-import { fetchAllPages } from '../../../utils/fetchAllPages';
+import { getApiV1BaseUrl } from '@/utils/apiFetch';
+import { fetchAllPages } from '@/utils/fetchAllPages';
+import type { Organisation } from '@/types/api/organisation';
+import type { FileTypeFilter } from '@/hooks/useFileAssets';
 import type { OrganisationOption, ProjectOption, HierarchyTab } from '../medialibHelpers';
 
 interface UseMediaLibEffectsParams {
@@ -21,7 +23,7 @@ interface UseMediaLibEffectsParams {
   setTeams: Dispatch<SetStateAction<ProjectOption[]>>;
   setSubFilter: Dispatch<SetStateAction<string>>;
   setKitFilter: Dispatch<SetStateAction<string>>;
-  setFileTypeFilter: Dispatch<SetStateAction<any>>;
+  setFileTypeFilter: Dispatch<SetStateAction<FileTypeFilter>>;
   setSearchQuery: Dispatch<SetStateAction<string>>;
   fetchAllBrandAssets: () => Promise<void>;
   fetchMemberMediaItems: () => Promise<void>;
@@ -62,10 +64,10 @@ export function useMediaLibEffects({
       return;
     }
     const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
+      const apiBaseUrl = getApiV1BaseUrl();
       try {
-        const orgs = await fetchAllPages<any>(
-          `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
+        const orgs = await fetchAllPages<Organisation>(
+          `${apiBaseUrl}/organisations/?page_size=100`,
           { credentials: 'include' },
           { ttlMs: 120_000 },
         );
@@ -86,7 +88,7 @@ export function useMediaLibEffects({
   // Load clubs and teams when org changes
   useEffect(() => {
     const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
+      const apiBaseUrl = getApiV1BaseUrl();
       const selectedOrg = selectedOrgId
         ? organisations.find((o) => String(o.id) === String(selectedOrgId))
         : null;
@@ -99,12 +101,12 @@ export function useMediaLibEffects({
       try {
         const [allClubs, allTeams] = await Promise.all([
           fetchAllPages<ProjectOption>(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=500&parent_project__isnull=true`,
+            `${apiBaseUrl}/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=500&parent_project__isnull=true`,
             { credentials: 'include' },
             { ttlMs: 120_000 },
           ),
           fetchAllPages<ProjectOption>(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=2000&parent_project__isnull=false`,
+            `${apiBaseUrl}/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=2000&parent_project__isnull=false`,
             { credentials: 'include' },
             { ttlMs: 120_000 },
           ),

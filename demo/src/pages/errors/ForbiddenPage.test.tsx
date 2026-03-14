@@ -2,10 +2,6 @@ import { screen } from '@testing-library/react';
 import { renderWithProviders } from '@/test';
 import ForbiddenPage from './ForbiddenPage';
 
-vi.mock('../../components/AppShell', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}));
-
 describe('ForbiddenPage', () => {
   it('renders 403 heading', () => {
     renderWithProviders(<ForbiddenPage />);

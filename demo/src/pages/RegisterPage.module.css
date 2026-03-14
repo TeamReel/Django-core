@@ -15,11 +15,6 @@
   color: var(--app-error);
 }
 
-.debugBox {
-  background-color: var(--app-surface-2);
-  border: 1px solid var(--app-border);
-}
-
 .label {
   margin-bottom: var(--space-1);
 }

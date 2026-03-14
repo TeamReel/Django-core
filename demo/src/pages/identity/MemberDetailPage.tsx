@@ -15,8 +15,11 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { SkeletonDetailPage } from '../../components/Skeleton';
 import { api } from '@/api';
+import type { OrgMembershipListItem } from '@/types/api/organisation';
 import { routes } from '../../routes';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import styles from './MemberDetailPage.module.css';
 
 /** Org member record from the members API */
@@ -27,6 +30,7 @@ interface OrgMemberRecord {
 }
 
 export const MemberDetailPage: React.FC = () => {
+  const { pushToast } = useToast();
   const { id, memberId } = useParams<{ id: string; memberId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -101,12 +105,12 @@ export const MemberDetailPage: React.FC = () => {
       try {
         setLoading(true);
 
-        const data = await api.get<any>(`/organisations/${orgSlug}/members/${memberId}/`);
+        const data = await api.get<OrgMembershipListItem>(`/organisations/${orgSlug}/members/${memberId}/`);
         setMember(data);
         setRole(data.role);
       } catch (err) {
         logger.error('Member fetch error', err);
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
       }
@@ -130,12 +134,12 @@ export const MemberDetailPage: React.FC = () => {
       try {
           setSaving(true);
 
-          const data = await api.patch<any>(`/organisations/${orgSlug}/members/${memberId}/`, { role });
+          const data = await api.patch<OrgMembershipListItem>(`/organisations/${orgSlug}/members/${memberId}/`, { role });
           setMember(data);
           setIsEditing(false);
       } catch (err) {
         logger.error('Failed to update member', err);
-          alert(err instanceof Error ? err.message : 'Failed to update member');
+          pushToast({ message: getErrorMessage(err), type: 'error' });
       } finally {
           setSaving(false);
       }

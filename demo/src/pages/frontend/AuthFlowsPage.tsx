@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Button, Card, Badge, Input, Alert } from '@django-core/design-system';
-import AppShell from '../../components/AppShell';
 import styles from './AuthFlowsPage.module.css';
 
 export function AuthFlowsPage() {
@@ -14,7 +13,6 @@ export function AuthFlowsPage() {
   };
 
   return (
-    <AppShell>
     <div className={styles.page} data-testid="auth-flows-page">
       <div className={styles.header}>
         <h1 className={styles.headerTitle}>Authentication Flows</h1>
@@ -54,7 +52,6 @@ export function AuthFlowsPage() {
         </Card>
       </div>
     </div>
-    </AppShell>
   );
 }
 

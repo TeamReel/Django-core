@@ -91,7 +91,7 @@ export const organisationsApi = {
   },
 
   /** Add a member to an organisation. */
-  addMember(orgSlug: string, data: { user_id: number; role?: string }, opts?: MutateOptions) {
+  addMember(orgSlug: string, data: { user_id?: number; email?: string; role?: string }, opts?: MutateOptions) {
     return api.post<OrgMembership>(`/organisations/${orgSlug}/members/`, data, opts);
   },
 };

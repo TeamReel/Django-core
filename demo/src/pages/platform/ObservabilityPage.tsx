@@ -6,6 +6,7 @@ import {
   Alert,
 } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import {
   PageHeader,
   PageContent,
@@ -15,7 +16,6 @@ import { ObservabilityCharts } from '../../components/ObservabilityCharts';
 import { apiFetch } from '../../utils/apiFetch';
 import type { ObservabilityMetrics } from '../../types/chart';
 import styles from './ObservabilityPage.module.css';
-// import AppShell from '../../components/AppShell';
 
 /**
  * T019 - Observability Page
@@ -76,7 +76,7 @@ export const ObservabilityPage: React.FC = () => {
       setBackendMetrics(data);
     } catch (err) {
       logger.error('Observability fetch error', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch observability metrics');
+      setError(getErrorMessage(err));
       setBackendMetrics(null);
     } finally {
       setLoading(false);

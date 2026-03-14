@@ -3,8 +3,8 @@
  */
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { logger } from '@/utils/logger';
-import { useVideoJobs, type VideoJob } from '../../../hooks/useVideoJobs';
-import { contentApi } from '../../../api';
+import { useVideoJobs, type VideoJob } from '@/hooks/useVideoJobs';
+import { contentApi } from '@/api';
 import { CONTENT_TYPES, type ContentTemplate } from '../../identity/ContentGenerationModal';
 import type { ThenVsNowVideoType } from '../ThenVsNowModal';
 import type { SeasonContentTabProps, SquadMember, ThenVsNowEligibleMember } from './types';

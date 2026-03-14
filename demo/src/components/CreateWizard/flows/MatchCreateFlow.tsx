@@ -16,8 +16,8 @@ import { ChooseFlowStep } from '../steps/ChooseFlowStep';
 import { MatchDetailsStep, type MatchDetailsData } from '../steps/MatchDetailsStep';
 import { MatchConfirmStep, type MatchConfirmData } from '../steps/MatchConfirmStep';
 
-import { useMatchCreateData } from '../../../pages/identity/useMatchCreateData';
-import type { MatchCreatePayload } from '../../../pages/identity/matchCreateTypes';
+import { useMatchCreateData } from '@/pages/identity/useMatchCreateData';
+import type { MatchCreatePayload } from '@/pages/identity/matchCreateTypes';
 import { api } from '@/api';
 
 // ─── Step config ──────────────────────────────────────────

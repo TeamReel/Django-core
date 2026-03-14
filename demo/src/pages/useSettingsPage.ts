@@ -4,10 +4,12 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 
 export function useSettingsPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { pushToast } = useToast();
 
   // Initialize activeSection from URL hash, fallback to localStorage, then 'profile'
   const getInitialSection = () => {
@@ -111,11 +113,11 @@ export function useSettingsPage() {
   };
 
   const handleChangePassword = () => {
-    alert('Demo: Password change dialog would appear here.\nIn production, this would open a modal or navigate to a password change page.');
+    pushToast({ message: 'Demo: Password change dialog would appear here. In production, this would open a modal or navigate to a password change page.', type: 'info' });
   };
 
   const handleEnable2FA = () => {
-    alert('Demo: Two-factor authentication setup would start here.\nIn production, this would show QR code and setup instructions.');
+    pushToast({ message: 'Demo: Two-factor authentication setup would start here. In production, this would show QR code and setup instructions.', type: 'info' });
   };
 
   const handleNotificationChange = (key: string, checked: boolean) => {

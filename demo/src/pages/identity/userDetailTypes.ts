@@ -18,8 +18,8 @@ export interface UserDetailDataReturn {
     backPath: string;
 
     /* core data */
-    user: any;
-    setUser: (u: any) => void;
+    user: Record<string, unknown> | null;
+    setUser: (u: Record<string, unknown> | null) => void;
     loading: boolean;
     error: string | null;
     apiBaseUrl: string;
@@ -84,7 +84,7 @@ export interface UserDetailDataReturn {
 
     /* handlers */
     fetchUser: () => Promise<void>;
-    handleSaveUser: (updatedUser: any) => Promise<void>;
+    handleSaveUser: (updatedUser: Record<string, unknown>) => Promise<void>;
     handleDeleteUser: () => Promise<void>;
     getCsrfToken: () => string;
     getPreferredOrganisationId: () => string;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Alert } from '@django-core/design-system';
-import { SkeletonList } from '../../../components/Skeleton';
-import SmartEmptyState from '../../../components/SmartEmptyState';
+import { SkeletonList } from '@/components/Skeleton';
+import SmartEmptyState from '@/components/SmartEmptyState';
 import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
 import ProjectCreateModal from '../ProjectCreateModal';

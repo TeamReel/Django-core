@@ -2,10 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, Input } from '@django-core/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
-import { activitiesApi } from '../../api';
+import { activitiesApi } from '@/api';
 import type { Activity } from '../../types/api/activity';
 import styles from './CompetitionHierarchyTab.module.css';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 
 export interface CompetitionMatchModals {
   setIsMatchCreateModalOpen: (v: boolean) => void;
@@ -56,6 +57,7 @@ export function CompetitionHierarchyTab({
   apiBaseUrl,
   getCsrfToken,
 }: CompetitionHierarchyTabProps) {
+  const { pushToast } = useToast();
   return (
     <Card>
       <div className={styles.root}>
@@ -173,7 +175,7 @@ export function CompetitionHierarchyTab({
                                   setMatches((prev) => prev.filter((x) => String(x.id) !== String(m.id)));
                                 } catch (e) {
                                   logger.error('Error deleting match', e);
-                                  alert('Error deleting match');
+                                  pushToast({ message: 'Error deleting match', type: 'error' });
                                 }
                               }}
                             >

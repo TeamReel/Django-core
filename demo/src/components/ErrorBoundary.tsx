@@ -1,5 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { routes } from '../routes';
 import styles from './ErrorBoundary.module.css';
 import { logger } from '@/utils/logger';
 
@@ -126,7 +127,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
                 </button>
 
                 <Link
-                  to="/dashboard"
+                  to={routes.dashboard()}
                   className={`inline-block py-12 px-24 rounded-4 fs-16 text-white text-decoration-none ${styles.dashboardLink}`}
                 >
                   Go to Dashboard

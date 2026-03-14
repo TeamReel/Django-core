@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@django-core/design-system';
 import type { GeneratedVariant, GeneratedOutput, ContentTemplate } from './types';
 import { getSecureMimeType } from './utils';
+import { clickableProps } from '@/utils/a11y';
 import styles from './SuccessStep.module.css';
 
 interface SuccessStepProps {
@@ -74,6 +75,7 @@ export function SuccessStep({
                 <div
                   key={variant.variant_index}
                   onClick={() => setSelectedVariantIndex(index)}
+                  {...clickableProps(() => setSelectedVariantIndex(index))}
                   className={`relative cursor-pointer rounded-8 overflow-hidden transition ${styles.variantCard}`}
                   data-saved={isSaved || undefined}
                   data-selected={isSelected || undefined}
@@ -143,6 +145,7 @@ export function SuccessStep({
                     handleSaveAsAsset();
                   }
                 }}
+                {...clickableProps(() => { if (!saveSuccess && !savingAsset) handleSaveAsAsset(); })}
                 title={!saveSuccess ? 'Klik om op te slaan' : ''}
               >
                 {/* Video preview */}
@@ -232,6 +235,7 @@ export function SuccessStep({
                 className={`rounded-12 overflow-hidden transition ${styles.singleImageCard}`}
                 data-save-success={saveSuccess || undefined}
                 onClick={() => { if (!saveSuccess && !savingAsset) handleSaveAsAsset(); }}
+                {...clickableProps(() => { if (!saveSuccess && !savingAsset) handleSaveAsAsset(); })}
                 title={!saveSuccess ? 'Klik om op te slaan' : ''}
               >
                 <div className="relative">
@@ -255,6 +259,7 @@ export function SuccessStep({
                 className={`rounded-12 overflow-hidden transition ${styles.singleImageCard}`}
                 data-save-success={saveSuccess || undefined}
                 onClick={() => { if (!saveSuccess && !savingAsset) handleSaveAsAsset(); }}
+                {...clickableProps(() => { if (!saveSuccess && !savingAsset) handleSaveAsAsset(); })}
                 title={!saveSuccess ? 'Klik om op te slaan' : ''}
               >
                 <div className="relative">

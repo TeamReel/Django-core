@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
 import { PageContent, PageHeader } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { api } from '@/api';
 import { periodPathKey } from '../../utils/periodPath';
@@ -63,7 +62,7 @@ export const ProjectSeasonsPage: React.FC = () => {
 
   const breadcrumbs = useMemo(
     () => [
-      { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+      { label: 'Dashboard', onClick: () => navigate(routes.dashboard()) },
       { label: 'Federations', onClick: () => navigate('/federations') },
       { label: org?.name || 'Federation', onClick: () => navigate(routes.orgDetailLegacy({ orgId: orgSlugOrId })) },
       {

@@ -15,6 +15,7 @@ import {
 } from '../../utils/featureFlagsApi';
 import styles from './FeatureFlagsCard.module.css';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 
 interface FeatureFlag {
   id: string;
@@ -49,7 +50,7 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
       setError(null);
 
       // Fetch global flags to show what's available
-      const globalData = await api.get<any>('/settings/feature-flags/', {
+      const globalData = await api.get<FeatureFlag[] | { results: FeatureFlag[] }>('/settings/feature-flags/', {
         params: { scope_type: 'GLOBAL' },
       });
       const globalArray = Array.isArray(globalData) ? globalData : (globalData?.results || []);
@@ -60,14 +61,14 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
         scope_type: scopeType,
         [scopeType === 'ORGANISATION' ? 'organisation' : 'project']: scopeId,
       };
-      const scopeData = await api.get<any>('/settings/feature-flags/', {
+      const scopeData = await api.get<FeatureFlag[] | { results: FeatureFlag[] }>('/settings/feature-flags/', {
         params: scopeParams,
       });
       const scopeArray = Array.isArray(scopeData) ? scopeData : (scopeData?.results || []);
       setFlags(scopeArray);
     } catch (err) {
       logger.error('Failed to load feature flags', err);
-      setError(err instanceof Error ? err.message : 'Failed to load flags');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -92,7 +93,7 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
       await fetchData();
     } catch (err) {
       logger.error('Failed to update feature flag', err);
-      setError(err instanceof Error ? err.message : 'Failed to update flag');
+      setError(getErrorMessage(err));
     } finally {
       setUpdating(null);
     }

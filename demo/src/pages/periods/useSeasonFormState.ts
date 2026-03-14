@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useReducer, useCallback } from 'react';
 import type { Period } from '../../types/season';
 import type { WalletOption } from '../../components/transactions/CreateTransactionModal';
+import { formReducer, makeSetter } from '@/utils/formReducer';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -25,39 +26,61 @@ export function useSeasonFormState(params: UseSeasonFormStateParams) {
     projectId,
   } = params;
 
-  // ── Provider-synced state (allows optimistic local mutations) ──
-  const [competitions, setCompetitions] = useState<Period[]>([]);
+  interface SeasonFormInternal {
+    competitions: Period[];
+    loading: boolean;
+    error: string | null;
+    competitionsLoading: boolean;
+    season: Period | null;
+    isPeriodEditModalOpen: boolean;
+    selectedEditPeriod: Record<string, unknown> | null;
+    isPeriodDetailModalOpen: boolean;
+    selectedDetailPeriod: Record<string, unknown> | null;
+    isMatchDetailModalOpen: boolean;
+    selectedDetailMatch: Record<string, unknown> | null;
+    isMatchEditModalOpen: boolean;
+    selectedEditMatch: Record<string, unknown> | null;
+    isCreateCompetitionModalOpen: boolean;
+    isCreateMatchModalOpen: boolean;
+    isCreateTxnModalOpen: boolean;
+    isAddSquadMemberModalOpen: boolean;
+    toasts: { id: string; message: string; type: 'success' | 'info' | 'warning' | 'error' }[];
+  }
+  const [s, dispatch] = useReducer(formReducer<SeasonFormInternal>, {
+    competitions: [], loading: true, error: null, competitionsLoading: false,
+    season: providerSeason,
+    isPeriodEditModalOpen: false, selectedEditPeriod: null,
+    isPeriodDetailModalOpen: false, selectedDetailPeriod: null,
+    isMatchDetailModalOpen: false, selectedDetailMatch: null,
+    isMatchEditModalOpen: false, selectedEditMatch: null,
+    isCreateCompetitionModalOpen: false, isCreateMatchModalOpen: false,
+    isCreateTxnModalOpen: false, isAddSquadMemberModalOpen: false,
+    toasts: [],
+  });
+
+  const setCompetitions = useMemo(() => makeSetter<SeasonFormInternal, 'competitions'>(dispatch, 'competitions'), [dispatch]);
+  const setCompetitionsLoading = useMemo(() => makeSetter<SeasonFormInternal, 'competitionsLoading'>(dispatch, 'competitionsLoading'), [dispatch]);
+  const setSeason = useMemo(() => makeSetter<SeasonFormInternal, 'season'>(dispatch, 'season'), [dispatch]);
+  const setIsPeriodEditModalOpen = useMemo(() => makeSetter<SeasonFormInternal, 'isPeriodEditModalOpen'>(dispatch, 'isPeriodEditModalOpen'), [dispatch]);
+  const setSelectedEditPeriod = useMemo(() => makeSetter<SeasonFormInternal, 'selectedEditPeriod'>(dispatch, 'selectedEditPeriod'), [dispatch]);
+  const setIsPeriodDetailModalOpen = useMemo(() => makeSetter<SeasonFormInternal, 'isPeriodDetailModalOpen'>(dispatch, 'isPeriodDetailModalOpen'), [dispatch]);
+  const setSelectedDetailPeriod = useMemo(() => makeSetter<SeasonFormInternal, 'selectedDetailPeriod'>(dispatch, 'selectedDetailPeriod'), [dispatch]);
+  const setIsMatchDetailModalOpen = useMemo(() => makeSetter<SeasonFormInternal, 'isMatchDetailModalOpen'>(dispatch, 'isMatchDetailModalOpen'), [dispatch]);
+  const setSelectedDetailMatch = useMemo(() => makeSetter<SeasonFormInternal, 'selectedDetailMatch'>(dispatch, 'selectedDetailMatch'), [dispatch]);
+  const setIsMatchEditModalOpen = useMemo(() => makeSetter<SeasonFormInternal, 'isMatchEditModalOpen'>(dispatch, 'isMatchEditModalOpen'), [dispatch]);
+  const setSelectedEditMatch = useMemo(() => makeSetter<SeasonFormInternal, 'selectedEditMatch'>(dispatch, 'selectedEditMatch'), [dispatch]);
+  const setIsCreateCompetitionModalOpen = useMemo(() => makeSetter<SeasonFormInternal, 'isCreateCompetitionModalOpen'>(dispatch, 'isCreateCompetitionModalOpen'), [dispatch]);
+  const setIsCreateMatchModalOpen = useMemo(() => makeSetter<SeasonFormInternal, 'isCreateMatchModalOpen'>(dispatch, 'isCreateMatchModalOpen'), [dispatch]);
+  const setIsCreateTxnModalOpen = useMemo(() => makeSetter<SeasonFormInternal, 'isCreateTxnModalOpen'>(dispatch, 'isCreateTxnModalOpen'), [dispatch]);
+  const setIsAddSquadMemberModalOpen = useMemo(() => makeSetter<SeasonFormInternal, 'isAddSquadMemberModalOpen'>(dispatch, 'isAddSquadMemberModalOpen'), [dispatch]);
+  const setToasts = useMemo(() => makeSetter<SeasonFormInternal, 'toasts'>(dispatch, 'toasts'), [dispatch]);
+
+  // ── Provider-synced state ──
   useEffect(() => { setCompetitions(providerCompetitions); }, [providerCompetitions]);
-
-  const [loading, setLoading] = useState(true);
-  useEffect(() => { setLoading(providerLoading); }, [providerLoading]);
-
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => { setError(providerError); }, [providerError]);
-
-  const [competitionsLoading, setCompetitionsLoading] = useState(false);
+  useEffect(() => { dispatch({ type: 'set', key: 'loading', value: providerLoading }); }, [providerLoading]);
+  useEffect(() => { dispatch({ type: 'set', key: 'error', value: providerError }); }, [providerError]);
   useEffect(() => { setCompetitionsLoading(providerCompetitionsLoading); }, [providerCompetitionsLoading]);
-
-  const [season, setSeason] = useState<Period | null>(providerSeason);
   useEffect(() => { setSeason(providerSeason); }, [providerSeason]);
-
-  // ── Modal open/close state ──
-  const [isPeriodEditModalOpen, setIsPeriodEditModalOpen] = useState(false);
-  const [selectedEditPeriod, setSelectedEditPeriod] = useState<any | null>(null);
-
-  const [isPeriodDetailModalOpen, setIsPeriodDetailModalOpen] = useState(false);
-  const [selectedDetailPeriod, setSelectedDetailPeriod] = useState<any | null>(null);
-
-  const [isMatchDetailModalOpen, setIsMatchDetailModalOpen] = useState(false);
-  const [selectedDetailMatch, setSelectedDetailMatch] = useState<any | null>(null);
-
-  const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
-  const [selectedEditMatch, setSelectedEditMatch] = useState<any | null>(null);
-
-  const [isCreateCompetitionModalOpen, setIsCreateCompetitionModalOpen] = useState(false);
-  const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
-  const [isCreateTxnModalOpen, setIsCreateTxnModalOpen] = useState(false);
-  const [isAddSquadMemberModalOpen, setIsAddSquadMemberModalOpen] = useState(false);
 
   // ── Wallet options ──
   const seasonWalletOptions = useMemo<WalletOption[]>(() => {
@@ -71,37 +94,37 @@ export function useSeasonFormState(params: UseSeasonFormStateParams) {
   }, [projectId]);
 
   // ── Toast notifications ──
-  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'info' | 'warning' | 'error' }[]>([]);
+  const [toasts] = [s.toasts];
   const pushToast = useCallback((message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
     const id = String(Date.now());
     setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 6000);
-  }, []);
+  }, [setToasts]);
   const dismissToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
-  }, []);
+  }, [setToasts]);
 
   return {
     // Provider-synced
-    competitions, setCompetitions,
-    loading,
-    error,
-    competitionsLoading, setCompetitionsLoading,
-    season, setSeason,
+    competitions: s.competitions, setCompetitions,
+    loading: s.loading,
+    error: s.error,
+    competitionsLoading: s.competitionsLoading, setCompetitionsLoading,
+    season: s.season, setSeason,
 
     // Modal state
-    isPeriodEditModalOpen, setIsPeriodEditModalOpen,
-    selectedEditPeriod, setSelectedEditPeriod,
-    isPeriodDetailModalOpen, setIsPeriodDetailModalOpen,
-    selectedDetailPeriod, setSelectedDetailPeriod,
-    isMatchDetailModalOpen, setIsMatchDetailModalOpen,
-    selectedDetailMatch, setSelectedDetailMatch,
-    isMatchEditModalOpen, setIsMatchEditModalOpen,
-    selectedEditMatch, setSelectedEditMatch,
-    isCreateCompetitionModalOpen, setIsCreateCompetitionModalOpen,
-    isCreateMatchModalOpen, setIsCreateMatchModalOpen,
-    isCreateTxnModalOpen, setIsCreateTxnModalOpen,
-    isAddSquadMemberModalOpen, setIsAddSquadMemberModalOpen,
+    isPeriodEditModalOpen: s.isPeriodEditModalOpen, setIsPeriodEditModalOpen,
+    selectedEditPeriod: s.selectedEditPeriod, setSelectedEditPeriod,
+    isPeriodDetailModalOpen: s.isPeriodDetailModalOpen, setIsPeriodDetailModalOpen,
+    selectedDetailPeriod: s.selectedDetailPeriod, setSelectedDetailPeriod,
+    isMatchDetailModalOpen: s.isMatchDetailModalOpen, setIsMatchDetailModalOpen,
+    selectedDetailMatch: s.selectedDetailMatch, setSelectedDetailMatch,
+    isMatchEditModalOpen: s.isMatchEditModalOpen, setIsMatchEditModalOpen,
+    selectedEditMatch: s.selectedEditMatch, setSelectedEditMatch,
+    isCreateCompetitionModalOpen: s.isCreateCompetitionModalOpen, setIsCreateCompetitionModalOpen,
+    isCreateMatchModalOpen: s.isCreateMatchModalOpen, setIsCreateMatchModalOpen,
+    isCreateTxnModalOpen: s.isCreateTxnModalOpen, setIsCreateTxnModalOpen,
+    isAddSquadMemberModalOpen: s.isAddSquadMemberModalOpen, setIsAddSquadMemberModalOpen,
 
     // Wallet options
     seasonWalletOptions,

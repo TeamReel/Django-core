@@ -117,6 +117,7 @@ export default function MobileFilterSheet({ activeFilterCount = 0, children, onC
         <div
           className={styles.backdrop}
           onClick={close}
+          role="presentation"
         />
       )}
 

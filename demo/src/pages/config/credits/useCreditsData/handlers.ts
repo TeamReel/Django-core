@@ -5,7 +5,7 @@ import { useCallback, useEffect } from 'react';
 import { logger } from '@/utils/logger';
 import { createApiClient } from '@django-core/api-client';
 import { useBreadcrumbContextSwitcher, type BreadcrumbSwitcherOption } from '@django-core/page-templates';
-import { getApiBaseUrl } from '../../../../utils/apiBase';
+import { getApiV1BaseUrl } from '@/utils/apiFetch';
 import type { CreditsBalance, Transaction, TabType } from '../creditsTypes';
 import { parseTransactionEnvelope } from '../creditsTypes';
 import type { WalletScope } from './types';
@@ -82,12 +82,12 @@ export function useCreditsHandlers(params: UseCreditsHandlersParams) {
       return;
     }
 
-    const client = createApiClient({ baseUrl: getApiBaseUrl() });
+    const client = createApiClient({ baseUrl: getApiV1BaseUrl() });
 
     try {
       const idempotencyKey = `demo-credit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      const response = await client.post('/api/v1/transactions/transactions/', {
+      const response = await client.post('/transactions/transactions/', {
         amount: amount.toString(),
         organization_id: currentOrgId,
         created_by_id: user?.id,
@@ -104,7 +104,7 @@ export function useCreditsHandlers(params: UseCreditsHandlersParams) {
         if (activeTab === 'transactions') {
           const filterParams = buildFilterParams();
           const txnResponse = await client.get<Transaction[]>(
-            `/api/v1/transactions/transactions/?${filterParams.toString()}`
+            `/transactions/transactions/?${filterParams.toString()}`
           );
 
           if (!txnResponse.error && txnResponse.data) {
@@ -120,7 +120,7 @@ export function useCreditsHandlers(params: UseCreditsHandlersParams) {
 
         // Refetch credits balance
         const creditsResponse = await client.get<CreditsBalance>(
-          `/api/v1/credits/?organisation_id=${currentOrgId}`
+          `/credits/?organisation_id=${currentOrgId}`
         );
         if (!creditsResponse.error && creditsResponse.data) {
           setCredits(creditsResponse.data);

@@ -1,7 +1,7 @@
 /**
  * ContentAvailabilityCard types
  */
-import type { ApiFeatureFlag, ScopeType } from '../../../utils/featureFlagsApi';
+import type { ApiFeatureFlag, ScopeType } from '@/utils/featureFlagsApi';
 
 export interface ContentAvailabilityCardProps {
   scopeType: 'ORGANISATION' | 'PROJECT';

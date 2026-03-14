@@ -6,7 +6,7 @@ import {
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
-import { api } from '../../api/client';
+import { api } from '@/api/client';
 import { logger } from '@/utils/logger';
 import type { UsageEvent } from './usageEvents.types';
 

@@ -9,6 +9,7 @@
 import type { OrgModalsProps } from './OrgModals';
 import { invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import { api } from '@/api';
+import type { Project, Period } from './clubOrgDetailHelpers';
 
 /** Payload for project creation (club or team). */
 interface CreateProjectPayload {
@@ -41,6 +42,15 @@ interface CreateMatchPayload {
   description?: string;
   venue?: string;
   metadata?: Record<string, unknown>;
+}
+
+/** Activity record returned by the API. */
+interface ActivityRecord {
+  id?: string;
+  title?: string;
+  activity_type?: string;
+  slug?: string;
+  [key: string]: unknown;
 }
 
 type HandlerDeps = Pick<
@@ -78,7 +88,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
   // ─── Create Club ───────────────────────────────────────────────
 
   const handleCreateClub = async (projectData: CreateProjectPayload) => {
-    const created = await api.post<any>(`/organisations/${currentOrgSlug}/projects/`, {
+    const created = await api.post<Project>(`/organisations/${currentOrgSlug}/projects/`, {
       name: projectData.name,
       description: projectData.description || '',
     });
@@ -110,7 +120,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
     const clubId = String(projectData.parent_project_id || '').trim();
     if (!clubId) throw new Error('Select a club first.');
 
-    const created = await api.post<any>(`/organisations/${currentOrgSlug}/projects/`, {
+    const created = await api.post<Project>(`/organisations/${currentOrgSlug}/projects/`, {
       name: projectData.name,
       description: projectData.description || '',
       parent_project_id: clubId,
@@ -140,7 +150,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
     if (!orgId) throw new Error('Select a federation first');
     if (!teamId) throw new Error('Select a team first');
 
-    const created = await api.post<any>('/periods/', {
+    const created = await api.post<Period>('/periods/', {
       organisation_id: orgId,
       project_id: teamId ? Number(teamId) : undefined,
       parent_period_id: null,
@@ -177,7 +187,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
     if (!teamId) throw new Error('Select a team first');
     if (!seasonId) throw new Error('Select a season first');
 
-    const created = await api.post<any>('/periods/', {
+    const created = await api.post<Period>('/periods/', {
       organisation_id: orgId,
       project_id: teamId ? Number(teamId) : undefined,
       parent_period_id: seasonId || null,
@@ -213,7 +223,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
     if (!teamId) throw new Error('Select a team first');
     if (!competitionId) throw new Error('Select a competition first');
 
-    const created = await api.post<any>('/activities/', {
+    const created = await api.post<ActivityRecord>('/activities/', {
       title: payload.title,
       activity_type: 'match',
       project_id: teamId ? Number(teamId) : undefined,

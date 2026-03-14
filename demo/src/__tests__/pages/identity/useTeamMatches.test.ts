@@ -5,7 +5,7 @@ vi.mock('@/api/client', () => ({
   api: { list: vi.fn(), listAll: vi.fn() },
 }));
 
-import { useTeamMatches } from '../../../pages/identity/useTeamMatches';
+import { useTeamMatches } from '@/pages/identity/useTeamMatches';
 
 const base = () => ({
   activeTabFromUrl: 'overview' as string,

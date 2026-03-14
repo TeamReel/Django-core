@@ -4,6 +4,7 @@ import { Alert, Input } from '@django-core/design-system';
 import { ChevronRight } from 'lucide-react';
 
 import { type Period } from './teamDetailTypes';
+import { handleKeyboardClick } from '@/utils/a11y';
 import h from './TeamHierarchyTab.module.css';
 
 /** Match / activity record */
@@ -157,6 +158,9 @@ export function TeamHierarchyTab({
                     <span
                       className={h.seasonNavLink}
                       onClick={(e) => { e.stopPropagation(); navigate(seasonPath); }}
+                      onKeyDown={handleKeyboardClick(() => navigate(seasonPath))}
+                      role="link"
+                      tabIndex={0}
                     >
                       Bekijk seizoen →
                     </span>
@@ -202,6 +206,9 @@ export function TeamHierarchyTab({
                                 <span
                                   className={h.seasonNavLink}
                                   onClick={(e) => { e.stopPropagation(); navigate(compPath); }}
+                                  onKeyDown={handleKeyboardClick(() => navigate(compPath))}
+                                  role="link"
+                                  tabIndex={0}
                                 >
                                   Bekijk competitie →
                                 </span>

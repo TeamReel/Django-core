@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import s from './ProjectSeasonDetailPage.module.css';
 import { getFunctionalRolesFromMembership, type AccessRoleOption } from './seasonDetailUtils';
-import { projectsApi } from '../../api';
+import { projectsApi } from '@/api';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 /** Minimal member/membership shape for the edit modal */
@@ -43,25 +44,28 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   onClose,
 }) => {
   useEscapeKey(onClose);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const handleSave = async () => {
     try {
+      setSaveError(null);
       const membershipId = String(member.id || '').trim();
       if (!membershipId) {
-        alert('No membership ID found');
+        setSaveError('No membership ID found');
         return;
       }
 
       const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(membershipId);
 
       if (!isValidUuid) {
-        alert(`Cannot save: Invalid membership ID format (${membershipId}). This member may need to be re-added to the squad.`);
+        setSaveError(`Cannot save: Invalid membership ID format (${membershipId}). This member may need to be re-added to the squad.`);
         return;
       }
 
       const functionalRoles = getFunctionalRolesFromMembership(member);
 
       if (!projectId) {
-        alert('Project ID not found');
+        setSaveError('Project ID not found');
         return;
       }
 
@@ -76,12 +80,12 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
       onSaved(membershipId, editAccessRole, functionalRoles);
     } catch (err: unknown) {
       logger.error('Failed to update member', err);
-      alert(err instanceof Error ? err.message : 'Failed to update member');
+      setSaveError(getErrorMessage(err));
     }
   };
 
   return (
-    <div className={s.modalOverlay} onClick={onClose}>
+    <div className={s.modalOverlay} onClick={onClose} role="presentation">
       <div className={s.editMemberModal} onClick={(e) => e.stopPropagation()} role="dialog">
         <h2 className={s.editMemberTitle}>Edit Member Roles</h2>
 
@@ -181,6 +185,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         </div>
 
         <div className={s.modalActions}>
+          {saveError && <div style={{ color: 'var(--app-error, #ef4444)', fontSize: 'var(--text-sm)', marginBottom: 8, width: '100%' }}>{saveError}</div>}
           <button onClick={onClose} className={s.btnCancel}>
             Cancel
           </button>

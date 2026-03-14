@@ -15,10 +15,6 @@ vi.mock('@django-core/page-templates', () => ({
   PageContent: ({ children }: any) => <div>{children}</div>,
 }));
 
-vi.mock('../../components/AppShell', () => ({
-  default: ({ children }: any) => <div>{children}</div>,
-}));
-
 vi.mock('../../shims/design-system', () => ({
   Table: Object.assign(
     ({ children }: any) => <table>{children}</table>,

@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { type VideoFollowUpInfo, type PhotoCompositeFollowUpInfo } from './approvalsTypes';
 import { logger } from '@/utils/logger';
+import { clickableProps } from '@/utils/a11y';
 import s from './ApprovalsPage.module.css';
 import fm from './FollowUpModals.module.css';
 
@@ -83,6 +84,7 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
     <div
       className={s.modalOverlayHigh}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      role="presentation"
     >
       <div className={`${s.modalPanel} ${fm.modalPanelNarrow}`}>
         <div className={s.modalHeaderSimple}>
@@ -106,6 +108,7 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
                 <div
                   key={pose.value}
                   onClick={() => setSelectedIntro(prev => prev === pose.value ? null : pose.value)}
+                  {...clickableProps(() => setSelectedIntro(prev => prev === pose.value ? null : pose.value))}
                   className={fm.chip}
                   data-selected={selectedIntro === pose.value}
                 >
@@ -124,6 +127,7 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
                 <div
                   key={style.value}
                   onClick={() => setSelectedCelebration(prev => prev === style.value ? null : style.value)}
+                  {...clickableProps(() => setSelectedCelebration(prev => prev === style.value ? null : style.value))}
                   className={fm.chip}
                   data-selected={selectedCelebration === style.value}
                 >
@@ -201,6 +205,7 @@ export function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Phot
     <div
       className={s.modalOverlayHigh}
       onClick={e => { if (e.target === e.currentTarget && !submitting) onClose(); }}
+      role="presentation"
     >
       <div className={`${s.modalPanel} ${fm.modalPanelSmall}`}>
         <div className={s.modalHeaderSimple}>

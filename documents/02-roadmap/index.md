@@ -37,14 +37,30 @@ The project is divided into **18 Development Phases**. Click a phase to see its 
 *   **[Phase 10: Content Engine Core](phases/done/phase-10-content-engine-core.md)** (Modules 039-044) ✅
 *   **Accelerated Modules** (045-049): B39, B40, B41, B37, B55 ✅
 
-### Frontend Improvement Roadmaps
-*   **[Design System Adoption](design-system-adoption/index.md)** (11/11 ✅)
-*   **[Frontend Tech Debt](frontend-tech-debt/index.md)** (12/12 ✅)
-*   **[Frontend Structural Debt](frontend-structural-debt/index.md)** (17/17 ✅)
-*   **[Frontend Final Cleanup](frontend-final-cleanup/index.md)** (12/12 ✅)
-*   **[Frontend Hardening](frontend-hardening/index.md)** (12/12 ✅)
-*   **[Navigation Architecture](navigation-architecture/index.md)** (0/10 🔄 Actief)
-*   **[Wizard Optimization](wizard-optimization/index.md)** (Actief)
+### Frontend Improvement Roadmaps — ✅ Done (`done/`)
+
+16 afgeronde roadmaps, ~175 fases. Zie **[done/index.md](done/index.md)** voor volledig overzicht.
+
+*   01 — [Frontend Refactoring](done/01_frontend-refactoring/index.md) (40 fases ✅)
+*   02 — [Mobile-First App Design](done/02_mobile-design/index.md) (27 fases ✅)
+*   03 — [Create Wizard Optimization](done/03_wizard-optimization/index.md) (13 fases ✅)
+*   04 — [8pt Grid Alignment](done/04_8pt-grid-alignment/index.md) (7/7 ✅)
+*   05 — [Design System Adoption](done/05_design-system-adoption/index.md) (11/11 ✅)
+*   06 — [Frontend Tech Debt](done/06_frontend-tech-debt/index.md) (12/12 ✅)
+*   07 — [Frontend Structural Debt](done/07_frontend-structural-debt/index.md) (17/17 ✅)
+*   08 — [Frontend Final Cleanup](done/08_frontend-final-cleanup/index.md) (12/12 ✅)
+*   09 — [Frontend Hardening](done/09_frontend-hardening/index.md) (12/12 ✅)
+*   10 — [Repo Hygiene](done/10_repo-hygiene/index.md) (5/5 ✅)
+*   11 — [Docs Hygiene](done/11_docs-hygiene/index.md) (4/4 ✅)
+*   12 — [Docs Refactor](done/12_docs-refactor/index.md) (5/5 ✅)
+*   13 — [Navigation Architecture](done/13_navigation-architecture/index.md) (10/10 ✅)
+*   14 — [Frontend Consistency](done/14_frontend-consistency/index.md) (12/12 ✅)
+*   15 — [Frontend UX Debt](done/15_frontend-ux-debt/index.md) (15/15 ✅)
+*   16 — [Frontend Technical Debt](done/16_frontend-technical-debt/index.md) (15/15 ✅)
+
+### 🚧 Active Roadmap
+
+*   17 — [Frontend Performance & Accessibility](17_frontend-performance-a11y/index.md) (0/9 🚧)
 
 ### Planned Phases
 *   **[Phase 11: Frontend & Visual Development](phases/planned/phase-11-frontend-and-visual-development.md)** (Modules 045-047) 📋

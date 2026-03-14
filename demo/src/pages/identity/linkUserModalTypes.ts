@@ -24,8 +24,8 @@ export type User = {
 export type PeriodOption = {
   id: string;
   name: string;
-  parent_period?: any;
-  data?: any;
+  parent_period?: { id: string; name?: string } | null;
+  data?: Record<string, unknown>;
 };
 
 export interface LinkUserModalProps {

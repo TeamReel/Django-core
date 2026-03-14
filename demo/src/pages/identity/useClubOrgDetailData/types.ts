@@ -75,6 +75,8 @@ export interface UseClubOrgDetailDataReturn {
   // Brand
   brandLogoUrl: string | null;
   brandProfileId: string | null;
+  // Refetch
+  refetch: () => void;
 }
 
 // Re-export from helpers

@@ -4,7 +4,6 @@
  * Lineup video, goal celebration, and match intro generation.
  * Returns video job IDs for polling.
  */
-import { getApiBaseUrl } from '../../../utils/apiBase';
 import type { ContentTemplate } from './types';
 import { resolveProjectId, postJson } from './contentGenerationApi';
 
@@ -103,7 +102,7 @@ export const generateLineupVideo = async (p: GenerateLineupVideoParams): Promise
 
   if (p.matchData?.id) {
     const data = await postJson(
-      `${getApiBaseUrl()}/api/v1/video/jobs/lineup-from-template/`,
+      '/video/jobs/lineup-from-template/',
       {
         activity_id: p.matchData.id,
         template_id: p.selectedTemplate?.id || null,
@@ -134,7 +133,7 @@ export const generateLineupVideo = async (p: GenerateLineupVideoParams): Promise
     }
 
     const data = await postJson(
-      `${getApiBaseUrl()}/api/v1/video/jobs/`,
+      '/video/jobs/',
       {
         job_type: 'lineup',
         config: {
@@ -173,7 +172,7 @@ export const generateGoalCelebration = async (p: GenerateGoalCelebrationParams):
   if (!p.goalScorerId) throw new Error('No goal scorer selected');
 
   const data = await postJson(
-    `${getApiBaseUrl()}/api/v1/video/jobs/goal-celebration-from-template/`,
+    '/video/jobs/goal-celebration-from-template/',
     {
       activity_id: p.matchData.id,
       scorer_member_id: p.goalScorerId,
@@ -202,7 +201,7 @@ export const generateMatchIntro = async (p: GenerateMatchIntroParams): Promise<s
   if (!p.matchData?.id) throw new Error('No match/activity data available for match intro');
 
   const data = await postJson(
-    `${getApiBaseUrl()}/api/v1/video/jobs/match-intro-from-template/`,
+    '/video/jobs/match-intro-from-template/',
     {
       activity_id: p.matchData.id,
       output_resolution: 'vertical_1080p',

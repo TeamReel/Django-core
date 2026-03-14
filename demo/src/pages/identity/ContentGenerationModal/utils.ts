@@ -5,7 +5,7 @@ import type { Participation } from './types';
 import { ASSET_TYPE_TO_MEDIA_KEY } from './constants';
 
 /** Get CSRF token from cookie */
-export { getCsrfToken } from '../../../utils/csrf';
+export { getCsrfToken } from '@/utils/csrf';
 
 /** Detect mime type from base64 signature */
 export const getSecureMimeType = (base64: string | null, declaredType: string | null): string => {

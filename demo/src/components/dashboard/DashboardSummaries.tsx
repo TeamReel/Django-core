@@ -12,6 +12,8 @@ import {
   ChevronRight, Flame, Zap, CheckCircle2, Clock, AlertCircle,
 } from 'lucide-react';
 import { api } from '@/api';
+import type { ProjectMembership } from '@/types/api/project';
+import type { MediaItem } from '@/types/api/media';
 import { useCreditBalance } from '../../hooks/useCreditBalance';
 import { useQueueCounts } from '../../hooks/useQueueCounts';
 import type { Organisation } from '../../types';
@@ -32,7 +34,7 @@ export const SquadReadinessCard: React.FC = () => {
       // Fetch team member count from project members API
       (async () => {
         try {
-          const data = await api.list<any>(
+          const data = await api.list<ProjectMembership>(
             `/organisations/${org.slug}/projects/${project.slug}/members/`,
             { pageSize: 1 },
           );
@@ -90,7 +92,7 @@ export const ContentStatsCard: React.FC = () => {
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
         const params: Record<string, string> = { created_at__gte: weekAgo };
         if (project) params.project = project.id;
-        const data = await api.list<any>('/media/items/', {
+        const data = await api.list<MediaItem>('/media/items/', {
           params,
           pageSize: 1,
         });

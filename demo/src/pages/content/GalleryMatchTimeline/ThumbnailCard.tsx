@@ -2,7 +2,7 @@
  * ThumbnailCard - Compact content thumbnail for timeline view
  */
 import React from 'react';
-import { getAssetUrl } from '../../../hooks/useBrandProfile';
+import { getAssetUrl } from '@/hooks/useBrandProfile';
 import { getAssetTypeLabel, getAssetTypeIcon, type ContentItem } from '../contentLibraryTypes';
 import styles from '../GalleryMatchTimeline.module.css';
 

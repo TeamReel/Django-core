@@ -7,14 +7,15 @@ import { useEffect, type Dispatch, type SetStateAction } from 'react';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
 import { getAssetUrl } from '@/hooks/brandProfileConstants';
-import { getActiveContext } from '../../../utils/activeContext';
+import { getActiveContext } from '@/utils/activeContext';
 import { isSeasonPeriod } from '../orgDetailUtils';
+import type { BrandProfile, BrandProfileDetail } from '@/types/api/branding';
 import {
   getTeamParentId, mergeUniqueById,
   type Organisation, type Project, type Period, type OverviewMember,
 } from '../clubOrgDetailHelpers';
 import type { RawMemberApiItem } from './types';
-import { routes } from '../../../routes';
+import { routes } from '@/routes';
 
 interface UseClubOrgEffectsParams {
   orgSlugOrId: string;
@@ -29,6 +30,7 @@ interface UseClubOrgEffectsParams {
   shouldResolveOrg: boolean;
   shouldResolveClub: boolean;
   locationSearch: string;
+  refreshKey: number;
   navigate: (path: string, options?: { replace?: boolean }) => void;
   // Setters
   setActiveContextState: Dispatch<SetStateAction<Record<string, unknown> | null>>;
@@ -62,6 +64,7 @@ export function useClubOrgEffects({
   shouldResolveOrg,
   shouldResolveClub,
   locationSearch,
+  refreshKey,
   navigate,
   setActiveContextState,
   setResolvedOrgSlug,
@@ -129,7 +132,7 @@ export function useClubOrgEffects({
     };
     run();
     return () => { cancelled = true; };
-  }, [orgSlugOrId, clubSlugOrId, effectiveOrgSlug, setResolvedOrgSlug, setOrg, setClub, setLoading, setError]);
+  }, [orgSlugOrId, clubSlugOrId, effectiveOrgSlug, refreshKey, setResolvedOrgSlug, setOrg, setClub, setLoading, setError]);
 
   // Overview tab data
   useEffect(() => {
@@ -142,7 +145,7 @@ export function useClubOrgEffects({
       setOverviewLoading(true);
       setOverviewError(null);
       try {
-        const { results: teamsList } = await api.list<any>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, {
+        const { results: teamsList } = await api.list<Project>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, {
           pageSize: 2000,
           params: { include_archived: 'true', parent_project__isnull: 'false' },
         });
@@ -228,11 +231,11 @@ export function useClubOrgEffects({
       const pid = club?.id;
       if (!pid) return;
       try {
-        const { results: profileList } = await api.list<any>('/branding/profiles/', { params: { project: String(pid) } });
+        const { results: profileList } = await api.list<BrandProfile>('/branding/profiles/', { params: { project: String(pid) } });
         let profileId: string | null = profileList.length > 0 ? String(profileList[0]?.id || '') : null;
         if (!profileId) return;
         if (!cancelled) setBrandProfileId(profileId);
-        const profile = await api.get<any>(`/branding/profiles/${profileId}/`);
+        const profile = await api.get<BrandProfileDetail>(`/branding/profiles/${profileId}/`);
         const assetList = profile?.assets || [];
         const logoAsset = assetList.find((a: { asset_type?: string; url?: string }) => a.asset_type === 'logo' || String(a.asset_type || '').includes('logo'));
         if (logoAsset?.url && !cancelled) {

@@ -4,7 +4,7 @@
  * Manages video job state, polling, and approval actions.
  */
 import { useState, useEffect, useRef } from 'react';
-import { videoApi } from '../../../api';
+import { videoApi } from '@/api';
 import { logger } from '@/utils/logger';
 
 /* ================================================================== */

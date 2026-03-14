@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { creditsApi, transactionsApi } from '../../../api';
+import { creditsApi, transactionsApi } from '@/api';
 import { logger } from '@/utils/logger';
 
 /* ─── Types ─── */

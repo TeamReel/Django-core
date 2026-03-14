@@ -47,7 +47,7 @@ export const resolveProjectId = (
 };
 
 export const postJson = async (path: string, body: Record<string, unknown>, extra?: Record<string, string>) => {
-  return api.post<any>(path, body, extra ? { headers: extra } as any : undefined);
+  return api.post<Record<string, unknown>>(path, body, extra ? { headers: extra } as Record<string, unknown> : undefined);
 };
 
 /* ================================================================== */

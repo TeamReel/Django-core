@@ -4,7 +4,7 @@ import { Table } from '../../shims/design-system';
 import SmartEmptyState from '../SmartEmptyState';
 import styles from './TransactionsPanel.module.css';
 import { fetchAllPages } from '../../utils/fetchAllPages';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { getErrorMessage } from '../../utils/errorHelpers';
 import { logger } from '@/utils/logger';
 
@@ -67,7 +67,7 @@ export default function TransactionsPanel(props: {
   const [error, setError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
-  const apiBaseUrl = getApiBaseUrl();
+  const apiBaseUrl = getApiV1BaseUrl();
   const filtersKey = JSON.stringify(filters);
 
   const fetchList = useCallback(async () => {
@@ -83,7 +83,7 @@ export default function TransactionsPanel(props: {
       });
       params.set('page_size', '100');
 
-      const url = `${apiBaseUrl}/api/v1/transactions/transactions/?${params.toString()}`;
+      const url = `${apiBaseUrl}/transactions/transactions/?${params.toString()}`;
       const results = await fetchAllPages<Transaction>(url, { credentials: 'include' }, { ttlMs: 15_000, maxPages: 5 });
       setItems(Array.isArray(results) ? results : []);
     } catch (e: unknown) {

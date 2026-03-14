@@ -14,7 +14,7 @@
  * "Already exists" errors are swallowed (idempotent cascade).
  */
 import React, { useCallback, useMemo, useState } from 'react';
-import { getErrorMessage } from '../../../utils/errorHelpers';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import { logger } from '@/utils/logger';
 
 import { WizardProvider, WizardShell, WizardStep, type WizardStepConfig } from '../../Wizard';
@@ -145,7 +145,7 @@ export function MemberAddFlow({ isOpen, onClose }: MemberAddFlowProps) {
         if (!password.trim()) throw new Error('Wachtwoord is verplicht');
 
         try {
-          const createdUser = await api.post<any>('/admin/users/', {
+          const createdUser = await api.post<{ id: number; email: string }>('/admin/users/', {
             first_name: firstName.trim(),
             last_name: lastName.trim(),
             email: email.trim(),

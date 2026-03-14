@@ -5,13 +5,15 @@
  * filter derivations, selection helpers.
  */
 
-import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useMemo, useReducer, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { routes } from '../../routes';
 import { useAuth } from '@django-core/auth-ui';
 import { useBreadcrumbContextSwitcher } from '@django-core/page-templates';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
+import { formReducer, makeSetter } from '@/utils/formReducer';
 import {
   fetchFlagsForScope,
   updateGlobalFlag,
@@ -71,21 +73,46 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
   const navigate = useNavigate();
   const { context, organisations } = useContextSwitcher();
   const { user } = useAuth();
+  const { pushToast } = useToast();
 
-  const [flags, setFlags] = useState<(FeatureFlag | ApiFeatureFlag)[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
-  const [useApi, setUseApi] = useState(true);
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [seedMessage, setSeedMessage] = useState<string | null>(null);
-  const [autoSeeded, setAutoSeeded] = useState(false);
-  const [filterType, setFilterType] = useState<string>('all');
-  const [filterSubtype, setFilterSubtype] = useState<string>('all');
-  const [filterStyle, setFilterStyle] = useState<string>('all');
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [bulkUpdating, setBulkUpdating] = useState(false);
-  const [syncing, setSyncing] = useState(false);
+  interface FlagsState {
+    flags: (FeatureFlag | ApiFeatureFlag)[];
+    loading: boolean;
+    updating: boolean;
+    initialLoadDone: boolean;
+    useApi: boolean;
+    apiError: string | null;
+    seedMessage: string | null;
+    autoSeeded: boolean;
+    filterType: string;
+    filterSubtype: string;
+    filterStyle: string;
+    selectedIds: Set<string>;
+    bulkUpdating: boolean;
+    syncing: boolean;
+  }
+
+  const [s, dispatch] = useReducer(formReducer<FlagsState>, {
+    flags: [], loading: true, updating: false, initialLoadDone: false,
+    useApi: true, apiError: null, seedMessage: null, autoSeeded: false,
+    filterType: 'all', filterSubtype: 'all', filterStyle: 'all',
+    selectedIds: new Set(), bulkUpdating: false, syncing: false,
+  });
+
+  const setFlags = useMemo(() => makeSetter<FlagsState, 'flags'>(dispatch, 'flags'), [dispatch]);
+  const setLoading = useMemo(() => makeSetter<FlagsState, 'loading'>(dispatch, 'loading'), [dispatch]);
+  const setUpdating = useMemo(() => makeSetter<FlagsState, 'updating'>(dispatch, 'updating'), [dispatch]);
+  const setInitialLoadDone = useMemo(() => makeSetter<FlagsState, 'initialLoadDone'>(dispatch, 'initialLoadDone'), [dispatch]);
+  const setUseApi = useMemo(() => makeSetter<FlagsState, 'useApi'>(dispatch, 'useApi'), [dispatch]);
+  const setApiError = useMemo(() => makeSetter<FlagsState, 'apiError'>(dispatch, 'apiError'), [dispatch]);
+  const setSeedMessage = useMemo(() => makeSetter<FlagsState, 'seedMessage'>(dispatch, 'seedMessage'), [dispatch]);
+  const setAutoSeeded = useMemo(() => makeSetter<FlagsState, 'autoSeeded'>(dispatch, 'autoSeeded'), [dispatch]);
+  const setFilterType = useMemo(() => makeSetter<FlagsState, 'filterType'>(dispatch, 'filterType'), [dispatch]);
+  const setFilterSubtype = useMemo(() => makeSetter<FlagsState, 'filterSubtype'>(dispatch, 'filterSubtype'), [dispatch]);
+  const setFilterStyle = useMemo(() => makeSetter<FlagsState, 'filterStyle'>(dispatch, 'filterStyle'), [dispatch]);
+  const setSelectedIds = useMemo(() => makeSetter<FlagsState, 'selectedIds'>(dispatch, 'selectedIds'), [dispatch]);
+  const setBulkUpdating = useMemo(() => makeSetter<FlagsState, 'bulkUpdating'>(dispatch, 'bulkUpdating'), [dispatch]);
+  const setSyncing = useMemo(() => makeSetter<FlagsState, 'syncing'>(dispatch, 'syncing'), [dispatch]);
 
   const currentOrgId = context.organisation?.id ? String(context.organisation.id) : null;
   const isSuperadmin = Boolean(user?.is_superuser) || String(user?.role || '').toLowerCase() === 'superadmin';
@@ -120,10 +147,10 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
 
   // Reload flags when context changes (GLOBAL-only, no org context)
   useEffect(() => {
-    if (!isSuperadmin || !initialLoadDone) return;
+    if (!isSuperadmin || !s.initialLoadDone) return;
 
     const loadFlags = async () => {
-      if (useApi) {
+      if (s.useApi) {
         try {
           setApiError(null);
           setLoading(true);
@@ -136,7 +163,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
           setFlags(normalized);
 
           // Auto-seed once if none found
-          if (!autoSeeded && normalized.filter((flag) => String(flag.key || '').startsWith('content__')).length === 0) {
+          if (!s.autoSeeded && normalized.filter((flag) => String(flag.key || '').startsWith('content__')).length === 0) {
             const result = await seedDefaultFlags();
             setAutoSeeded(true);
             if (result.total === 0) {
@@ -193,12 +220,12 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
       window.removeEventListener('featureFlagsChanged', handleStorageChange);
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [useApi, isSuperadmin, initialLoadDone]);
+  }, [s.useApi, isSuperAdmin, s.initialLoadDone]);
 
   // ── Toggle single flag ──
 
   const handleToggleFlag = async (flag: FeatureFlag | ApiFeatureFlag) => {
-    if (updating) {
+    if (s.updating) {
       debugLog('[FeatureFlagsPage] Already updating, ignoring click');
       return;
     }
@@ -210,10 +237,10 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
       flagKey: flag.key,
       currentState,
       newState,
-      useApi
+      useApi: s.useApi
     });
 
-    if (useApi) {
+    if (s.useApi) {
       setUpdating(true);
       const apiFlag = flag as ApiFeatureFlag;
       try {
@@ -234,7 +261,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
         debugLog('[FeatureFlagsPage] Successfully updated flag and reloaded data');
       } catch (err) {
         logger.error('Failed to toggle flag via API', err);
-        alert('Failed to update flag. See console for details.');
+        pushToast({ message: 'Failed to update flag. See console for details.', type: 'error' });
       } finally {
         setUpdating(false);
       }
@@ -251,7 +278,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
 
   // ── Derived filter data ──
 
-  const displayFlags = flags
+  const displayFlags = s.flags
     .filter((flag) => !isThemeFlagKey(flag.key))
     .filter((flag) => String(flag.key || '').startsWith('content__'))
     .filter((flag) => {
@@ -260,28 +287,28 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
       const subtype = parts[2] || '';
       const styleIndex = parts.findIndex((p) => p === 'style');
       const style = styleIndex >= 0 ? parts[styleIndex + 1] || '' : '';
-      if (filterType !== 'all' && type !== filterType) return false;
-      if (filterSubtype !== 'all' && subtype !== filterSubtype) return false;
-      if (filterStyle !== 'all' && style !== filterStyle) return false;
+      if (s.filterType !== 'all' && type !== s.filterType) return false;
+      if (s.filterSubtype !== 'all' && subtype !== s.filterSubtype) return false;
+      if (s.filterStyle !== 'all' && style !== s.filterStyle) return false;
       return true;
     });
 
   const uniqueTypes = Array.from(new Set(
-    flags
+    s.flags
       .filter((flag) => String(flag.key || '').startsWith('content__'))
       .map((flag) => String(flag.key || '').split('__')[1])
       .filter(Boolean)
   )).sort();
 
   const uniqueSubtypes = Array.from(new Set(
-    flags
+    s.flags
       .filter((flag) => String(flag.key || '').startsWith('content__'))
       .map((flag) => String(flag.key || '').split('__')[2])
       .filter(Boolean)
   )).sort();
 
   const uniqueStyles = Array.from(new Set(
-    flags
+    s.flags
       .filter((flag) => String(flag.key || '').startsWith('content__'))
       .map((flag) => {
         const parts = String(flag.key || '').split('__');
@@ -293,8 +320,8 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
 
   // ── Selection helpers ──
 
-  const allSelected = displayFlags.length > 0 && displayFlags.every((f) => selectedIds.has(f.id));
-  const someSelected = selectedIds.size > 0;
+  const allSelected = displayFlags.length > 0 && displayFlags.every((f) => s.selectedIds.has(f.id));
+  const someSelected = s.selectedIds.size > 0;
 
   const handleSelectAll = () => {
     if (allSelected) {
@@ -305,7 +332,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
   };
 
   const handleSelectOne = (id: string) => {
-    const next = new Set(selectedIds);
+    const next = new Set(s.selectedIds);
     if (next.has(id)) {
       next.delete(id);
     } else {
@@ -317,10 +344,10 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
   // ── Bulk actions ──
 
   const handleBulkUpdate = async (enabled: boolean) => {
-    if (selectedIds.size === 0) return;
+    if (s.selectedIds.size === 0) return;
     setBulkUpdating(true);
     try {
-      const toUpdate = displayFlags.filter((f) => selectedIds.has(f.id));
+      const toUpdate = displayFlags.filter((f) => s.selectedIds.has(f.id));
       for (const flag of toUpdate) {
         await updateGlobalFlag(flag.id, enabled);
       }
@@ -333,7 +360,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
       setSelectedIds(new Set());
     } catch (err) {
       logger.error('Bulk update failed', err);
-      alert('Bulk update failed. Check console for details.');
+      pushToast({ message: 'Bulk update failed. Check console for details.', type: 'error' });
     } finally {
       setBulkUpdating(false);
     }
@@ -373,22 +400,22 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
   };
 
   return {
-    loading,
-    seedMessage,
-    apiError,
-    useApi,
+    loading: s.loading,
+    seedMessage: s.seedMessage,
+    apiError: s.apiError,
+    useApi: s.useApi,
     displayFlags,
     uniqueTypes,
     uniqueSubtypes,
     uniqueStyles,
-    filterType, setFilterType,
-    filterSubtype, setFilterSubtype,
-    filterStyle, setFilterStyle,
-    selectedIds,
+    filterType: s.filterType, setFilterType,
+    filterSubtype: s.filterSubtype, setFilterSubtype,
+    filterStyle: s.filterStyle, setFilterStyle,
+    selectedIds: s.selectedIds,
     allSelected,
     someSelected,
-    bulkUpdating,
-    syncing,
+    bulkUpdating: s.bulkUpdating,
+    syncing: s.syncing,
     handleSelectAll,
     handleSelectOne,
     handleBulkUpdate,

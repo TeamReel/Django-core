@@ -30,6 +30,7 @@ import { GalleryCreateContentButton } from './GalleryCreateContentButton';
 import { GalleryMatchTimeline } from './GalleryMatchTimeline';
 import { useContentLibraryData } from './useContentLibraryData';
 import { getAssetTypeLabel } from './contentLibraryTypes';
+import { useToast } from '@/components/ui/Toast';
 import styles from './ContentLibraryPage.module.css';
 
 // ============================================================================
@@ -55,6 +56,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
   const orgSlug = context.organisation?.slug as string | undefined;
   const userRole = String(user?.role || '').toLowerCase();
   const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
+  const { pushToast } = useToast();
 
   // URL params
   const params = new URLSearchParams(location.search);
@@ -93,7 +95,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
       try { await navigator.share({ title: item.title || 'Generated Content', url }); } catch { /* cancelled */ }
     } else if (url) {
       await navigator.clipboard.writeText(url);
-      alert('Link gekopieerd naar klembord');
+      pushToast({ message: 'Link gekopieerd naar klembord', type: 'success' });
     }
   };
 
@@ -103,7 +105,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
         const { api: apiClient } = await import('../../api');
         await apiClient.delete(`/media/items/${item.id}/`);
         data.setContentItems(prev => prev.filter(i => i.id !== item.id));
-      } catch { alert('Verwijderen mislukt'); }
+      } catch { pushToast({ message: 'Verwijderen mislukt', type: 'error' }); }
     }
   };
 

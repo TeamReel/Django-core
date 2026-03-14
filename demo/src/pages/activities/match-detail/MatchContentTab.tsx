@@ -1,10 +1,10 @@
 import React from 'react';
-import { getAssetUrl } from '../../../hooks/useBrandProfile';
+import { getAssetUrl } from '@/hooks/useBrandProfile';
 import {
   CONTENT_TYPES,
   type ContentTemplate,
 } from '../../identity/ContentGenerationModal';
-import type { MatchMediaItem } from '../../../components/MediaAssetCard';
+import type { MatchMediaItem } from '@/components/MediaAssetCard';
 import type {
   Organisation,
   MatchDetail,

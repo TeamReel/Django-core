@@ -14,10 +14,6 @@ vi.mock('../hooks/useSearch', () => ({
   }),
 }));
 
-vi.mock('../components/AppShell', () => ({
-  default: ({ children }: any) => <div>{children}</div>,
-}));
-
 vi.mock('../components/HierarchyTreeView', () => ({
   default: () => <div>HierarchyTreeView</div>,
 }));

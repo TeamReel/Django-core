@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
-import { useFileAssets, type FileTypeFilter } from '../../../hooks/useFileAssets';
+import { useFileAssets, type FileTypeFilter } from '@/hooks/useFileAssets';
 import type { HierarchyTab, OrganisationOption, ProjectOption, PreviewItem } from '../medialibHelpers';
 import { useMediaLibFetchers } from '../useMediaLibFetchers';
 import type { UseMediaLibDataReturn } from './types';

@@ -10,10 +10,11 @@ import {
   PageHeader,
   PageContent,
 } from '../../shims/page-templates';
-import { organisationsApi } from '../../api';
+import { organisationsApi } from '@/api';
 import styles from './OrganisationCreatePage.module.css';
 import { routes } from '../../routes';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 
 /**
  * Organisation Create Page
@@ -43,7 +44,7 @@ export const OrganisationCreatePage: React.FC = () => {
       }
     } catch (err: unknown) {
       logger.error('Failed to create organisation', err);
-      setError(err instanceof Error ? err.message : 'Failed to create organisation');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -54,7 +55,7 @@ export const OrganisationCreatePage: React.FC = () => {
       <PageHeader
         title="Create Organisation"
         breadcrumbs={[
-          { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+          { label: 'Dashboard', onClick: () => navigate(routes.dashboard()) },
           { label: 'Create Organisation', current: true },
         ]}
       />

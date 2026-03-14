@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { getAssetUrl, type BrandAsset } from '../../../hooks/useBrandProfile';
+import { getAssetUrl, type BrandAsset } from '@/hooks/useBrandProfile';
 
 interface UseDerivedAssetsParams {
   getAsset: (assetType: string) => BrandAsset | undefined;

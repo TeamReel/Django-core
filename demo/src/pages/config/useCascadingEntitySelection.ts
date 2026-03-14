@@ -2,10 +2,12 @@
  * PreferencesPage — Cascading entity selection sub-hook
  *
  * Manages active context + cascading org → club → team → season → competition → match selectors.
+ * Consolidated to useReducer during S3 refactor.
  */
-import { useState, useEffect } from 'react';
-import { api } from '../../api';
+import { useReducer, useMemo, useEffect } from 'react';
+import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { formReducer, makeSetter } from '@/utils/formReducer';
 import {
   ACTIVE_CONTEXT_CHANGED_EVENT,
   getActiveContext as fetchActiveContext,
@@ -69,38 +71,72 @@ export interface CascadingEntitySelectionReturn {
 /* ================================================================== */
 
 export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
-  const [activeContext, setActiveContext] = useState<Record<string, unknown> | null>(null);
-  const [activeContextLoading, setActiveContextLoading] = useState(false);
-  const [activeContextError, setActiveContextError] = useState<string | null>(null);
-  const [savingContext, setSavingContext] = useState(false);
-  const [hasEditedContext, setHasEditedContext] = useState(false);
+  /* -------- reducer state ---------------------------------------- */
+  interface CascadingState {
+    activeContext: Record<string, unknown> | null;
+    activeContextLoading: boolean;
+    activeContextError: string | null;
+    savingContext: boolean;
+    hasEditedContext: boolean;
+    selectedOrgId: string;
+    selectedClubId: string;
+    selectedTeamId: string;
+    selectedSeasonId: string;
+    selectedCompetitionId: string;
+    selectedMatchId: string;
+    organisations: Organisation[];
+    clubs: Project[];
+    teams: Project[];
+    seasons: Period[];
+    competitions: Period[];
+    matches: Activity[];
+    loadingOrgs: boolean;
+    loadingClubs: boolean;
+    loadingTeams: boolean;
+    loadingSeasons: boolean;
+    loadingCompetitions: boolean;
+    loadingMatches: boolean;
+  }
+  const initialState: CascadingState = {
+    activeContext: null, activeContextLoading: false, activeContextError: null, savingContext: false,
+    hasEditedContext: false,
+    selectedOrgId: '', selectedClubId: '', selectedTeamId: '',
+    selectedSeasonId: '', selectedCompetitionId: '', selectedMatchId: '',
+    organisations: [], clubs: [], teams: [], seasons: [], competitions: [], matches: [],
+    loadingOrgs: false, loadingClubs: false, loadingTeams: false,
+    loadingSeasons: false, loadingCompetitions: false, loadingMatches: false,
+  };
+  const [s, dispatch] = useReducer(formReducer<CascadingState>, initialState);
 
-  const [selectedOrgId, setSelectedOrgId] = useState<string>('');
-  const [selectedClubId, setSelectedClubId] = useState<string>('');
-  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
-  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
-  const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>('');
-  const [selectedMatchId, setSelectedMatchId] = useState<string>('');
-
-  const [organisations, setOrganisations] = useState<Organisation[]>([]);
-  const [clubs, setClubs] = useState<Project[]>([]);
-  const [teams, setTeams] = useState<Project[]>([]);
-  const [seasons, setSeasons] = useState<Period[]>([]);
-  const [competitions, setCompetitions] = useState<Period[]>([]);
-  const [matches, setMatches] = useState<Activity[]>([]);
-
-  const [loadingOrgs, setLoadingOrgs] = useState(false);
-  const [loadingClubs, setLoadingClubs] = useState(false);
-  const [loadingTeams, setLoadingTeams] = useState(false);
-  const [loadingSeasons, setLoadingSeasons] = useState(false);
-  const [loadingCompetitions, setLoadingCompetitions] = useState(false);
-  const [loadingMatches, setLoadingMatches] = useState(false);
+  const setActiveContext = useMemo(() => makeSetter<CascadingState, 'activeContext'>(dispatch, 'activeContext'), [dispatch]);
+  const setActiveContextLoading = useMemo(() => makeSetter<CascadingState, 'activeContextLoading'>(dispatch, 'activeContextLoading'), [dispatch]);
+  const setActiveContextError = useMemo(() => makeSetter<CascadingState, 'activeContextError'>(dispatch, 'activeContextError'), [dispatch]);
+  const setSavingContext = useMemo(() => makeSetter<CascadingState, 'savingContext'>(dispatch, 'savingContext'), [dispatch]);
+  const setHasEditedContext = useMemo(() => makeSetter<CascadingState, 'hasEditedContext'>(dispatch, 'hasEditedContext'), [dispatch]);
+  const setSelectedOrgId = useMemo(() => makeSetter<CascadingState, 'selectedOrgId'>(dispatch, 'selectedOrgId'), [dispatch]);
+  const setSelectedClubId = useMemo(() => makeSetter<CascadingState, 'selectedClubId'>(dispatch, 'selectedClubId'), [dispatch]);
+  const setSelectedTeamId = useMemo(() => makeSetter<CascadingState, 'selectedTeamId'>(dispatch, 'selectedTeamId'), [dispatch]);
+  const setSelectedSeasonId = useMemo(() => makeSetter<CascadingState, 'selectedSeasonId'>(dispatch, 'selectedSeasonId'), [dispatch]);
+  const setSelectedCompetitionId = useMemo(() => makeSetter<CascadingState, 'selectedCompetitionId'>(dispatch, 'selectedCompetitionId'), [dispatch]);
+  const setSelectedMatchId = useMemo(() => makeSetter<CascadingState, 'selectedMatchId'>(dispatch, 'selectedMatchId'), [dispatch]);
+  const setOrganisations = useMemo(() => makeSetter<CascadingState, 'organisations'>(dispatch, 'organisations'), [dispatch]);
+  const setClubs = useMemo(() => makeSetter<CascadingState, 'clubs'>(dispatch, 'clubs'), [dispatch]);
+  const setTeams = useMemo(() => makeSetter<CascadingState, 'teams'>(dispatch, 'teams'), [dispatch]);
+  const setSeasons = useMemo(() => makeSetter<CascadingState, 'seasons'>(dispatch, 'seasons'), [dispatch]);
+  const setCompetitions = useMemo(() => makeSetter<CascadingState, 'competitions'>(dispatch, 'competitions'), [dispatch]);
+  const setMatches = useMemo(() => makeSetter<CascadingState, 'matches'>(dispatch, 'matches'), [dispatch]);
+  const setLoadingOrgs = useMemo(() => makeSetter<CascadingState, 'loadingOrgs'>(dispatch, 'loadingOrgs'), [dispatch]);
+  const setLoadingClubs = useMemo(() => makeSetter<CascadingState, 'loadingClubs'>(dispatch, 'loadingClubs'), [dispatch]);
+  const setLoadingTeams = useMemo(() => makeSetter<CascadingState, 'loadingTeams'>(dispatch, 'loadingTeams'), [dispatch]);
+  const setLoadingSeasons = useMemo(() => makeSetter<CascadingState, 'loadingSeasons'>(dispatch, 'loadingSeasons'), [dispatch]);
+  const setLoadingCompetitions = useMemo(() => makeSetter<CascadingState, 'loadingCompetitions'>(dispatch, 'loadingCompetitions'), [dispatch]);
+  const setLoadingMatches = useMemo(() => makeSetter<CascadingState, 'loadingMatches'>(dispatch, 'loadingMatches'), [dispatch]);
 
   /* ---------- helpers -------------------------------------------- */
   const getOrganisationIdentifier = (orgKey: string): string => {
     const key = String(orgKey || '').trim();
     if (!key) return '';
-    const org = organisations.find((o) => String(o?.id ?? '').trim() === key || String(o?.slug ?? '').trim() === key);
+    const org = s.organisations.find((o) => String(o?.id ?? '').trim() === key || String(o?.slug ?? '').trim() === key);
     return String(org?.slug || key).trim();
   };
 
@@ -116,7 +152,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     const resolvedOrgId = rawOrgId
       ? rawOrgId
       : (rawOrgSlug
-          ? String(organisations.find((o) => String(o?.slug || '').trim() === rawOrgSlug)?.id || rawOrgSlug).trim()
+          ? String(s.organisations.find((o) => String(o?.slug || '').trim() === rawOrgSlug)?.id || rawOrgSlug).trim()
           : '');
     return {
       orgId: resolvedOrgId,
@@ -196,15 +232,13 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
 
   // Sync cascading selectors with active context
   useEffect(() => {
-    if (!activeContext || hasEditedContext || savingContext) return;
-    const next = deriveSelectionFromActiveContext(activeContext);
-    setSelectedOrgId(next.orgId);
-    setSelectedClubId(next.clubId);
-    setSelectedTeamId(next.teamId);
-    setSelectedSeasonId(next.seasonId);
-    setSelectedCompetitionId(next.competitionId);
-    setSelectedMatchId(next.matchId);
-  }, [activeContext, organisations, hasEditedContext, savingContext]);
+    if (!s.activeContext || s.hasEditedContext || s.savingContext) return;
+    const next = deriveSelectionFromActiveContext(s.activeContext);
+    dispatch({ type: 'patch', payload: {
+      selectedOrgId: next.orgId, selectedClubId: next.clubId, selectedTeamId: next.teamId,
+      selectedSeasonId: next.seasonId, selectedCompetitionId: next.competitionId, selectedMatchId: next.matchId,
+    } });
+  }, [s.activeContext, s.organisations, s.hasEditedContext, s.savingContext]);
 
   // Load organisations on mount
   useEffect(() => {
@@ -227,13 +261,13 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
 
   // Load clubs when org selected
   useEffect(() => {
-    if (!selectedOrgId) { setClubs([]); return; }
+    if (!s.selectedOrgId) { setClubs([]); return; }
     let cancelled = false;
     const loadClubs = async () => {
       try {
         setLoadingClubs(true);
-        const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
-        const orgSlug = org?.slug || selectedOrgId;
+        const org = s.organisations.find(o => String(o.id) === s.selectedOrgId || String(o.slug) === s.selectedOrgId);
+        const orgSlug = org?.slug || s.selectedOrgId;
         const collected = await api.listAll<Project>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, {
           params: { is_club: true },
           pageSize: 250,
@@ -252,23 +286,23 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     };
     void loadClubs();
     return () => { cancelled = true; };
-  }, [selectedOrgId, organisations]);
+  }, [s.selectedOrgId, s.organisations]);
 
   // Load teams when club selected
   useEffect(() => {
-    if (!selectedOrgId || !selectedClubId) { setTeams([]); return; }
+    if (!s.selectedOrgId || !s.selectedClubId) { setTeams([]); return; }
     let cancelled = false;
     const loadTeams = async () => {
       try {
         setLoadingTeams(true);
-        const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
-        const orgSlug = org?.slug || selectedOrgId;
+        const org = s.organisations.find(o => String(o.id) === s.selectedOrgId || String(o.slug) === s.selectedOrgId);
+        const orgSlug = org?.slug || s.selectedOrgId;
         const collected = await api.listAll<Project>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, {
           params: { parent_project__isnull: false },
           pageSize: 250,
           maxItems: 5000,
         });
-        const filteredTeams = collected.filter((t) => String(t?.parent_id || '') === String(selectedClubId));
+        const filteredTeams = collected.filter((t) => String(t?.parent_id || '') === String(s.selectedClubId));
         if (!cancelled) setTeams(filteredTeams);
       } catch {
         if (!cancelled) setTeams([]);
@@ -278,20 +312,20 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     };
     void loadTeams();
     return () => { cancelled = true; };
-  }, [organisations, selectedClubId, selectedOrgId]);
+  }, [s.organisations, s.selectedClubId, s.selectedOrgId]);
 
   // Load seasons when team selected
   useEffect(() => {
-    if (!selectedTeamId) { setSeasons([]); return; }
+    if (!s.selectedTeamId) { setSeasons([]); return; }
     let cancelled = false;
     const loadSeasons = async () => {
       try {
         setLoadingSeasons(true);
         const resolveOrganisationIdForQuery = () => {
-          const raw = String(selectedOrgId || '').trim();
+          const raw = String(s.selectedOrgId || '').trim();
           if (!raw) return '';
           if (/^\d+$/.test(raw)) return raw;
-          const found = organisations.find((o) => String(o?.slug || '').trim() === raw);
+          const found = s.organisations.find((o) => String(o?.slug || '').trim() === raw);
           return String(found?.id || '').trim();
         };
         const filterRootPeriods = (periods: Period[]) => {
@@ -303,7 +337,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
         };
         const res = await api.list<Period>('/periods/', {
           pageSize: 500,
-          params: { project_id: String(selectedTeamId), parent_id: 'null' },
+          params: { project_id: String(s.selectedTeamId), parent_id: 'null' },
         });
         let rootOnly = filterRootPeriods(res.results || []);
         if (rootOnly.length === 0) {
@@ -325,16 +359,16 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     };
     void loadSeasons();
     return () => { cancelled = true; };
-  }, [selectedTeamId]);
+  }, [s.selectedTeamId]);
 
   // Load competitions when season selected
   useEffect(() => {
-    if (!selectedSeasonId) { setCompetitions([]); return; }
+    if (!s.selectedSeasonId) { setCompetitions([]); return; }
     let cancelled = false;
     const loadComps = async () => {
       try {
         setLoadingCompetitions(true);
-        const season = seasons.find(s => String(s.id) === selectedSeasonId);
+        const season = s.seasons.find(ss => String(ss.id) === s.selectedSeasonId);
         if (!season) return;
         const res = await api.list<Period>('/periods/', {
           pageSize: 500,
@@ -349,12 +383,12 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     };
     void loadComps();
     return () => { cancelled = true; };
-  }, [selectedSeasonId, seasons]);
+  }, [s.selectedSeasonId, s.seasons]);
 
   // Load matches when competition selected
   useEffect(() => {
-    const shouldLoadForSeasonOnly = Boolean(selectedSeasonId && competitions.length === 0);
-    const periodId = selectedCompetitionId || (shouldLoadForSeasonOnly ? selectedSeasonId : '');
+    const shouldLoadForSeasonOnly = Boolean(s.selectedSeasonId && s.competitions.length === 0);
+    const periodId = s.selectedCompetitionId || (shouldLoadForSeasonOnly ? s.selectedSeasonId : '');
     if (!periodId) { setMatches([]); return; }
     let cancelled = false;
     const loadMatches = async () => {
@@ -373,22 +407,24 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     };
     void loadMatches();
     return () => { cancelled = true; };
-  }, [selectedCompetitionId, selectedSeasonId, competitions]);
+  }, [s.selectedCompetitionId, s.selectedSeasonId, s.competitions]);
 
   return {
-    activeContext,
-    activeContextLoading,
-    activeContextError,
-    savingContext,
-    selectedOrgId, setSelectedOrgId,
-    selectedClubId, setSelectedClubId,
-    selectedTeamId, setSelectedTeamId,
-    selectedSeasonId, setSelectedSeasonId,
-    selectedCompetitionId, setSelectedCompetitionId,
-    selectedMatchId, setSelectedMatchId,
-    hasEditedContext, setHasEditedContext,
-    organisations, clubs, teams, seasons, competitions, matches,
-    loadingOrgs, loadingClubs, loadingTeams, loadingSeasons, loadingCompetitions, loadingMatches,
+    activeContext: s.activeContext,
+    activeContextLoading: s.activeContextLoading,
+    activeContextError: s.activeContextError,
+    savingContext: s.savingContext,
+    selectedOrgId: s.selectedOrgId, setSelectedOrgId,
+    selectedClubId: s.selectedClubId, setSelectedClubId,
+    selectedTeamId: s.selectedTeamId, setSelectedTeamId,
+    selectedSeasonId: s.selectedSeasonId, setSelectedSeasonId,
+    selectedCompetitionId: s.selectedCompetitionId, setSelectedCompetitionId,
+    selectedMatchId: s.selectedMatchId, setSelectedMatchId,
+    hasEditedContext: s.hasEditedContext, setHasEditedContext,
+    organisations: s.organisations, clubs: s.clubs, teams: s.teams,
+    seasons: s.seasons, competitions: s.competitions, matches: s.matches,
+    loadingOrgs: s.loadingOrgs, loadingClubs: s.loadingClubs, loadingTeams: s.loadingTeams,
+    loadingSeasons: s.loadingSeasons, loadingCompetitions: s.loadingCompetitions, loadingMatches: s.loadingMatches,
     applyActiveContextSelection,
   };
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Badge, Card } from '@django-core/design-system';
-import { Table } from '../../../shims/design-system';
+import { Table } from '@/shims/design-system';
 import styles from './UsersTable.module.css';
 import type { UsersTableProps } from './UsersTable.types';
 import {

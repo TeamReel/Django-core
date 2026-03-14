@@ -6,6 +6,8 @@
 import type React from 'react';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
+import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import type { Period, SeasonProject as Project } from '../../types/season';
@@ -76,10 +78,14 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
     navigate,
   } = deps;
 
+  const { pushToast } = useToast();
+
+  const apiV1 = getApiV1BaseUrl();
+
   const savePeriodEdits = async (periodToEdit: PeriodEditRef, patch: Record<string, unknown>) => {
-    const pid = String(periodToEdit?.id || periodToEdit?.period_id || periodToEdit?.uuid || periodToEdit?.data?.id || (periodToEdit?.data?.data as any)?.id || resolvedCompetitionId || '').trim();
+    const pid = String(periodToEdit?.id || periodToEdit?.period_id || periodToEdit?.uuid || periodToEdit?.data?.id || (periodToEdit?.data?.data as Record<string, unknown> | undefined)?.id || resolvedCompetitionId || '').trim();
     if (!pid) throw new Error('Missing period id');
-    const updated = await api.patch<any>(`/periods/${encodeURIComponent(pid)}/`, patch) ?? { ...periodToEdit, ...patch };
+    const updated = await api.patch<Period>(`/periods/${encodeURIComponent(pid)}/`, patch) ?? { ...periodToEdit, ...patch };
     if (String(updated?.id) === String(competition?.id)) setCompetition((prev) => prev ? { ...prev, ...updated } : updated);
     setSelectedEditPeriod((prev: PeriodEditRef | null) => {
       const pId = String(prev?.id || prev?.data?.id || '').trim();
@@ -91,7 +97,7 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
   const saveMatchEdits = async (matchToEdit: MatchRef, patch: Record<string, unknown>) => {
     const mid = String(matchToEdit?.id || '').trim();
     if (!mid) throw new Error('Missing match id');
-    const updated = await api.patch<any>(`/activities/${encodeURIComponent(mid)}/`, patch) ?? { ...matchToEdit, ...patch };
+    const updated = await api.patch<Activity>(`/activities/${encodeURIComponent(mid)}/`, patch) ?? { ...matchToEdit, ...patch };
     setMatches((prev) => prev.map((m) => String(m.id) === String(updated?.id) ? { ...m, ...updated } : m));
   };
 
@@ -105,7 +111,7 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
     try {
       await api.delete(`/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(mid)}/`);
       setMembers((prev) => prev.filter((m: MemberRef) => String(m.id) !== mid));
-    } catch (e) { logger.error('Error removing member', e); alert(e instanceof Error ? e.message : 'Error removing member'); }
+    } catch (e) { logger.error('Error removing member', e); pushToast({ message: e instanceof Error ? e.message : 'Error removing member', type: 'error' }); }
   };
 
   const saveMembershipRole = async (membership: MemberRef, role: string) => {
@@ -143,7 +149,7 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
     try {
       await api.delete(`/periods/${encodeURIComponent(cid)}/`);
       navigate(`${seasonsBasePath}/${seasonKeyOrId}?tab=competitions`);
-    } catch (e) { logger.error('Error deleting competition', e); alert('Error deleting competition'); }
+    } catch (e) { logger.error('Error deleting competition', e); pushToast({ message: 'Error deleting competition', type: 'error' }); }
   };
 
   const createMatchInCompetition = async (payload: CreateMatchPayload) => {
@@ -151,7 +157,7 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
     const cid = String(resolvedCompetitionId || competition?.id || '').trim();
     if (!pid) throw new Error('Missing team id');
     if (!cid) throw new Error('Missing competition id');
-    const created = await api.post<any>('/activities/', {
+    const created = await api.post<Activity>('/activities/', {
       title: payload.title, activity_type: 'match', project_id: Number(pid),
       opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
       period_id: cid, start_time: payload.start_time, end_time: payload.end_time,
@@ -177,7 +183,7 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
 
   const refreshMembers = () => {
     setMembersLoading(true);
-    const url = `${apiBaseUrl}/api/v1/projects/${project?.id || projectSlugOrId}/members/?page_size=250`;
+    const url = `${apiV1}/projects/${project?.id || projectSlugOrId}/members/?page_size=250`;
     fetchAllPages<MemberRef>(url, { credentials: 'include' })
       .then((all) => setMembers(all))
       .catch(() => {})

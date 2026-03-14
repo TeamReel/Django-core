@@ -15,7 +15,7 @@ interface VideoPreviewModalProps {
 const VideoPreviewModal: React.FC<VideoPreviewModalProps> = ({ videoUrl, videoLabel, onClose }) => {
   useEscapeKey(onClose);
   return (
-    <div onClick={onClose} className={s.modalBackdrop}>
+    <div onClick={onClose} className={s.modalBackdrop} role="presentation">
       <div
         onClick={(e) => e.stopPropagation()}
         className={`${s.previewModalContainer} ${s.dialogShadow}`}

@@ -5,7 +5,6 @@ import {
   Tab,
   TabPanel,
 } from '../../shims/design-system';
-import AppShell from '../../components/AppShell';
 import {
   DashboardTabPanel,
   ListDetailTabPanel,
@@ -16,7 +15,7 @@ import {
 
 export function TemplatesPage() {
   return (
-    <AppShell>
+    <>
       <div className="p-6 h-[calc(100vh-64px)] flex flex-col">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Page Templates</h1>
@@ -57,7 +56,7 @@ export function TemplatesPage() {
           </div>
         </Tabs>
       </div>
-    </AppShell>
+    </>
   );
 }
 

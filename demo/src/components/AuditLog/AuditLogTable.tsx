@@ -46,7 +46,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         if (projectId) params.project = projectId;
         params.ordering = '-timestamp';
 
-        const data = await api.get<any>('/activity/', { params });
+        const data = await api.get<AuditEvent[] | { results: AuditEvent[] }>('/activity/', { params });
         const results = Array.isArray(data) ? data : (data.results || []);
         setEvents(results);
         setError(null);

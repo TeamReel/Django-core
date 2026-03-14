@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { createApiClient } from '@django-core/api-client';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
+import { ApiError } from '@/api/errors';
 import { logger } from '@/utils/logger';
 
 export interface SearchResult {
@@ -86,36 +86,17 @@ export function useSearch(): UseSearchReturn {
     setError(null);
 
     try {
-      // Use getApiBaseUrl() for consistent API base URL handling
-      const baseUrl = getApiBaseUrl();
-      const api = createApiClient({ baseUrl });
-
-      const params = new URLSearchParams({ q: query });
-      // Ensure we don't double-slash if baseUrl ends with / and endpoint starts with /
-      // But createApiClient usually handles concatenation.
-      // However, the endpoint here includes /api/v1/search/ which duplicates /api/v1 if baseUrl has it.
-      // Let's check if baseUrl already includes /api/v1
-
-      let endpoint = '/api/v1/search/';
-      if (baseUrl.includes('/api/v1')) {
-         endpoint = '/search/';
-      }
-
-      const response = await api.get<any>(`${endpoint}?${params.toString()}`, {
+      const data = await api.get<GroupedSearchResults>('/search/', {
+        params: { q: query },
         signal: abortControllerRef.current.signal,
       });
-
-      // Handle envelope format { status: 'success', data: { ... } }
-      if (response.data && response.data.data) {
-          return response.data.data;
-      }
-      return response.data ?? null;
+      return data ?? null;
     } catch (err: unknown) {
-      logger.error('useSearch error', err);
       if (err instanceof Error && err.name === 'AbortError') {
         return null;
       }
-      setError(err instanceof Error ? err.message : 'Search failed');
+      logger.error('useSearch error', err);
+      setError(err instanceof ApiError ? err.message : err instanceof Error ? err.message : 'Search failed');
       return null;
     } finally {
       setIsSearching(false);
@@ -138,34 +119,17 @@ export function useSearch(): UseSearchReturn {
       setError(null);
 
       try {
-        const baseUrl = getApiBaseUrl();
-        const api = createApiClient({ baseUrl });
-
-        let endpoint = '/api/v1/search/';
-        if (baseUrl.includes('/api/v1')) {
-           endpoint = '/search/';
-        }
-
-        const params = new URLSearchParams({
-          q: query,
-          types: types.join(','),
-          page: page.toString(),
-        });
-        const response = await api.get<any>(`${endpoint}?${params.toString()}`, {
+        const data = await api.get<PaginatedSearchResults>('/search/', {
+          params: { q: query, types: types.join(','), page },
           signal: abortControllerRef.current.signal,
         });
-
-        // Handle envelope format { status: 'success', data: { ... } }
-        if (response.data && response.data.data) {
-            return response.data.data;
-        }
-        return response.data ?? null;
+        return data ?? null;
       } catch (err: unknown) {
-        logger.error('useSearch filtered error', err);
         if (err instanceof Error && err.name === 'AbortError') {
           return null;
         }
-        setError(err instanceof Error ? err.message : 'Search failed');
+        logger.error('useSearch filtered error', err);
+        setError(err instanceof ApiError ? err.message : err instanceof Error ? err.message : 'Search failed');
         return null;
       } finally {
         setIsSearching(false);
@@ -189,31 +153,17 @@ export function useSearch(): UseSearchReturn {
     setError(null);
 
     try {
-      const baseUrl = getApiBaseUrl();
-      const api = createApiClient({ baseUrl });
-
-      let endpoint = '/api/v1/search/';
-      if (baseUrl.includes('/api/v1')) {
-        endpoint = '/search/';
-      }
-
-      const params = new URLSearchParams({ q: query, hierarchy: 'true' });
-
-      const response = await api.get<any>(`${endpoint}?${params.toString()}`, {
+      const data = await api.get<GroupedSearchResults>('/search/', {
+        params: { q: query, hierarchy: 'true' },
         signal: abortControllerRef.current.signal,
       });
-
-      // Handle envelope format { status: 'success', data: { ... } }
-      if (response.data && response.data.data) {
-        return response.data.data;
-      }
-      return response.data ?? null;
+      return data ?? null;
     } catch (err: unknown) {
-      logger.error('useSearch hierarchy error', err);
       if (err instanceof Error && err.name === 'AbortError') {
         return null;
       }
-      setError(err instanceof Error ? err.message : 'Hierarchical search failed');
+      logger.error('useSearch hierarchy error', err);
+      setError(err instanceof ApiError ? err.message : err instanceof Error ? err.message : 'Hierarchical search failed');
       return null;
     } finally {
       setIsSearching(false);

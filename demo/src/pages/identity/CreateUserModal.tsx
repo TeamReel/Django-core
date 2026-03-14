@@ -5,8 +5,9 @@ import {
   Modal,
 } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { api, ApiError } from '../../api';
+import { api, ApiError } from '@/api';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import styles from './CreateUserModal.module.css';
 
 interface CreateUserModalProps {
@@ -62,7 +63,7 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
             'Failed to create user'
         );
       } else {
-        setError(err instanceof Error ? err.message : 'Failed to create user');
+        setError(getErrorMessage(err));
       }
     } finally {
       setLoading(false);

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { api } from '@/api/client';
+import type { ProjectMembership } from '@/types/api/project';
 import { getMediaProcessingState } from '@/utils/mediaHelpers';
 import type { TeamMemberRecord } from './useTeamTabData.types';
 import { TRACKED_SLOTS } from './useTeamTabData.types';
@@ -38,7 +39,7 @@ export function useMediaProgress({
 
       setFullMembersLoading(true);
       try {
-        const { results } = await api.list<any>(
+        const { results } = await api.list<ProjectMembership>(
           `/projects/${encodeURIComponent(teamId)}/members/`,
           { pageSize: 200 },
         );

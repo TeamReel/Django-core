@@ -1,5 +1,5 @@
 import React, { CSSProperties, ReactNode, ReactElement } from 'react';
-import { List } from 'react-window';
+import { List, type RowComponentProps } from 'react-window';
 
 /**
  * VirtualizedList - A wrapper around react-window for easy list virtualization
@@ -81,7 +81,7 @@ export function VirtualizedList<T>({
   // React-window 2.x rowComponent API
   // Props are spread directly onto the row component, including custom rowProps
   const RowComponent = (
-    props: { items: T[]; renderItem: typeof renderItem; index: number; style: CSSProperties }
+    props: RowComponentProps<{ items: T[]; renderItem: typeof renderItem }>
   ): ReactElement | null => {
     const { items: rowItems, renderItem: render, index, style } = props;
     const item = rowItems[index];
@@ -95,7 +95,7 @@ export function VirtualizedList<T>({
       rowCount={items.length}
       rowHeight={itemHeight}
       overscanCount={overscanCount}
-      rowComponent={RowComponent as any}
+      rowComponent={RowComponent}
       rowProps={{ items, renderItem }}
     />
   );

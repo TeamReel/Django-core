@@ -7,7 +7,7 @@ vi.mock('../../../pages/identity/matchCreateHelpers', () => ({
 }));
 vi.mock('@/utils/logger', () => ({ logger: { error: vi.fn() } }));
 
-import { useMatchSubmit } from '../../../pages/identity/useMatchSubmit';
+import { useMatchSubmit } from '@/pages/identity/useMatchSubmit';
 
 const makeMockForm = (overrides: Record<string, unknown> = {}) => ({
   setTitle: vi.fn(), setTitleTouched: vi.fn(), setTitleAutoValue: vi.fn(),

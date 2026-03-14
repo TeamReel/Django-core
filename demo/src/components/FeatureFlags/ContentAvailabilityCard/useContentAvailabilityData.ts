@@ -3,6 +3,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
 import {
   createScopeOverride,
   deleteOrgOverride,
@@ -10,7 +11,7 @@ import {
   updateOrgOverride,
   type ApiFeatureFlag,
   type ScopeType,
-} from '../../../utils/featureFlagsApi';
+} from '@/utils/featureFlagsApi';
 import {
   TYPE_LABELS,
   SUBTYPE_LABELS,
@@ -24,6 +25,7 @@ export function useContentAvailabilityData({
   organisationId,
   projectId,
 }: ContentAvailabilityCardProps) {
+  const { pushToast } = useToast();
   const [flags, setFlags] = useState<ApiFeatureFlag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -203,7 +205,7 @@ export function useContentAvailabilityData({
       setSelectedIds(new Set());
     } catch (err) {
       logger.error('Bulk update failed', err);
-      alert('Bulk update failed. Check console for details.');
+      pushToast({ message: 'Bulk update failed. Check console for details.', type: 'error' });
     } finally {
       setBulkUpdating(false);
     }
@@ -214,7 +216,7 @@ export function useContentAvailabilityData({
 
     const nextValue = !row.effectiveValue;
     if (nextValue && row.disableEnable) {
-      alert(row.disabledReason);
+      pushToast({ message: row.disabledReason, type: 'warning' });
       return;
     }
 
@@ -228,7 +230,7 @@ export function useContentAvailabilityData({
       await fetchAvailabilityFlags();
     } catch (err) {
       logger.error('Failed to update availability flag', err);
-      alert('Failed to update availability. Check console for details.');
+      pushToast({ message: 'Failed to update availability. Check console for details.', type: 'error' });
     } finally {
       setUpdatingKey(null);
     }
@@ -242,7 +244,7 @@ export function useContentAvailabilityData({
       await fetchAvailabilityFlags();
     } catch (err) {
       logger.error('Failed to reset availability flag', err);
-      alert('Failed to reset availability. Check console for details.');
+      pushToast({ message: 'Failed to reset availability. Check console for details.', type: 'error' });
     } finally {
       setUpdatingKey(null);
     }

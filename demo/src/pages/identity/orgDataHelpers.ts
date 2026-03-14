@@ -61,30 +61,51 @@ export interface MatchPathDeps {
   orgPeriods: Period[];
 }
 
+/** Minimal match shape for path building */
+interface MatchRef {
+  slug?: string;
+  id?: string | number;
+  project_id?: string | number;
+  period_id?: string | number;
+  project?: {
+    id?: string | number;
+    parent_id?: string | number;
+    parent?: { id?: string | number } | null;
+    parent_project_id?: string | number;
+  } | null;
+  period?: {
+    id?: string | number;
+    slug?: string;
+    parent_period_id?: string | number;
+    parent_period?: { id?: string | number; slug?: string; name?: string } | null;
+    [key: string]: unknown;
+  } | null;
+}
+
 /**
  * Build the best deep-link path for a given match, using club/team/period
  * hierarchy data when available.
  */
-export const getBestMatchDetailPath = (m: any, deps: MatchPathDeps): string => {
+export const getBestMatchDetailPath = (m: MatchRef, deps: MatchPathDeps): string => {
   const matchSlugOrId = String(m?.slug || m?.id || '').trim();
   if (!matchSlugOrId) return '/matches';
 
   const orgSlug = String(deps.currentOrgSlug || '').trim();
   if (!orgSlug) return `/matches/${matchSlugOrId}`;
 
-  const clubById = new Map<string, any>();
+  const clubById = new Map<string, Project>();
   for (const c of deps.clubs) {
     if (!c) continue;
     clubById.set(String(c.id), c);
   }
 
-  const teamById = new Map<string, any>();
+  const teamById = new Map<string, Project>();
   for (const t of deps.teams) {
     if (!t) continue;
     teamById.set(String(t.id), t);
   }
 
-  const periodById = new Map<string, any>();
+  const periodById = new Map<string, Period>();
   for (const p of deps.orgPeriods) {
     if (!p) continue;
     periodById.set(String(p.id), p);

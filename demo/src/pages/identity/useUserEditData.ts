@@ -4,8 +4,9 @@
  * Hooks into: form state, avatar upload, org/club/team role management,
  * project loading, membership fetching, and all role update functions.
  */
-import { useMemo, useState, useEffect, useRef, useCallback, type Dispatch, type SetStateAction, type RefObject, type ChangeEvent } from 'react';
+import { useMemo, useReducer, useEffect, useRef, useCallback, type Dispatch, type SetStateAction, type RefObject, type ChangeEvent } from 'react';
 import { api } from '@/api';
+import type { ProjectMembership } from '@/types/api/project';
 import { logger } from '@/utils/logger';
 import {
   type User,
@@ -13,6 +14,7 @@ import {
   type OrgProjectChoice,
   readFunctionalRolesFromMembership,
 } from './userEditTypes';
+import { formReducer, makeSetter } from '@/utils/formReducer';
 
 export interface UseUserEditDataParams {
   opened: boolean;
@@ -71,41 +73,81 @@ export interface UseUserEditDataReturn {
   performLinkToProject: (key: string, role: string, type: 'club' | 'team') => Promise<void>;
 }
 
+// ── State interface ──────────────────────────────────────────────────────────
+
+interface UserEditState {
+  activeTab: 'personal' | 'access' | 'link';
+  formData: Partial<User>;
+  saving: boolean;
+  extraError: string | null;
+  avatarUploading: boolean;
+  avatarPreview: string | null;
+  orgRole: 'member' | 'admin';
+  orgMembershipId: string | null;
+  selectedClubKey: string;
+  clubMembershipId: string | null;
+  clubAccessRole: 'viewer' | 'editor' | 'admin';
+  selectedTeamKey: string;
+  teamMembershipId: string | null;
+  teamAccessRole: 'viewer' | 'editor' | 'admin';
+  functionalRoles: string[];
+  initialFunctionalRoles: string[];
+  linkClubKey: string;
+  linkTeamKey: string;
+  linkAccessRole: 'viewer' | 'editor' | 'admin';
+  orgProjects: OrgProjectChoice[];
+  orgProjectsLoading: boolean;
+  orgProjectsError: string | null;
+  inviteOrgRole: 'member' | 'admin';
+  addingToOrg: boolean;
+  addingToProject: boolean;
+}
+
+const initialUserEditState: UserEditState = {
+  activeTab: 'access', formData: {}, saving: false, extraError: null,
+  avatarUploading: false, avatarPreview: null,
+  orgRole: 'member', orgMembershipId: null,
+  selectedClubKey: '', clubMembershipId: null, clubAccessRole: 'viewer',
+  selectedTeamKey: '', teamMembershipId: null, teamAccessRole: 'viewer',
+  functionalRoles: [], initialFunctionalRoles: [],
+  linkClubKey: '', linkTeamKey: '', linkAccessRole: 'viewer',
+  orgProjects: [], orgProjectsLoading: false, orgProjectsError: null,
+  inviteOrgRole: 'member', addingToOrg: false, addingToProject: false,
+};
+
 export function useUserEditData({ opened, user, organisationSlug, scopeProjectKey, onSaved }: UseUserEditDataParams): UseUserEditDataReturn {
-  const [activeTab, setActiveTab] = useState<'personal' | 'access' | 'link'>('access');
-  const [formData, setFormData] = useState<Partial<User>>({});
-  const [saving, setSaving] = useState(false);
-  const [extraError, setExtraError] = useState<string | null>(null);
+  /* ── Reducer state ── */
+  const [s, dispatch] = useReducer(formReducer<UserEditState>, initialUserEditState);
 
-  // Avatar upload
-  const [avatarUploading, setAvatarUploading] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  /* ── Backward-compatible setters ── */
+  const setActiveTab = useMemo(() => makeSetter<UserEditState, 'activeTab'>(dispatch, 'activeTab'), [dispatch]);
+  const setFormData = useMemo(() => makeSetter<UserEditState, 'formData'>(dispatch, 'formData'), [dispatch]);
+  const setSaving = useMemo(() => makeSetter<UserEditState, 'saving'>(dispatch, 'saving'), [dispatch]);
+  const setExtraError = useMemo(() => makeSetter<UserEditState, 'extraError'>(dispatch, 'extraError'), [dispatch]);
+  const setAvatarUploading = useMemo(() => makeSetter<UserEditState, 'avatarUploading'>(dispatch, 'avatarUploading'), [dispatch]);
+  const setAvatarPreview = useMemo(() => makeSetter<UserEditState, 'avatarPreview'>(dispatch, 'avatarPreview'), [dispatch]);
+  const setOrgRole = useMemo(() => makeSetter<UserEditState, 'orgRole'>(dispatch, 'orgRole'), [dispatch]);
+  const setOrgMembershipId = useMemo(() => makeSetter<UserEditState, 'orgMembershipId'>(dispatch, 'orgMembershipId'), [dispatch]);
+  const setSelectedClubKey = useMemo(() => makeSetter<UserEditState, 'selectedClubKey'>(dispatch, 'selectedClubKey'), [dispatch]);
+  const setClubMembershipId = useMemo(() => makeSetter<UserEditState, 'clubMembershipId'>(dispatch, 'clubMembershipId'), [dispatch]);
+  const setClubAccessRole = useMemo(() => makeSetter<UserEditState, 'clubAccessRole'>(dispatch, 'clubAccessRole'), [dispatch]);
+  const setSelectedTeamKey = useMemo(() => makeSetter<UserEditState, 'selectedTeamKey'>(dispatch, 'selectedTeamKey'), [dispatch]);
+  const setTeamMembershipId = useMemo(() => makeSetter<UserEditState, 'teamMembershipId'>(dispatch, 'teamMembershipId'), [dispatch]);
+  const setTeamAccessRole = useMemo(() => makeSetter<UserEditState, 'teamAccessRole'>(dispatch, 'teamAccessRole'), [dispatch]);
+  const setFunctionalRoles = useMemo(() => makeSetter<UserEditState, 'functionalRoles'>(dispatch, 'functionalRoles'), [dispatch]);
+  const setInitialFunctionalRoles = useMemo(() => makeSetter<UserEditState, 'initialFunctionalRoles'>(dispatch, 'initialFunctionalRoles'), [dispatch]);
+  const setLinkClubKey = useMemo(() => makeSetter<UserEditState, 'linkClubKey'>(dispatch, 'linkClubKey'), [dispatch]);
+  const setLinkTeamKey = useMemo(() => makeSetter<UserEditState, 'linkTeamKey'>(dispatch, 'linkTeamKey'), [dispatch]);
+  const setLinkAccessRole = useMemo(() => makeSetter<UserEditState, 'linkAccessRole'>(dispatch, 'linkAccessRole'), [dispatch]);
+  const setOrgProjects = useMemo(() => makeSetter<UserEditState, 'orgProjects'>(dispatch, 'orgProjects'), [dispatch]);
+  const setOrgProjectsLoading = useMemo(() => makeSetter<UserEditState, 'orgProjectsLoading'>(dispatch, 'orgProjectsLoading'), [dispatch]);
+  const setOrgProjectsError = useMemo(() => makeSetter<UserEditState, 'orgProjectsError'>(dispatch, 'orgProjectsError'), [dispatch]);
+  const setInviteOrgRole = useMemo(() => makeSetter<UserEditState, 'inviteOrgRole'>(dispatch, 'inviteOrgRole'), [dispatch]);
+  const setAddingToOrg = useMemo(() => makeSetter<UserEditState, 'addingToOrg'>(dispatch, 'addingToOrg'), [dispatch]);
+  const setAddingToProject = useMemo(() => makeSetter<UserEditState, 'addingToProject'>(dispatch, 'addingToProject'), [dispatch]);
+
+  // Avatar ref (stays outside reducer)
   const avatarInputRef = useRef<HTMLInputElement>(null);
-
-  const [orgRole, setOrgRole] = useState<'member' | 'admin'>('member');
-  const [orgMembershipId, setOrgMembershipId] = useState<string | null>(null);
-
-  const [selectedClubKey, setSelectedClubKey] = useState<string>('');
-  const [clubMembershipId, setClubMembershipId] = useState<string | null>(null);
-  const [clubAccessRole, setClubAccessRole] = useState<'viewer' | 'editor' | 'admin'>('viewer');
-
-  const [selectedTeamKey, setSelectedTeamKey] = useState<string>('');
-  const [teamMembershipId, setTeamMembershipId] = useState<string | null>(null);
-  const [teamAccessRole, setTeamAccessRole] = useState<'viewer' | 'editor' | 'admin'>('viewer');
-  const [functionalRoles, setFunctionalRoles] = useState<string[]>([]);
-  const [initialFunctionalRoles, setInitialFunctionalRoles] = useState<string[]>([]);
-
-  const [linkClubKey, setLinkClubKey] = useState<string>('');
-  const [linkTeamKey, setLinkTeamKey] = useState<string>('');
-  const [linkAccessRole, setLinkAccessRole] = useState<'viewer' | 'editor' | 'admin'>('viewer');
-
-  const [orgProjects, setOrgProjects] = useState<OrgProjectChoice[]>([]);
-  const [orgProjectsLoading, setOrgProjectsLoading] = useState(false);
-  const [orgProjectsError, setOrgProjectsError] = useState<string | null>(null);
-
-  const [inviteOrgRole, setInviteOrgRole] = useState<'member' | 'admin'>('member');
-  const [addingToOrg, setAddingToOrg] = useState(false);
-  const [addingToProject, setAddingToProject] = useState(false);
 
   // ── Available projects memo ──
   const availableProjects = useMemo<ProjectChoice[]>(() => {
@@ -121,11 +163,11 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
         return { slug: proj?.slug || key, id: proj?.id || pm?.project_id, name: proj?.name || key, parent_id: proj?.parent_id ?? null, parent_slug: proj?.parent_slug ?? null };
       }).filter(Boolean);
     }
-    if (list.length === 0 && orgProjects.length > 0) {
-      return orgProjects.map(op => ({ key: op.key, name: op.name, isTeam: op.isTeam, parentKey: op.parentKey ?? undefined }));
+    if (list.length === 0 && s.orgProjects.length > 0) {
+      return s.orgProjects.map(op => ({ key: op.key, name: op.name, isTeam: op.isTeam, parentKey: op.parentKey ?? undefined }));
     }
     const orgProjectMap = new Map<string, OrgProjectChoice>();
-    if (Array.isArray(orgProjects)) for (const op of orgProjects) if (op.key) orgProjectMap.set(op.key, op);
+    if (Array.isArray(s.orgProjects)) for (const op of s.orgProjects) if (op.key) orgProjectMap.set(op.key, op);
     return list.map((p: Record<string, unknown>) => {
       const key = String(p?.slug || p?.id || '').trim();
       const name = String(p?.name || p?.title || p?.slug || p?.id || '').trim();
@@ -138,7 +180,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       if (!parentKey && (p?.parent_id || p?.parent_slug)) parentKey = String(p.parent_slug || p.parent_id).trim();
       return { key, name, isTeam, parentKey };
     }).filter((p: { key: string }) => Boolean(p.key));
-  }, [user, orgProjects]);
+  }, [user, s.orgProjects]);
 
   // ── User init effect ──
   const prevUserIdRef = useRef<string | null>(null);
@@ -214,11 +256,11 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       const knownId = local?.membership_id ? String(local.membership_id).trim() : null;
       if (knownId) {
         try {
-          found = await api.get<any>(`/projects/${encodeURIComponent(projectKey)}/members/${encodeURIComponent(knownId)}/`);
+          found = await api.get<ProjectMembership>(`/projects/${encodeURIComponent(projectKey)}/members/${encodeURIComponent(knownId)}/`);
         } catch { /* fallback */ }
       }
       if (!found) {
-        const { results: members } = await api.list<any>(`/projects/${encodeURIComponent(projectKey)}/members/`, { pageSize: 500 });
+        const { results: members } = await api.list<ProjectMembership>(`/projects/${encodeURIComponent(projectKey)}/members/`, { pageSize: 500 });
         const uid = String(user?.id || '').trim();
           const matches = members.filter((m: { user?: Record<string, unknown>; user_id?: string }) => {
             const mUid = m?.user?.id ?? m?.user_id ?? m?.user;
@@ -233,8 +275,8 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
   // ── Club membership effect ──
   useEffect(() => {
     const run = async () => {
-      if (!selectedClubKey) { setClubMembershipId(null); setClubAccessRole('viewer'); return; }
-      const m = await fetchMemberInfo(selectedClubKey);
+      if (!s.selectedClubKey) { setClubMembershipId(null); setClubAccessRole('viewer'); return; }
+      const m = await fetchMemberInfo(s.selectedClubKey);
       if (m) {
         setClubMembershipId(m.id);
         const r = String(m.role || 'viewer').toLowerCase();
@@ -242,13 +284,13 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       } else { setClubMembershipId(null); setClubAccessRole('viewer'); }
     };
     void run();
-  }, [selectedClubKey, user, opened, fetchMemberInfo]);
+  }, [s.selectedClubKey, user, opened, fetchMemberInfo]);
 
   // ── Team membership effect ──
   useEffect(() => {
     const run = async () => {
-      if (!selectedTeamKey) { setTeamMembershipId(null); setTeamAccessRole('viewer'); setFunctionalRoles([]); setInitialFunctionalRoles([]); return; }
-      const m = await fetchMemberInfo(selectedTeamKey);
+      if (!s.selectedTeamKey) { setTeamMembershipId(null); setTeamAccessRole('viewer'); setFunctionalRoles([]); setInitialFunctionalRoles([]); return; }
+      const m = await fetchMemberInfo(s.selectedTeamKey);
       if (m) {
         setTeamMembershipId(m.id);
         const r = String(m.role || 'viewer').toLowerCase();
@@ -258,7 +300,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       } else { setTeamMembershipId(null); setTeamAccessRole('viewer'); setFunctionalRoles([]); setInitialFunctionalRoles([]); }
     };
     void run();
-  }, [selectedTeamKey, user, opened, fetchMemberInfo]);
+  }, [s.selectedTeamKey, user, opened, fetchMemberInfo]);
 
   // ── Avatar upload ──
   const handleAvatarSelect = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -282,36 +324,36 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
 
   // ── Role update functions ──
   const updateClubRole = useCallback(async () => {
-    if (!selectedClubKey || !clubMembershipId) return;
-    await api.patch(`/projects/${encodeURIComponent(selectedClubKey)}/members/${encodeURIComponent(clubMembershipId)}/`, { role: clubAccessRole });
-  }, [selectedClubKey, clubMembershipId, clubAccessRole]);
+    if (!s.selectedClubKey || !s.clubMembershipId) return;
+    await api.patch(`/projects/${encodeURIComponent(s.selectedClubKey)}/members/${encodeURIComponent(s.clubMembershipId)}/`, { role: s.clubAccessRole });
+  }, [s.selectedClubKey, s.clubMembershipId, s.clubAccessRole]);
 
   const updateTeamRole = useCallback(async () => {
-    if (!selectedTeamKey || !teamMembershipId) return;
-    await api.patch(`/projects/${encodeURIComponent(selectedTeamKey)}/members/${encodeURIComponent(teamMembershipId)}/`, { role: teamAccessRole });
-    const prev = new Set(initialFunctionalRoles);
-    const next = new Set(functionalRoles);
+    if (!s.selectedTeamKey || !s.teamMembershipId) return;
+    await api.patch(`/projects/${encodeURIComponent(s.selectedTeamKey)}/members/${encodeURIComponent(s.teamMembershipId)}/`, { role: s.teamAccessRole });
+    const prev = new Set(s.initialFunctionalRoles);
+    const next = new Set(s.functionalRoles);
     const toAdd = Array.from(next).filter(r => !prev.has(r));
     const toRemove = Array.from(prev).filter(r => !next.has(r));
     const uid = Number(user?.id);
     if (toAdd.length) {
-      await api.post(`/projects/${encodeURIComponent(selectedTeamKey)}/functional-roles/assign/`, { user_id: uid, roles: toAdd });
+      await api.post(`/projects/${encodeURIComponent(s.selectedTeamKey)}/functional-roles/assign/`, { user_id: uid, roles: toAdd });
     }
     if (toRemove.length) {
-      await api.post(`/projects/${encodeURIComponent(selectedTeamKey)}/functional-roles/unassign/`, { user_id: uid, roles: toRemove });
+      await api.post(`/projects/${encodeURIComponent(s.selectedTeamKey)}/functional-roles/unassign/`, { user_id: uid, roles: toRemove });
     }
     setInitialFunctionalRoles(Array.from(next).sort());
-  }, [selectedTeamKey, teamMembershipId, teamAccessRole, functionalRoles, initialFunctionalRoles, user]);
+  }, [s.selectedTeamKey, s.teamMembershipId, s.teamAccessRole, s.functionalRoles, s.initialFunctionalRoles, user]);
 
   const updateOrgRoleIfNeeded = useCallback(async () => {
     const orgSlug = String(organisationSlug || '').trim();
-    if (!orgSlug || !orgMembershipId) return;
+    if (!orgSlug || !s.orgMembershipId) return;
     const orgs = Array.isArray(user?.organisations) ? user!.organisations : [];
-    const currentEntry = orgs.find((o: { membership_id?: string }) => String(o?.membership_id || '').trim() === String(orgMembershipId));
+    const currentEntry = orgs.find((o: { membership_id?: string }) => String(o?.membership_id || '').trim() === String(s.orgMembershipId));
     const currentRole = String(currentEntry?.role || '').trim().toLowerCase();
-    if (currentRole === String(orgRole)) return;
-    await api.patch(`/organisations/${encodeURIComponent(orgSlug)}/members/${encodeURIComponent(orgMembershipId)}/`, { role: orgRole });
-  }, [organisationSlug, orgMembershipId, orgRole, user]);
+    if (currentRole === String(s.orgRole)) return;
+    await api.patch(`/organisations/${encodeURIComponent(orgSlug)}/members/${encodeURIComponent(s.orgMembershipId)}/`, { role: s.orgRole });
+  }, [organisationSlug, s.orgMembershipId, s.orgRole, user]);
 
   const linkToOrganisation = useCallback(async () => {
     if (!user) return;
@@ -319,10 +361,10 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
     if (!orgSlug) throw new Error('No federation selected');
     setAddingToOrg(true); setExtraError(null);
     try {
-      await api.post(`/organisations/${encodeURIComponent(orgSlug)}/members/`, { email: user.email, role: inviteOrgRole });
+      await api.post(`/organisations/${encodeURIComponent(orgSlug)}/members/`, { email: user.email, role: s.inviteOrgRole });
       await onSaved?.();
     } finally { setAddingToOrg(false); }
-  }, [user, organisationSlug, inviteOrgRole, onSaved]);
+  }, [user, organisationSlug, s.inviteOrgRole, onSaved]);
 
   const performLinkToProject = useCallback(async (key: string, role: string, type: 'club' | 'team') => {
     if (!user) return;
@@ -332,22 +374,22 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
     try {
       await api.post(`/projects/${encodeURIComponent(projectKey)}/members/`, { user_id: Number(user?.id), role });
       if (type === 'club') setSelectedClubKey(projectKey);
-      if (type === 'team') { setSelectedTeamKey(projectKey); const p = orgProjects.find(op => op.key === projectKey); if (p?.parentKey) setSelectedClubKey(p.parentKey); }
+      if (type === 'team') { setSelectedTeamKey(projectKey); const p = s.orgProjects.find(op => op.key === projectKey); if (p?.parentKey) setSelectedClubKey(p.parentKey); }
       setActiveTab('access');
       await onSaved?.();
     } finally { setAddingToProject(false); }
-  }, [user, orgProjects, onSaved]);
+  }, [user, s.orgProjects, onSaved]);
 
   return {
-    activeTab, setActiveTab, formData, setFormData, saving, setSaving, extraError, setExtraError,
-    avatarUploading, avatarPreview, avatarInputRef, handleAvatarSelect,
-    orgRole, setOrgRole, orgMembershipId,
-    selectedClubKey, setSelectedClubKey, clubMembershipId, clubAccessRole, setClubAccessRole,
-    selectedTeamKey, setSelectedTeamKey, teamMembershipId, teamAccessRole, setTeamAccessRole,
-    functionalRoles, setFunctionalRoles,
-    linkClubKey, setLinkClubKey, linkTeamKey, setLinkTeamKey, linkAccessRole, setLinkAccessRole,
-    orgProjects, orgProjectsLoading, orgProjectsError,
-    inviteOrgRole, setInviteOrgRole, addingToOrg, addingToProject,
+    activeTab: s.activeTab, setActiveTab, formData: s.formData, setFormData, saving: s.saving, setSaving, extraError: s.extraError, setExtraError,
+    avatarUploading: s.avatarUploading, avatarPreview: s.avatarPreview, avatarInputRef, handleAvatarSelect,
+    orgRole: s.orgRole, setOrgRole, orgMembershipId: s.orgMembershipId,
+    selectedClubKey: s.selectedClubKey, setSelectedClubKey, clubMembershipId: s.clubMembershipId, clubAccessRole: s.clubAccessRole, setClubAccessRole,
+    selectedTeamKey: s.selectedTeamKey, setSelectedTeamKey, teamMembershipId: s.teamMembershipId, teamAccessRole: s.teamAccessRole, setTeamAccessRole,
+    functionalRoles: s.functionalRoles, setFunctionalRoles,
+    linkClubKey: s.linkClubKey, setLinkClubKey, linkTeamKey: s.linkTeamKey, setLinkTeamKey, linkAccessRole: s.linkAccessRole, setLinkAccessRole,
+    orgProjects: s.orgProjects, orgProjectsLoading: s.orgProjectsLoading, orgProjectsError: s.orgProjectsError,
+    inviteOrgRole: s.inviteOrgRole, setInviteOrgRole, addingToOrg: s.addingToOrg, addingToProject: s.addingToProject,
     availableProjects,
     updateClubRole, updateTeamRole, updateOrgRoleIfNeeded,
     linkToOrganisation, performLinkToProject,

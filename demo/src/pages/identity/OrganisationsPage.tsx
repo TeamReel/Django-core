@@ -27,6 +27,9 @@ import OrganisationCreateModal from './OrganisationCreateModal';
 import { api } from '@/api';
 import { routes } from '../../routes';
 import { logger } from '@/utils/logger';
+import { useToast } from '@/components/ui/Toast';
+import { getErrorMessage } from '@/utils/errorHelpers';
+import { useCrudModals } from '@/hooks/useModalState';
 
 /**
  * T006 - Organisations List Page
@@ -38,6 +41,7 @@ import { logger } from '@/utils/logger';
  * - Permission-aware: viewer sees read-only view
  */
 export const OrganisationsPage: React.FC = () => {
+  const { pushToast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
   const confirm = useConfirm();
@@ -52,11 +56,7 @@ export const OrganisationsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('active'); // Default to 'active'
 
   // Modal state
-  const [detailOrganisation, setDetailOrganisation] = useState<Organisation | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [editOrganisation, setEditOrganisation] = useState<Organisation | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const modals = useCrudModals<Organisation>();
 
   // Permission checks - can user create organisations?
   const userRole = String(user?.role || '').toLowerCase();
@@ -90,7 +90,7 @@ export const OrganisationsPage: React.FC = () => {
         setOrganisations(results);
       } catch (err) {
         logger.error('Organisations fetch error', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch organisations');
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
       }
@@ -114,7 +114,7 @@ export const OrganisationsPage: React.FC = () => {
       setRefreshKey(k => k + 1);
     } catch (err) {
       logger.error('Delete organisation error', err);
-      alert('Failed to delete organisation');
+      pushToast({ message: 'Failed to delete organisation', type: 'error' });
     }
   };
 
@@ -146,7 +146,7 @@ export const OrganisationsPage: React.FC = () => {
         <PageHeader
         title="Federations"
         breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Dashboard', href: routes.dashboard() },
           { label: 'Federations', current: true },
         ]}
         actions={
@@ -163,7 +163,7 @@ export const OrganisationsPage: React.FC = () => {
             </select>
 
             {isSuperAdmin && (
-              <Button variant="primary" size="md" onClick={() => setIsCreateModalOpen(true)}>
+              <Button variant="primary" size="md" onClick={() => modals.create.open()}>
                 Create Organisation
               </Button>
             )}
@@ -281,20 +281,14 @@ export const OrganisationsPage: React.FC = () => {
                     <td>
                       <div className="flex-row gap-8">
                         <button
-                          onClick={() => {
-                            setDetailOrganisation(org);
-                            setIsDetailModalOpen(true);
-                          }}
+                          onClick={() => modals.detail.open(org)}
                           className={`rounded-4 cursor-pointer fs-12 fw-500 ${styles.viewBtn}`}
                         >
                           View
                         </button>
                         {userCanEdit && (
                           <button
-                            onClick={() => {
-                              setEditOrganisation(org);
-                              setIsEditModalOpen(true);
-                            }}
+                            onClick={() => modals.edit.open(org)}
                             className={`rounded-4 cursor-pointer fs-12 fw-500 ${styles.editBtn}`}
                           >
                             Edit
@@ -330,27 +324,27 @@ export const OrganisationsPage: React.FC = () => {
 
       {/* Modals */}
       <OrganisationDetailModal
-        opened={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        organisation={detailOrganisation}
+        opened={modals.detail.isOpen}
+        onClose={modals.detail.close}
+        organisation={modals.detail.item}
       />
 
       <OrganisationEditModal
-        opened={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        organisation={editOrganisation}
+        opened={modals.edit.isOpen}
+        onClose={modals.edit.close}
+        organisation={modals.edit.item}
         onSave={async (orgData) => {
-          if (!editOrganisation) return;
+          if (!modals.edit.item) return;
 
-          await api.patch(`/organisations/${editOrganisation.slug}/`, orgData);
+          await api.patch(`/organisations/${modals.edit.item.slug}/`, orgData);
 
           setRefreshKey(prev => prev + 1);
         }}
       />
 
       <OrganisationCreateModal
-        opened={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        opened={modals.create.isOpen}
+        onClose={modals.create.close}
         onCreate={async (orgData) => {
           await api.post('/organisations/', orgData);
 

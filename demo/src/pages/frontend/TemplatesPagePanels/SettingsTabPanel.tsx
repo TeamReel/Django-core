@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Button, Input } from '../../../shims/design-system';
-import { Settings } from '../../../shims/page-templates';
+import { Card, Button, Input } from '@/shims/design-system';
+import { Settings } from '@/shims/page-templates';
 import { SETTINGS_SECTIONS } from './mockData';
 
 export function SettingsTabPanel() {

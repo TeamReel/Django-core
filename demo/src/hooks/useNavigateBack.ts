@@ -15,6 +15,7 @@
  */
 import { useCallback, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { routes } from '../routes';
 
 /** Routes that should never be a "parent" destination */
 const SKIP_PARENTS = new Set(['/login', '/register', '/403', '/404']);
@@ -32,7 +33,7 @@ function getParentPath(pathname: string): string | null {
   return parent;
 }
 
-export function useNavigateBack(fallback = '/dashboard'): () => void {
+export function useNavigateBack(fallback = routes.dashboard()): () => void {
   const navigate = useNavigate();
   const location = useLocation();
   const historyDepth = useRef(0);

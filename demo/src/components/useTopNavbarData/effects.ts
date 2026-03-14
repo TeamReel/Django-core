@@ -119,7 +119,7 @@ export function useTopNavbarEffects(params: UseTopNavbarEffectsParams) {
     const fetchBalance = async () => {
       if (document.hidden) return;
       try {
-        const data = await api.get<any>(
+        const data = await api.get<{ current_balance?: number }>(
           `/transactions/organizations/${encodeURIComponent(orgIdForMyBalance)}/balance/me/`,
           { signal: controller.signal },
         );

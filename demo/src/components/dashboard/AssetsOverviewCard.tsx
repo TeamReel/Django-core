@@ -15,6 +15,8 @@ import {
   ChevronRight, AlertTriangle, Users,
 } from 'lucide-react';
 import { api } from '@/api';
+import type { BrandAsset } from '@/types/api/branding';
+import type { GenerationRequest } from '@/types/api/generative';
 import styles from './AssetsOverviewCard.module.css';
 
 /* ── Helpers ────────────────────────────────────────────── */
@@ -86,7 +88,7 @@ export const AssetsOverviewCard: React.FC = () => {
         setLoading(true);
 
         // ── 1. Fetch brand assets ──
-        const { results: brandItems } = await api.list<any>('/branding/assets/', {
+        const { results: brandItems } = await api.list<BrandAsset>('/branding/assets/', {
           params: { organisation_scope: org.slug || org.id },
         }).catch(() => ({ results: [] as unknown[], count: 0, next: null, previous: null }));
 
@@ -107,14 +109,14 @@ export const AssetsOverviewCard: React.FC = () => {
 
         // ── 2. Fetch member content coverage ──
         if (project) {
-          const { results: memberList } = await api.list<any>(
+          const { results: memberList } = await api.list<Record<string, unknown>>(
             `/organisations/${org.slug}/projects/${project.slug}/members/`,
             { pageSize: 50 },
           ).catch(() => ({ results: [] as unknown[], count: 0, next: null, previous: null }));
 
           if (memberList.length > 0) {
             // Fetch completed generation requests
-            const { results: genItems } = await api.list<any>('/generative/requests/', {
+            const { results: genItems } = await api.list<GenerationRequest>('/generative/requests/', {
               params: { status: 'completed', project: project.id },
               pageSize: 500,
             }).catch(() => ({ results: [] as unknown[], count: 0, next: null, previous: null }));

@@ -12,7 +12,7 @@ export interface CompetitionContentTabProps {
   matches: MatchRecord[];
   matchMediaMap: Record<string, Record<string, unknown>[]>;
   matchMediaLoading: boolean;
-  matchDisplayTitle: (m: any) => string;
+  matchDisplayTitle: (m: MatchRecord) => string;
   isTeamRoute: boolean;
   orgSlugOrId: string;
   clubSlugOrId: string;

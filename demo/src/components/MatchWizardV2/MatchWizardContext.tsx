@@ -4,7 +4,8 @@
  * This context holds all match-related data that needs to be shared
  * across wizard steps. Works alongside the generic WizardContext.
  */
-import React, { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from 'react';
+import React, { createContext, useContext, useCallback, useMemo, useReducer, type ReactNode } from 'react';
+import { formReducer, makeSetter } from '../../utils/formReducer';
 import type { Activity } from '../../hooks/useActivities';
 import type { ContentTemplate } from '../../pages/identity/ContentGenerationModal/types';
 import type { ContentType, ContentPhase, SquadMember } from './types';
@@ -147,26 +148,25 @@ export interface MatchWizardProviderProps {
 
 export function MatchWizardProvider({ children }: MatchWizardProviderProps) {
   // ── State ───────────────────────────────────────────────
-  const [selectedMatch, setSelectedMatch] = useState<Activity | null>(null);
-  const [matchesLoading, setMatchesLoading] = useState(false);
-  const [matchesError, setMatchesError] = useState<string | null>(null);
-  const [upcomingMatches, setUpcomingMatches] = useState<Activity[]>([]);
+  const [s, dispatch] = useReducer(formReducer<MatchWizardState>, initialState);
 
-  const [selectedContentPhase, setSelectedContentPhase] = useState<ContentPhase>('pre');
-  const [pendingContent, setPendingContent] = useState<PendingContent | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
-  const [templatesError, setTemplatesError] = useState<string | null>(null);
-
-  const [lineupSlots, setLineupSlots] = useState<LineupSlots>({ goalkeeper: [], player: [] });
-  const [lineupFormation, setLineupFormation] = useState('4-3-3');
-  const [squadGroups, setSquadGroups] = useState<Record<string, SquadMember[]>>({ goalkeeper: [], player: [] });
-  const [guestPlayers, setGuestPlayers] = useState<SquadMember[]>([]);
-  const [squadLoading, setSquadLoading] = useState(false);
-  const [squadError, setSquadError] = useState<string | null>(null);
-
-  const [progress, setProgress] = useState(0);
-  const [generationError, setGenerationError] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const setSelectedMatch        = useMemo(() => makeSetter(dispatch, 'selectedMatch'), [dispatch]);
+  const setMatchesLoading       = useMemo(() => makeSetter(dispatch, 'matchesLoading'), [dispatch]);
+  const setMatchesError         = useMemo(() => makeSetter(dispatch, 'matchesError'), [dispatch]);
+  const setUpcomingMatches      = useMemo(() => makeSetter(dispatch, 'upcomingMatches'), [dispatch]);
+  const setSelectedContentPhase = useMemo(() => makeSetter(dispatch, 'selectedContentPhase'), [dispatch]);
+  const setPendingContent       = useMemo(() => makeSetter(dispatch, 'pendingContent'), [dispatch]);
+  const setSelectedTemplate     = useMemo(() => makeSetter(dispatch, 'selectedTemplate'), [dispatch]);
+  const setTemplatesError       = useMemo(() => makeSetter(dispatch, 'templatesError'), [dispatch]);
+  const setLineupSlots          = useMemo(() => makeSetter(dispatch, 'lineupSlots'), [dispatch]);
+  const setLineupFormation      = useMemo(() => makeSetter(dispatch, 'lineupFormation'), [dispatch]);
+  const setSquadGroups          = useMemo(() => makeSetter(dispatch, 'squadGroups'), [dispatch]);
+  const setGuestPlayers         = useMemo(() => makeSetter(dispatch, 'guestPlayers'), [dispatch]);
+  const setSquadLoading         = useMemo(() => makeSetter(dispatch, 'squadLoading'), [dispatch]);
+  const setSquadError           = useMemo(() => makeSetter(dispatch, 'squadError'), [dispatch]);
+  const setProgress             = useMemo(() => makeSetter(dispatch, 'progress'), [dispatch]);
+  const setGenerationError      = useMemo(() => makeSetter(dispatch, 'generationError'), [dispatch]);
+  const setIsGenerating         = useMemo(() => makeSetter(dispatch, 'isGenerating'), [dispatch]);
 
   // ── Actions ─────────────────────────────────────────────
 
@@ -190,67 +190,52 @@ export function MatchWizardProvider({ children }: MatchWizardProviderProps) {
 
   const handleSelectPlayer = useCallback((positionIdx: number, isGoalkeeper: boolean, memberId: string | null) => {
     if (isGoalkeeper) {
-      const newGk = [...lineupSlots.goalkeeper];
+      const newGk = [...s.lineupSlots.goalkeeper];
       newGk[positionIdx] = memberId || '';
-      setLineupSlots({ ...lineupSlots, goalkeeper: newGk.filter(Boolean) as string[] });
+      setLineupSlots({ ...s.lineupSlots, goalkeeper: newGk.filter(Boolean) as string[] });
     } else {
-      const newPlayers = [...lineupSlots.player];
+      const newPlayers = [...s.lineupSlots.player];
       while (newPlayers.length <= positionIdx) newPlayers.push('');
       newPlayers[positionIdx] = memberId || '';
-      setLineupSlots({ ...lineupSlots, player: newPlayers });
+      setLineupSlots({ ...s.lineupSlots, player: newPlayers });
     }
-  }, [lineupSlots]);
+  }, [s.lineupSlots, setLineupSlots]);
 
   const reset = useCallback(() => {
-    setSelectedMatch(null);
-    setMatchesLoading(false);
-    setMatchesError(null);
-    setSelectedContentPhase('pre');
-    setPendingContent(null);
-    setSelectedTemplate(null);
-    setTemplatesError(null);
-    setLineupSlots({ goalkeeper: [], player: [] });
-    setLineupFormation('4-3-3');
-    setSquadGroups({ goalkeeper: [], player: [] });
-    setGuestPlayers([]);
-    setSquadLoading(false);
-    setSquadError(null);
-    setProgress(0);
-    setGenerationError(null);
-    setIsGenerating(false);
+    dispatch({ type: 'patch', payload: { ...initialState } });
   }, []);
 
   // ── Computed ────────────────────────────────────────────
 
-  const filledPositions = lineupSlots.goalkeeper.filter(Boolean).length +
-    lineupSlots.player.filter(Boolean).length;
+  const filledPositions = s.lineupSlots.goalkeeper.filter(Boolean).length +
+    s.lineupSlots.player.filter(Boolean).length;
   const totalPositions = POSITIONS_COUNT;
 
   const allPlayers = useMemo(() => [
-    ...(squadGroups.goalkeeper || []),
-    ...(squadGroups.player || []),
-    ...guestPlayers,
-  ], [squadGroups, guestPlayers]);
+    ...(s.squadGroups.goalkeeper || []),
+    ...(s.squadGroups.player || []),
+    ...s.guestPlayers,
+  ], [s.squadGroups, s.guestPlayers]);
 
-  const homeTeamName = selectedMatch?.project?.name || 'Thuis';
-  const awayTeamName = selectedMatch?.opponent_project?.name || 'Uit';
+  const homeTeamName = s.selectedMatch?.project?.name || 'Thuis';
+  const awayTeamName = s.selectedMatch?.opponent_project?.name || 'Uit';
 
-  const isLineupRequired = pendingContent
-    ? LINEUP_REQUIRED_SUBTYPES.has(pendingContent.subtype)
+  const isLineupRequired = s.pendingContent
+    ? LINEUP_REQUIRED_SUBTYPES.has(s.pendingContent.subtype)
     : false;
 
-  const hasOptions = pendingContent
-    ? HAS_OPTIONS_SUBTYPES.has(pendingContent.subtype)
+  const hasOptions = s.pendingContent
+    ? HAS_OPTIONS_SUBTYPES.has(s.pendingContent.subtype)
     : false;
 
   // ── Context Value ───────────────────────────────────────
 
   const value = useMemo<MatchWizardContextValue>(() => ({
     // State
-    selectedMatch, matchesLoading, matchesError, upcomingMatches,
-    selectedContentPhase, pendingContent, selectedTemplate, templatesError,
-    lineupSlots, lineupFormation, squadGroups, guestPlayers, squadLoading, squadError,
-    progress, generationError, isGenerating,
+    selectedMatch: s.selectedMatch, matchesLoading: s.matchesLoading, matchesError: s.matchesError, upcomingMatches: s.upcomingMatches,
+    selectedContentPhase: s.selectedContentPhase, pendingContent: s.pendingContent, selectedTemplate: s.selectedTemplate, templatesError: s.templatesError,
+    lineupSlots: s.lineupSlots, lineupFormation: s.lineupFormation, squadGroups: s.squadGroups, guestPlayers: s.guestPlayers, squadLoading: s.squadLoading, squadError: s.squadError,
+    progress: s.progress, generationError: s.generationError, isGenerating: s.isGenerating,
     // Actions
     setSelectedMatch, setMatchesLoading, setMatchesError, setUpcomingMatches,
     setSelectedContentPhase, setPendingContent, setSelectedTemplate, setTemplatesError,
@@ -262,11 +247,16 @@ export function MatchWizardProvider({ children }: MatchWizardProviderProps) {
     filledPositions, totalPositions, allPlayers, homeTeamName, awayTeamName,
     isLineupRequired, hasOptions,
   }), [
-    selectedMatch, matchesLoading, matchesError, upcomingMatches,
-    selectedContentPhase, pendingContent, selectedTemplate, templatesError,
-    lineupSlots, lineupFormation, squadGroups, guestPlayers, squadLoading, squadError,
-    progress, generationError, isGenerating,
-    addGuestPlayer, removeGuestPlayer, handleSelectPlayer, reset,
+    s.selectedMatch, s.matchesLoading, s.matchesError, s.upcomingMatches,
+    s.selectedContentPhase, s.pendingContent, s.selectedTemplate, s.templatesError,
+    s.lineupSlots, s.lineupFormation, s.squadGroups, s.guestPlayers, s.squadLoading, s.squadError,
+    s.progress, s.generationError, s.isGenerating,
+    setSelectedMatch, setMatchesLoading, setMatchesError, setUpcomingMatches,
+    setSelectedContentPhase, setPendingContent, setSelectedTemplate, setTemplatesError,
+    setLineupSlots, setLineupFormation, setSquadGroups, addGuestPlayer, removeGuestPlayer,
+    setSquadLoading, setSquadError, handleSelectPlayer,
+    setProgress, setGenerationError, setIsGenerating,
+    reset,
     filledPositions, totalPositions, allPlayers, homeTeamName, awayTeamName,
     isLineupRequired, hasOptions,
   ]);

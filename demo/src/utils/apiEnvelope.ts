@@ -13,10 +13,10 @@
 
 /** Unwrap a single-object API envelope: `{ data: T }` → `T`. */
 export function unwrapEnvelope<T = unknown>(raw: unknown): T {
-  const r = raw as Record<string, any>;
+  const r = raw as Record<string, unknown>;
   // Handle double-nested: { data: { data: {...} } }
-  const candidate = r?.data?.data;
-  if (candidate && typeof candidate === 'object' && candidate.id) return candidate as T;
+  const candidate = (r?.data as Record<string, unknown>)?.data;
+  if (candidate && typeof candidate === 'object' && (candidate as Record<string, unknown>).id) return candidate as T;
   return (r?.data ?? raw) as T;
 }
 
@@ -26,14 +26,15 @@ export function unwrapEnvelope<T = unknown>(raw: unknown): T {
  * Handles: `T[]`, `{ results: T[] }`, `{ data: T[] }`,
  *          `{ data: { results: T[] } }`, `{ data: { data: T[] } }`.
  */
-export function extractList(raw: unknown): any[] {
+export function extractList<T = unknown>(raw: unknown): T[] {
   if (!raw) return [];
   if (Array.isArray(raw)) return raw;
-  const r = raw as Record<string, any>;
-  if (Array.isArray(r?.results)) return r.results;
-  if (Array.isArray(r?.data)) return r.data;
-  if (Array.isArray(r?.data?.data)) return r.data.data;
-  if (Array.isArray(r?.data?.results)) return r.data.results;
+  const r = raw as Record<string, unknown>;
+  if (Array.isArray(r?.results)) return r.results as T[];
+  if (Array.isArray(r?.data)) return r.data as T[];
+  const nested = r?.data as Record<string, unknown> | undefined;
+  if (Array.isArray(nested?.data)) return nested.data as T[];
+  if (Array.isArray(nested?.results)) return nested.results as T[];
   return [];
 }
 
@@ -42,9 +43,9 @@ export function extractList(raw: unknown): any[] {
  * Falls back to the list length when no `count` field is present.
  */
 export function extractCount(raw: unknown): number {
-  const r = raw as Record<string, any>;
-  const envelope = r?.data ?? r;
-  const countRaw = envelope?.count ?? r?.count;
+  const r = raw as Record<string, unknown>;
+  const envelope = (r?.data ?? r) as Record<string, unknown>;
+  const countRaw = (envelope?.count ?? r?.count) as unknown;
   if (typeof countRaw === 'number') return countRaw;
   const list = extractList(envelope);
   return Array.isArray(list) ? list.length : 0;
@@ -54,9 +55,9 @@ export function extractCount(raw: unknown): number {
  * Full list-envelope parser — returns both array and count.
  * Handles deeply nested DRF response formats.
  */
-export function parseListEnvelope(raw: unknown): { results: any[]; count: number } {
-  const r = raw as Record<string, any>;
-  const envelope = r?.data ?? r;
+export function parseListEnvelope<T = unknown>(raw: unknown): { results: T[]; count: number } {
+  const r = raw as Record<string, unknown>;
+  const envelope = (r?.data ?? r) as Record<string, unknown>;
   const results =
     envelope?.results ??
     envelope?.data ??
@@ -65,12 +66,12 @@ export function parseListEnvelope(raw: unknown): { results: any[]; count: number
     r ??
     [];
 
-  const list = Array.isArray(results) ? results : [];
+  const list = Array.isArray(results) ? (results as T[]) : [];
   const count =
-    typeof envelope?.count === 'number'
-      ? envelope.count
+    typeof (envelope as Record<string, unknown>)?.count === 'number'
+      ? (envelope as Record<string, unknown>).count as number
       : typeof r?.count === 'number'
-        ? r.count
+        ? r.count as number
         : list.length;
   return { results: list, count };
 }

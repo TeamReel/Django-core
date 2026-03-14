@@ -224,7 +224,7 @@ export const OrganisationDetailPage: React.FC = () => {
           setOrgPeriods={d.setOrgPeriods}
           setFederationMatches={d.setFederationMatches}
           setMatchesCount={d.setMatchesCount}
-          setMembers={d.setMembers as any}
+          setMembers={d.setMembers}
           isClubModalOpen={d.isClubModalOpen}
           setIsClubModalOpen={d.setIsClubModalOpen}
           selectedClub={d.selectedClub}

@@ -3,9 +3,10 @@
  *
  * Everything inline: avatar, account, appearance, language, notifications,
  * active context (collapsible), memberships, sign out.
- * No navigating away — modals for edit profile, password, avatar upload.
+ * Sub-pages (credits, notifications, memberships) open as inline sheets
+ * instead of page navigations — consistent iOS-settings drill-down UX.
  */
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User, KeyRound, Camera, Wallet, Sun, Moon,
@@ -15,8 +16,14 @@ import {
 import { useSignOut } from '@django-core/auth-ui';
 import { usePreferencesData } from './config/usePreferencesData';
 import { PreferencesModals } from './config/PreferencesModals';
+import { ProfileSheet } from '../components/ProfileSheet';
 import { useBackNavigation } from '../providers/BackNavigationProvider';
 import s from './ProfileHubPage.module.css';
+
+/* Lazy-loaded sheet content — only fetched when opened */
+const CreditsSheetContent = lazy(() => import('./config/CreditsSheetContent').then(m => ({ default: m.CreditsSheetContent })));
+const NotificationsSheetContent = lazy(() => import('./config/NotificationsSheetContent').then(m => ({ default: m.NotificationsSheetContent })));
+const MembershipsSheetContent = lazy(() => import('./config/MembershipsSheetContent').then(m => ({ default: m.MembershipsSheetContent })));
 
 /* ── Language / timezone option maps ─────────────────────────────────── */
 const LANGUAGES = [
@@ -44,6 +51,11 @@ export default function ProfileHubPage() {
   const navigate = useNavigate();
   const { setBackTarget } = useBackNavigation();
   const [contextOpen, setContextOpen] = useState(false);
+
+  /* ── Sheet states for sub-pages (inline instead of navigate) ────── */
+  const [creditsOpen, setCreditsOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [membershipsOpen, setMembershipsOpen] = useState(false);
 
   const { user, preferences, setPreferences, handleSavePreferences } = d;
 
@@ -171,7 +183,7 @@ export default function ProfileHubPage() {
           <span className={s.rowLabel}>Change Password</span>
           <ChevronRight size={16} className={s.chevron} />
         </button>
-        <button className={s.row} onClick={() => navigate('/credits?wallet=personal')}>
+        <button className={s.row} onClick={() => setCreditsOpen(true)}>
           <Wallet size={20} />
           <span className={s.rowLabel}>Credits & Wallet</span>
           <ChevronRight size={16} className={s.chevron} />
@@ -252,7 +264,7 @@ export default function ProfileHubPage() {
             aria-checked={preferences?.marketing_email || false}
           />
         </div>
-        <button className={s.row} onClick={() => navigate('/notifications')}>
+        <button className={s.row} onClick={() => setNotificationsOpen(true)}>
           <Bell size={20} />
           <span className={s.rowLabel}>Notification Channels</span>
           <ChevronRight size={16} className={s.chevron} />
@@ -312,7 +324,7 @@ export default function ProfileHubPage() {
       {/* ── Memberships ──────────────────────────────────────────────── */}
       <div className={s.sectionLabel}>More</div>
       <div className={s.section}>
-        <button className={s.row} onClick={() => navigate('/memberships')}>
+        <button className={s.row} onClick={() => setMembershipsOpen(true)}>
           <Shield size={20} />
           <span className={s.rowLabel}>Memberships</span>
           <ChevronRight size={16} className={s.chevron} />
@@ -329,6 +341,25 @@ export default function ProfileHubPage() {
 
       {/* ── Modals (edit profile, password, avatar) ──────────────────── */}
       <PreferencesModals {...d} />
+
+      {/* ── Inline sheets (credits, notifications, memberships) ───────── */}
+      <ProfileSheet title="Credits & Wallet" isOpen={creditsOpen} onClose={() => setCreditsOpen(false)}>
+        <Suspense fallback={<div className={s.loading}>Loading…</div>}>
+          <CreditsSheetContent />
+        </Suspense>
+      </ProfileSheet>
+
+      <ProfileSheet title="Notifications" isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)}>
+        <Suspense fallback={<div className={s.loading}>Loading…</div>}>
+          <NotificationsSheetContent />
+        </Suspense>
+      </ProfileSheet>
+
+      <ProfileSheet title="Memberships" isOpen={membershipsOpen} onClose={() => setMembershipsOpen(false)}>
+        <Suspense fallback={<div className={s.loading}>Loading…</div>}>
+          <MembershipsSheetContent />
+        </Suspense>
+      </ProfileSheet>
     </div>
   );
 }

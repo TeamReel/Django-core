@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { logger } from '@/utils/logger';
+import { getErrorMessage } from '@/utils/errorHelpers';
 import {
   Card,
   Button,
@@ -14,8 +15,7 @@ import {
   useBreadcrumbContextSwitcher,
 } from '../../shims/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import AppShell from '../../components/AppShell';
-import { organisationsApi } from '../../api';
+import { organisationsApi } from '@/api';
 import { routes } from '../../routes';
 
 export const ProjectCreatePage: React.FC = () => {
@@ -63,7 +63,7 @@ export const ProjectCreatePage: React.FC = () => {
       navigate(routes.orgProjectDetailLegacy({ orgId: currentOrgSlug!, projectId: String(project.slug || project.id) }));
     } catch (err) {
       logger.error('An error occurred', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -74,7 +74,7 @@ export const ProjectCreatePage: React.FC = () => {
       <PageHeader
         title="Create Project"
         breadcrumbs={[
-          { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+          { label: 'Dashboard', onClick: () => navigate(routes.dashboard()) },
           {
             label: (
               <BreadcrumbContextSwitcher

@@ -1,7 +1,7 @@
 /**
  * State management for useTopNavbarData hook
  */
-import { useState, useRef, useMemo } from 'react';
+import { useRef, useMemo, useReducer } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth, useSignOut } from '@django-core/auth-ui';
 import { useTheme } from '@django-core/theme-system';
@@ -9,6 +9,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useUserRole } from '../PermissionGuards';
 import { useQueueCounts } from '../../hooks/useQueueCounts';
 import { useGenerationJobs, type GenerationJob } from '../../hooks/useGenerationJobs';
+import { formReducer, makeSetter } from '../../utils/formReducer';
 import type { PhotoCompositeFollowUpInfo } from '../topNavbarHelpers';
 import type { NotificationItem, LanguageCode } from './types';
 
@@ -23,22 +24,60 @@ export function useTopNavbarState(quickReviewOpen: boolean) {
   const { isSystemAdmin, isLandAdmin, isOrgAdmin, hasOrgRole } = useUserRole();
 
   // ── UI state ──
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [language, setLanguage] = useState<LanguageCode>('EN');
-  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [myCreditsBalance, setMyCreditsBalance] = useState<string | null>(null);
-  const [navSearchHasQuery, setNavSearchHasQuery] = useState(false);
-  const [commandOpen, setCommandOpen] = useState(false);
-  const [createMenuOpen, setCreateMenuOpen] = useState(false);
-  const [queueModalTab, setQueueModalTab] = useState<'review' | 'in-progress'>('review');
-  const [quickReviewIdx, setQuickReviewIdx] = useState(0);
-  const [quickReviewBusy, setQuickReviewBusy] = useState(false);
-  const [selectedVariantIdxs, setSelectedVariantIdxs] = useState<Set<number>>(new Set());
-  const [photoCompositeFollowUp, setPhotoCompositeFollowUp] = useState<PhotoCompositeFollowUpInfo | null>(null);
-  const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
-  const [notificationsList, setNotificationsList] = useState<NotificationItem[]>([]);
-  const [creditsModalOpen, setCreditsModalOpen] = useState(false);
+  interface NavbarState {
+    mobileMenuOpen: boolean;
+    language: LanguageCode;
+    languageMenuOpen: boolean;
+    unreadCount: number;
+    myCreditsBalance: string | null;
+    navSearchHasQuery: boolean;
+    commandOpen: boolean;
+    createMenuOpen: boolean;
+    queueModalTab: 'review' | 'in-progress';
+    quickReviewIdx: number;
+    quickReviewBusy: boolean;
+    selectedVariantIdxs: Set<number>;
+    photoCompositeFollowUp: PhotoCompositeFollowUpInfo | null;
+    notificationsModalOpen: boolean;
+    notificationsList: NotificationItem[];
+    creditsModalOpen: boolean;
+  }
+
+  const [s, dispatch] = useReducer(formReducer<NavbarState>, {
+    mobileMenuOpen: false,
+    language: 'EN' as LanguageCode,
+    languageMenuOpen: false,
+    unreadCount: 0,
+    myCreditsBalance: null,
+    navSearchHasQuery: false,
+    commandOpen: false,
+    createMenuOpen: false,
+    queueModalTab: 'review' as const,
+    quickReviewIdx: 0,
+    quickReviewBusy: false,
+    selectedVariantIdxs: new Set<number>(),
+    photoCompositeFollowUp: null,
+    notificationsModalOpen: false,
+    notificationsList: [],
+    creditsModalOpen: false,
+  });
+
+  const setMobileMenuOpen          = useMemo(() => makeSetter(dispatch, 'mobileMenuOpen'), [dispatch]);
+  const setLanguage                = useMemo(() => makeSetter(dispatch, 'language'), [dispatch]);
+  const setLanguageMenuOpen        = useMemo(() => makeSetter(dispatch, 'languageMenuOpen'), [dispatch]);
+  const setUnreadCount             = useMemo(() => makeSetter(dispatch, 'unreadCount'), [dispatch]);
+  const setMyCreditsBalance        = useMemo(() => makeSetter(dispatch, 'myCreditsBalance'), [dispatch]);
+  const setNavSearchHasQuery       = useMemo(() => makeSetter(dispatch, 'navSearchHasQuery'), [dispatch]);
+  const setCommandOpen             = useMemo(() => makeSetter(dispatch, 'commandOpen'), [dispatch]);
+  const setCreateMenuOpen          = useMemo(() => makeSetter(dispatch, 'createMenuOpen'), [dispatch]);
+  const setQueueModalTab           = useMemo(() => makeSetter(dispatch, 'queueModalTab'), [dispatch]);
+  const setQuickReviewIdx          = useMemo(() => makeSetter(dispatch, 'quickReviewIdx'), [dispatch]);
+  const setQuickReviewBusy         = useMemo(() => makeSetter(dispatch, 'quickReviewBusy'), [dispatch]);
+  const setSelectedVariantIdxs     = useMemo(() => makeSetter(dispatch, 'selectedVariantIdxs'), [dispatch]);
+  const setPhotoCompositeFollowUp  = useMemo(() => makeSetter(dispatch, 'photoCompositeFollowUp'), [dispatch]);
+  const setNotificationsModalOpen  = useMemo(() => makeSetter(dispatch, 'notificationsModalOpen'), [dispatch]);
+  const setNotificationsList       = useMemo(() => makeSetter(dispatch, 'notificationsList'), [dispatch]);
+  const setCreditsModalOpen        = useMemo(() => makeSetter(dispatch, 'creditsModalOpen'), [dispatch]);
 
   // ── Refs ──
   const createMenuRef = useRef<HTMLDivElement | null>(null);
@@ -71,22 +110,22 @@ export function useTopNavbarState(quickReviewOpen: boolean) {
     currentThemeMode, orgIdForMyBalance, currentUserId,
 
     // UI state
-    mobileMenuOpen, setMobileMenuOpen,
-    language, setLanguage,
-    languageMenuOpen, setLanguageMenuOpen,
-    unreadCount, setUnreadCount,
-    myCreditsBalance, setMyCreditsBalance,
-    navSearchHasQuery, setNavSearchHasQuery,
-    commandOpen, setCommandOpen,
-    createMenuOpen, setCreateMenuOpen,
-    queueModalTab, setQueueModalTab,
-    quickReviewIdx, setQuickReviewIdx,
-    quickReviewBusy, setQuickReviewBusy,
-    selectedVariantIdxs, setSelectedVariantIdxs,
-    photoCompositeFollowUp, setPhotoCompositeFollowUp,
-    notificationsModalOpen, setNotificationsModalOpen,
-    notificationsList, setNotificationsList,
-    creditsModalOpen, setCreditsModalOpen,
+    mobileMenuOpen: s.mobileMenuOpen, setMobileMenuOpen,
+    language: s.language, setLanguage,
+    languageMenuOpen: s.languageMenuOpen, setLanguageMenuOpen,
+    unreadCount: s.unreadCount, setUnreadCount,
+    myCreditsBalance: s.myCreditsBalance, setMyCreditsBalance,
+    navSearchHasQuery: s.navSearchHasQuery, setNavSearchHasQuery,
+    commandOpen: s.commandOpen, setCommandOpen,
+    createMenuOpen: s.createMenuOpen, setCreateMenuOpen,
+    queueModalTab: s.queueModalTab, setQueueModalTab,
+    quickReviewIdx: s.quickReviewIdx, setQuickReviewIdx,
+    quickReviewBusy: s.quickReviewBusy, setQuickReviewBusy,
+    selectedVariantIdxs: s.selectedVariantIdxs, setSelectedVariantIdxs,
+    photoCompositeFollowUp: s.photoCompositeFollowUp, setPhotoCompositeFollowUp,
+    notificationsModalOpen: s.notificationsModalOpen, setNotificationsModalOpen,
+    notificationsList: s.notificationsList, setNotificationsList,
+    creditsModalOpen: s.creditsModalOpen, setCreditsModalOpen,
 
     // Refs
     createMenuRef,

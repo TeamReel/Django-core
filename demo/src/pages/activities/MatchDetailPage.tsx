@@ -13,6 +13,7 @@ import MobileTabBar from '../../components/MobileTabBar';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { useMatchDetailData } from './useMatchDetailData';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
+import { routes } from '../../routes';
 import { ContentPreviewModal, SavedAssetPreviewModal, ToastNotifications } from './MatchDetailModals';
 import styles from './MatchDetailPage.module.css';
 
@@ -22,7 +23,7 @@ export default function HierarchyMatchDetailPage() {
 
   /* ---- back navigation: smart source detection ---- */
   const cameFromDashboard = (location.state as { from?: string })?.from === 'dashboard';
-  const backPath = cameFromDashboard ? '/dashboard' : (d.seasonBasePath || d.seasonsBasePath || '/');
+  const backPath = cameFromDashboard ? routes.dashboard() : (d.seasonBasePath || d.seasonsBasePath || '/');
   const backLabel = cameFromDashboard ? 'Dashboard' : 'Seizoen';
   useSetBackNavigation({ label: backLabel, path: backPath });
 
