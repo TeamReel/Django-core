@@ -3,8 +3,8 @@ import {
   Button,
   Alert,
   Input,
-  Modal,
 } from '@django-core/design-system';
+import { ProfileSheet } from '@/components/ProfileSheet';
 import { api } from '@/api';
 import type { User as ApiUser } from '@/types/api/user';
 import { logger } from '@/utils/logger';
@@ -108,8 +108,8 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
 
   return (
     <>
-      {/* ---- Profile Edit Modal ---- */}
-      <Modal
+      {/* ---- Profile Edit Sheet ---- */}
+      <ProfileSheet
         isOpen={isProfileModalOpen}
         onClose={() => {
           if (profileSaving) return;
@@ -215,10 +215,10 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
             Required to confirm changes to your account.
           </div>
         </div>
-      </Modal>
+      </ProfileSheet>
 
-      {/* ---- Password Change Modal ---- */}
-      <Modal
+      {/* ---- Password Change Sheet ---- */}
+      <ProfileSheet
         isOpen={isPasswordModalOpen}
         onClose={() => {
           if (passwordSaving) return;
@@ -301,10 +301,10 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
             disabled={passwordSaving}
           />
         </div>
-      </Modal>
+      </ProfileSheet>
 
-      {/* ---- Avatar Upload Modal ---- */}
-      <Modal
+      {/* ---- Avatar Upload Sheet ---- */}
+      <ProfileSheet
         isOpen={isAvatarModalOpen}
         onClose={() => {
           if (avatarSaving) return;
@@ -372,7 +372,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
             PNG/JPG recommended. After upload, you may need a hard refresh if your browser caches the old image.
           </div>
         </div>
-      </Modal>
+      </ProfileSheet>
     </>
   );
 };

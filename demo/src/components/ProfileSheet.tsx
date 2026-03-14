@@ -12,10 +12,12 @@ interface ProfileSheetProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
+  /** Optional footer content (e.g. action buttons) */
+  footer?: React.ReactNode;
 }
 
-export const ProfileSheet: React.FC<ProfileSheetProps> = ({ title, isOpen, onClose, children }) => (
-  <NavigationSheet isOpen={isOpen} onClose={onClose} title={title}>
+export const ProfileSheet: React.FC<ProfileSheetProps> = ({ title, isOpen, onClose, children, footer }) => (
+  <NavigationSheet isOpen={isOpen} onClose={onClose} title={title} footer={footer}>
     {children}
   </NavigationSheet>
 );
