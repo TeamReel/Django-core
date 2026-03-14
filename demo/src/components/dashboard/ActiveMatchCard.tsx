@@ -179,6 +179,19 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const teamName = match?.project?.club_name || match?.project?.name || 'Team';
   const opponent = match?.opponent_project?.club_name || match?.opponent_project?.name || match?.title?.split(' vs ')?.[1] || 'Tegenstander';
 
+  // Vanity URL + navigation (hooks must be before early returns)
+  const matchUrl = useMemo(
+    () => match ? buildMatchVanityUrl(match, hierarchy) : '',
+    [match?.id, match?.slug, hierarchy.orgSlug, hierarchy.clubSlugOrId, hierarchy.teamSlugOrId, hierarchy.seasonSlugOrId, hierarchy.competitionSlugOrId],
+  );
+
+  const handleNavigateToMatch = useCallback((tab?: string) => {
+    if (!match) return;
+    setSheetOpen(false);
+    const url = tab ? buildMatchVanityUrlWithTab(match, hierarchy, tab) : matchUrl;
+    navigate(url, { state: { from: 'dashboard' } });
+  }, [match?.id, matchUrl, hierarchy.orgSlug, hierarchy.clubSlugOrId, hierarchy.teamSlugOrId, hierarchy.seasonSlugOrId, hierarchy.competitionSlugOrId, navigate]);
+
   if (loading) {
     return (
       <div className={styles.card}>
@@ -202,14 +215,6 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const isHome = match.metadata?.is_home !== false;
   const lineupFormation = (match.metadata?.lineup as any)?.formation as string | undefined;
   const hasLineup = lineupCount > 0;
-
-  const matchUrl = buildMatchVanityUrl(match, hierarchy);
-
-  const handleNavigateToMatch = useCallback((tab?: string) => {
-    setSheetOpen(false);
-    const url = tab ? buildMatchVanityUrlWithTab(match, hierarchy, tab) : matchUrl;
-    navigate(url, { state: { from: 'dashboard' } });
-  }, [match, hierarchy, matchUrl, navigate]);
 
   return (
     <>
