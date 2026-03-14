@@ -1,7 +1,10 @@
-import React from 'react';
-import ProjectSeasonDetailPage from '../periods/ProjectSeasonDetailPage';
+import React, { Suspense } from 'react';
 import { SeasonProvider } from '../../providers/SeasonProvider';
 import { usePreloadRoutes } from '../../hooks/usePreloadRoutes';
+
+const ProjectSeasonDetailPage = React.lazy(
+  () => import('../periods/ProjectSeasonDetailPage'),
+);
 
 export default function SeasonDetailPage() {
   // Preload likely next destinations: Match detail, Member detail
@@ -12,7 +15,9 @@ export default function SeasonDetailPage() {
 
   return (
     <SeasonProvider>
-      <ProjectSeasonDetailPage />
+      <Suspense fallback={null}>
+        <ProjectSeasonDetailPage />
+      </Suspense>
     </SeasonProvider>
   );
 }
