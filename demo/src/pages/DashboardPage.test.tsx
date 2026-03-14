@@ -30,7 +30,6 @@ vi.mock('../hooks/useCreditBalance', () => ({
 vi.mock('../components/dashboard', () => ({
   ActiveMatchCard: () => <div>ActiveMatchCard</div>,
   SquadReadinessCard: () => <div>SquadReadinessCard</div>,
-  UpcomingMatchesCard: () => <div>UpcomingMatchesCard</div>,
   AIQueueCard: () => <div>AIQueueCard</div>,
   CreditsTrendCard: () => <div>CreditsTrendCard</div>,
   OrgStatsCard: () => <div>OrgStatsCard</div>,

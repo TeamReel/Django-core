@@ -7,7 +7,6 @@ import { AlertTriangle } from 'lucide-react';
 import {
   ActiveMatchCard,
   SquadReadinessCard,
-  UpcomingMatchesCard,
   AIQueueCard,
   CreditsTrendCard,
   OrgStatsCard,
@@ -132,10 +131,7 @@ export default function DashboardPage() {
             {/* 5b. Asset inventory — team & member assets */}
             {!isMemberLevel && <AssetsOverviewCard />}
 
-            {/* 6. Upcoming Matches (compact list) */}
-            <UpcomingMatchesCard />
-
-            {/* 7. Org Overview Stats (org admins without team scope) */}
+            {/* 6. Org Overview Stats (org admins without team scope) */}
             {isOrgLevel && !isTeamScope && <OrgStatsCard />}
           </div>
 

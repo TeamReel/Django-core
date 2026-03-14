@@ -37,7 +37,6 @@ vi.mock('@django-core/context-switcher', () => ({
 vi.mock('../../components/dashboard', () => ({
   ActiveMatchCard: () => <div data-testid="active-match">Active Match</div>,
   SquadReadinessCard: () => <div data-testid="squad-readiness">Squad</div>,
-  UpcomingMatchesCard: () => <div data-testid="upcoming">Upcoming</div>,
   AIQueueCard: () => <div data-testid="ai-queue">AI Queue</div>,
   CreditsTrendCard: () => <div data-testid="credits">Credits</div>,
   OrgStatsCard: () => <div data-testid="org-stats">Org Stats</div>,

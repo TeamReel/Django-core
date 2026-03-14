@@ -264,3 +264,137 @@
 .shimmerWidth40 { width: 40%; }
 .shimmerWidth70Tall { width: 70%; height: 24px; }
 .shimmerWidth55 { width: 55%; }
+
+/* ── Match Sheet (iOS-like slide-up panel) ─────────── */
+
+.sheetContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-4) 0;
+}
+
+.sheetMatchHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sheetTeams {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-5) 0;
+}
+
+.sheetTeam {
+  flex: 1;
+  text-align: center;
+}
+
+.sheetTeamName {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--app-text-primary);
+}
+
+.sheetTeam:last-child {
+  text-align: center;
+}
+
+.sheetScore {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-black);
+  color: var(--app-text-primary);
+  min-width: 60px;
+  text-align: center;
+}
+
+.sheetMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--app-surface);
+  border-radius: var(--radius-lg);
+}
+
+.sheetActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sheetAction {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  color: var(--app-text-primary);
+  transition: all var(--duration-fast);
+  text-align: left;
+  width: 100%;
+}
+
+.sheetAction:hover {
+  background: var(--app-hover);
+  border-color: var(--app-primary);
+}
+
+.sheetAction:active {
+  transform: scale(0.98);
+}
+
+.sheetAction > svg:first-child {
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+.sheetAction > svg:last-child {
+  margin-left: auto;
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+.sheetActionText {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.sheetActionLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.sheetActionSub {
+  font-size: var(--text-xs);
+  color: var(--app-muted-text);
+}
+
+.sheetActionPrimary {
+  background: var(--app-primary);
+  color: var(--color-white, #fff);
+  border-color: var(--app-primary);
+}
+
+.sheetActionPrimary:hover {
+  opacity: 0.9;
+  background: var(--app-primary);
+  border-color: var(--app-primary);
+}
+
+.sheetActionPrimary > svg:first-child,
+.sheetActionPrimary > svg:last-child {
+  color: var(--color-white, #fff);
+}
+
+.sheetActionPrimary .sheetActionSub {
+  color: rgba(255, 255, 255, 0.75);
+}

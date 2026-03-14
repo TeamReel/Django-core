@@ -14,17 +14,16 @@ import { useNavigate } from 'react-router-dom';
 import { routes } from '../../routes';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
-  Zap, ChevronRight, Shirt, Camera, Image, FileImage,
-  Users, Upload, PlayCircle,
+  Zap, ChevronRight, Shirt, Camera, Image,
+  Upload, PlayCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { api } from '@/api';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import styles from './SmartActionsCard.module.css';
 
-/** How an action opens: wizard event, navigate to page, or navigate with tab */
+/** How an action opens: navigate to page, or navigate with tab */
 type ActionMode =
-  | { type: 'match-wizard'; matchId: string }
   | { type: 'navigate'; path: string }
   | { type: 'season-tab'; tab: string };
 
@@ -55,15 +54,6 @@ export const SmartActionsCard: React.FC = () => {
   // ── Action handler — opens the right modal/page ──────────────────
   const handleAction = useCallback((action: SmartAction) => {
     switch (action.mode.type) {
-      case 'match-wizard':
-        // Dispatch custom event to open the MatchWizard (handled by MobileBottomNav / QuickCreateFAB)
-        window.dispatchEvent(
-          new CustomEvent('teamreel:open-quick-create', {
-            detail: { matchId: action.mode.matchId },
-          }),
-        );
-        break;
-
       case 'season-tab': {
         // Navigate to the current season page with the right tab
         const base = orgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId
@@ -120,16 +110,7 @@ export const SmartActionsCard: React.FC = () => {
           fetches.push(Promise.resolve(null));
         }
 
-        // Upcoming match
-        const now = new Date().toISOString();
-        fetches.push(
-          api.list<any>('/activities/', {
-            params: { activity_type: 'match', start_time__gte: now, ordering: 'start_time', ...(project ? { project: project.id } : {}) },
-            pageSize: 1,
-          }).catch(() => null)
-        );
-
-        const [membersData, genData, matchData] = await Promise.all(fetches);
+        const [membersData, genData] = await Promise.all(fetches);
         if (cancelled) return;
 
         // ── 2. Analyze member content completeness ──
@@ -193,41 +174,7 @@ export const SmartActionsCard: React.FC = () => {
           }
         }
 
-        // ── 3. Upcoming match actions ──
-        if (matchData) {
-          const matches = (matchData as any)?.results ?? [];
-          if (matches.length > 0) {
-            const nextMatch = matches[0];
-            const matchDate = new Date(nextMatch.start_time);
-            const daysUntil = Math.ceil((matchDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-            const opponentName = nextMatch.opponent_project?.name || nextMatch.title?.split(' vs ')?.[1] || 'Tegenstander';
-            const matchId = String(nextMatch.id);
-
-            if (daysUntil <= 7) {
-              computed.push({
-                key: 'match-flyer',
-                label: 'Wedstrijd flyer maken',
-                subtitle: `vs ${opponentName} — ${daysUntil <= 0 ? 'Vandaag' : daysUntil === 1 ? 'Morgen' : `Over ${daysUntil} dagen`}`,
-                Icon: FileImage,
-                colorClass: styles.colorPink,
-                priority: daysUntil <= 1 ? 95 : 70,
-                mode: { type: 'match-wizard', matchId },
-              });
-
-              computed.push({
-                key: 'match-lineup',
-                label: 'Opstelling invullen',
-                subtitle: `Selectie voor ${opponentName} instellen`,
-                Icon: Users,
-                colorClass: styles.colorIndigo,
-                priority: daysUntil <= 1 ? 90 : 65,
-                mode: { type: 'match-wizard', matchId },
-              });
-            }
-          }
-        }
-
-        // ── 4. Upload action if project ──
+        // ── 3. Upload action if project ──
         if (project) {
           computed.push({
             key: 'upload-media',
