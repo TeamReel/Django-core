@@ -58,20 +58,11 @@ export default defineConfig({
             if (id.includes('react-window')) return 'vendor-virtualization';
             return 'vendor';
           }
-          // ── Feature area splits ──
-          if (id.includes('/pages/identity/') || id.includes('/pages/organisations/')) return 'chunk-identity';
-          if (id.includes('/pages/periods/')) return 'chunk-periods';
-          if (id.includes('/pages/config/')) return 'chunk-config';
-          if (id.includes('/pages/platform/')) return 'chunk-platform';
-          if (id.includes('/pages/frontend/')) return 'chunk-frontend-dev';
-          if (id.includes('/pages/docs/')) return 'chunk-docs';
-          if (id.includes('/pages/activities/')) return 'chunk-activities';
-          if (id.includes('/pages/aistudio/')) return 'chunk-aistudio';
-          if (id.includes('/pages/studio/')) return 'chunk-studio';
-          if (id.includes('/pages/medialib/')) return 'chunk-medialib';
-          if (id.includes('/pages/work/')) return 'chunk-work';
-          if (id.includes('/components/CreateWizard/')) return 'chunk-create-wizard';
-          if (id.includes('/components/MatchWizardV2/')) return 'chunk-match-wizard';
+          // Feature-area chunks are NOT forced here — Rollup splits
+          // naturally at dynamic import() boundaries (appLazyImports.ts).
+          // Forcing page-path-based chunks caused circular sync imports
+          // between chunks (identity ↔ activities ↔ periods, etc.),
+          // resulting in TDZ ReferenceErrors at runtime.
         },
       },
       plugins: [

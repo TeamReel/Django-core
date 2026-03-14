@@ -1,16 +1,10 @@
-import React, { Suspense } from 'react';
+import ProjectSeasonMemberDetailPage from '../periods/ProjectSeasonMemberDetailPage';
 import { SeasonProvider } from '../../providers/SeasonProvider';
-
-const ProjectSeasonMemberDetailPage = React.lazy(
-  () => import('../periods/ProjectSeasonMemberDetailPage'),
-);
 
 export default function SeasonMemberDetailPage() {
   return (
     <SeasonProvider>
-      <Suspense fallback={null}>
-        <ProjectSeasonMemberDetailPage />
-      </Suspense>
+      <ProjectSeasonMemberDetailPage />
     </SeasonProvider>
   );
 }
