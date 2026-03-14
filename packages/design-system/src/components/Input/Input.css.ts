@@ -21,7 +21,7 @@ export const input = recipe({
 
     ':disabled': {
       backgroundColor: themeVars.color.palette.neutral['100'],
-      color: themeVars.color.palette.neutral['500'],
+      color: themeVars.color.text.disabled,
       cursor: 'not-allowed',
     },
 
@@ -82,7 +82,7 @@ export const label = recipe({
     display: 'block',
     fontSize: themeVars.typography.fontSize.sm,
     fontWeight: themeVars.typography.fontWeight.medium,
-    color: themeVars.color.palette.neutral['700'],
+    color: themeVars.color.text.secondary,
     marginBottom: themeVars.spacing['1'],
   },
 
@@ -116,7 +116,7 @@ export const helperText = recipe({
     display: 'block',
     fontSize: themeVars.typography.fontSize.xs,
     marginTop: themeVars.spacing['1'],
-    color: themeVars.color.palette.neutral['600'],
+    color: themeVars.color.text.tertiary,
   },
 
   variants: {
