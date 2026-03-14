@@ -1,6 +1,6 @@
 /* NavigationSheet — Universal slide-in sheet for inline sub-navigation
  *
- * Mobile: full-screen, slides up from bottom
+ * Mobile: slides up between top-nav & bottom-nav (both stay visible)
  * Desktop (≥640px): side panel, slides in from right
  * Includes open + close animations.
  */
@@ -162,6 +162,29 @@
   border-top: 1px solid var(--app-border);
   background: var(--app-surface);
   padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+}
+
+/* ── Mobile: sandwich between top-nav & bottom-nav ── */
+@media (max-width: 639px) {
+  .overlay {
+    top: var(--tr-top-navbar-offset, 56px);
+    bottom: var(--tr-bottom-navbar-offset, 96px);
+  }
+
+  .header {
+    /* Top navbar already handles safe-area — just use normal padding */
+    padding-top: var(--space-3);
+  }
+
+  .body {
+    /* Bottom navbar already handles safe-area */
+    padding-bottom: var(--space-4);
+  }
+
+  .footer {
+    /* Bottom navbar already handles safe-area */
+    padding-bottom: var(--space-3);
+  }
 }
 
 /* ── Reduced motion ── */
