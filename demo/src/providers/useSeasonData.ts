@@ -267,7 +267,7 @@ export function useSeasonData(): SeasonContextValue {
 
     if (orgIdMatches(contextOrg) && contextOrg?.user_role) return contextOrg;
     const projectOrg = project?.organisation;
-    if (projectOrg?.user_role) return projectOrg;
+    if ((projectOrg as any)?.user_role) return projectOrg;
     if (org?.user_role) return org;
     if (orgIdMatches(contextOrg)) return contextOrg;
     return projectOrg || org || contextOrg || null;
@@ -278,8 +278,8 @@ export function useSeasonData(): SeasonContextValue {
     [orgForPermissions, isSuperAdmin],
   );
 
-  const userCanEditProject = canEditProject(permissionContext);
-  const userCanDeleteProject = canDeleteProject(permissionContext);
+  const userCanEditProject = canEditProject(permissionContext as any);
+  const userCanDeleteProject = canDeleteProject(permissionContext as any);
 
   // ── Navigation helpers ─────────────────────────────────────────────
   const seasonsBasePath = isTeamRoute
@@ -331,8 +331,8 @@ export function useSeasonData(): SeasonContextValue {
       brandLogoUrl,
       brandSponsorUrl,
       isSuperAdmin,
-      orgForPermissions,
-      permissionContext,
+      orgForPermissions: orgForPermissions as any,
+      permissionContext: permissionContext as any,
       userCanEditProject,
       userCanDeleteProject,
       isPlayer,

@@ -61,7 +61,7 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
     if (!isOpen) return;
 
     // Load orgs
-    api.list<Record<string, unknown>>('/organisations/', { pageSize: 250 })
+    api.list<any>('/organisations/', { pageSize: 250 })
       .then(({ results }) => {
         setOrganisations(
           (Array.isArray(results) ? results : [])
@@ -72,7 +72,7 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
       .catch(() => setOrganisations([]));
 
     // Load clubs (projects without parent)
-    api.list<Record<string, unknown>>('/projects/', { params: { parent_project_id: 'null' }, pageSize: 500 })
+    api.list<any>('/projects/', { params: { parent_project_id: 'null' }, pageSize: 500 })
       .then(({ results }) => {
         setAllClubs(Array.isArray(results) ? results : []);
       })

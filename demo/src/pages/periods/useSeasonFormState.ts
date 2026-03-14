@@ -77,8 +77,8 @@ export function useSeasonFormState(params: UseSeasonFormStateParams) {
 
   // ── Provider-synced state ──
   useEffect(() => { setCompetitions(providerCompetitions); }, [providerCompetitions]);
-  useEffect(() => { dispatch({ type: 'set', key: 'loading', value: providerLoading }); }, [providerLoading]);
-  useEffect(() => { dispatch({ type: 'set', key: 'error', value: providerError }); }, [providerError]);
+  useEffect(() => { dispatch({ type: 'set', field: 'loading' as any, value: providerLoading }); }, [providerLoading]);
+  useEffect(() => { dispatch({ type: 'set', field: 'error' as any, value: providerError }); }, [providerError]);
   useEffect(() => { setCompetitionsLoading(providerCompetitionsLoading); }, [providerCompetitionsLoading]);
   useEffect(() => { setSeason(providerSeason); }, [providerSeason]);
 

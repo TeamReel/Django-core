@@ -91,7 +91,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
           // Fallback: search by slug via API when provider hasn't loaded yet
           if (!competitionUuid && resolvedSeasonId) {
             try {
-              const { results } = await api.list<Record<string, unknown>>('/periods/', {
+              const { results } = await api.list<any>('/periods/', {
                 params: { parent: resolvedSeasonId, slug: effectiveCompetitionIdVal },
               });
               if (results.length > 0) {

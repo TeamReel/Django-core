@@ -161,7 +161,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
         if (!key || seen.has(key)) return null;
         seen.add(key);
         return { slug: proj?.slug || key, id: proj?.id || pm?.project_id, name: proj?.name || key, parent_id: proj?.parent_id ?? null, parent_slug: proj?.parent_slug ?? null };
-      }).filter(Boolean);
+      }).filter(Boolean) as any;
     }
     if (list.length === 0 && s.orgProjects.length > 0) {
       return s.orgProjects.map(op => ({ key: op.key, name: op.name, isTeam: op.isTeam, parentKey: op.parentKey ?? undefined }));
@@ -208,7 +208,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       const orgs = Array.isArray(user?.organisations) ? user!.organisations : [];
       const orgEntry = orgSlug ? orgs.find((o: { slug?: string }) => String(o?.slug || '').toLowerCase() === orgSlug) : null;
       setOrgMembershipId(String(orgEntry?.membership_id || '').trim() || null);
-      const roleRaw = String(orgEntry?.role || '').trim().toLowerCase();
+      const roleRaw = String((orgEntry as any)?.role || '').trim().toLowerCase();
       setOrgRole(roleRaw === 'admin' || roleRaw === 'member' ? roleRaw : 'member');
       setExtraError(null);
     }
@@ -222,7 +222,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       if (!orgSlug) { setOrgProjects([]); setOrgProjectsError(null); return; }
       setOrgProjectsLoading(true); setOrgProjectsError(null);
       try {
-        const { results: rawItems } = await api.list<Record<string, unknown>>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, { pageSize: 500 });
+        const { results: rawItems } = await api.list<any>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, { pageSize: 500 });
         const idToSlug = new Map<string, string>();
         for (const p of rawItems) { const pid = String(p?.id || '').trim(); const pslug = String(p?.slug || '').trim(); if (pid && pslug) idToSlug.set(pid, pslug); }
         const choices: OrgProjectChoice[] = rawItems.map((p: Record<string, unknown>) => {
@@ -262,7 +262,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       if (!found) {
         const { results: members } = await api.list<ProjectMembership>(`/projects/${encodeURIComponent(projectKey)}/members/`, { pageSize: 500 });
         const uid = String(user?.id || '').trim();
-          const matches = members.filter((m: { user?: Record<string, unknown>; user_id?: string }) => {
+          const matches = (members as any[]).filter((m: any) => {
             const mUid = m?.user?.id ?? m?.user_id ?? m?.user;
             return String(mUid || '').trim() === uid;
           });
@@ -278,7 +278,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       if (!s.selectedClubKey) { setClubMembershipId(null); setClubAccessRole('viewer'); return; }
       const m = await fetchMemberInfo(s.selectedClubKey);
       if (m) {
-        setClubMembershipId(m.id);
+        setClubMembershipId(m.id as any);
         const r = String(m.role || 'viewer').toLowerCase();
         setClubAccessRole((r === 'admin' || r === 'editor' || r === 'viewer') ? r : 'viewer');
       } else { setClubMembershipId(null); setClubAccessRole('viewer'); }
@@ -292,10 +292,10 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       if (!s.selectedTeamKey) { setTeamMembershipId(null); setTeamAccessRole('viewer'); setFunctionalRoles([]); setInitialFunctionalRoles([]); return; }
       const m = await fetchMemberInfo(s.selectedTeamKey);
       if (m) {
-        setTeamMembershipId(m.id);
+        setTeamMembershipId(m.id as any);
         const r = String(m.role || 'viewer').toLowerCase();
         setTeamAccessRole((r === 'admin' || r === 'editor' || r === 'viewer') ? r : 'viewer');
-        const fr = readFunctionalRolesFromMembership(m);
+        const fr = readFunctionalRolesFromMembership(m as any);
         setFunctionalRoles(fr); setInitialFunctionalRoles(fr);
       } else { setTeamMembershipId(null); setTeamAccessRole('viewer'); setFunctionalRoles([]); setInitialFunctionalRoles([]); }
     };
@@ -349,8 +349,8 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
     const orgSlug = String(organisationSlug || '').trim();
     if (!orgSlug || !s.orgMembershipId) return;
     const orgs = Array.isArray(user?.organisations) ? user!.organisations : [];
-    const currentEntry = orgs.find((o: { membership_id?: string }) => String(o?.membership_id || '').trim() === String(s.orgMembershipId));
-    const currentRole = String(currentEntry?.role || '').trim().toLowerCase();
+    const currentEntry = (orgs as any[]).find((o: any) => String(o?.membership_id || '').trim() === String(s.orgMembershipId));
+    const currentRole = String((currentEntry as any)?.role || '').trim().toLowerCase();
     if (currentRole === String(s.orgRole)) return;
     await api.patch(`/organisations/${encodeURIComponent(orgSlug)}/members/${encodeURIComponent(s.orgMembershipId)}/`, { role: s.orgRole });
   }, [organisationSlug, s.orgMembershipId, s.orgRole, user]);

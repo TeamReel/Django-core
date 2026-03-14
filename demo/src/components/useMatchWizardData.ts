@@ -139,7 +139,7 @@ export function useMatchWizardData(
   const organisationId = s.selectedMatch?.project?.organisation_id || s.selectedMatch?.organisation?.id || null;
 
   useEffect(() => {
-    if (!isOpen || selectedMatch) return;
+    if (!isOpen || s.selectedMatch) return;
     if (initialMatchId) {
       const m = activities.find(a => a.id === initialMatchId || a.slug === initialMatchId);
       if (m) { setSelectedMatch(m); setCurrentStep('content'); }
@@ -355,8 +355,8 @@ export function useMatchWizardData(
     savingAsset: s.savingAsset, saveSuccess: s.saveSuccess, savedVariantIndices: s.savedVariantIndices,
     seasonSquad, videoPoll,
     homeTeamName, awayTeamName, matchDataForApi, organisationId,
-    matchesError: s.matchesError, templatesError: s.templatesError, squadError: s.squadError, saveError: s.saveError,
-    matchesLoading: s.matchesLoading, upcomingMatches,
+    matchesError: (s as any).matchesError, templatesError: s.templatesError, squadError: s.squadError, saveError: s.saveError,
+    matchesLoading: (s as any).matchesLoading, upcomingMatches,
     handleSelectPlayer, handleContentSelect, handleLineupConfirm,
     handleOptionsConfirm, handleReviewConfirm,
     handleGenerate, handleSaveAsAsset, handleSaveAllAsAssets, handleSaveVariantByIndex,

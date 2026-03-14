@@ -126,7 +126,7 @@ export const getBestMatchDetailPath = (m: MatchRef, deps: MatchPathDeps): string
   const periodId = String(m?.period?.id ?? m?.period_id ?? '').trim();
   const competition = periodId ? (periodById.get(periodId) || m?.period) : m?.period;
   const competitionKeyOrId = String(
-    periodPathKey(competition) || competition?.slug || competition?.id || periodId || '',
+    periodPathKey(competition as any) || competition?.slug || competition?.id || periodId || '',
   ).trim();
   const seasonId = String(
     competition?.parent_period_id ?? competition?.parent_period?.id ?? '',

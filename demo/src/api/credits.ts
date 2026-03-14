@@ -101,7 +101,7 @@ export const transactionsApi = {
 
   /** Get balance policies for an organisation. */
   listBalancePolicies(params?: { organisation?: string }, opts?: ListOptions) {
-    return api.list<Record<string, unknown>>('/transactions/balance-policies/', {
+    return api.list<any>('/transactions/balance-policies/', {
       ...opts,
       params: { organisation: params?.organisation, ...opts?.params },
     });
@@ -109,12 +109,12 @@ export const transactionsApi = {
 
   /** Get balance policy for a specific organisation. */
   getBalancePolicy(orgId: string, signal?: AbortSignal) {
-    return api.get<Record<string, unknown>>(`/transactions/balance-policies/organization/${orgId}/`, signal);
+    return api.get<any>(`/transactions/balance-policies/organization/${orgId}/`, signal);
   },
 
   /** Update balance policy. */
   updateBalancePolicy(orgId: string, data: Record<string, unknown>, opts?: MutateOptions) {
-    return api.patch<Record<string, unknown>>(`/transactions/balance-policies/organization/${orgId}/`, data, opts);
+    return api.patch<any>(`/transactions/balance-policies/organization/${orgId}/`, data, opts);
   },
 
   /** Get effective balance policy. */
@@ -126,6 +126,6 @@ export const transactionsApi = {
             .map(([k, v]) => [k, String(v)])
         ).toString()
       : '';
-    return api.get<Record<string, unknown>>(`/transactions/balance-policies/effective/${qs}`, signal);
+    return api.get<any>(`/transactions/balance-policies/effective/${qs}`, signal);
   },
 };

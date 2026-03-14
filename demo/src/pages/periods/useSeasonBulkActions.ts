@@ -257,7 +257,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
     if (!teamIdValue) throw new Error('Select a team first');
     if (!competitionIdValue) throw new Error('Select a competition first');
 
-    const created = await api.post<Record<string, unknown>>('/activities/', {
+    const created = await api.post<any>('/activities/', {
       title: payload.title,
       activity_type: 'match',
       project_id: teamIdValue ? Number(teamIdValue) : undefined,

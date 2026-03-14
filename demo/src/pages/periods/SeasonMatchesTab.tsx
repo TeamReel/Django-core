@@ -179,7 +179,7 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
       const generatingSubtypes: string[] = [];
 
       {
-        const items = mediaData?.results || mediaData?.data?.results || [];
+        const items = mediaData?.results || (mediaData as any)?.data?.results || [];
         // Count unique subtypes that have media
         const subtypes = new Set<string>();
         for (const item of (Array.isArray(items) ? items : [])) {
@@ -194,7 +194,7 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
       }
 
       {
-        const items = contentData?.data?.results || contentData?.results || contentData?.data || [];
+        const items = (contentData as any)?.data?.results || contentData?.results || (contentData as any)?.data || [];
         for (const item of (Array.isArray(items) ? items : [])) {
           if (['queued', 'generating'].includes(item.status)) {
             generatingCount++;

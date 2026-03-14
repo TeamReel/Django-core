@@ -81,7 +81,7 @@ export function useContentOptions({ isOpen, matchData }: ContentOptionsConfig) {
     if (!isOpen) return;
     const fetchBackgrounds = async () => {
       try {
-        const data = await api.get<Record<string, unknown>>('/branding/assets/app-backgrounds/');
+        const data = await api.get<any>('/branding/assets/app-backgrounds/');
         const items = Array.isArray(data) ? data : (data?.results || []);
         setAppBackgrounds(
           items.filter((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => a.url).map((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => ({

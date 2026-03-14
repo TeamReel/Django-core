@@ -144,7 +144,7 @@ export function useBatchGeneration(
       if (needsFullbodyAsInput) {
         personUrl = member.fullbodyUrls[kitType] || member.fullbodyUrls['home'] || member.profilePhotoUrl;
       } else if (kitType === 'legacy') {
-        const tr = member.metadata?.teamreel_assets;
+        const tr = member.metadata?.teamreel_assets as any;
         const legacyUrl = tr?.media?.legacy_photo?.url || tr?.old?.profile_photo_url;
         personUrl = legacyUrl || member.profilePhotoUrl;
       } else {

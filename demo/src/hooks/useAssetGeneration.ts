@@ -78,7 +78,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
         if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
 
-        const res = await api.get<Record<string, unknown>>(
+        const res = await api.get<any>(
           `/generative/assets/generate/${taskId}/status/`,
           signal,
         );
@@ -179,7 +179,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           controller.abort();
         }, 120_000);
 
-        const res = await api.post<Record<string, unknown>>('/generative/assets/generate/', {
+        const res = await api.post<any>('/generative/assets/generate/', {
             template_id: params.templateId,
             params: finalParams,
             variant_count: params.variantCount,
@@ -319,7 +319,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         const isVideo = selectedVariant.mime_type?.startsWith('video/') ||
             !!selectedVariant.video_url || !!selectedVariant.video_base64;
 
-        const response = await api.post<Record<string, unknown>>('/generative/assets/save/', {
+        const response = await api.post<any>('/generative/assets/save/', {
             storage_path: selectedVariant.storage_path || selectedVariant.storage_info?.storage_path,
             presigned_url: selectedVariant.presigned_url,
             video_url: selectedVariant.video_url,

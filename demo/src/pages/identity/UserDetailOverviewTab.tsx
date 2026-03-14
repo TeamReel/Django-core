@@ -139,11 +139,11 @@ export function UserDetailOverviewTab({ data }: Props) {
             <div className="text-muted">Name</div>
             <div className="fw-600">{data.userDisplayName}</div>
             <div className="text-muted">Email</div>
-            <div>{data.user.email}</div>
+            <div>{data.user.email as string}</div>
             <div className="text-muted">Role</div>
             <div>
               <Badge variant={String(data.user.role || '').toLowerCase() === 'superadmin' ? 'primary' : 'default'}>
-                {data.user.role}
+                {data.user.role as string}
               </Badge>
             </div>
             <div className="text-muted">Status</div>

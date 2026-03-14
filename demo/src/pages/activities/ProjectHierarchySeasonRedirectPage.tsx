@@ -40,7 +40,7 @@ export default function ProjectHierarchySeasonRedirectPage() {
         if (orgSlugOrId) {
           try {
             const project = await organisationsApi.getProject(orgSlugOrId, projectSlugOrId);
-            const clubKey = String(project?.parent?.slug || project?.parent?.id || project?.parent_id || '').trim();
+            const clubKey = String((project?.parent as any)?.slug || (project?.parent as any)?.id || project?.parent_id || '').trim();
             if (clubKey) {
               setClubSlugOrId(clubKey);
               return;
@@ -51,7 +51,7 @@ export default function ProjectHierarchySeasonRedirectPage() {
         // Fallback: global project endpoint (often available when org endpoint fails).
         try {
           const project = await projectsApi.get(projectSlugOrId);
-          const clubKey = String(project?.parent?.slug || project?.parent?.id || project?.parent_id || '').trim();
+          const clubKey = String((project?.parent as any)?.slug || (project?.parent as any)?.id || project?.parent_id || '').trim();
           if (clubKey) setClubSlugOrId(clubKey);
         } catch { /* ignore */ }
       } finally {

@@ -298,7 +298,7 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                 const byKey = new Map<string, any>();
                 for (const item of Array.isArray(rawList) ? rawList : []) {
                     const nestedUser = item?.user;
-                    const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
+                    const u: any = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
                     const key = String(u?.id ?? u?.email ?? item?.id ?? '');
                     if (!key) continue;
 
@@ -311,26 +311,26 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                         is_superuser: Boolean(u?.is_superuser),
                         is_active: u?.is_active ?? item?.is_active ?? true,
                         role: u?.role ?? 'User',
-                        role_label: u?.role_label ?? item?.role_label,
+                        role_label: u?.role_label ?? (item as any)?.role_label,
                         role_assignments:
                             u?.role_assignments ||
-                            item?.role_assignments ||
+                            (item as any)?.role_assignments ||
                             u?.rbac_role_assignments ||
-                            item?.rbac_role_assignments ||
+                            (item as any)?.rbac_role_assignments ||
                             [],
                         membership: {
                             id: item?.id,
                             organisation: item?.organisation,
                             role: item?.role,
-                            source: item?.source,
+                            source: (item as any)?.source,
                             joined_at: item?.joined_at,
                             invited_by: item?.invited_by,
                         },
                         organisation: item?.organisation,
-                        source: item?.source,
+                        source: (item as any)?.source,
                         joined_at: item?.joined_at,
                         invited_by: item?.invited_by,
-                        project_memberships: item?.project_memberships || u?.project_memberships || [],
+                        project_memberships: (item as any)?.project_memberships || u?.project_memberships || [],
                     };
 
                     const existing = byKey.get(key);

@@ -301,7 +301,7 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
         const res = await api.list<BrandProfile>(`/branding/profiles/`, { params: { project: team.id } });
         const results = res.results || [];
         if (results.length > 0 && !cancelled) {
-          setBrandProfileId(results[0]?.id || null);
+          setBrandProfileId(String(results[0]?.id) || null);
         }
       } catch { /* ignore */ }
     };

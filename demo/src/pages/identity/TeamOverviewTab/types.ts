@@ -116,14 +116,14 @@ export function getLabel(m: OverviewMember): string {
 export function fmtDate(m: MatchRecord): string {
   const raw = m?.start_time || m?.date || m?.metadata?.date;
   if (!raw) return '—';
-  const d = new Date(raw);
+  const d = new Date(raw as any);
   return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
 export function fmtTime(m: MatchRecord): string {
   const raw = m?.start_time || m?.date || m?.metadata?.date;
   if (!raw) return '';
-  const d = new Date(raw);
+  const d = new Date(raw as any);
   return d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
 }
 

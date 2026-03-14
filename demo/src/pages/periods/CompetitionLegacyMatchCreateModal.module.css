@@ -1,0 +1,90 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--overlay-backdrop, rgba(0, 0, 0, 0.5));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: var(--color-white, #fff);
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  width: 640px;
+  max-width: 95%;
+  box-shadow: 0 4px 12px var(--modal-shadow, rgba(0, 0, 0, 0.15));
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.headerTitle {
+  margin-top: 0;
+  margin-bottom: var(--space-3);
+  color: var(--app-text);
+}
+
+.closeButton {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+  cursor: pointer;
+  height: fit-content;
+}
+
+.closeButton[data-saving='true'] {
+  cursor: not-allowed;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: var(--space-3) var(--space-4);
+}
+
+.formControl {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+}
+
+.formControlTextarea {
+  composes: formControl;
+  resize: vertical;
+}
+
+.errorMessage {
+  margin-top: var(--space-3);
+  color: var(--app-danger, #d32f2f);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.submitButton {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--submit-btn-border, #1e5aa5);
+  background-color: var(--color-blue-600);
+  color: var(--color-white, var(--app-surface));
+  cursor: pointer;
+  font-weight: var(--font-semibold);
+}

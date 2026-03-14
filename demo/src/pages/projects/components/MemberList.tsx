@@ -54,7 +54,7 @@ export const MemberList: React.FC<MemberListProps> = ({
     const fetchSeasons = async () => {
       try {
         const data = await api.get<{ results?: Period[] } & Record<string, unknown>>(`/periods/?project=${projectId}&type=season`);
-        const results = data.results || data;
+        const results = (data.results || data) as Period[];
         setPeriods(results);
 
         // Auto-select latest season

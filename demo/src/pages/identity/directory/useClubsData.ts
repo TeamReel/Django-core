@@ -310,8 +310,8 @@ export function useClubsData(preselectedOrgId?: string): UseClubsDataReturn {
     const projectSlugOrId = s.editProject.slug || s.editProject.id;
     const updated = await api.patch<ProjectOption>(`/projects/${projectSlugOrId}/?include_archived=true`, projectData);
 
-    setClubs((prev) =>
-      prev.map((p) => {
+    setClubs((prev: any) =>
+      prev.map((p: any) => {
         const match = String(p?.slug || p?.id) === String(projectSlugOrId);
         return match ? { ...p, ...(updated || projectData) } : p;
       })

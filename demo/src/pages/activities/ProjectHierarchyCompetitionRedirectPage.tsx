@@ -40,7 +40,7 @@ export default function ProjectHierarchyCompetitionRedirectPage() {
         if (orgSlugOrId) {
           try {
             const project = await organisationsApi.getProject(orgSlugOrId, projectSlugOrId);
-            const clubKey = String(project?.parent?.slug || project?.parent?.id || project?.parent_id || '').trim();
+            const clubKey = String((project?.parent as any)?.slug || (project?.parent as any)?.id || project?.parent_id || '').trim();
             if (clubKey) {
               setClubSlugOrId(clubKey);
               return;
@@ -50,7 +50,7 @@ export default function ProjectHierarchyCompetitionRedirectPage() {
 
         try {
           const project = await projectsApi.get(projectSlugOrId);
-          const clubKey = String(project?.parent?.slug || project?.parent?.id || project?.parent_id || '').trim();
+          const clubKey = String((project?.parent as any)?.slug || (project?.parent as any)?.id || project?.parent_id || '').trim();
           if (clubKey) setClubSlugOrId(clubKey);
         } catch { /* ignore */ }
       } finally {

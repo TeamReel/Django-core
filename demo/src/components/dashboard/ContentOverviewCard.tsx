@@ -155,7 +155,7 @@ export const ContentOverviewCard: React.FC = () => {
         {
           const genItems = genData.results;
 
-          for (const req of genItems) {
+          for (const req of genItems as any[]) {
             // Track linked media IDs to avoid double-counting
             if (req.result?.media_item_id) {
               seenMediaIds.add(req.result.media_item_id);
@@ -193,7 +193,7 @@ export const ContentOverviewCard: React.FC = () => {
             // Skip if already counted via GenerationRequest
             if (seenMediaIds.has(item.id)) continue;
 
-            const actId = item.activity_id || item.activity;
+            const actId = item.activity_id || (item as any).activity;
             const mimeType = item.mime_type || '';
             const title = item.title || '';
             const subtype = inferMediaItemSubtype(title, mimeType);
@@ -201,14 +201,14 @@ export const ContentOverviewCard: React.FC = () => {
             // If has activity_id, treat as match content
             if (actId) {
               const matchTitle = item.activity_title || item.title || 'Wedstrijd';
-              const matchDate = item.activity_date;
+              const matchDate = (item as any).activity_date;
 
               if (!matchMap.has(actId)) {
                 matchMap.set(actId, { title: matchTitle, date: matchDate, subtypes: {} });
               }
               const m = matchMap.get(actId)!;
               m.subtypes[subtype] = (m.subtypes[subtype] || 0) + 1;
-            } else if (item.member_id || item.member) {
+            } else if ((item as any).member_id || (item as any).member) {
               // Member content
               memberSubtypes[subtype] = (memberSubtypes[subtype] || 0) + 1;
             }

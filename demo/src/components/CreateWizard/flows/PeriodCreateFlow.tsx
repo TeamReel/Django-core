@@ -86,7 +86,7 @@ export function PeriodCreateFlow({ isOpen, onClose }: PeriodCreateFlowProps) {
           params.organisation_id = prefill.organisationId;
         }
 
-        const { results } = await api.list<Record<string, unknown>>('/periods/', {
+        const { results } = await api.list<any>('/periods/', {
           params,
           pageSize: 250,
         });

@@ -106,7 +106,7 @@ export const UsersList: React.FC<UsersListProps> = (props) => {
         opened={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         user={editUser}
-        onSave={handleSaveUser}
+        onSave={handleSaveUser as any}
         onSaved={refreshData}
         organisationSlug={String(getSelectedOrgSlug() || '')}
         scopeProjectKey={preselectedTeamId || preselectedClubId || ''}

@@ -108,7 +108,7 @@ export function useSports(): UseSportsReturn {
     variants,
     loading,
     error,
-    refetch: reload,
+    refetch: reload as any,
     getVariantsForCategory,
     getSportById,
   };

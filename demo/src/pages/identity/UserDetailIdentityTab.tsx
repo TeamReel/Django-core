@@ -12,7 +12,7 @@ interface Props {
 
 export function UserDetailIdentityTab({ data }: Props) {
   const {
-    user, userDisplayName,
+    user: _user, userDisplayName,
     identityEditing, setIdentityEditing,
     identityFirstName, setIdentityFirstName,
     identityLastName, setIdentityLastName,
@@ -21,6 +21,9 @@ export function UserDetailIdentityTab({ data }: Props) {
     identitySaveSuccess, setIdentitySaveSuccess,
     handleSaveUser, fetchUser,
   } = data;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const user = _user as any;
 
   if (!user) return null;
 

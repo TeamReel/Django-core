@@ -147,7 +147,7 @@ export default function TeamOrganisationDetailPage() {
           activatingContext={activatingContext}
           setActivatingContext={setActivatingContext}
           activeContextState={activeContextState}
-          setActiveContextState={setActiveContextState}
+          setActiveContextState={setActiveContextState as any}
           isPlayer={isPlayer}
           backToClubHref={backToClubHref}
           setTeam={setTeam}
@@ -262,7 +262,7 @@ export default function TeamOrganisationDetailPage() {
               org={org}
               team={team}
               setTeam={setTeam}
-              brandProfileId={brandProfileId}
+              brandProfileId={brandProfileId ?? undefined}
               club={club}
             />
           )}

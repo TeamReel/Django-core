@@ -214,7 +214,7 @@ export function useUserDetailData(): UserDetailDataReturn {
                 name: String(apiClub?.name || t?.parent_name || '').trim(),
                 slug: String(apiClub?.slug || '').trim(),
                 role: '', membership_id: null,
-            });
+            } as any);
         }
         return Array.from(merged.values());
     }, [clubMemberships, teamMemberships, s.clubsById]);
@@ -410,10 +410,10 @@ export function useUserDetailData(): UserDetailDataReturn {
         user: api.user, setUser: api.setUser, loading: api.loading, error: api.error,
         apiBaseUrl, userDisplayName, activeTab, setTab,
         userOrgs, userProjects, primaryOrgSlug,
-        clubMemberships, directClubMembershipById, teamMemberships,
-        clubsForTab, clubSlugById, teamSeasonPairs,
+        clubMemberships, directClubMembershipById: directClubMembershipById as any, teamMemberships,
+        clubsForTab: clubsForTab as any, clubSlugById, teamSeasonPairs,
         hierarchySearch: s.hierarchySearch, setHierarchySearch, hierarchyRows,
-        clubsById: s.clubsById, linkedCompetitions: s.linkedCompetitions, linkedMatches: s.linkedMatches, loadingRelations: s.loadingRelations,
+        clubsById: s.clubsById as any, linkedCompetitions: s.linkedCompetitions, linkedMatches: s.linkedMatches, loadingRelations: s.loadingRelations,
         saveMatchEdits: api.saveMatchEdits, deleteMatch: api.deleteMatch,
         identityEditing: s.identityEditing, setIdentityEditing,
         identityFirstName: s.identityFirstName, setIdentityFirstName,

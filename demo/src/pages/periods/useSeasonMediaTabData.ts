@@ -75,10 +75,11 @@ export function useSeasonMediaTabData({
   useEffect(() => {
     const guestPlayerData = project?.metadata?.guest_player;
     if (guestPlayerData) {
-      const fullbodyHome = guestPlayerData?.images?.fullbody?.home;
-      const closeupHome = guestPlayerData?.images?.closeup?.home;
-      const introHome = guestPlayerData?.videos?.intro?.home;
-      const celebrationHome = guestPlayerData?.videos?.celebration?.home;
+      const guestData = guestPlayerData as any;
+      const fullbodyHome = guestData?.images?.fullbody?.home;
+      const closeupHome = guestData?.images?.closeup?.home;
+      const introHome = guestData?.videos?.intro?.home;
+      const celebrationHome = guestData?.videos?.celebration?.home;
       const hasAvatar = !!(fullbodyHome?.raw || fullbodyHome?.processed);
       const hasCloseup = !!(closeupHome?.raw || closeupHome?.processed);
       const hasIntro = !!(introHome?.raw || introHome?.processed || introHome?.url);

@@ -131,7 +131,7 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
   useEffect(() => {
     if (autoTeamId && !s.autoScopeApplied && !s.selectedTeamId) {
       setSelectedTeamId(autoTeamId);
-      dispatch({ type: 'set', key: 'autoScopeApplied', value: true });
+      dispatch({ type: 'set', field: 'autoScopeApplied' as any, value: true });
     }
   }, [autoTeamId, s.autoScopeApplied, s.selectedTeamId]);
 
@@ -194,7 +194,7 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
           params: { project: s.selectedTeamId, period_type: 'season' },
           pageSize: 100,
         });
-        setSeasons(items.map((s) => ({ id: String(s.id), name: s.name, key: s.key || s.slug || '' })));
+        setSeasons(items.map((s) => ({ id: String(s.id), name: s.name, key: (s as any).key || (s as any).slug || '' })));
       } catch { /* ignore */ }
     };
     load();
@@ -209,7 +209,7 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
           params: { period: s.selectedSeasonId, activity_type: 'match', ordering: '-activity_date' },
           pageSize: 100,
         });
-        setMatches(items.map((m) => ({ id: String(m.id), title: m.title || m.name || '', slug: m.slug, activity_date: m.activity_date })));
+        setMatches(items.map((m) => ({ id: String(m.id), title: (m as any).title || (m as any).name || '', slug: (m as any).slug, activity_date: (m as any).activity_date })));
       } catch { /* ignore */ }
     };
     load();

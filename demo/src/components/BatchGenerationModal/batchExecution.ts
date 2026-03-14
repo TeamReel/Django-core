@@ -144,7 +144,7 @@ async function tryProcessExistingVariant(
   abortRef: React.MutableRefObject<boolean>,
   setJobStatuses: SetJobStatuses,
 ): Promise<boolean> {
-  const tr = member.metadata?.teamreel_assets || {};
+  const tr = (member.metadata?.teamreel_assets || {}) as any;
   const videoCategory = (tr.videos || {})[selectedTemplate.category] || {};
 
   let existingVariant: { key: string; rawUrl: string } | null = null;
@@ -217,7 +217,7 @@ async function pollVariantProcessing(
     if (!mData) continue;
 
     const mMeta = mData?.metadata || {};
-    const trPoll = (mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {};
+    const trPoll = ((mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {}) as any;
     const videoCategoryPoll = (trPoll.videos || {})[selectedTemplate.category] || {};
 
     let stillProcessing = 0;
@@ -431,7 +431,7 @@ export async function updateMembershipMetadata(
 
   try {
     const existingMeta = member.metadata || {};
-    const tr = existingMeta.teamreel_assets || {};
+    const tr = (existingMeta.teamreel_assets || {}) as any;
     const media = tr.media || {};
 
     const updatedTr = { ...tr };

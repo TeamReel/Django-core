@@ -39,7 +39,7 @@ export function useThenVsNowData({
   useEffect(() => {
     (async () => {
       try {
-        const data = await api.get<Record<string, unknown>>('/branding/assets/app-backgrounds/');
+        const data = await api.get<any>('/branding/assets/app-backgrounds/');
         const items = Array.isArray(data) ? data : (data?.data || data?.results || []);
         const bgs = items
           .filter((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => a.url)
@@ -88,7 +88,7 @@ export function useThenVsNowData({
         ...(Object.keys(variantKeys).length > 0 ? { member_variant_keys: variantKeys } : {}),
       });
       const jobId = data?.data?.id || data?.id || data;
-      setJobId(jobId);
+      setJobId(jobId as any);
 
       setStep('submitted');
       setTimeout(() => onClose(), 2500);

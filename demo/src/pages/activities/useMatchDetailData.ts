@@ -154,7 +154,7 @@ export function useMatchDetailData(): MatchDetailDataReturn {
     error: formState.error,
     activatingContext: formState.activatingContext,
     setActivatingContext: formState.setActivatingContext,
-    activeContext: formState.activeContext,
+    activeContext: formState.activeContext as Record<string, unknown> | null,
     setActiveContextState: formState.setActiveContextState,
     isCreateTxnModalOpen: formState.isCreateTxnModalOpen,
     setIsCreateTxnModalOpen: formState.setIsCreateTxnModalOpen,

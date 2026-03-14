@@ -102,7 +102,7 @@ const UserRow: React.FC<UserRowProps & { item: UserRowItem }> = ({
   const isMembership = !!item.user;
   const user = (isMembership ? item.user : item) as User;
   const userOrgs = user.organisations || [];
-  const userProjects = user.projects || [];
+  const userProjects: any[] = user.projects || [];
   const displayRole = user.role || 'User';
   const isActive = isMembership ? item.is_active : user.is_active;
 

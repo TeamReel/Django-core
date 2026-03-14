@@ -68,8 +68,8 @@ export function ApprovalsModals({
           onClose={onCloseVideoModal}
           onActionComplete={onVideoActionComplete}
           pushToast={pushToast}
-          approveJob={approveVideoJob}
-          rejectJob={rejectVideoJob}
+          approveJob={approveVideoJob as any}
+          rejectJob={rejectVideoJob as any}
         />
       )}
 

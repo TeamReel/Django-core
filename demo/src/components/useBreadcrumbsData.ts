@@ -249,8 +249,8 @@ export function useBreadcrumbsData({
         const projectId = await resolveProjectId(effectiveOrg, effectiveTeam);
         if (!projectId || cancelled) return;
         const rootPeriods = await fetchRootPeriods(projectId);
-        const seasons = (rootPeriods || []).filter(isSeasonPeriod);
-        const opts: BreadcrumbSwitcherOption[] = seasons.map((p: ApiPeriod) => ({
+        const seasons = (rootPeriods || []).filter(isSeasonPeriod as any);
+        const opts: BreadcrumbSwitcherOption[] = (seasons as any[]).map((p: any) => ({
           id: String(p.id),
           label: String(p.name || p.slug || p.id),
           slug: periodPathKey(p) || String(p.id),

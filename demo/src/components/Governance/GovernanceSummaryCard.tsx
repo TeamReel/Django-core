@@ -87,7 +87,7 @@ export default function GovernanceSummaryCard(props: {
           }
         }
 
-        const raw = await api.get<Record<string, unknown>>(
+        const raw = await api.get<any>(
           `/transactions/balance-policies/organization/${encodeURIComponent(orgId)}/`,
         );
         const data = unwrapBalancePolicy(raw);

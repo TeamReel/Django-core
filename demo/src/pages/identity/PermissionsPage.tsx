@@ -40,7 +40,7 @@ export const PermissionsPage: React.FC = () => {
         const userData = await api.get<User>('/auth/me/');
         setCurrentUserRole(userData.role);
 
-        const tree = await api.get<Record<string, unknown>>('/permissions/current/');
+        const tree = await api.get<any>('/permissions/current/');
         setPermissionsTree(tree);
 
         const keys: string[] = [];

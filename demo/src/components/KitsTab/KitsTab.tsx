@@ -85,7 +85,7 @@ export function KitsTab({
 
     try {
       const { results } = await api.list<BrandAsset>('/branding/assets/', { params: { profile: brandProfileId } });
-      setKits(results.filter((a: { asset_type?: string }) => String(a.asset_type || '').startsWith('kit_')));
+      setKits(results.filter((a: { asset_type?: string }) => String(a.asset_type || '').startsWith('kit_')) as any);
       setLoading(false);
     } catch (e) {
       logger.error('Failed to load kits', e);

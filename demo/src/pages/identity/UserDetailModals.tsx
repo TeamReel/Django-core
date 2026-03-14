@@ -195,12 +195,12 @@ export const UserDetailModals: React.FC<UserDetailModalsProps> = ({ data }) => {
         walletOptions={userWalletOptions}
       />
 
-      <UserDetailModal opened={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} user={user} />
+      <UserDetailModal opened={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} user={user as any} />
 
       <UserEditModal
         opened={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        user={user}
+        user={user as any}
         onSave={handleSaveUser}
         onSaved={fetchUser}
         organisationSlug={String(primaryOrgSlug || getPreferredOrganisationId() || '')}
@@ -209,7 +209,7 @@ export const UserDetailModals: React.FC<UserDetailModalsProps> = ({ data }) => {
       <LinkUserModal
         opened={isLinkModalOpen}
         onClose={() => setIsLinkModalOpen(false)}
-        user={user}
+        user={user as any}
         organisations={linkOrgs.length ? linkOrgs : userOrgs}
         clubs={linkClubs}
         teams={linkTeams}

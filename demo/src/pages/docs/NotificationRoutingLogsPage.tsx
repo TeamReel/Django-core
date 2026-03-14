@@ -99,18 +99,19 @@ export const NotificationRoutingLogsPage: React.FC = () => {
 
         const data = await api.get<RoutingLog[] | { results: RoutingLog[] }>(path);
 
-          let rawResults: Record<string, unknown>[] = [];
+          let rawResults: any[] = [];
+          const dataAny = data as any;
           if (Array.isArray(data)) {
             rawResults = data;
-          } else if (Array.isArray(data.results)) {
-            rawResults = data.results;
-          } else if (data.data && Array.isArray(data.data.results)) {
-            rawResults = data.data.results;
-          } else if (data.data && Array.isArray(data.data)) {
-            rawResults = data.data;
-          } else if (data.results) {
+          } else if (Array.isArray((data as any).results)) {
+            rawResults = (data as any).results;
+          } else if (dataAny.data && Array.isArray(dataAny.data.results)) {
+            rawResults = dataAny.data.results;
+          } else if (dataAny.data && Array.isArray(dataAny.data)) {
+            rawResults = dataAny.data;
+          } else if ((data as any).results) {
              // Handle DRF pagination where results is at top level
-             rawResults = data.results;
+             rawResults = (data as any).results;
           }
 
           // Map API response to RoutingLog interface

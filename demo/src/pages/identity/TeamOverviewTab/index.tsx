@@ -78,11 +78,11 @@ export function TeamOverviewTab({
       .filter((m: MatchRecord) => {
         const d = m.start_time || m.date || m.metadata?.date;
         if (!d) return false;
-        return new Date(d) < now;
+        return new Date(d as any) < now;
       })
       .sort((a: MatchRecord, b: MatchRecord) => {
-        const da = new Date(a.start_time || a.date || a.metadata?.date).getTime();
-        const db = new Date(b.start_time || b.date || b.metadata?.date).getTime();
+        const da = new Date((a.start_time || a.date || a.metadata?.date) as any).getTime();
+        const db = new Date((b.start_time || b.date || b.metadata?.date) as any).getTime();
         return db - da;
       })
       .slice(0, 4);
@@ -96,11 +96,11 @@ export function TeamOverviewTab({
       .filter((m: MatchRecord) => {
         const d = m.start_time || m.date || m.metadata?.date;
         if (!d) return false;
-        return new Date(d) >= now;
+        return new Date(d as any) >= now;
       })
       .sort((a: MatchRecord, b: MatchRecord) => {
-        const da = new Date(a.start_time || a.date || a.metadata?.date).getTime();
-        const db = new Date(b.start_time || b.date || b.metadata?.date).getTime();
+        const da = new Date((a.start_time || a.date || a.metadata?.date) as any).getTime();
+        const db = new Date((b.start_time || b.date || b.metadata?.date) as any).getTime();
         return da - db;
       })
       .slice(0, 3);

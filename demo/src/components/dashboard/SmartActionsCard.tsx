@@ -103,7 +103,7 @@ export const SmartActionsCard: React.FC = () => {
         // Members (if project context)
         if (project) {
           fetches.push(
-            api.list<Record<string, unknown>>(`/organisations/${org.slug}/projects/${project.slug}/members/`, { pageSize: 100 })
+            api.list<any>(`/organisations/${org.slug}/projects/${project.slug}/members/`, { pageSize: 100 })
               .catch(() => null)
           );
         } else {
@@ -113,7 +113,7 @@ export const SmartActionsCard: React.FC = () => {
         // Generation requests (completed member content)
         if (project) {
           fetches.push(
-            api.list<Record<string, unknown>>('/generative/requests/', { params: { status: 'completed', project: project.id }, pageSize: 500 })
+            api.list<any>('/generative/requests/', { params: { status: 'completed', project: project.id }, pageSize: 500 })
               .catch(() => null)
           );
         } else {
@@ -123,7 +123,7 @@ export const SmartActionsCard: React.FC = () => {
         // Upcoming match
         const now = new Date().toISOString();
         fetches.push(
-          api.list<Record<string, unknown>>('/activities/', {
+          api.list<any>('/activities/', {
             params: { activity_type: 'match', start_time__gte: now, ordering: 'start_time', ...(project ? { project: project.id } : {}) },
             pageSize: 1,
           }).catch(() => null)
@@ -134,8 +134,8 @@ export const SmartActionsCard: React.FC = () => {
 
         // ── 2. Analyze member content completeness ──
         if (project && membersData && genData) {
-          const memberList = membersData?.results ?? [];
-          const genItems = genData?.results ?? [];
+          const memberList = (membersData as any)?.results ?? [];
+          const genItems = (genData as any)?.results ?? [];
 
           // Build map: member_id -> set of completed subtypes
           const memberContentMap = new Map<string, Set<string>>();
@@ -195,7 +195,7 @@ export const SmartActionsCard: React.FC = () => {
 
         // ── 3. Upcoming match actions ──
         if (matchData) {
-          const matches = matchData?.results ?? [];
+          const matches = (matchData as any)?.results ?? [];
           if (matches.length > 0) {
             const nextMatch = matches[0];
             const matchDate = new Date(nextMatch.start_time);

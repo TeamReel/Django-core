@@ -97,13 +97,13 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
       const createdKey = String(created?.slug || created?.id || '');
       if (createdKey) {
         setClubsPage(1);
-        setClubs((prev) => {
-          if (prev.some((p) => String(p?.slug || p?.id || '') === createdKey)) return prev;
+        setClubs((prev: any) => {
+          if (prev.some((p: any) => String(p?.slug || p?.id || '') === createdKey)) return prev;
           return [created, ...prev];
         });
         setClubsCount((prev) => (typeof prev === 'number' ? prev + 1 : prev));
-        setAllClubsForTeams((prev) => {
-          if (prev.some((p) => String(p?.slug || p?.id || '') === createdKey)) return prev;
+        setAllClubsForTeams((prev: any) => {
+          if (prev.some((p: any) => String(p?.slug || p?.id || '') === createdKey)) return prev;
           return [created, ...prev];
         });
       }
@@ -129,9 +129,9 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
     if (created && typeof created === 'object') {
       const createdKey = String(created?.slug || created?.id || '').trim();
       if (createdKey) {
-        setTeams((prev) => {
+        setTeams((prev: any) => {
           const list = Array.isArray(prev) ? prev : [];
-          if (list.some((p) => String(p?.slug || p?.id || '').trim() === createdKey)) return list;
+          if (list.some((p: any) => String(p?.slug || p?.id || '').trim() === createdKey)) return list;
           return [created, ...list];
         });
         setTeamsCount((prev) => (typeof prev === 'number' ? prev + 1 : prev));
@@ -242,7 +242,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
     if (created && typeof created === 'object') {
       const createdId = String(created?.id || '').trim();
       if (createdId) {
-        setFederationMatches((prev) => {
+        setFederationMatches((prev: any) => {
           const list = Array.isArray(prev) ? prev : [];
           if (list.some((m: Record<string, unknown>) => String(m?.id || '').trim() === createdId)) return list;
           return [created, ...list];

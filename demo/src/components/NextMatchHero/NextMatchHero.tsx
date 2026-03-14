@@ -156,7 +156,7 @@ export const NextMatchHero: React.FC = () => {
       try {
         setLoading(true);
         const now = new Date().toISOString();
-        const data = await api.get<Record<string, unknown>>(
+        const data = await api.get<any>(
           `/activities/?activity_type=match&start_time__gte=${encodeURIComponent(now)}&ordering=start_time&page_size=1`,
         );
         const items = extractItems<Match>(data);
@@ -165,7 +165,7 @@ export const NextMatchHero: React.FC = () => {
 
         // If we have a match, fetch its media items to compute readiness
         if (m) {
-          const mediaData = await api.get<Record<string, unknown>>(
+          const mediaData = await api.get<any>(
             `/media/items/?activity=${m.id}&page_size=100`,
           );
           if (!cancelled) setMediaItems(extractItems<MediaItem>(mediaData));

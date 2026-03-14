@@ -100,14 +100,14 @@ export function useMatchDerived({ opened, apiBaseUrl, form }: UseMatchDerivedPro
       !String(selectedClubId || '').trim()
         ? ((): string | null => {
             const fromList = (teamsOptions || []).find((t) => String(t?.id) === String(selectedTeamId));
-            return getParentProjectId(fromList || selectedTeamDetail);
+            return getParentProjectId((fromList || selectedTeamDetail) as any);
           })()
         : null;
     if (resolvedClubIdLocal && String(resolvedClubIdLocal) !== String(selectedClubId || '')) {
       setSelectedClubId(String(resolvedClubIdLocal));
     }
 
-    const resolvedOppClubId = !String(selectedOpponentClubId || '').trim() ? getParentProjectId(selectedOpponentDetail) : null;
+    const resolvedOppClubId = !String(selectedOpponentClubId || '').trim() ? getParentProjectId(selectedOpponentDetail as any) : null;
     if (resolvedOppClubId && String(resolvedOppClubId) !== String(selectedOpponentClubId || '')) {
       setSelectedOpponentClubId(String(resolvedOppClubId));
     }
@@ -117,7 +117,7 @@ export function useMatchDerived({ opened, apiBaseUrl, form }: UseMatchDerivedPro
         ? String(
             typeof selectedTeamDetail?.organisation === 'string'
               ? selectedTeamDetail.organisation
-              : selectedTeamDetail?.organisation?.id || ''
+              : (selectedTeamDetail as any)?.organisation?.id || ''
           ).trim()
         : '';
 
@@ -137,7 +137,7 @@ export function useMatchDerived({ opened, apiBaseUrl, form }: UseMatchDerivedPro
     if (explicit) return explicit;
     const fromList = (teamsOptions || []).find((t) => String(t?.id) === String(selectedTeamId));
     const from = fromList || selectedTeamDetail;
-    return from ? String(getParentProjectId(from) || '').trim() : '';
+    return from ? String(getParentProjectId(from as any) || '').trim() : '';
   }, [selectedClubId, teamsOptions, selectedTeamId, selectedTeamDetail]);
 
   const resolvedOpponentClubId = useMemo(() => {
@@ -159,10 +159,10 @@ export function useMatchDerived({ opened, apiBaseUrl, form }: UseMatchDerivedPro
 
   // ── Derived metadata ──
   const derived = useMemo(() => {
-    const our = getProjectIdentity(selectedTeamDetail);
-    const opp = getProjectIdentity(selectedOpponentDetail);
-    const ourClub = getProjectIdentity(selectedClubDetail);
-    const oppClub = getProjectIdentity(selectedOpponentClubDetail);
+    const our = getProjectIdentity(selectedTeamDetail as any);
+    const opp = getProjectIdentity(selectedOpponentDetail as any);
+    const ourClub = getProjectIdentity(selectedClubDetail as any);
+    const oppClub = getProjectIdentity(selectedOpponentClubDetail as any);
 
     const home = venue === 'Home' ? our : opp;
     const away = venue === 'Home' ? opp : our;

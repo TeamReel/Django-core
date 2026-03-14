@@ -71,13 +71,13 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
     now.setHours(0, 0, 0, 0);
     return matches
       .filter((m) => {
-        const d = m.start_time || m.date || m.metadata?.date;
+        const d = m.start_time || m.date || (m as any).metadata?.date;
         if (!d) return false;
-        return new Date(d) >= now;
+        return new Date(d as string) >= now;
       })
       .sort((a, b) => {
-        const da = new Date(a.start_time || a.date || a.metadata?.date).getTime();
-        const db = new Date(b.start_time || b.date || b.metadata?.date).getTime();
+        const da = new Date(a.start_time || a.date || (a as any).metadata?.date).getTime();
+        const db = new Date(b.start_time || b.date || (b as any).metadata?.date).getTime();
         return da - db;
       })
       .slice(0, 3);
@@ -89,13 +89,13 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
     now.setHours(0, 0, 0, 0);
     return matches
       .filter((m) => {
-        const d = m.start_time || m.date || m.metadata?.date;
+        const d = m.start_time || m.date || (m as any).metadata?.date;
         if (!d) return false;
-        return new Date(d) < now;
+        return new Date(d as string) < now;
       })
       .sort((a, b) => {
-        const da = new Date(a.start_time || a.date || a.metadata?.date).getTime();
-        const db = new Date(b.start_time || b.date || b.metadata?.date).getTime();
+        const da = new Date(a.start_time || a.date || (a as any).metadata?.date).getTime();
+        const db = new Date(b.start_time || b.date || (b as any).metadata?.date).getTime();
         return db - da;
       })
       .slice(0, 2);
@@ -253,7 +253,7 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
           ) : (
             <div className={ov.matchList}>
               {upcomingMatches.map((m) => (
-                <Link key={m.id} to={matchUrl(m)} className={ov.matchRow}>
+                <Link key={m.id as string} to={matchUrl(m)} className={ov.matchRow}>
                   <div className={ov.matchDate}>
                     <span className={ov.matchDay}>{fmtDate(m)}</span>
                     <span className={ov.matchTime}>{fmtTime(m)}</span>
@@ -275,7 +275,7 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
           </div>
           <div className={ov.matchList}>
             {recentMatches.map((m) => (
-              <Link key={m.id} to={matchUrl(m)} className={ov.matchRow}>
+              <Link key={m.id as string} to={matchUrl(m)} className={ov.matchRow}>
                 <div className={ov.matchDate}>
                   <span className={ov.matchDay}>{fmtDate(m)}</span>
                 </div>

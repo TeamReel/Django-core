@@ -77,7 +77,7 @@ export const MemberContentProgressCard: React.FC = () => {
 
         // Build map: member_id -> set of completed subtypes
         const memberContentMap = new Map<string, Set<string>>();
-        for (const req of genItems) {
+        for (const req of genItems as any[]) {
           const tplType = req.template?.template_type || '';
           if (tplType !== 'member') continue;
           const subtype = req.template?.template_subtype || req.input_data?.template_subtype || '';
@@ -103,11 +103,11 @@ export const MemberContentProgressCard: React.FC = () => {
             const completedSet = memberContentMap.get(userId) || memberContentMap.get(memberId) || new Set();
             const name = m.user?.first_name
               ? `${m.user.first_name} ${m.user.last_name || ''}`.trim()
-              : m.user_name || m.name || 'Onbekend';
+              : (m as any).user_name || (m as any).name || 'Onbekend';
             return {
               id: memberId,
               name,
-              avatarUrl: m.user?.avatar_url || m.avatar_url,
+              avatarUrl: m.user?.avatar_url || (m as any).avatar_url,
               completedTypes: Array.from(completedSet),
               totalExpected: MEMBER_CONTENT_TYPES.length,
             };

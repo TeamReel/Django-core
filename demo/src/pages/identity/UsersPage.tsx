@@ -130,7 +130,7 @@ export default function UsersPage() {
         opened={d.isModalOpen}
         onClose={() => d.setIsModalOpen(false)}
         user={d.editingUser}
-        onSave={d.handleSaveUser}
+        onSave={d.handleSaveUser as any}
         onSaved={d.fetchUsers}
         organisationSlug={String(d.orgIdParam || d.context.organisation?.slug || '')}
         scopeProjectKey={String(d.selectedTeamKey || d.selectedClubKey || '')}

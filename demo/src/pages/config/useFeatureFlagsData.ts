@@ -96,7 +96,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
     flags: [], loading: true, updating: false, initialLoadDone: false,
     useApi: true, apiError: null, seedMessage: null, autoSeeded: false,
     filterType: 'all', filterSubtype: 'all', filterStyle: 'all',
-    selectedIds: new Set(), bulkUpdating: false, syncing: false,
+    selectedIds: new Set<string>(), bulkUpdating: false, syncing: false,
   });
 
   const setFlags = useMemo(() => makeSetter<FlagsState, 'flags'>(dispatch, 'flags'), [dispatch]);
@@ -220,7 +220,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
       window.removeEventListener('featureFlagsChanged', handleStorageChange);
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [s.useApi, isSuperAdmin, s.initialLoadDone]);
+  }, [s.useApi, isSuperadmin, s.initialLoadDone]);
 
   // ── Toggle single flag ──
 
@@ -279,9 +279,9 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
   // ── Derived filter data ──
 
   const displayFlags = s.flags
-    .filter((flag) => !isThemeFlagKey(flag.key))
-    .filter((flag) => String(flag.key || '').startsWith('content__'))
-    .filter((flag) => {
+    .filter((flag: any) => !isThemeFlagKey(flag.key))
+    .filter((flag: any) => String(flag.key || '').startsWith('content__'))
+    .filter((flag: any) => {
       const parts = String(flag.key || '').split('__');
       const type = parts[1] || '';
       const subtype = parts[2] || '';
@@ -293,46 +293,46 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
       return true;
     });
 
-  const uniqueTypes = Array.from(new Set(
+  const uniqueTypes: string[] = Array.from(new Set<string>(
     s.flags
-      .filter((flag) => String(flag.key || '').startsWith('content__'))
-      .map((flag) => String(flag.key || '').split('__')[1])
-      .filter(Boolean)
+      .filter((flag: any) => String(flag.key || '').startsWith('content__'))
+      .map((flag: any) => String(flag.key || '').split('__')[1])
+      .filter(Boolean) as string[]
   )).sort();
 
-  const uniqueSubtypes = Array.from(new Set(
+  const uniqueSubtypes: string[] = Array.from(new Set<string>(
     s.flags
-      .filter((flag) => String(flag.key || '').startsWith('content__'))
-      .map((flag) => String(flag.key || '').split('__')[2])
-      .filter(Boolean)
+      .filter((flag: any) => String(flag.key || '').startsWith('content__'))
+      .map((flag: any) => String(flag.key || '').split('__')[2])
+      .filter(Boolean) as string[]
   )).sort();
 
-  const uniqueStyles = Array.from(new Set(
+  const uniqueStyles: string[] = Array.from(new Set<string>(
     s.flags
-      .filter((flag) => String(flag.key || '').startsWith('content__'))
-      .map((flag) => {
+      .filter((flag: any) => String(flag.key || '').startsWith('content__'))
+      .map((flag: any) => {
         const parts = String(flag.key || '').split('__');
         const styleIndex = parts.findIndex((p) => p === 'style');
         return styleIndex >= 0 ? parts[styleIndex + 1] || '' : '';
       })
-      .filter(Boolean)
+      .filter(Boolean) as string[]
   )).sort();
 
   // ── Selection helpers ──
 
-  const allSelected = displayFlags.length > 0 && displayFlags.every((f) => s.selectedIds.has(f.id));
+  const allSelected = displayFlags.length > 0 && displayFlags.every((f: any) => s.selectedIds.has(f.id));
   const someSelected = s.selectedIds.size > 0;
 
   const handleSelectAll = () => {
     if (allSelected) {
-      setSelectedIds(new Set());
+      setSelectedIds(new Set<string>());
     } else {
-      setSelectedIds(new Set(displayFlags.map((f) => f.id)));
+      setSelectedIds(new Set<string>(displayFlags.map((f: any) => f.id)));
     }
   };
 
   const handleSelectOne = (id: string) => {
-    const next = new Set(s.selectedIds);
+    const next = new Set<string>(s.selectedIds);
     if (next.has(id)) {
       next.delete(id);
     } else {
@@ -347,7 +347,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
     if (s.selectedIds.size === 0) return;
     setBulkUpdating(true);
     try {
-      const toUpdate = displayFlags.filter((f) => s.selectedIds.has(f.id));
+      const toUpdate = displayFlags.filter((f: any) => s.selectedIds.has(f.id));
       for (const flag of toUpdate) {
         await updateGlobalFlag(flag.id, enabled);
       }
@@ -357,7 +357,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
         global_id: f.global_id || f.id,
       }));
       setFlags(normalized);
-      setSelectedIds(new Set());
+      setSelectedIds(new Set<string>());
     } catch (err) {
       logger.error('Bulk update failed', err);
       pushToast({ message: 'Bulk update failed. Check console for details.', type: 'error' });
@@ -396,7 +396,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
     setFilterType('all');
     setFilterSubtype('all');
     setFilterStyle('all');
-    setSelectedIds(new Set());
+    setSelectedIds(new Set<string>());
   };
 
   return {

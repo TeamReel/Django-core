@@ -129,7 +129,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               d.setIsPeriodEditModalOpen(false);
               d.setSelectedEditPeriod(null);
             },
-            selected: d.selectedEditPeriod,
+            selected: d.selectedEditPeriod as any,
             isSeasonPeriod: isSeasonPeriod,
             organisationSportId: d.organisationSportId,
             onSave: d.savePeriodEdits,
@@ -140,7 +140,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               d.setIsPeriodDetailModalOpen(false);
               d.setSelectedDetailPeriod(null);
             },
-            selected: d.selectedDetailPeriod,
+            selected: d.selectedDetailPeriod as any,
           }}
           matchDetail={{
             isOpen: d.isMatchDetailModalOpen,
@@ -148,7 +148,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               d.setIsMatchDetailModalOpen(false);
               d.setSelectedDetailMatch(null);
             },
-            selected: d.selectedDetailMatch,
+            selected: d.selectedDetailMatch as any,
           }}
           matchEdit={{
             isOpen: d.isMatchEditModalOpen,
@@ -156,7 +156,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               d.setIsMatchEditModalOpen(false);
               d.setSelectedEditMatch(null);
             },
-            selected: d.selectedEditMatch,
+            selected: d.selectedEditMatch as any,
             onSave: d.saveMatchEdits,
           }}
           competitionCreate={{
@@ -217,7 +217,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   season={d.season}
                   competitions={d.competitions}
                   members={d.members}
-                  matches={d.matches}
+                  matches={d.matches as any}
                   matchesLoading={d.matchesLoading}
                   navigateToTab={d.navigateToTab}
                   isTeamRoute={d.isTeamRoute}
@@ -323,9 +323,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   apiBaseUrl={d.apiBaseUrl}
                   matchDisplayTitle={d.matchDisplayTitle}
                   setIsCreateMatchModalOpen={d.setIsCreateMatchModalOpen}
-                  setSelectedDetailMatch={d.setSelectedDetailMatch}
+                  setSelectedDetailMatch={d.setSelectedDetailMatch as any}
                   setIsMatchDetailModalOpen={d.setIsMatchDetailModalOpen}
-                  setSelectedEditMatch={d.setSelectedEditMatch}
+                  setSelectedEditMatch={d.setSelectedEditMatch as any}
                   setIsMatchEditModalOpen={d.setIsMatchEditModalOpen}
                   setMatches={d.setMatches}
                 />

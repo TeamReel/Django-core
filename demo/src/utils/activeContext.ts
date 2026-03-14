@@ -26,7 +26,21 @@ export async function setActiveContext(kind: ActiveContextKind, id?: string | nu
   return true;
 }
 
-export async function getActiveContext() {
-  const raw = await api.get<Record<string, unknown>>('/auth/active-context/');
-  return raw?.data ?? raw;
+export interface ActiveContext {
+  updated_at?: string | null;
+  organisation?: { id: string; slug: string; name: string } | null;
+  club?: { id: string; slug: string; name: string } | null;
+  team?: { id: string; slug: string; name: string } | null;
+  season?: { id: string; key?: string; name?: string; slug?: string } | null;
+  competition?: { id: string; key?: string; name?: string } | null;
+  match?: { id: string; key?: string; slug?: string; title?: string } | null;
+  membership?: Record<string, unknown> | null;
+  org?: { id: string } | null;
+  project?: { id: string } | null;
+  [key: string]: unknown;
+}
+
+export async function getActiveContext(): Promise<ActiveContext> {
+  const raw = await api.get<ActiveContext>('/auth/active-context/');
+  return (raw as any)?.data ?? raw;
 }

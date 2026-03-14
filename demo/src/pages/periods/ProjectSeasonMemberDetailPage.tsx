@@ -73,7 +73,7 @@ export default function ProjectSeasonMemberDetailPage() {
 
   // ── Media state + actions ──
   const media = useMemberMediaActions({
-    membership, setMembership, membershipId, project, org, apiBaseUrl,
+    membership, setMembership, membershipId, project: project as any, org, apiBaseUrl,
   });
 
   // ── AI Modal ──

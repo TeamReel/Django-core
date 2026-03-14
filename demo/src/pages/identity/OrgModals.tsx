@@ -291,8 +291,8 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
         editingMember={editingMember}
         currentOrgSlug={currentOrgSlug}
         onSaved={(updated, role) => {
-          setMembers((prev) =>
-            prev.map((m) => {
+          setMembers((prev: any) =>
+            prev.map((m: any) => {
               if (String(m?.id) !== String(editingMember?.id)) return m;
               return updated && updated.id ? updated : { ...m, role };
             }),
