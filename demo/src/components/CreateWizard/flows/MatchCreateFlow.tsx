@@ -82,7 +82,7 @@ export function MatchCreateFlow({ isOpen, onClose }: MatchCreateFlowProps) {
     initialIds: {
       organisationId: prefill.organisationId || '',
       clubId: prefill.clubProjectId ? String(prefill.clubProjectId) : '',
-      teamId: prefill.teamProjectId ? String(prefill.teamProjectId) : '',
+      teamId: prefill.teamIdForApi ? String(prefill.teamIdForApi) : (prefill.teamProjectId ? String(prefill.teamProjectId) : ''),
       seasonId: prefill.periodId || '',
       competitionId: prefill.competitionId || '',
     },
@@ -129,12 +129,29 @@ export function MatchCreateFlow({ isOpen, onClose }: MatchCreateFlowProps) {
     return found ? String(found.name || '') : '';
   }, [d.selectedOpponentTeamId, d.opponentTeamOptions]);
 
+  // Resolve season/competition names from current selections (not just prefill)
+  const resolvedSeasonName = useMemo(() => {
+    if (d.selectedSeasonId) {
+      const found = d.seasonOptions.find((s) => String(s.id) === d.selectedSeasonId);
+      if (found?.name) return String(found.name);
+    }
+    return prefill.periodName || '';
+  }, [d.selectedSeasonId, d.seasonOptions, prefill.periodName]);
+
+  const resolvedCompetitionName = useMemo(() => {
+    if (d.selectedCompetitionId) {
+      const found = d.competitionOptions.find((c) => String(c.id) === d.selectedCompetitionId);
+      if (found?.name) return String(found.name);
+    }
+    return prefill.competitionName || '';
+  }, [d.selectedCompetitionId, d.competitionOptions, prefill.competitionName]);
+
   const confirmData: MatchConfirmData = useMemo(() => ({
     effectiveTitle: d.effectiveTitle,
     teamName: prefill.teamName || '',
     opponentName,
-    seasonName: prefill.periodName || '',
-    competitionName: prefill.competitionName || '',
+    seasonName: resolvedSeasonName,
+    competitionName: resolvedCompetitionName,
     matchDate: d.matchDate,
     matchTime: d.matchTime,
     venue: d.venue,
@@ -142,7 +159,7 @@ export function MatchCreateFlow({ isOpen, onClose }: MatchCreateFlowProps) {
     handleCreate: d.handleCreate,
     isSaving: d.isSaving,
     error: d.error,
-  }), [d, prefill, opponentName]);
+  }), [d, prefill, opponentName, resolvedSeasonName, resolvedCompetitionName]);
 
   return (
     <WizardProvider
@@ -169,11 +186,8 @@ export function MatchCreateFlow({ isOpen, onClose }: MatchCreateFlowProps) {
 
 // ── Helper ──
 function buildContextSummary(prefill: Record<string, any>): string {
-  const parts: string[] = [];
-  if (prefill.teamName) parts.push(prefill.teamName);
-  if (prefill.periodName) parts.push(prefill.periodName);
-  if (prefill.competitionName) parts.push(prefill.competitionName);
-  return parts.join(' › ');
+  // Only show team — season/competition are now separate selectable fields
+  return prefill.teamName ? String(prefill.teamName) : '';
 }
 
 export default MatchCreateFlow;
