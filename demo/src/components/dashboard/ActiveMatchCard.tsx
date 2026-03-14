@@ -9,7 +9,7 @@ import React, { memo, useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Zap, ChevronRight, MapPin, Clock, CheckCircle2,
-  Circle, Trophy, Sparkles, Calendar,
+  Circle, Trophy, Sparkles, Calendar, Users,
 } from 'lucide-react';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { api } from '@/api';
@@ -38,6 +38,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const { context } = useContextSwitcher();
   const [match, setMatch] = useState<Match | null>(null);
   const [contentCount, setContentCount] = useState(0);
+  const [lineupCount, setLineupCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const project = context.project;
@@ -83,8 +84,25 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
 
         if (!cancelled) setMatch(closest);
 
-        // Count content items for this match (gracefully handle 500s)
+        // Count content items & lineup for this match (gracefully handle 500s)
         if (closest) {
+          // Lineup from metadata
+          const lineupPositions = (closest.metadata?.lineup as any)?.positions;
+          if (Array.isArray(lineupPositions) && lineupPositions.length > 0) {
+            if (!cancelled) setLineupCount(lineupPositions.length);
+          } else {
+            // Fallback: fetch participations count
+            try {
+              const partData = await api.list<any>('/participations/', {
+                params: { activity_id: closest.id },
+                pageSize: 1,
+              });
+              if (!cancelled) setLineupCount(partData.count ?? partData.results.length);
+            } catch {
+              // ignore
+            }
+          }
+
           try {
             const mediaData = await api.list<any>('/media/items/', {
               params: { activity: closest.id },
@@ -142,6 +160,8 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const urgency = getDateUrgency(date);
   const score = match.metadata?.score || match.metadata?.final_score;
   const isHome = match.metadata?.is_home !== false;
+  const lineupFormation = (match.metadata?.lineup as any)?.formation as string | undefined;
+  const hasLineup = lineupCount > 0;
 
   return (
     <div
@@ -199,8 +219,8 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
         </span>
       </div>
 
-      {/* Action row */}
-      <div className={styles.actionRow}>
+      {/* Status indicators */}
+      <div className={styles.statusRow}>
         <span className={styles.contentBadge}>
           {contentCount > 0 ? (
             <><CheckCircle2 size={14} /> {contentCount} items</>
@@ -209,6 +229,24 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
           )}
         </span>
 
+        <button
+          className={`${styles.lineupBadge} ${hasLineup ? styles.lineupFilled : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(routes.matchWithTab({ matchId: match.slug || match.id, tab: 'lineup' }), { state: { from: 'dashboard' } });
+          }}
+        >
+          <Users size={14} />
+          {hasLineup
+            ? <>{lineupCount} spelers{lineupFormation ? ` · ${lineupFormation}` : ''}</>
+            : <>Opstelling invullen</>
+          }
+          <ChevronRight size={14} />
+        </button>
+      </div>
+
+      {/* Action row */}
+      <div className={styles.actionRow}>
         <button
           className={styles.actionBtn}
           onClick={(e) => {
