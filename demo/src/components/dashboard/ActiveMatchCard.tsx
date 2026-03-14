@@ -23,6 +23,7 @@ import { routes } from '../../routes';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import { slugify } from '../../utils/periodPath';
 import { NavigationSheet } from '../ui/NavigationSheet';
+import { LineupSheet } from './LineupSheet';
 import styles from './ActiveMatchCard.module.css';
 
 /* ── Types ──────────────────────────────────────────────────────────── */
@@ -80,6 +81,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const [lineupCount, setLineupCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [lineupSheetOpen, setLineupSheetOpen] = useState(false);
   const navigate = useNavigate();
   const project = context.project;
 
@@ -344,7 +346,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
 
           {/* Quick actions */}
           <div className={styles.sheetActions}>
-            <button className={styles.sheetAction} onClick={() => handleNavigateToMatch('lineup')}>
+            <button className={styles.sheetAction} onClick={() => { setSheetOpen(false); setLineupSheetOpen(true); }}>
               <Users size={18} />
               <div className={styles.sheetActionText}>
                 <span className={styles.sheetActionLabel}>Opstelling</span>
@@ -392,6 +394,13 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
           </div>
         </div>
       </NavigationSheet>
+
+      {/* ── Lineup Sheet (inline editing from dashboard) ──────── */}
+      <LineupSheet
+        isOpen={lineupSheetOpen}
+        onClose={() => setLineupSheetOpen(false)}
+        match={match}
+      />
     </>
   );
 });
