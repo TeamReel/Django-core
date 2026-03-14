@@ -219,26 +219,38 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     const orgId = String((selectedOpponentOrganisationId || selectedOrganisationId) || '').trim();
     if (!orgId) { setOpponentTeams([]); return; }
 
+    let cancelled = false;
+    const abortController = new AbortController();
+
     const load = async () => {
       setLoadingOpponentTeams(true);
       try {
+        const params: Record<string, string> = {
+          organisation_id: orgId,
+          parent_project__isnull: 'false',
+        };
+        // When a specific opponent club is selected, filter server-side
+        // to avoid fetching thousands of teams across the entire org.
+        if (selectedOpponentClubId) {
+          params.parent_project_id = String(selectedOpponentClubId);
+        }
         const results = await api.listAll<ProjectOption>('/projects/', {
-          params: {
-            organisation_id: orgId,
-            parent_project__isnull: 'false',
-          },
-          pageSize: 250, maxItems: 3000,
+          params,
+          pageSize: 250,
+          maxItems: selectedOpponentClubId ? 500 : 3000,
+          signal: abortController.signal,
         });
-        setOpponentTeams(Array.isArray(results) ? results : []);
+        if (!cancelled) setOpponentTeams(Array.isArray(results) ? results : []);
       } catch {
-        setOpponentTeams([]);
+        if (!cancelled) setOpponentTeams([]);
       } finally {
-        setLoadingOpponentTeams(false);
+        if (!cancelled) setLoadingOpponentTeams(false);
       }
     };
 
     load();
-  }, [opened, selectedOrganisationId, selectedOpponentOrganisationId]);
+    return () => { cancelled = true; abortController.abort(); };
+  }, [opened, selectedOrganisationId, selectedOpponentOrganisationId, selectedOpponentClubId]);
 
   // ── Load seasons ──
   useEffect(() => {

@@ -13,6 +13,16 @@ import { useWizard } from '../../Wizard';
 import styles from '../CreateWizard.module.css';
 
 export interface MatchDetailsData {
+  // Season & Competition
+  seasonOptions: { id: string | number; name: string }[];
+  selectedSeasonId: string;
+  setSelectedSeasonId: (v: string) => void;
+  loadingSeasons: boolean;
+  competitionOptions: { id: string | number; name: string }[];
+  selectedCompetitionId: string;
+  setSelectedCompetitionId: (v: string) => void;
+  loadingCompetitions: boolean;
+
   // Opponent
   selectedOpponentOrganisationId: string;
   setSelectedOpponentOrganisationId: (v: string) => void;
@@ -48,7 +58,7 @@ export interface MatchDetailsStepProps {
 export function MatchDetailsStep({ data }: MatchDetailsStepProps) {
   const { next } = useWizard();
 
-  const canAdvance = !!data.selectedOpponentTeamId && !!data.matchDate && !!data.matchTime;
+  const canAdvance = !!data.selectedCompetitionId && !!data.selectedOpponentTeamId && !!data.matchDate && !!data.matchTime;
 
   const handleNext = () => {
     if (canAdvance) next();
@@ -62,6 +72,59 @@ export function MatchDetailsStep({ data }: MatchDetailsStepProps) {
           {data.contextSummary}
         </div>
       )}
+
+      {/* Season & Competition */}
+      <div className={styles.matchFieldGroup}>
+        <label className={styles.matchFieldLabel}>
+          <Calendar size={15} /> Seizoen & Competitie
+        </label>
+
+        {/* Season (read-only if only 1) */}
+        {data.seasonOptions.length <= 1 ? (
+          <div className={styles.matchReadonlyValue}>
+            {data.loadingSeasons
+              ? 'Laden…'
+              : data.seasonOptions[0]?.name || '–'}
+          </div>
+        ) : (
+          <select
+            className={styles.matchSelect}
+            value={data.selectedSeasonId}
+            onChange={(e) => {
+              data.setSelectedSeasonId(e.target.value);
+              data.setSelectedCompetitionId('');
+            }}
+            disabled={data.loadingSeasons}
+          >
+            <option value="">{data.loadingSeasons ? 'Laden…' : 'Kies seizoen…'}</option>
+            {data.seasonOptions.map((s) => (
+              <option key={String(s.id)} value={String(s.id)}>{s.name}</option>
+            ))}
+          </select>
+        )}
+
+        {/* Competition */}
+        {data.competitionOptions.length <= 1 && data.selectedCompetitionId ? (
+          <div className={styles.matchReadonlyValue}>
+            {data.loadingCompetitions
+              ? 'Laden…'
+              : data.competitionOptions[0]?.name || '–'}
+          </div>
+        ) : (
+          <select
+            className={styles.matchSelect}
+            value={data.selectedCompetitionId}
+            onChange={(e) => data.setSelectedCompetitionId(e.target.value)}
+            disabled={data.loadingCompetitions || !data.selectedSeasonId}
+            required
+          >
+            <option value="">{data.loadingCompetitions ? 'Laden…' : 'Kies competitie…'}</option>
+            {data.competitionOptions.map((c) => (
+              <option key={String(c.id)} value={String(c.id)}>{c.name}</option>
+            ))}
+          </select>
+        )}
+      </div>
 
       {/* Opponent selection */}
       <div className={styles.matchFieldGroup}>

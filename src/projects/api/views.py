@@ -494,6 +494,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 # Teams only (has parent)
                 queryset = queryset.filter(parent_project__isnull=False)
 
+        # Handle parent_project_id filtering (teams of a specific club)
+        parent_project_id = self.request.query_params.get("parent_project_id")
+        if parent_project_id:
+            queryset = queryset.filter(parent_project_id=parent_project_id)
+
         # Ensure distinct is always applied to prevent duplicates
         return queryset.distinct()
 

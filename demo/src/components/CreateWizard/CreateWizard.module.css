@@ -360,6 +360,18 @@
   color: var(--app-text-primary, #111827);
 }
 
+.matchReadonlyValue {
+  padding: var(--space-3);
+  font-size: var(--text-base);
+  color: var(--app-text-secondary, #6b7280);
+  border: 1px solid var(--app-border, #e5e7eb);
+  border-radius: var(--radius-lg);
+  background: var(--app-surface-secondary, var(--app-bg));
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
 .matchFieldRow {
   display: grid;
   grid-template-columns: 1fr 1fr;

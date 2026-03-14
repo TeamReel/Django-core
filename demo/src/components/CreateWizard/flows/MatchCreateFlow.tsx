@@ -90,6 +90,14 @@ export function MatchCreateFlow({ isOpen, onClose }: MatchCreateFlowProps) {
 
   // Map hook data → step data interfaces
   const detailsData: MatchDetailsData = useMemo(() => ({
+    seasonOptions: d.seasonOptions as { id: string | number; name: string }[],
+    selectedSeasonId: d.selectedSeasonId,
+    setSelectedSeasonId: d.setSelectedSeasonId,
+    loadingSeasons: d.loadingSeasons,
+    competitionOptions: d.competitionOptions as { id: string | number; name: string }[],
+    selectedCompetitionId: d.selectedCompetitionId,
+    setSelectedCompetitionId: d.setSelectedCompetitionId,
+    loadingCompetitions: d.loadingCompetitions,
     selectedOpponentOrganisationId: d.selectedOpponentOrganisationId,
     setSelectedOpponentOrganisationId: d.setSelectedOpponentOrganisationId,
     selectedOpponentClubId: d.selectedOpponentClubId,
