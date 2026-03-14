@@ -224,6 +224,7 @@
   --z-overlay:  500;
   --z-modal:    1000;
   --z-toast:    1100;
+  --z-sheet:    1150;   /* full-screen navigation sheets — above navbar (1100) */
   --z-tooltip:  1200;
   --z-max:      9999;
 }
