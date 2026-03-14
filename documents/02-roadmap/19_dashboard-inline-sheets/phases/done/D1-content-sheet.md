@@ -1,8 +1,8 @@
 # D1 — Content Sheet (volledig)
 
-> **Status:** 📋 Gepland
-> **Geschatte effort:** 4-6 uur
-> **Geschatte omvang:** ~350 regels nieuw
+> **Status:** ✅ Klaar
+> **Datum:** 2026-03-14
+> **Omvang:** 449 regels nieuw (useContentSheet 249 + ContentSheet 156 + ActiveMatchCard +44)
 
 ## Doel
 
@@ -113,19 +113,33 @@ ContentSheet
 
 ## Acceptatiecriteria
 
-- [ ] Content sheet opent vanuit MatchSheet "Content" knop
-- [ ] ‹ Vorige keert terug naar MatchSheet
-- [ ] Content items gegroepeerd per fase (pre/during/post)
-- [ ] Thumbnail preview van gegenereerde items
-- [ ] "Genereer" knop opent ContentGenerationModal als portal
-- [ ] Na generatie: content items refreshen in sheet
-- [ ] Full-screen preview overlay werkt voor images en video's
-- [ ] Delete/restore van media items werkt
-- [ ] TypeScript clean, Vite build succesvol
-- [ ] Geen regressions op match detail pagina
+- [x] Content sheet opent vanuit MatchSheet "Content" knop
+- [x] ‹ Vorige keert terug naar MatchSheet
+- [x] Content items gegroepeerd per fase (pre/during/post)
+- [x] Thumbnail preview van gegenereerde items
+- [x] "Genereer" knop opent ContentGenerationModal als portal
+- [x] Na generatie: content items refreshen in sheet
+- [x] Full-screen preview overlay werkt voor images en video's
+- [x] Delete/restore van media items werkt
+- [x] TypeScript clean, Vite build succesvol
+- [x] Geen regressions op match detail pagina
 
-## Referentie-implementatie
+## Gewijzigde bestanden
 
-- `useLineupSheet.ts` — patroon voor standalone hook (144 regels)
-- `LineupSheet.tsx` — patroon voor sheet wrapper (55 regels)
-- `useMatchContentMedia.ts` — referentie voor data fetching logica (225 regels)
+| Bestand | Wijziging |
+|---------|----------|
+| `demo/src/components/dashboard/useContentSheet.ts` | **Nieuw** — standalone content hook (249 regels) |
+| `demo/src/components/dashboard/ContentSheet.tsx` | **Nieuw** — NavigationSheet wrapper met portals (156 regels) |
+| `demo/src/components/dashboard/ActiveMatchCard.tsx` | ContentSheet import, `contentSheetOpen` state, Content knop wiring |
+
+## Commits
+
+| Hash | Beschrijving |
+|------|-------------|
+| `098525b5` | feat(dashboard): D1 — Content Sheet inline from dashboard |
+
+## Verificatie
+
+- TypeScript: ✅ `tsc --noEmit` clean
+- Build: ✅ `vite build` in 11.19s
+- Railway: ✅ pushed to main
