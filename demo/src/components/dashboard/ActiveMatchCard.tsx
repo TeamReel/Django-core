@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Zap, ChevronRight, MapPin, Clock, CheckCircle2,
   Circle, Trophy, Sparkles, Calendar, Users, ExternalLink,
-  FileImage, Play,
+  FileImage,
 } from 'lucide-react';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { api } from '@/api';
@@ -367,15 +367,6 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
                 <span className={styles.sheetActionSub}>
                   {contentCount > 0 ? `${contentCount} items gemaakt` : 'Content genereren'}
                 </span>
-              </div>
-              <ChevronRight size={16} />
-            </button>
-
-            <button className={styles.sheetAction} onClick={() => handleNavigateToMatch('media')}>
-              <Play size={18} />
-              <div className={styles.sheetActionText}>
-                <span className={styles.sheetActionLabel}>Media</span>
-                <span className={styles.sheetActionSub}>Foto's en video's</span>
               </div>
               <ChevronRight size={16} />
             </button>
