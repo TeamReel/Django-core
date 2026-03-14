@@ -169,6 +169,8 @@
   .overlay {
     top: var(--tr-top-navbar-offset, 56px);
     bottom: var(--tr-bottom-navbar-offset, 96px);
+    /* Below navbars (z-index: 1100) — positioning keeps it between them */
+    z-index: var(--z-modal);
   }
 
   .header {
