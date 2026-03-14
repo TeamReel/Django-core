@@ -272,11 +272,12 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     load();
   }, [opened, selectedOrganisationId, selectedTeamId]);
 
-  // Auto-select single season
+  // Auto-select season: prefer last alphabetically (most recent, e.g. "2025/2026" > "2024/2025")
   useEffect(() => {
     if (!opened) return;
-    if (!selectedSeasonId && seasonOptions.length === 1 && !isSeasonDetailMode) {
-      setSelectedSeasonId(String(seasonOptions[0]?.id || ''));
+    if (!selectedSeasonId && seasonOptions.length > 0 && !isSeasonDetailMode) {
+      const last = seasonOptions[seasonOptions.length - 1];
+      setSelectedSeasonId(String(last?.id || ''));
     }
   }, [opened, selectedSeasonId, seasonOptions, isSeasonDetailMode]);
 
@@ -309,10 +310,10 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     load();
   }, [opened, selectedSeasonId, selectedOrganisationId, selectedTeamId]);
 
-  // Auto-select single competition
+  // Auto-select competition: pick first available (sorted alphabetically)
   useEffect(() => {
     if (!opened) return;
-    if (!selectedCompetitionId && competitionOptions.length === 1) {
+    if (!selectedCompetitionId && competitionOptions.length > 0) {
       setSelectedCompetitionId(String(competitionOptions[0]?.id || ''));
     }
   }, [opened, selectedCompetitionId, competitionOptions]);
