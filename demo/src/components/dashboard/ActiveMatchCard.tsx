@@ -24,6 +24,7 @@ import { useAppSelection } from '../../hooks/useAppSelection';
 import { slugify } from '../../utils/periodPath';
 import { NavigationSheet } from '../ui/NavigationSheet';
 import { LineupSheet } from './LineupSheet';
+import { ContentSheet } from './ContentSheet';
 import styles from './ActiveMatchCard.module.css';
 
 /* ── Types ──────────────────────────────────────────────────────────── */
@@ -82,6 +83,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [lineupSheetOpen, setLineupSheetOpen] = useState(false);
+  const [contentSheetOpen, setContentSheetOpen] = useState(false);
   const navigate = useNavigate();
   const project = context.project;
 
@@ -360,7 +362,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
               <ChevronRight size={16} />
             </button>
 
-            <button className={styles.sheetAction} onClick={() => handleNavigateToMatch('content')}>
+            <button className={styles.sheetAction} onClick={() => { setSheetOpen(false); setContentSheetOpen(true); }}>
               <FileImage size={18} />
               <div className={styles.sheetActionText}>
                 <span className={styles.sheetActionLabel}>Content</span>
@@ -392,6 +394,15 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
         onClose={() => setLineupSheetOpen(false)}
         match={match}
         onBack={() => { setLineupSheetOpen(false); setSheetOpen(true); }}
+      />
+
+      {/* ── Content Sheet (inline content from dashboard) ─────── */}
+      <ContentSheet
+        isOpen={contentSheetOpen}
+        onClose={() => setContentSheetOpen(false)}
+        match={match}
+        onBack={() => { setContentSheetOpen(false); setSheetOpen(true); }}
+        organisationId={match?.organisation?.id}
       />
     </>
   );
