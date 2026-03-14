@@ -1,194 +1,120 @@
-# Roadmap #19 — Dashboard Inline Sheets
+# Roadmap #19 — Dashboard Inline Sheets & Data Layer
 
-> **Status:** 🚧 In progress (Fase D0 klaar)
+> **Status:** 🚧 In progress (1/7 fases)
 > **Start:** 2026-03-14
-> **Scope:** `demo/src/` — dashboard, NavigationSheet, inline content/media
+> **Scope:** `demo/src/` — dashboard, NavigationSheet, data fetching, caching
+> **Bron:** [optimalisatie-analyse.md](../../05-demo/features/optimalisatie-analyse.md), [ux-flows.md](../../05-demo/features/ux-flows.md)
 
 ---
 
 ## Doel
 
-Alle match-acties vanaf het dashboard als inline sheets (iOS-style stacked panels) — gebruiker hoeft het dashboard niet te verlaten voor standaard match-day workflows.
+Dashboard als **command center** — alle match-acties en dashboard cards openen als inline sheets (iOS-style stacked panels), ondersteund door een performante data layer met caching en deduplicatie.
 
-**Kernprincipe:** Dashboard = command center. Elke quick action opent een sheet, niet een page navigation.
+**Twee pijlers:**
+1. **UX Layer (D0–D3):** Inline sheets voor match workflow + dashboard cards
+2. **Data Layer (D4–D6):** TanStack Query, request deduplicatie, waterfall eliminatie
 
 ---
 
-## Huidige staat (pre-roadmap)
+## Context
 
 ### Wat werkt ✅
-- **ActiveMatchCard** — toont dichtstbijzijnde match, opent MatchSheet
-- **MatchSheet** — iOS-style sheet met wedstrijdoverzicht + quick actions
+- **ActiveMatchCard** — dichtstbijzijnde match, opent MatchSheet (iOS slide-up)
 - **LineupSheet** — inline opstelling bewerken vanuit dashboard (lazy-loaded)
-- **NavigationSheet `onBack`** — `‹ Vorige` back-arrow voor child sheets (iOS-patroon)
-- **Media knop verwijderd** — er is geen match-level media tab; content = media
+- **NavigationSheet `onBack`** — `‹ Vorige` back-arrow voor child sheets
+- **Media knop verwijderd** — content = media op match-niveau
 
-### Wat mist ❌
-- **Content tab inline** — "Content" knop navigeert nog naar match detail pagina
-- **Dashboard card interacties** — andere cards (ContentBreakdown, ContentOverview, etc.) linken weg ipv inline sheets
-- **Sheet refresh** — na lineup save updated de ActiveMatchCard badge niet live
+### Wat ontbreekt ❌
+- **Content inline** — navigeert nog weg naar match detail pagina
+- **Dashboard card sheets** — alle cards navigeren weg i.p.v. inline
+- **Badge refresh** — na lineup save updated de ActiveMatchCard badge niet live
+- **Data caching** — 23 API calls op dashboard mount, 13 duplicaten (56%)
+- **Request deduplicatie** — 5× dezelfde `/generative/requests/` call
 
-### Dashboard cards (huidige staat)
-| Card | Inline? | Actie bij klik |
-|------|---------|----------------|
-| ActiveMatchCard | ✅ Sheet | MatchSheet → LineupSheet inline |
-| SquadReadinessCard | ❌ | Navigeert naar directory |
-| AIQueueCard | ❌ | Navigeert naar AI Studio |
-| CreditsTrendCard | ❌ | Navigeert naar credits |
-| ContentBreakdownCard | ❌ | Geen interactie / navigatie |
-| ContentOverviewCard | ❌ | Navigeert naar content |
-| SmartActionsCard | ❌ | Navigeert naar diverse pagina's |
-| MemberContentProgressCard | ❌ | Navigeert naar members |
-| AssetsOverviewCard | ❌ | Navigeert naar assets |
+### Dashboard card inventaris
 
----
-
-## Fases
-
-| Fase | Titel | Status | Geschatte omvang |
-|------|-------|--------|------------------|
-| **D0** | Lineup Sheet + Back navigatie | ✅ Klaar | ~200 regels |
-| **D1** | Content Sheet (read-only) | 📋 Gepland | ~150 regels |
-| **D2** | Content Sheet (generatie) | 📋 Gepland | ~250 regels |
-| **D3** | Sheet refresh & badges | 📋 Gepland | ~50 regels |
-| **D4** | Dashboard card sheets | 📋 Gepland | Analyse nodig |
+| Card | LOC | API calls | Navigeert naar | Sheet candidate |
+|------|----:|-----------|----------------|:---------------:|
+| ActiveMatchCard | 397 | 3 (matches, participations, media) | MatchSheet ✅ | ✅ |
+| ContentOverviewCard | 404 | 2 (requests × 500, media × 500) | — (zelfstandig) | ✅ |
+| AssetsOverviewCard | 342 | 3 (assets, members, requests) | Identity/Squad pagina | ✅ |
+| SmartActionsCard | 248 | 2 (members, requests) | Season/Medialib | ⚠️ |
+| MemberContentProgressCard | 204 | 2 (members, requests) | Squad pagina | ✅ |
+| ContentBreakdownCard | 133 | 1 (requests × 200) | Content pagina | ✅ |
+| SquadReadinessCard | ~50 | 1 (members count) | Squad pagina | ⚠️ |
+| AIQueueCard | ~40 | 1 (queue counts) | Content pagina | ✅ |
+| CreditsTrendCard | ~30 | hook (balance) | Credits pagina | ⚠️ |
+| OrgStatsCard | ~30 | 0 (context) | Org detail | ❌ |
 
 ---
 
-### Fase D0 — Lineup Sheet + Back navigatie ✅
+## Fasering
 
-**Wat is gedaan:**
-- `useLineupSheet.ts` (144 regels) — standalone hook: squad fetch + lineup load/save
-- `LineupSheet.tsx` (55 regels) — lazy-loaded MatchLineupTab in NavigationSheet
-- `NavigationSheet` `onBack` prop — `‹ Vorige` back-arrow voor child sheets
-- ActiveMatchCard: Opstelling knop opent LineupSheet inline
-- Media knop verwijderd uit MatchSheet (geen match-level media tab)
+### 🎯 UX Layer — Inline Sheets (D0–D3)
 
-**Commits:** `22f24f0b`, `75b9402c`, `1aa758f0`
+| Fase | Titel | Status | Beschrijving |
+|------|-------|--------|--------------|
+| **D0** | [Lineup Sheet + Back navigatie](phases/done/D0-lineup-sheet-back.md) | ✅ Klaar | LineupSheet inline, NavigationSheet `onBack`, Media knop verwijderd |
+| **D1** | [Content Sheet (volledig)](phases/D1-content-sheet.md) | 📋 Gepland | Content preview + generatie + preview overlay inline vanuit MatchSheet |
+| **D2** | [Sheet refresh & badges](phases/D2-sheet-refresh-badges.md) | 📋 Gepland | Live badge updates na save/generatie in child sheets |
+| **D3** | [Dashboard card sheets](phases/D3-dashboard-card-sheets.md) | 📋 Gepland | ContentOverview, MemberProgress, Assets, AIQueue als inline sheets |
 
----
+### ⚡ Data Layer — Performance (D4–D6)
 
-### Fase D1 — Content Sheet (read-only preview) 📋
-
-**Doel:** Content tab tonen in een sheet met preview van gegenereerde items. Nog geen generatie — alleen bekijken wat er is.
-
-**Wat te bouwen:**
-1. `useContentSheet.ts` — standalone hook (~150 regels):
-   - Fetch match media items (`/media/items/?activity={matchId}`)
-   - Fetch content items (`/content-items/?activity={matchId}`)
-   - Groeperen per subtype (pre_match, during_match, post_match)
-   - Getter functions: `getLatestMediaForSubtype()`, `getContentItemForSubtype()`
-   - Preview state management
-2. `ContentSheet.tsx` — NavigationSheet wrapper (~60 regels):
-   - Lazy-load MatchContentTab (of een vereenvoudigde read-only versie)
-   - `onBack` → terug naar MatchSheet
-   - Thumbnail grid per fase (pre/during/post)
-3. Wire in `ActiveMatchCard`:
-   - Content knop → `setContentSheetOpen(true)`
-
-**Dependencies:**
-- `CONTENT_TYPES` registry (statisch, geen API)
-- `MatchMediaItem` type + `getAssetUrl` helper
-- `ContentItem` type (status tracking)
-
-**Uitdaging:** MatchContentTab verwacht 14 props waarvan 4 callbacks (generate, preview, delete, restore). In read-only mode kunnen generate/delete/restore no-ops zijn, en preview kan een simpele image overlay zijn.
+| Fase | Titel | Status | Beschrijving |
+|------|-------|--------|--------------|
+| **D4** | [TanStack Query introductie](phases/D4-tanstack-query.md) | 📋 Gepland | React Query v5 installatie, QueryClient, dashboard hooks migratie |
+| **D5** | [Dashboard request deduplicatie](phases/D5-dashboard-deduplicatie.md) | 📋 Gepland | Shared query keys, 23 → ~10 calls, stale-while-revalidate |
+| **D6** | [Waterfall eliminatie & image optimalisatie](phases/D6-waterfall-image-optimalisatie.md) | 📋 Gepland | Parallel fetches, image lazy loading, breadcrumb batch |
 
 ---
 
-### Fase D2 — Content Sheet (generatie) 📋
+## Technische architectuur
 
-**Doel:** Volledige content generatie vanuit de dashboard sheet — "Genereer" knop werkt inline.
-
-**Wat te bouwen:**
-1. Uitbreiden `useContentSheet.ts` (+100 regels):
-   - Fetch beschikbare templates (`/content-templates/?is_active=true`)
-   - Fetch template flags (`/content-template-flags/`)
-   - Template resolution per subtype + sport + formatie
-   - Delete/restore handlers
-2. `ContentGenerationModal` integratie:
-   - Modal opent als portal bovenop de sheet (standaard React pattern)
-   - Na generatie: refetch content items, update badge in MatchSheet
-3. Preview overlay:
-   - `SavedAssetPreview` modal voor full-screen image/video preview
-   - Stackt bovenop sheet (portal)
-
-**Complexiteit:**
-- `useMatchContentMedia` (225 regels) is de referentie-implementatie
-- Templates API filtering op sport, org, feature flags
-- ContentGenerationModal is een bestaande complexe component (~500 regels)
-- Totaal: ~250 nieuwe regels in hook + ~80 regels in sheet component
-
-**Risico's:**
-- Modal-op-sheet stacking: z-index/focus-trap conflicten
-- ContentGenerationModal is gebouwd voor de match detail pagina — mogelijk refactoring nodig
-- Template resolution logica is verspreid over meerdere bestanden
-
----
-
-### Fase D3 — Sheet refresh & badges 📋
-
-**Doel:** Na een actie in een child sheet updated de parent sheet + ActiveMatchCard badge live.
-
-**Wat te bouwen:**
-1. Callback pattern: LineupSheet → `onLineupSaved(count)` → ActiveMatchCard
-2. ContentSheet → `onContentGenerated(count)` → ActiveMatchCard
-3. ActiveMatchCard badge animatie bij update
-4. MatchSheet telt lineup/content badges opnieuw na sheet close
-
-**Geschatte omvang:** ~50 regels aanpassingen verspreid over bestaande files.
-
----
-
-### Fase D4 — Dashboard card sheets 📋
-
-> **Status:** Analyse nodig — hangt af van welke cards de gebruiker inline wil.
-
-**Mogelijke candidates:**
-- **ContentBreakdownCard** → Content breakdown in sheet met filter/sort
-- **ContentOverviewCard** → Volledige content inventory inline
-- **SmartActionsCard** → Acties openen inline flows ipv navigatie
-- **SquadReadinessCard** → Quick squad overview in sheet
-
-**Per card beslissen:**
-- Is inline meerwaarde vs. page navigation?
-- Hoeveel data fetch / state is nodig?
-- Past het in het sheet pattern (max 1-2 API calls)?
-
----
-
-## Technische notities
-
-### Sheet stacking patroon
+### Sheet stacking patroon (iOS-style)
 ```
 Dashboard
- └─ ActiveMatchCard (tap)
-     └─ MatchSheet (NavigationSheet, root)
-         ├─ LineupSheet (NavigationSheet + onBack) ✅
-         ├─ ContentSheet (NavigationSheet + onBack) 📋
-         └─ [toekomstige sheets]
-             └─ Modal (portal, bovenop alles)
+ └─ Card (tap)
+     └─ Root Sheet (NavigationSheet, ×)
+         ├─ Child Sheet (NavigationSheet + ‹ Vorige)
+         │   └─ Modal (portal, bovenop alles)
+         └─ Child Sheet 2
 ```
 
 ### Herbruikbare patterns uit D0
-- `useLineupSheet` pattern: standalone hook, eigen API calls, geen dependency op page orchestrator
-- `LineupSheet` pattern: lazy-load tab component, wrap in NavigationSheet, `onBack` voor parent
-- `ActiveMatchCard` pattern: state per sheet, close parent → open child
+- **Hook pattern:** `useLineupSheet` — standalone, eigen API calls, geen dependency op page orchestrator
+- **Sheet pattern:** `LineupSheet` — lazy-load tab component, wrap in NavigationSheet, `onBack`
+- **Card pattern:** `ActiveMatchCard` — state per sheet, close parent → open child
 
 ### NavigationSheet capabilities
-- `isOpen` / `onClose` — basis open/close
-- `onBack` — iOS back arrow (vervangt × knop)
-- `title` / `icon` — header
-- `footer` — sticky footer (voor save buttons)
-- `desktopWidth` — side panel breedte
-- Focus trap, scroll lock, escape key, animated close
+| Prop | Functie |
+|------|---------|
+| `isOpen` / `onClose` | Basis open/close |
+| `onBack` | iOS back arrow (vervangt × knop) |
+| `title` / `icon` | Header content |
+| `footer` | Sticky footer (save buttons) |
+| `desktopWidth` | Side panel breedte |
+| — | Focus trap, scroll lock, escape, animated close |
 
 ### Key API endpoints
-| Endpoint | Wat | Gebruikt door |
-|----------|-----|---------------|
-| `/activities/?activity_type=match` | Match ophalen | ActiveMatchCard |
-| `/projects/{id}/members/` | Squad ophalen | useLineupSheet |
-| `/activities/{id}/` PATCH | Lineup opslaan | useLineupSheet |
-| `/media/items/?activity={id}` | Match media items | useContentSheet (D1) |
-| `/content-items/?activity={id}` | Content generatie status | useContentSheet (D1) |
-| `/content-templates/?is_active=true` | Beschikbare templates | useContentSheet (D2) |
-| `/content-template-flags/` | Template feature flags | useContentSheet (D2) |
+| Endpoint | Gebruikt door |
+|----------|---------------|
+| `/activities/?activity_type=match` | ActiveMatchCard |
+| `/projects/{id}/members/` | useLineupSheet, SquadReadiness, SmartActions |
+| `/activities/{id}/` PATCH | useLineupSheet (save) |
+| `/media/items/?activity={id}` | useContentSheet (D1) |
+| `/generative/requests/` | ContentBreakdown, ContentOverview, Assets, SmartActions, MemberProgress |
+| `/content-templates/?is_active=true` | useContentSheet (D1) |
+| `/branding/assets/` | AssetsOverviewCard |
+
+### Metriek targets
+
+| Metric | Huidig | Target | Fase |
+|--------|-------:|-------:|------|
+| Dashboard API calls | 23 | ~10 | D5 |
+| Duplicate requests | 13 (56%) | 0 | D5 |
+| Cards met inline sheets | 1 | 6+ | D3 |
+| Match actions inline | 1 (lineup) | 3 (lineup + content + badges) | D1–D2 |
+| Caching library | Geen | TanStack Query v5 | D4 |
+| Image lazy loading | 0/16 | 14/16 | D6 |
