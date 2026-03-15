@@ -35,6 +35,7 @@ const MobileBottomNav = memo(function MobileBottomNav() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardMatchId, setWizardMatchId] = useState<string | undefined>(undefined);
   const [wizardAutoFlow, setWizardAutoFlow] = useState<CreateFlowType | undefined>(undefined);
+  const [wizardSubtype, setWizardSubtype] = useState<string | undefined>(undefined);
 
   const fetchContext = useCallback(async () => {
     try {
@@ -70,8 +71,10 @@ const MobileBottomNav = memo(function MobileBottomNav() {
       const detail = (e as CustomEvent)?.detail;
       const matchId = detail?.matchId;
       const flow = detail?.flow as CreateFlowType | undefined;
+      const subtype = detail?.subtype as string | undefined;
       setWizardMatchId(matchId || undefined);
       setWizardAutoFlow(flow || undefined);
+      setWizardSubtype(subtype || undefined);
       setWizardOpen(true);
     };
     window.addEventListener('teamreel:open-quick-create', handler);
@@ -212,9 +215,10 @@ const MobileBottomNav = memo(function MobileBottomNav() {
       {/* CreateWizard — universal create flow via + button */}
       <CreateWizard
         isOpen={wizardOpen}
-        onClose={() => { setWizardOpen(false); setWizardMatchId(undefined); setWizardAutoFlow(undefined); }}
+        onClose={() => { setWizardOpen(false); setWizardMatchId(undefined); setWizardAutoFlow(undefined); setWizardSubtype(undefined); }}
         initialMatchId={wizardMatchId}
         initialFlow={wizardAutoFlow}
+        initialSubtype={wizardSubtype}
         prefill={createPrefill}
       />
     </>

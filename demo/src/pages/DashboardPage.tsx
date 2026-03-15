@@ -16,7 +16,6 @@ import {
 } from '../components/dashboard';
 import { SmartActionsCard } from '../components/dashboard/SmartActionsCard';
 import { useUserRole } from '../components/PermissionGuards';
-import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 import { useCreditBalance } from '../hooks/useCreditBalance';
 import { usePreloadRoutes } from '../hooks/usePreloadRoutes';
 import { useClosestMatch } from '../hooks/useClosestMatch';
@@ -71,17 +70,6 @@ export default function DashboardPage() {
     setRefreshKey(k => k + 1);
   }, []);
 
-  // Activity filter scope
-  const isSuperadmin =
-    Boolean(user?.is_superuser) ||
-    String(user?.role || '').toLowerCase() === 'superadmin';
-
-  const activityFilterProps = isSuperadmin
-    ? {}
-    : hasProjectContext
-      ? { projectId: context.project?.id?.toString() }
-      : { organisationId: org?.id?.toString() };
-
   return (
     <PullToRefresh
       onRefresh={handleRefresh}
@@ -133,42 +121,31 @@ export default function DashboardPage() {
         )}
 
         {/* ── Main layout ────────────────────────────────────────── */}
-        <div className={styles.twoCol}>
-          <div className={styles.mainCol}>
+        <div className={styles.mainCol}>
 
-            {/* 1. Active Match — the match closest to now */}
-            {matchDay.isMatchDay && <div className={styles.matchDayActiveMatch}><ActiveMatchCard /></div>}
-            {!matchDay.isMatchDay && <ActiveMatchCard />}
+          {/* 1. Active Match — the match closest to now */}
+          {matchDay.isMatchDay && <div className={styles.matchDayActiveMatch}><ActiveMatchCard /></div>}
+          {!matchDay.isMatchDay && <ActiveMatchCard />}
 
-            {/* 1b. Upcoming Matches — next 5 matches with readiness */}
-            <UpcomingMatchesCard />
+          {/* 1b. Upcoming Matches — next 5 matches with readiness */}
+          <UpcomingMatchesCard />
 
-            {/* 2. Compact status row — only unique-value cards */}
-            <div className={styles.summaryGrid}>
-              {!isMemberLevel && <SquadReadinessCard />}
-              {!isMemberLevel && <AIQueueCard />}
-              {isOrgLevel && <CreditsTrendCard />}
-              {isOrgLevel && !isTeamScope && <OrgStatsCard />}
-            </div>
-
-            {/* 3. Content progress (merged breakdown + inventory) */}
-            <ContentProgressCard />
-
-            {/* 4. Smart contextual quick actions */}
-            <SmartActionsCard />
-
-            {/* 5. Team readiness (merged member progress + asset inventory) */}
-            {!isMemberLevel && <TeamReadinessCard />}
+          {/* 2. Compact status row — only unique-value cards */}
+          <div className={styles.summaryGrid}>
+            {!isMemberLevel && <SquadReadinessCard />}
+            {!isMemberLevel && <AIQueueCard />}
+            {isOrgLevel && <CreditsTrendCard />}
+            {isOrgLevel && !isTeamScope && <OrgStatsCard />}
           </div>
 
-          {/* ── Sidebar ──────────────────────────────────────────── */}
-          <div className={styles.sideCol}>
-            <ActivityFeed
-              title="Activiteiten"
-              limit={5}
-              {...activityFilterProps}
-            />
-          </div>
+          {/* 3. Content progress (merged breakdown + inventory) */}
+          <ContentProgressCard />
+
+          {/* 4. Smart contextual quick actions */}
+          <SmartActionsCard />
+
+          {/* 5. Team readiness (merged member progress + asset inventory) */}
+          {!isMemberLevel && <TeamReadinessCard />}
         </div>
       </div>
     </PullToRefresh>

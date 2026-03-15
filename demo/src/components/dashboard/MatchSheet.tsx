@@ -160,7 +160,7 @@ export const MatchSheet: React.FC<MatchSheetProps> = ({ match, sheet, onNavigate
                           if (isDone) {
                             sheet.openContentSheet();
                           } else {
-                            sheet.openCreateWizard();
+                            sheet.openCreateWizard(item.subtype);
                           }
                         }}
                         aria-label={`${item.label}: ${isDone ? 'bekijk' : 'maak aan'}`}

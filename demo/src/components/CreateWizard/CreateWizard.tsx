@@ -44,6 +44,8 @@ export interface CreateWizardProps {
   initialMatchId?: string;
   /** Optional: auto-select a flow (skip choose step) */
   initialFlow?: CreateFlowType;
+  /** Optional: auto-select a content subtype (skip content type step) */
+  initialSubtype?: string;
 }
 
 // ─── Inner component (needs CreateWizardProvider context) ──
@@ -52,10 +54,12 @@ function CreateWizardInner({
   isOpen,
   onClose,
   initialMatchId,
+  initialSubtype,
 }: {
   isOpen: boolean;
   onClose: () => void;
   initialMatchId?: string;
+  initialSubtype?: string;
 }) {
   const { selectedFlow } = useCreateWizard();
 
@@ -66,6 +70,7 @@ function CreateWizardInner({
         isOpen={isOpen}
         onClose={onClose}
         initialMatchId={initialMatchId}
+        initialSubtype={initialSubtype}
       />
     );
   }
@@ -186,6 +191,7 @@ export default function CreateWizard({
   prefill = {},
   initialMatchId,
   initialFlow,
+  initialSubtype,
 }: CreateWizardProps) {
   // Don't render anything when closed (preserves clean unmount)
   if (!isOpen) return null;
@@ -196,6 +202,7 @@ export default function CreateWizard({
         isOpen={isOpen}
         onClose={onClose}
         initialMatchId={initialMatchId}
+        initialSubtype={initialSubtype}
       />
     </CreateWizardProvider>
   );

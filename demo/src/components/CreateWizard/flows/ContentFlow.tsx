@@ -15,9 +15,11 @@
  */
 import React, { useCallback, useEffect } from 'react';
 
-import { WizardProvider, WizardShell, WizardStep, type WizardStepConfig } from '../../Wizard';
+import { WizardProvider, WizardShell, WizardStep, useWizard, type WizardStepConfig } from '../../Wizard';
 import { MatchWizardProvider, useMatchWizard, MatchWizardInner } from '../../MatchWizardV2';
 import { useMatchesData } from '../../MatchWizardV2/hooks';
+import { useTemplatesData } from '../../MatchWizardV2/hooks';
+import { CONTENT_TYPES, LINEUP_REQUIRED_SUBTYPES, HAS_OPTIONS_SUBTYPES } from '../../MatchWizardV2/types';
 import { useCreateWizard } from '../CreateWizardContext';
 import { ChooseFlowStep } from '../steps/ChooseFlowStep';
 import { SmartMatchStep } from '../steps/SmartMatchStep';
@@ -47,11 +49,13 @@ export interface ContentFlowProps {
   onClose: () => void;
   /** If provided, skip SmartMatchStep and start at content type selection */
   initialMatchId?: string;
+  /** If provided, auto-select this content subtype and skip content type step */
+  initialSubtype?: string;
 }
 
 // ─── Outer wrapper (provides MatchWizardProvider) ─────────
 
-export function ContentFlow({ isOpen, onClose, initialMatchId }: ContentFlowProps) {
+export function ContentFlow({ isOpen, onClose, initialMatchId, initialSubtype }: ContentFlowProps) {
   const { resetAll, selectedFlow } = useCreateWizard();
 
   const handleClose = useCallback(() => {
@@ -60,14 +64,17 @@ export function ContentFlow({ isOpen, onClose, initialMatchId }: ContentFlowProp
   }, [resetAll, onClose]);
 
   // Determine start step:
+  //  - initialSubtype known (specific content type) → skip straight to lineup/options/review
   //  - initialMatchId known → skip straight to content
   //  - selectedFlow already set (user picked "content") → smartMatch
   //  - otherwise → choose
-  const startStep = initialMatchId
-    ? 'content'
-    : selectedFlow
-      ? 'smartMatch'
-      : 'choose';
+  const startStep = initialSubtype && initialMatchId
+    ? 'content'  // will auto-advance in ContentFlowInner
+    : initialMatchId
+      ? 'content'
+      : selectedFlow
+        ? 'smartMatch'
+        : 'choose';
 
   return (
     <MatchWizardProvider>
@@ -77,7 +84,7 @@ export function ContentFlow({ isOpen, onClose, initialMatchId }: ContentFlowProp
         onClose={handleClose}
       >
         <WizardShell isOpen={isOpen} showProgress>
-          <ContentFlowInner isOpen={isOpen} initialMatchId={initialMatchId} />
+          <ContentFlowInner isOpen={isOpen} initialMatchId={initialMatchId} initialSubtype={initialSubtype} />
         </WizardShell>
       </WizardProvider>
     </MatchWizardProvider>
@@ -89,15 +96,55 @@ export function ContentFlow({ isOpen, onClose, initialMatchId }: ContentFlowProp
 function ContentFlowInner({
   isOpen,
   initialMatchId,
+  initialSubtype,
 }: {
   isOpen: boolean;
   initialMatchId?: string;
+  initialSubtype?: string;
 }) {
   const mw = useMatchWizard();
+  const { goTo } = useWizard();
 
   // When initialMatchId is provided, use useMatchesData to fetch and
   // auto‑set the match in MatchWizardContext.
   useMatchesData(isOpen && !!initialMatchId, initialMatchId);
+
+  // Auto-select content subtype and skip ContentTypeStep when initialSubtype is provided
+  const { fetchTemplates, selectTemplateForSubtype } = useTemplatesData();
+  const hasAutoSelected = React.useRef(false);
+
+  useEffect(() => {
+    if (!initialSubtype || hasAutoSelected.current || !mw.selectedMatch) return;
+
+    // Find the content type across all phases
+    const allPhases = ['pre', 'during', 'post'] as const;
+    for (const phase of allPhases) {
+      const items = CONTENT_TYPES[phase];
+      const found = items.find(c => c.subtype === initialSubtype);
+      if (found) {
+        hasAutoSelected.current = true;
+        mw.setSelectedContentPhase(phase);
+        mw.setPendingContent({
+          key: found.key,
+          label: found.label,
+          subtype: found.subtype,
+          templateType: found.templateType,
+        });
+        fetchTemplates();
+        selectTemplateForSubtype(found.subtype);
+
+        // Navigate to the correct next step
+        if (LINEUP_REQUIRED_SUBTYPES.has(found.subtype)) {
+          goTo('lineup');
+        } else if (HAS_OPTIONS_SUBTYPES.has(found.subtype)) {
+          goTo('options');
+        } else {
+          goTo('review');
+        }
+        break;
+      }
+    }
+  }, [initialSubtype, mw.selectedMatch, mw.setSelectedContentPhase, mw.setPendingContent, fetchTemplates, selectTemplateForSubtype, goTo]);
 
   // Bridge: SmartMatchStep → MatchWizardContext
   const handleMatchSelect = useCallback(

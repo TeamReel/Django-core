@@ -46,7 +46,7 @@ export interface UseMatchSheetReturn {
   togglePhase: (key: string) => void;
 
   // Actions
-  openCreateWizard: () => void;
+  openCreateWizard: (subtype?: string) => void;
   handleLineupSaved: (count: number, formation: string) => void;
   handleContentGenerated: (newCount: number) => void;
 }
@@ -122,11 +122,11 @@ export function useMatchSheet(
     });
   }, []);
 
-  const openCreateWizard = useCallback(() => {
+  const openCreateWizard = useCallback((subtype?: string) => {
     if (!match?.id) return;
     window.dispatchEvent(
       new CustomEvent('teamreel:open-quick-create', {
-        detail: { matchId: match.id, flow: 'content' },
+        detail: { matchId: match.id, flow: 'content', subtype },
       }),
     );
   }, [match?.id]);
