@@ -61,11 +61,18 @@ async function fetchClosestMatch(projectId?: string): Promise<ClosestMatchData> 
   let contentCount = 0;
   let contentDoneSubtypes: string[] = [];
 
-  // Lineup from metadata
+  // Lineup from metadata (saved as { formation, goalkeeper: [], player: [] })
   const lineupData = (closest.metadata?.lineup as any);
-  const lineupPositions = lineupData?.positions;
-  if (Array.isArray(lineupPositions) && lineupPositions.length > 0) {
-    lineupCount = lineupPositions.length;
+  const gkCount = Array.isArray(lineupData?.goalkeeper) ? lineupData.goalkeeper.length : 0;
+  const plCount = Array.isArray(lineupData?.player) ? lineupData.player.length : 0;
+  const metaLineupCount = gkCount + plCount;
+  // Also check legacy positions array format
+  const positionsCount = Array.isArray(lineupData?.positions) ? lineupData.positions.length : 0;
+  if (metaLineupCount > 0) {
+    lineupCount = metaLineupCount;
+    lineupFormation = lineupData?.formation || (closest.metadata?.formation as string | undefined);
+  } else if (positionsCount > 0) {
+    lineupCount = positionsCount;
     lineupFormation = lineupData?.formation;
   } else {
     // Fallback: fetch participations count

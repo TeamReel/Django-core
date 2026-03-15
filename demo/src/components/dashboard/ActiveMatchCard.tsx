@@ -405,7 +405,6 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
                   <div className={`${styles.phaseItems} ${isExpanded ? styles.phaseItemsOpen : ''}`}>
                     {phase.items.map((item) => {
                       const isDone = contentDoneSubtypes.includes(item.subtype);
-                      const hasTemplate = (content.availableTemplates[item.subtype]?.length ?? 0) > 0;
 
                       return (
                         <button
@@ -416,13 +415,9 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
                               // Open content sheet to view existing
                               setSheetOpen(false);
                               setContentSheetOpen(true);
-                            } else if (hasTemplate) {
-                              // Quick-generate directly
-                              handleQuickGenerate(item.subtype, item.label);
                             } else {
-                              // Fallback: open full content sheet
-                              setSheetOpen(false);
-                              setContentSheetOpen(true);
+                              // Open generation modal — with pre-selected template if available
+                              handleQuickGenerate(item.subtype, item.label);
                             }
                           }}
                           aria-label={`${item.label}: ${isDone ? 'bekijk' : 'maak aan'}`}
@@ -439,10 +434,8 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
                           </span>
                           {isDone ? (
                             <span className={styles.phaseItemAction} data-variant="done">Bekijk ↗</span>
-                          ) : hasTemplate ? (
-                            <span className={styles.phaseItemAction} data-variant="create">Maak →</span>
                           ) : (
-                            <span className={styles.phaseItemAction} data-variant="disabled">—</span>
+                            <span className={styles.phaseItemAction} data-variant="create">Maak →</span>
                           )}
                         </button>
                       );
