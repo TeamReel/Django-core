@@ -6,11 +6,11 @@
  * - Match content (flyers, lineups, scores)
  * - Season content (transformations, recaps)
  */
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { BarChart3, ChevronRight, User, Trophy, Calendar } from 'lucide-react';
-import { api } from '@/api';
+import { useGenerativeRequests } from '../../hooks/useGenerativeRequests';
 import { NavigationSheet } from '../ui/NavigationSheet';
 import styles from './ContentBreakdownCard.module.css';
 
@@ -23,63 +23,47 @@ interface CategoryCount {
 
 export const ContentBreakdownCard: React.FC = () => {
   const { context } = useContextSwitcher();
-  const [categories, setCategories] = useState<CategoryCount[]>([]);
-  const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const navigate = useNavigate();
   const project = context.project;
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoading(true);
-        const params: Record<string, string> = {
-          status: 'completed',
-          ordering: '-created_at',
-        };
-        if (project) params.project = project.id;
-
-        const { results: items } = await api.list<{ template?: { template_type?: string }; template_type?: string }>('/generative/requests/', {
-          params,
-          pageSize: 200,
-        });
-
-          // Count per template type
-          const counts: Record<string, number> = {};
-          for (const item of items) {
-            const tplType = item.template?.template_type || item.template_type || 'custom';
-            counts[tplType] = (counts[tplType] || 0) + 1;
-          }
-
-          const memberCount = (counts['member'] || 0);
-          const matchCount =
-            (counts['pre_match'] || 0) +
-            (counts['during_match'] || 0) +
-            (counts['post_match'] || 0);
-          const seasonCount = (counts['season'] || 0);
-          const otherCount = (counts['custom'] || 0);
-
-          if (!cancelled) {
-            const cats: CategoryCount[] = [];
-            if (memberCount > 0 || matchCount > 0 || seasonCount > 0 || otherCount > 0) {
-              cats.push({ label: 'Spelers', icon: <User size={14} />, count: memberCount, color: 'var(--color-blue-400)' });
-              cats.push({ label: 'Wedstrijd', icon: <Trophy size={14} />, count: matchCount, color: 'var(--color-red-400)' });
-              cats.push({ label: 'Seizoen', icon: <Calendar size={14} />, count: seasonCount, color: 'var(--color-amber-400)' });
-              if (otherCount > 0) {
-                cats.push({ label: 'Overig', icon: <BarChart3 size={14} />, count: otherCount, color: 'var(--color-green-400)' });
-              }
-            }
-            setCategories(cats);
-          }
-      } catch {
-        // silent
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
+  const filters = useMemo(() => {
+    const p: Record<string, string> = { status: 'completed', ordering: '-created_at' };
+    if (project) p.project = project.id;
+    return p;
   }, [project?.id]);
+
+  const { data: genData, isLoading: loading } = useGenerativeRequests(filters);
+
+  const categories = useMemo<CategoryCount[]>(() => {
+    const items = genData?.results ?? [];
+    if (items.length === 0) return [];
+
+    const counts: Record<string, number> = {};
+    for (const item of items) {
+      const tplType = (item as any).template?.template_type || (item as any).template_type || 'custom';
+      counts[tplType] = (counts[tplType] || 0) + 1;
+    }
+
+    const memberCount = counts['member'] || 0;
+    const matchCount =
+      (counts['pre_match'] || 0) +
+      (counts['during_match'] || 0) +
+      (counts['post_match'] || 0);
+    const seasonCount = counts['season'] || 0;
+    const otherCount = counts['custom'] || 0;
+
+    const cats: CategoryCount[] = [];
+    if (memberCount > 0 || matchCount > 0 || seasonCount > 0 || otherCount > 0) {
+      cats.push({ label: 'Spelers', icon: <User size={14} />, count: memberCount, color: 'var(--color-blue-400)' });
+      cats.push({ label: 'Wedstrijd', icon: <Trophy size={14} />, count: matchCount, color: 'var(--color-red-400)' });
+      cats.push({ label: 'Seizoen', icon: <Calendar size={14} />, count: seasonCount, color: 'var(--color-amber-400)' });
+      if (otherCount > 0) {
+        cats.push({ label: 'Overig', icon: <BarChart3 size={14} />, count: otherCount, color: 'var(--color-green-400)' });
+      }
+    }
+    return cats;
+  }, [genData]);
 
   const maxCount = Math.max(1, ...categories.map(c => c.count));
   const totalCount = categories.reduce((sum, c) => sum + c.count, 0);

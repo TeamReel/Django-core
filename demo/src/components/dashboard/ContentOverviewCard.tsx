@@ -10,15 +10,18 @@
  * content is shown, including items created outside the generation pipeline
  * (e.g., lineup videos, match flyers created directly).
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   Layers, Trophy, Calendar, User, ChevronRight,
   Image, Film, FileText, Sparkles,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api';
 import type { GenerationRequest } from '@/types/api/generative';
 import type { MediaItem } from '@/types/api/media';
+import { useGenerativeRequests } from '../../hooks/useGenerativeRequests';
+import { queryKeys } from '../../utils/queryKeys';
 import { NavigationSheet } from '../ui/NavigationSheet';
 import styles from './ContentOverviewCard.module.css';
 
@@ -108,9 +111,7 @@ interface SectionData {
 
 export const ContentOverviewCard: React.FC = () => {
   const { context } = useContextSwitcher();
-  const [sections, setSections] = useState<SectionData[]>([]);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['match']));
-  const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const project = context.project;
 
@@ -123,174 +124,117 @@ export const ContentOverviewCard: React.FC = () => {
     });
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoading(true);
-        const genParams: Record<string, string> = {
-          status: 'completed',
-          ordering: '-created_at',
-        };
-        if (project) genParams.project = project.id;
-
-        const mediaParams: Record<string, string> = {
-          ordering: '-created_at',
-        };
-        if (project) mediaParams.project = project.id;
-
-        // Fetch both GenerationRequests AND MediaItems in parallel
-        const [genData, mediaData] = await Promise.all([
-          api.list<GenerationRequest>('/generative/requests/', { params: genParams, pageSize: 500 }),
-          api.list<MediaItem>('/media/items/', { params: mediaParams, pageSize: 500 }),
-        ]);
-
-        // Track seen IDs to avoid double-counting (some MediaItems are linked to GenRequests)
-        const seenMediaIds = new Set<string>();
-
-        // Categorize by template_type + subtype + activity
-        const matchMap = new Map<string, { title: string; date?: string; subtypes: Record<string, number> }>();
-        const seasonSubtypes: Record<string, number> = {};
-        const memberSubtypes: Record<string, number> = {};
-
-        // Process GenerationRequests
-        {
-          const genItems = genData.results;
-
-          for (const req of genItems as any[]) {
-            // Track linked media IDs to avoid double-counting
-            if (req.result?.media_item_id) {
-              seenMediaIds.add(req.result.media_item_id);
-            }
-
-            const tplType = req.template?.template_type || '';
-            const subtype = req.template?.template_subtype || req.input_data?.template_subtype || 'other';
-
-            if (tplType === 'member') {
-              memberSubtypes[subtype] = (memberSubtypes[subtype] || 0) + 1;
-            } else if (tplType === 'season') {
-              seasonSubtypes[subtype] = (seasonSubtypes[subtype] || 0) + 1;
-            } else if (['pre_match', 'during_match', 'post_match'].includes(tplType)) {
-              const actId = req.input_data?.activity_id || req.metadata?.activity_id || 'unknown';
-              const matchTitle = req.input_data?.match_title ||
-                req.metadata?.match_title ||
-                req.input_data?.title ||
-                'Wedstrijd';
-              const matchDate = req.input_data?.match_date || req.metadata?.match_date;
-
-              if (!matchMap.has(actId)) {
-                matchMap.set(actId, { title: matchTitle, date: matchDate, subtypes: {} });
-              }
-              const m = matchMap.get(actId)!;
-              m.subtypes[subtype] = (m.subtypes[subtype] || 0) + 1;
-            }
-          }
-        }
-
-        // Process MediaItems (only those not already counted)
-        {
-          const mediaItems = mediaData.results;
-
-          for (const item of mediaItems) {
-            // Skip if already counted via GenerationRequest
-            if (seenMediaIds.has(item.id)) continue;
-
-            const actId = item.activity_id || (item as any).activity;
-            const mimeType = item.mime_type || '';
-            const title = item.title || '';
-            const subtype = inferMediaItemSubtype(title, mimeType);
-
-            // If has activity_id, treat as match content
-            if (actId) {
-              const matchTitle = item.activity_title || item.title || 'Wedstrijd';
-              const matchDate = (item as any).activity_date;
-
-              if (!matchMap.has(actId)) {
-                matchMap.set(actId, { title: matchTitle, date: matchDate, subtypes: {} });
-              }
-              const m = matchMap.get(actId)!;
-              m.subtypes[subtype] = (m.subtypes[subtype] || 0) + 1;
-            } else if ((item as any).member_id || (item as any).member) {
-              // Member content
-              memberSubtypes[subtype] = (memberSubtypes[subtype] || 0) + 1;
-            }
-            // Note: MediaItems without activity or member are not displayed (no clear category)
-          }
-        }
-
-        // Build sections
-        const result: SectionData[] = [];
-
-        // Match content
-        const matchGroups: MatchGroup[] = Array.from(matchMap.entries()).map(([mid, m]) => {
-          const groupItems: ContentItem[] = Object.entries(m.subtypes).map(([st, count]) => ({
-            subtype: st,
-            count,
-            outputType: SUBTYPE_OUTPUT[st] || 'image',
-          }));
-          return {
-            matchId: mid,
-            title: m.title,
-            date: m.date,
-            items: groupItems.sort((a, b) => b.count - a.count),
-            total: groupItems.reduce((s, i) => s + i.count, 0),
-          };
-        }).sort((a, b) => b.total - a.total);
-
-        const matchTotal = matchGroups.reduce((s, g) => s + g.total, 0);
-        if (matchTotal > 0) {
-          result.push({
-            key: 'match',
-            label: 'Wedstrijd',
-            icon: <Trophy size={14} />,
-            total: matchTotal,
-            matches: matchGroups,
-          });
-        }
-
-        // Season content
-        const seasonItems: ContentItem[] = Object.entries(seasonSubtypes).map(([st, count]) => ({
-          subtype: st,
-          count,
-          outputType: SUBTYPE_OUTPUT[st] || 'image',
-        })).sort((a, b) => b.count - a.count);
-        const seasonTotal = seasonItems.reduce((s, i) => s + i.count, 0);
-        if (seasonTotal > 0) {
-          result.push({
-            key: 'season',
-            label: 'Seizoen',
-            icon: <Calendar size={14} />,
-            total: seasonTotal,
-            items: seasonItems,
-          });
-        }
-
-        // Member content
-        const memberItems: ContentItem[] = Object.entries(memberSubtypes).map(([st, count]) => ({
-          subtype: st,
-          count,
-          outputType: SUBTYPE_OUTPUT[st] || 'image',
-        })).sort((a, b) => b.count - a.count);
-        const memberTotal = memberItems.reduce((s, i) => s + i.count, 0);
-        if (memberTotal > 0) {
-          result.push({
-            key: 'member',
-            label: 'Spelers',
-            icon: <User size={14} />,
-            total: memberTotal,
-            items: memberItems,
-          });
-        }
-
-        if (!cancelled) setSections(result);
-      } catch {
-        // silent
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
+  // Shared generative requests query (deduped across cards)
+  const genFilters = useMemo(() => {
+    const p: Record<string, string> = { status: 'completed', ordering: '-created_at' };
+    if (project) p.project = project.id;
+    return p;
   }, [project?.id]);
+
+  const { data: genData, isLoading: genLoading } = useGenerativeRequests(genFilters);
+
+  // Media items query
+  const mediaFilters = useMemo(() => {
+    const p: Record<string, string> = { ordering: '-created_at' };
+    if (project) p.project = project.id;
+    return p;
+  }, [project?.id]);
+
+  const { data: mediaData, isLoading: mediaLoading } = useQuery({
+    queryKey: queryKeys.media.items(mediaFilters),
+    queryFn: () => api.list<MediaItem>('/media/items/', { params: mediaFilters, pageSize: 500 }),
+    staleTime: 2 * 60 * 1000, // 2 min
+  });
+
+  const loading = genLoading || mediaLoading;
+
+  // Derive sections from cached data
+  const sections = useMemo<SectionData[]>(() => {
+    const genItems = genData?.results ?? [];
+    const mediaItems = mediaData?.results ?? [];
+    if (genItems.length === 0 && mediaItems.length === 0) return [];
+
+    const seenMediaIds = new Set<string>();
+    const matchMap = new Map<string, { title: string; date?: string; subtypes: Record<string, number> }>();
+    const seasonSubtypes: Record<string, number> = {};
+    const memberSubtypes: Record<string, number> = {};
+
+    // Process GenerationRequests
+    for (const req of genItems as any[]) {
+      if (req.result?.media_item_id) seenMediaIds.add(req.result.media_item_id);
+      const tplType = req.template?.template_type || '';
+      const subtype = req.template?.template_subtype || req.input_data?.template_subtype || 'other';
+
+      if (tplType === 'member') {
+        memberSubtypes[subtype] = (memberSubtypes[subtype] || 0) + 1;
+      } else if (tplType === 'season') {
+        seasonSubtypes[subtype] = (seasonSubtypes[subtype] || 0) + 1;
+      } else if (['pre_match', 'during_match', 'post_match'].includes(tplType)) {
+        const actId = req.input_data?.activity_id || req.metadata?.activity_id || 'unknown';
+        const matchTitle = req.input_data?.match_title || req.metadata?.match_title || req.input_data?.title || 'Wedstrijd';
+        const matchDate = req.input_data?.match_date || req.metadata?.match_date;
+        if (!matchMap.has(actId)) matchMap.set(actId, { title: matchTitle, date: matchDate, subtypes: {} });
+        const m = matchMap.get(actId)!;
+        m.subtypes[subtype] = (m.subtypes[subtype] || 0) + 1;
+      }
+    }
+
+    // Process MediaItems (only uncounted)
+    for (const item of mediaItems) {
+      if (seenMediaIds.has(item.id)) continue;
+      const actId = item.activity_id || (item as any).activity;
+      const mimeType = item.mime_type || '';
+      const title = item.title || '';
+      const subtype = inferMediaItemSubtype(title, mimeType);
+
+      if (actId) {
+        const matchTitle = item.activity_title || item.title || 'Wedstrijd';
+        const matchDate = (item as any).activity_date;
+        if (!matchMap.has(actId)) matchMap.set(actId, { title: matchTitle, date: matchDate, subtypes: {} });
+        const m = matchMap.get(actId)!;
+        m.subtypes[subtype] = (m.subtypes[subtype] || 0) + 1;
+      } else if ((item as any).member_id || (item as any).member) {
+        memberSubtypes[subtype] = (memberSubtypes[subtype] || 0) + 1;
+      }
+    }
+
+    // Build sections
+    const result: SectionData[] = [];
+
+    const matchGroups: MatchGroup[] = Array.from(matchMap.entries()).map(([mid, m]) => {
+      const groupItems: ContentItem[] = Object.entries(m.subtypes).map(([st, count]) => ({
+        subtype: st, count, outputType: SUBTYPE_OUTPUT[st] || 'image',
+      }));
+      return {
+        matchId: mid, title: m.title, date: m.date,
+        items: groupItems.sort((a, b) => b.count - a.count),
+        total: groupItems.reduce((s, i) => s + i.count, 0),
+      };
+    }).sort((a, b) => b.total - a.total);
+
+    const matchTotal = matchGroups.reduce((s, g) => s + g.total, 0);
+    if (matchTotal > 0) {
+      result.push({ key: 'match', label: 'Wedstrijd', icon: <Trophy size={14} />, total: matchTotal, matches: matchGroups });
+    }
+
+    const seasonItems: ContentItem[] = Object.entries(seasonSubtypes).map(([st, count]) => ({
+      subtype: st, count, outputType: SUBTYPE_OUTPUT[st] || 'image',
+    })).sort((a, b) => b.count - a.count);
+    const seasonTotal = seasonItems.reduce((s, i) => s + i.count, 0);
+    if (seasonTotal > 0) {
+      result.push({ key: 'season', label: 'Seizoen', icon: <Calendar size={14} />, total: seasonTotal, items: seasonItems });
+    }
+
+    const memberItems: ContentItem[] = Object.entries(memberSubtypes).map(([st, count]) => ({
+      subtype: st, count, outputType: SUBTYPE_OUTPUT[st] || 'image',
+    })).sort((a, b) => b.count - a.count);
+    const memberTotal = memberItems.reduce((s, i) => s + i.count, 0);
+    if (memberTotal > 0) {
+      result.push({ key: 'member', label: 'Spelers', icon: <User size={14} />, total: memberTotal, items: memberItems });
+    }
+
+    return result;
+  }, [genData, mediaData]);
 
   const grandTotal = sections.reduce((s, sec) => s + sec.total, 0);
 

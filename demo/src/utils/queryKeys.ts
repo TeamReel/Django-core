@@ -15,6 +15,8 @@ export const queryKeys = {
     all: ['activities'] as const,
     match: (matchId: string) => ['activities', 'match', matchId] as const,
     closest: (projectId: string) => ['activities', 'closest', projectId] as const,
+    upcoming: (filters?: Record<string, string>) =>
+      ['activities', 'upcoming', filters] as const,
   },
 
   // Members
@@ -34,6 +36,8 @@ export const queryKeys = {
   // Media items
   media: {
     all: ['media'] as const,
+    items: (filters?: Record<string, string>) =>
+      ['media', 'items', filters] as const,
     byActivity: (activityId: string) =>
       ['media', 'activity', activityId] as const,
   },

@@ -9,7 +9,7 @@
  * - Member content → navigate to season media tab (batch generation)
  * - Upload → navigate to media library
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../routes';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -18,7 +18,8 @@ import {
   Upload, PlayCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { api } from '@/api';
+import { useProjectMembers } from '../../hooks/useProjectMembers';
+import { useGenerativeRequests } from '../../hooks/useGenerativeRequests';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import styles from './SmartActionsCard.module.css';
 
@@ -48,9 +49,6 @@ export const SmartActionsCard: React.FC = () => {
   const project = context.project;
   const { orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId } = useAppSelection();
 
-  const [actions, setActions] = useState<SmartAction[]>([]);
-  const [loading, setLoading] = useState(true);
-
   // ── Action handler — opens the right modal/page ──────────────────
   const handleAction = useCallback((action: SmartAction) => {
     switch (action.mode.type) {
@@ -74,131 +72,102 @@ export const SmartActionsCard: React.FC = () => {
     }
   }, [navigate, orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId]);
 
-  useEffect(() => {
-    if (!org) {
-      setLoading(false);
-      return;
-    }
+  // Parallel queries — deduped via shared hooks (D5)
+  const { data: membersData, isLoading: membersLoading } = useProjectMembers(
+    org?.slug,
+    project?.slug,
+  );
 
-    let cancelled = false;
+  const genFilters = useMemo(() => {
+    if (!project) return undefined;
+    return { status: 'completed', project: project.id } as Record<string, string>;
+  }, [project?.id]);
 
-    (async () => {
-      try {
-        setLoading(true);
-        const computed: SmartAction[] = [];
+  const { data: genData, isLoading: genLoading } = useGenerativeRequests(genFilters);
 
-        // ── 1. Fetch member count + generation requests in parallel ──
-        const fetches: Promise<unknown>[] = [];
+  const loading = (!org) ? false : (membersLoading || genLoading);
 
-        // Members (if project context)
-        if (project) {
-          fetches.push(
-            api.list<any>(`/organisations/${org.slug}/projects/${project.slug}/members/`, { pageSize: 100 })
-              .catch(() => null)
-          );
-        } else {
-          fetches.push(Promise.resolve(null));
+  // Derive actions from cached data
+  const actions = useMemo<SmartAction[]>(() => {
+    if (!org) return [];
+    const computed: SmartAction[] = [];
+
+    if (project && membersData && genData) {
+      const memberList = membersData.results ?? [];
+      const genItems = genData.results ?? [];
+
+      // Build map: member_id -> set of completed subtypes
+      const memberContentMap = new Map<string, Set<string>>();
+      for (const req of genItems as any[]) {
+        const tplType = req.template?.template_type || '';
+        if (tplType !== 'member') continue;
+        const subtype = req.template?.template_subtype || req.input_data?.template_subtype || '';
+        const memberIds: string[] = req.input_data?.member_ids || [];
+        const singleMemberId = req.input_data?.member_id;
+        const allIds = singleMemberId ? [singleMemberId, ...memberIds] : memberIds;
+        for (const mid of allIds) {
+          if (!memberContentMap.has(mid)) memberContentMap.set(mid, new Set());
+          if (subtype) memberContentMap.get(mid)!.add(subtype);
         }
+      }
 
-        // Generation requests (completed member content)
-        if (project) {
-          fetches.push(
-            api.list<any>('/generative/requests/', { params: { status: 'completed', project: project.id }, pageSize: 500 })
-              .catch(() => null)
-          );
-        } else {
-          fetches.push(Promise.resolve(null));
+      const totalMembers = memberList.length;
+
+      // Count missing per type
+      const missingByType: Record<string, number> = {};
+      for (const type of MEMBER_CONTENT_TYPES) {
+        let missing = 0;
+        for (const member of memberList as any[]) {
+          const memberUuid = member.membership_id || member.id;
+          const completed = memberContentMap.get(memberUuid);
+          if (!completed || !completed.has(type)) missing++;
         }
+        missingByType[type] = missing;
+      }
 
-        const [membersData, genData] = await Promise.all(fetches);
-        if (cancelled) return;
+      // Generate actions for missing content types
+      const typeConfig: Record<string, { label: string; Icon: LucideIcon; colorClass: string }> = {
+        in_tenue:      { label: 'Tenue foto',  Icon: Shirt,      colorClass: styles.colorIndigo },
+        profile_photo: { label: 'Profielfoto', Icon: Camera,     colorClass: styles.colorPink },
+        closeup:       { label: 'Close-up',    Icon: Image,      colorClass: styles.colorAmber },
+        short_intro:   { label: 'Intro video', Icon: PlayCircle, colorClass: styles.colorGreen },
+      };
 
-        // ── 2. Analyze member content completeness ──
-        if (project && membersData && genData) {
-          const memberList = (membersData as any)?.results ?? [];
-          const genItems = (genData as any)?.results ?? [];
-
-          // Build map: member_id -> set of completed subtypes
-          const memberContentMap = new Map<string, Set<string>>();
-          for (const req of genItems) {
-            const tplType = req.template?.template_type || '';
-            if (tplType !== 'member') continue;
-            const subtype = req.template?.template_subtype || req.input_data?.template_subtype || '';
-            const memberIds: string[] = req.input_data?.member_ids || [];
-            const singleMemberId = req.input_data?.member_id;
-            const allIds = singleMemberId ? [singleMemberId, ...memberIds] : memberIds;
-            for (const mid of allIds) {
-              if (!memberContentMap.has(mid)) memberContentMap.set(mid, new Set());
-              if (subtype) memberContentMap.get(mid)!.add(subtype);
-            }
-          }
-
-          const totalMembers = memberList.length;
-
-          // Count missing per type
-          const missingByType: Record<string, number> = {};
-          for (const type of MEMBER_CONTENT_TYPES) {
-            let missing = 0;
-            for (const member of memberList) {
-              const memberUuid = member.membership_id || member.id;
-              const completed = memberContentMap.get(memberUuid);
-              if (!completed || !completed.has(type)) missing++;
-            }
-            missingByType[type] = missing;
-          }
-
-          // Generate actions for missing content types
-          // colorClass maps to themed CSS classes in the module
-          const typeConfig: Record<string, { label: string; Icon: LucideIcon; colorClass: string }> = {
-            in_tenue:      { label: 'Tenue foto',  Icon: Shirt,      colorClass: styles.colorIndigo },
-            profile_photo: { label: 'Profielfoto', Icon: Camera,     colorClass: styles.colorPink },
-            closeup:       { label: 'Close-up',    Icon: Image,      colorClass: styles.colorAmber },
-            short_intro:   { label: 'Intro video', Icon: PlayCircle, colorClass: styles.colorGreen },
-          };
-
-          for (const type of MEMBER_CONTENT_TYPES) {
-            const missing = missingByType[type];
-            if (missing > 0 && totalMembers > 0) {
-              const cfg = typeConfig[type];
-              const pct = Math.round(((totalMembers - missing) / totalMembers) * 100);
-              computed.push({
-                key: `missing-${type}`,
-                label: `${cfg.label} genereren`,
-                subtitle: `${missing} van ${totalMembers} spelers mist een ${cfg.label.toLowerCase()} (${pct}% klaar)`,
-                Icon: cfg.Icon,
-                colorClass: cfg.colorClass,
-                priority: missing === totalMembers ? 100 : 80 + (missing / totalMembers) * 20,
-                mode: { type: 'season-tab', tab: 'media' },
-              });
-            }
-          }
-        }
-
-        // ── 3. Upload action if project ──
-        if (project) {
+      for (const type of MEMBER_CONTENT_TYPES) {
+        const missing = missingByType[type];
+        if (missing > 0 && totalMembers > 0) {
+          const cfg = typeConfig[type];
+          const pct = Math.round(((totalMembers - missing) / totalMembers) * 100);
           computed.push({
-            key: 'upload-media',
-            label: 'Foto\'s uploaden',
-            subtitle: 'Action foto\'s of wedstrijdbeelden toevoegen',
-            Icon: Upload,
-            colorClass: styles.colorViolet,
-            priority: 30,
-            mode: { type: 'navigate', path: '/medialib' },
+            key: `missing-${type}`,
+            label: `${cfg.label} genereren`,
+            subtitle: `${missing} van ${totalMembers} spelers mist een ${cfg.label.toLowerCase()} (${pct}% klaar)`,
+            Icon: cfg.Icon,
+            colorClass: cfg.colorClass,
+            priority: missing === totalMembers ? 100 : 80 + (missing / totalMembers) * 20,
+            mode: { type: 'season-tab', tab: 'media' },
           });
         }
-
-        // Sort by priority (highest first) and limit to 4
-        computed.sort((a, b) => b.priority - a.priority);
-        if (!cancelled) setActions(computed.slice(0, 4));
-      } catch {
-        // silent
-      } finally {
-        if (!cancelled) setLoading(false);
       }
-    })();
+    }
 
-    return () => { cancelled = true; };
-  }, [org?.slug, project?.slug, project?.id]);
+    // Upload action if project
+    if (project) {
+      computed.push({
+        key: 'upload-media',
+        label: 'Foto\'s uploaden',
+        subtitle: 'Action foto\'s of wedstrijdbeelden toevoegen',
+        Icon: Upload,
+        colorClass: styles.colorViolet,
+        priority: 30,
+        mode: { type: 'navigate', path: '/medialib' },
+      });
+    }
+
+    // Sort by priority (highest first) and limit to 4
+    computed.sort((a, b) => b.priority - a.priority);
+    return computed.slice(0, 4);
+  }, [org, project, membersData, genData]);
 
   if (loading) {
     return (

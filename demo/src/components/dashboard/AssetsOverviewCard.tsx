@@ -7,16 +7,19 @@
  *
  * Shows what's present and what's missing, with progress bars and action hints.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   Package, Shirt, ImageIcon, Shield, CheckCircle2, Circle,
   ChevronRight, AlertTriangle, Users,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api';
 import type { BrandAsset } from '@/types/api/branding';
-import type { GenerationRequest } from '@/types/api/generative';
+import { useProjectMembers } from '../../hooks/useProjectMembers';
+import { useGenerativeRequests } from '../../hooks/useGenerativeRequests';
+import { queryKeys } from '../../utils/queryKeys';
 import { NavigationSheet } from '../ui/NavigationSheet';
 import styles from './AssetsOverviewCard.module.css';
 
@@ -73,98 +76,83 @@ export const AssetsOverviewCard: React.FC = () => {
   const org = context.organisation;
   const project = context.project;
 
-  const [teamAssets, setTeamAssets] = useState<TeamAssetStatus[]>([]);
-  const [memberProgress, setMemberProgress] = useState<MemberAssetProgress[]>([]);
-  const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  useEffect(() => {
-    if (!org) {
-      setLoading(false);
-      return;
+  // Three parallel queries — no waterfall (D5/D6)
+  const { data: brandData, isLoading: brandLoading } = useQuery({
+    queryKey: queryKeys.branding.assets(org?.slug || org?.id?.toString()),
+    queryFn: () => api.list<BrandAsset>('/branding/assets/', {
+      params: { organisation_scope: org!.slug || org!.id },
+    }),
+    enabled: !!org,
+    staleTime: 15 * 60 * 1000, // 15 min — rarely changes
+  });
+
+  const { data: membersData, isLoading: membersLoading } = useProjectMembers(
+    org?.slug,
+    project?.slug,
+  );
+
+  const genFilters = useMemo(() => {
+    if (!project) return undefined;
+    return { status: 'completed', project: project.id } as Record<string, string>;
+  }, [project?.id]);
+
+  const { data: genData, isLoading: genLoading } = useGenerativeRequests(genFilters);
+
+  const loading = brandLoading || membersLoading || genLoading;
+
+  // Derive team asset statuses
+  const teamAssets = useMemo<TeamAssetStatus[]>(() => {
+    const brandItems = brandData?.results ?? [];
+    const activeTypes = new Set(
+      brandItems
+        .filter((a) => a.is_active !== false)
+        .map((a) => a.asset_type),
+    );
+    return EXPECTED_TEAM_ASSETS.map(ea => ({
+      key: ea.key,
+      label: ea.label,
+      present: ea.matchTypes.some(t => activeTypes.has(t)),
+    }));
+  }, [brandData]);
+
+  // Derive member progress via client-side join
+  const memberProgress = useMemo<MemberAssetProgress[]>(() => {
+    const memberList = membersData?.results ?? [];
+    const genItems = genData?.results ?? [];
+    if (memberList.length === 0) return [];
+
+    const memberContentMap = new Map<string, Set<string>>();
+    for (const req of genItems as any[]) {
+      const tplType = req.template?.template_type || '';
+      if (tplType !== 'member') continue;
+      const subtype = req.template?.template_subtype || req.input_data?.template_subtype || '';
+      const memberIds: string[] = req.input_data?.member_ids || [];
+      const singleMemberId = req.input_data?.member_id;
+      const allIds = singleMemberId ? [singleMemberId, ...memberIds] : memberIds;
+
+      for (const mid of allIds) {
+        if (!memberContentMap.has(String(mid))) {
+          memberContentMap.set(String(mid), new Set());
+        }
+        if (subtype) memberContentMap.get(String(mid))!.add(subtype);
+      }
     }
 
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoading(true);
-
-        // ── 1. Fetch brand assets ──
-        const { results: brandItems } = await api.list<BrandAsset>('/branding/assets/', {
-          params: { organisation_scope: org.slug || org.id },
-        }).catch(() => ({ results: [] as any[], count: 0, next: null, previous: null }));
-
-        // Determine which are present (only active assets)
-        const activeTypes = new Set(
-          brandItems
-            .filter((a) => a.is_active !== false)
-            .map((a) => a.asset_type),
-        );
-
-        const assetStatuses: TeamAssetStatus[] = EXPECTED_TEAM_ASSETS.map(ea => ({
-          key: ea.key,
-          label: ea.label,
-          present: ea.matchTypes.some(t => activeTypes.has(t)),
-        }));
-
-        if (!cancelled) setTeamAssets(assetStatuses);
-
-        // ── 2. Fetch member content coverage ──
-        if (project) {
-          const { results: memberList } = await api.list<any>(
-            `/organisations/${org.slug}/projects/${project.slug}/members/`,
-            { pageSize: 50 },
-          ).catch(() => ({ results: [] as any[], count: 0, next: null, previous: null }));
-
-          if (memberList.length > 0) {
-            // Fetch completed generation requests
-            const { results: genItems } = await api.list<GenerationRequest>('/generative/requests/', {
-              params: { status: 'completed', project: project.id },
-              pageSize: 500,
-            }).catch(() => ({ results: [] as any[], count: 0, next: null, previous: null }));
-
-            // Build member → completed subtypes map
-            const memberContentMap = new Map<string, Set<string>>();
-            for (const req of genItems) {
-              const tplType = req.template?.template_type || '';
-              if (tplType !== 'member') continue;
-              const subtype = req.template?.template_subtype || req.input_data?.template_subtype || '';
-              const memberIds: string[] = req.input_data?.member_ids || [];
-              const singleMemberId = req.input_data?.member_id;
-              const allIds = singleMemberId ? [singleMemberId, ...memberIds] : memberIds;
-
-              for (const mid of allIds) {
-                if (!memberContentMap.has(String(mid))) {
-                  memberContentMap.set(String(mid), new Set());
-                }
-                if (subtype) memberContentMap.get(String(mid))!.add(subtype);
-              }
-            }
-
-            const progress: MemberAssetProgress[] = memberList
-              .slice(0, 20)
-              .map((m) => {
-                const userId = String(m.user?.id || m.id);
-                const memberId = String(m.id);
-                const completedSet = memberContentMap.get(userId) || memberContentMap.get(memberId) || new Set<string>();
-                const name = m.user?.first_name
-                  ? `${m.user.first_name} ${m.user.last_name || ''}`.trim()
-                  : m.user_name || m.name || 'Onbekend';
-                return { id: memberId, name, avatarUrl: m.user?.avatar_url || m.avatar_url, completedTypes: completedSet };
-              })
-              .sort((a: MemberAssetProgress, b: MemberAssetProgress) => a.completedTypes.size - b.completedTypes.size);
-
-            if (!cancelled) setMemberProgress(progress);
-          }
-        }
-      } catch {
-        // silent
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [org?.slug, org?.id, project?.slug, project?.id]);
+    return memberList
+      .slice(0, 20)
+      .map((m: any) => {
+        const userId = String(m.user?.id || m.id);
+        const memberId = String(m.id);
+        const completedSet = memberContentMap.get(userId) || memberContentMap.get(memberId) || new Set<string>();
+        const name = m.user?.first_name
+          ? `${m.user.first_name} ${m.user.last_name || ''}`.trim()
+          : m.user_name || m.name || 'Onbekend';
+        return { id: memberId, name, avatarUrl: m.user?.avatar_url || m.avatar_url, completedTypes: completedSet };
+      })
+      .sort((a: MemberAssetProgress, b: MemberAssetProgress) => a.completedTypes.size - b.completedTypes.size);
+  }, [membersData, genData]);
 
   // Derived stats
   const teamPresent = teamAssets.filter(a => a.present).length;

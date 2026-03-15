@@ -4,13 +4,12 @@
  * For each member, shows how many content types have been generated
  * (e.g. profile photo, in-tenue, closeup) as a progress bar.
  */
-import React, { useEffect, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Users, ChevronRight, CheckCircle2, Circle } from 'lucide-react';
-import { api } from '@/api';
-import type { ProjectMembership } from '@/types/api/project';
-import type { GenerationRequest } from '@/types/api/generative';
+import { useProjectMembers } from '../../hooks/useProjectMembers';
+import { useGenerativeRequests } from '../../hooks/useGenerativeRequests';
 import { NavigationSheet } from '../ui/NavigationSheet';
 import styles from './MemberContentProgressCard.module.css';
 
@@ -42,90 +41,70 @@ interface MemberProgress {
 
 export const MemberContentProgressCard: React.FC = () => {
   const { context } = useContextSwitcher();
-  const [members, setMembers] = useState<MemberProgress[]>([]);
-  const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const navigate = useNavigate();
   const org = context.organisation;
   const project = context.project;
 
-  useEffect(() => {
-    if (!project || !org) {
-      setLoading(false);
-      return;
+  // Parallel queries — no waterfall (D5/D6)
+  const { data: membersData, isLoading: membersLoading } = useProjectMembers(
+    org?.slug,
+    project?.slug,
+  );
+
+  const genFilters = useMemo(() => {
+    if (!project) return undefined;
+    return { status: 'completed', project: project.id } as Record<string, string>;
+  }, [project?.id]);
+
+  const { data: genData, isLoading: genLoading } = useGenerativeRequests(genFilters);
+
+  const loading = membersLoading || genLoading;
+
+  // Client-side join: members × generative requests → progress list
+  const members = useMemo<MemberProgress[]>(() => {
+    const memberList = membersData?.results ?? [];
+    const genItems = genData?.results ?? [];
+    if (memberList.length === 0) return [];
+
+    // Build map: member_id -> set of completed subtypes
+    const memberContentMap = new Map<string, Set<string>>();
+    for (const req of genItems as any[]) {
+      const tplType = req.template?.template_type || '';
+      if (tplType !== 'member') continue;
+      const subtype = req.template?.template_subtype || req.input_data?.template_subtype || '';
+      const memberIds: string[] = req.input_data?.member_ids || [];
+      const singleMemberId = req.input_data?.member_id;
+      const allIds = singleMemberId ? [singleMemberId, ...memberIds] : memberIds;
+
+      for (const mid of allIds) {
+        if (!memberContentMap.has(String(mid))) {
+          memberContentMap.set(String(mid), new Set());
+        }
+        if (subtype) memberContentMap.get(String(mid))!.add(subtype);
+      }
     }
 
-    let cancelled = false;
-    (async () => {
-      try {
-        setLoading(true);
-
-        // Fetch team members
-        const { results: memberList } = await api.list<ProjectMembership>(
-          `/organisations/${org.slug}/projects/${project.slug}/members/`,
-          { pageSize: 50 },
-        );
-
-        if (memberList.length === 0) {
-          if (!cancelled) setMembers([]);
-          return;
-        }
-
-        // Fetch completed member generation requests
-        const { results: genItems } = await api.list<GenerationRequest>('/generative/requests/', {
-          params: { status: 'completed', project: project.id },
-          pageSize: 500,
-        });
-
-        // Build map: member_id -> set of completed subtypes
-        const memberContentMap = new Map<string, Set<string>>();
-        for (const req of genItems as any[]) {
-          const tplType = req.template?.template_type || '';
-          if (tplType !== 'member') continue;
-          const subtype = req.template?.template_subtype || req.input_data?.template_subtype || '';
-          // Identify the member from input_data
-          const memberIds: string[] = req.input_data?.member_ids || [];
-          const singleMemberId = req.input_data?.member_id;
-          const allIds = singleMemberId ? [singleMemberId, ...memberIds] : memberIds;
-
-          for (const mid of allIds) {
-            if (!memberContentMap.has(String(mid))) {
-              memberContentMap.set(String(mid), new Set());
-            }
-            if (subtype) memberContentMap.get(String(mid))!.add(subtype);
-          }
-        }
-
-        // Build progress list
-        const progressList: MemberProgress[] = memberList
-          .slice(0, 20) // limit for performance
-          .map((m) => {
-            const userId = String(m.user?.id || m.id);
-            const memberId = String(m.id);
-            const completedSet = memberContentMap.get(userId) || memberContentMap.get(memberId) || new Set();
-            const name = m.user?.first_name
-              ? `${m.user.first_name} ${m.user.last_name || ''}`.trim()
-              : (m as any).user_name || (m as any).name || 'Onbekend';
-            return {
-              id: memberId,
-              name,
-              avatarUrl: m.user?.avatar_url || (m as any).avatar_url,
-              completedTypes: Array.from(completedSet),
-              totalExpected: MEMBER_CONTENT_TYPES.length,
-            };
-          })
-          // Sort: least complete first (needs attention)
-          .sort((a: MemberProgress, b: MemberProgress) => a.completedTypes.length - b.completedTypes.length);
-
-        if (!cancelled) setMembers(progressList);
-      } catch {
-        // silent
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [org?.slug, project?.slug, project?.id]);
+    // Build progress list
+    return memberList
+      .slice(0, 20)
+      .map((m: any) => {
+        const userId = String(m.user?.id || m.id);
+        const memberId = String(m.id);
+        const completedSet = memberContentMap.get(userId) || memberContentMap.get(memberId) || new Set();
+        const name = m.user?.first_name
+          ? `${m.user.first_name} ${m.user.last_name || ''}`.trim()
+          : m.user_name || m.name || 'Onbekend';
+        return {
+          id: memberId,
+          name,
+          avatarUrl: m.user?.avatar_url || m.avatar_url,
+          completedTypes: Array.from(completedSet),
+          totalExpected: MEMBER_CONTENT_TYPES.length,
+        };
+      })
+      .sort((a: MemberProgress, b: MemberProgress) => a.completedTypes.length - b.completedTypes.length);
+  }, [membersData, genData]);
 
   if (!project) return null;
   if (!loading && members.length === 0) return null;

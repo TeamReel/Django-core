@@ -4,18 +4,21 @@
  * Each card is a self-contained widget with its own data fetching.
  * Designed to be arranged in a responsive grid.
  */
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   Users, Calendar, Image, Cpu, CreditCard, TrendingUp,
   ChevronRight, Flame, Zap, CheckCircle2, Clock, AlertCircle,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api';
 import type { ProjectMembership } from '@/types/api/project';
 import type { MediaItem } from '@/types/api/media';
 import { useCreditBalance } from '../../hooks/useCreditBalance';
 import { useQueueCounts } from '../../hooks/useQueueCounts';
+import { useProjectMembers } from '../../hooks/useProjectMembers';
+import { queryKeys } from '../../utils/queryKeys';
 import type { Organisation } from '../../types';
 import { routes } from '../../routes';
 import { NavigationSheet } from '../ui/NavigationSheet';
@@ -28,26 +31,12 @@ export const SquadReadinessCard: React.FC = () => {
   const navigate = useNavigate();
   const org = context.organisation as Organisation | null;
   const project = context.project;
-  const [memberCount, setMemberCount] = useState<number>(0);
 
-  useEffect(() => {
-    if (project && org) {
-      // Fetch team member count from project members API
-      (async () => {
-        try {
-          const data = await api.list<ProjectMembership>(
-            `/organisations/${org.slug}/projects/${project.slug}/members/`,
-            { pageSize: 1 },
-          );
-          setMemberCount(data.count ?? data.results.length);
-        } catch {
-          setMemberCount(0);
-        }
-      })();
-    } else {
-      setMemberCount(org?.member_count || 0);
-    }
-  }, [org?.slug, project?.slug]);
+  // Shared members query — deduped across cards (D5)
+  const { data: membersData } = useProjectMembers(org?.slug, project?.slug);
+  const memberCount = project
+    ? (membersData?.count ?? membersData?.results?.length ?? 0)
+    : (org?.member_count || 0);
 
   const handleClick = () => {
     if (project) {
@@ -82,27 +71,23 @@ export const SquadReadinessCard: React.FC = () => {
 
 export const ContentStatsCard: React.FC = () => {
   const { context } = useContextSwitcher();
-  const [count, setCount] = useState<number | null>(null);
   const navigate = useNavigate();
   const project = context.project;
 
-  useEffect(() => {
-    (async () => {
-      try {
-        // Content created in the last 7 days, scoped to project if available
-        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-        const params: Record<string, string> = { created_at__gte: weekAgo };
-        if (project) params.project = project.id;
-        const data = await api.list<MediaItem>('/media/items/', {
-          params,
-          pageSize: 1,
-        });
-        setCount(data.count ?? data.results.length);
-      } catch {
-        setCount(0);
-      }
-    })();
+  const mediaFilters = useMemo(() => {
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const p: Record<string, string> = { created_at__gte: weekAgo };
+    if (project) p.project = project.id;
+    return p;
   }, [project?.id]);
+
+  const { data: mediaData } = useQuery({
+    queryKey: queryKeys.media.items(mediaFilters),
+    queryFn: () => api.list<MediaItem>('/media/items/', { params: mediaFilters, pageSize: 1 }),
+    staleTime: 2 * 60 * 1000, // 2 min
+  });
+
+  const count = mediaData ? (mediaData.count ?? mediaData.results.length) : null;
 
   return (
     <div
@@ -136,30 +121,27 @@ interface CompactMatch {
 
 export const UpcomingMatchesCard: React.FC = () => {
   const { context } = useContextSwitcher();
-  const [matches, setMatches] = useState<CompactMatch[]>([]);
   const navigate = useNavigate();
   const project = context.project;
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const now = new Date().toISOString();
-        const params: Record<string, string> = {
-          activity_type: 'match',
-          start_time__gte: now,
-          ordering: 'start_time',
-        };
-        if (project) params.project = project.id;
-        const { results } = await api.list<CompactMatch>('/activities/', {
-          params,
-          pageSize: 3,
-        });
-        setMatches(results);
-      } catch {
-        // silent
-      }
-    })();
+  const matchFilters = useMemo(() => {
+    const now = new Date().toISOString();
+    const p: Record<string, string> = {
+      activity_type: 'match',
+      start_time__gte: now,
+      ordering: 'start_time',
+    };
+    if (project) p.project = project.id;
+    return p;
   }, [project?.id]);
+
+  const { data: matchData } = useQuery({
+    queryKey: queryKeys.activities.upcoming(matchFilters),
+    queryFn: () => api.list<CompactMatch>('/activities/', { params: matchFilters, pageSize: 3 }),
+    staleTime: 5 * 60 * 1000, // 5 min
+  });
+
+  const matches = matchData?.results ?? [];
 
   return (
     <div className={`${styles.summaryCard} ${styles.tallCard}`}>
