@@ -21,10 +21,12 @@ interface LineupSheetProps {
   match: Match | null;
   /** iOS-style back — returns to the parent (match) sheet */
   onBack?: () => void;
+  /** Fired after lineup save with player count + formation */
+  onLineupSaved?: (count: number, formation: string) => void;
 }
 
-export const LineupSheet: React.FC<LineupSheetProps> = ({ isOpen, onClose, match, onBack }) => {
-  const lineup = useLineupSheet(match);
+export const LineupSheet: React.FC<LineupSheetProps> = ({ isOpen, onClose, match, onBack, onLineupSaved }) => {
+  const lineup = useLineupSheet(match, onLineupSaved);
 
   return (
     <NavigationSheet

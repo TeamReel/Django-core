@@ -7,7 +7,7 @@
  * This avoids needing the full useMatchDetailData orchestrator,
  * keeping the dashboard bundle small.
  */
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '@/api';
 import { FORMATION_LAYOUTS } from '../../pages/identity/content-generation';
 import type { Match } from './ActiveMatchCard';
@@ -35,7 +35,13 @@ export interface LineupSheetState {
   saveLineup: () => Promise<void>;
 }
 
-export function useLineupSheet(match: Match | null): LineupSheetState {
+export function useLineupSheet(
+  match: Match | null,
+  onSaved?: (count: number, formation: string) => void,
+): LineupSheetState {
+  // Stable ref for callback to avoid re-creating saveLineup
+  const _onSavedRef = React.useRef(onSaved);
+  _onSavedRef.current = onSaved;
   const [lineupFormation, setLineupFormation] = useState('4-3-3');
   const [lineupSlots, setLineupSlots] = useState<Record<string, string[]>>({ goalkeeper: [], player: [] });
   const [lineupSquad, setLineupSquad] = useState<Record<string, SquadMemberRecord[]>>({});
@@ -119,6 +125,9 @@ export function useLineupSheet(match: Match | null): LineupSheetState {
         metadata: { ...(match.metadata || {}), formation: lineupFormation, lineup: lineupData },
       });
       setLineupSaveSuccess(true);
+      // Compute saved player count for badge update
+      const savedCount = (lineupSlots.goalkeeper?.length || 0) + (lineupSlots.player?.length || 0);
+      _onSavedRef.current?.(savedCount, lineupFormation);
       setTimeout(() => setLineupSaveSuccess(false), 3000);
     } catch {
       // Error handling could be added here

@@ -80,6 +80,8 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const [match, setMatch] = useState<Match | null>(null);
   const [contentCount, setContentCount] = useState(0);
   const [lineupCount, setLineupCount] = useState(0);
+  const [lineupFormationState, setLineupFormationState] = useState<string | undefined>(undefined);
+  const [badgeBump, setBadgeBump] = useState<'lineup' | 'content' | null>(null);
   const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [lineupSheetOpen, setLineupSheetOpen] = useState(false);
@@ -217,7 +219,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const urgency = getDateUrgency(date);
   const score = match.metadata?.score || match.metadata?.final_score;
   const isHome = match.metadata?.is_home !== false;
-  const lineupFormation = (match.metadata?.lineup as any)?.formation as string | undefined;
+  const lineupFormation = lineupFormationState || (match?.metadata?.lineup as any)?.formation as string | undefined;
   const hasLineup = lineupCount > 0;
 
   return (
@@ -279,7 +281,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
 
         {/* Status indicators */}
         <div className={styles.statusRow}>
-          <span className={styles.contentBadge}>
+          <span className={`${styles.contentBadge} ${badgeBump === 'content' ? styles.badgeBump : ''}`}>
             {contentCount > 0 ? (
               <><CheckCircle2 size={14} /> {contentCount} items</>
             ) : (
@@ -287,7 +289,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
             )}
           </span>
 
-          <span className={`${styles.lineupBadge} ${hasLineup ? styles.lineupFilled : ''}`}>
+          <span className={`${styles.lineupBadge} ${hasLineup ? styles.lineupFilled : ''} ${badgeBump === 'lineup' ? styles.badgeBump : ''}`}>
             <Users size={14} />
             {hasLineup
               ? <>{lineupCount} spelers{lineupFormation ? ` · ${lineupFormation}` : ''}</>
@@ -394,6 +396,12 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
         onClose={() => setLineupSheetOpen(false)}
         match={match}
         onBack={() => { setLineupSheetOpen(false); setSheetOpen(true); }}
+        onLineupSaved={(count, formation) => {
+          setLineupCount(count);
+          setLineupFormationState(formation);
+          setBadgeBump('lineup');
+          setTimeout(() => setBadgeBump(null), 400);
+        }}
       />
 
       {/* ── Content Sheet (inline content from dashboard) ─────── */}
@@ -403,6 +411,11 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
         match={match}
         onBack={() => { setContentSheetOpen(false); setSheetOpen(true); }}
         organisationId={match?.organisation?.id}
+        onContentGenerated={(newCount) => {
+          setContentCount(newCount);
+          setBadgeBump('content');
+          setTimeout(() => setBadgeBump(null), 400);
+        }}
       />
     </>
   );

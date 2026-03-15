@@ -42,6 +42,8 @@ interface ContentSheetProps {
   competition?: Period | null;
   /** Organisation ID for content generation scoping */
   organisationId?: string | null;
+  /** Fired after content generation with new total count */
+  onContentGenerated?: (newCount: number) => void;
 }
 
 export const ContentSheet: React.FC<ContentSheetProps> = ({
@@ -52,6 +54,7 @@ export const ContentSheet: React.FC<ContentSheetProps> = ({
   org,
   competition,
   organisationId,
+  onContentGenerated,
 }) => {
   const content = useContentSheet(
     match,
@@ -121,7 +124,10 @@ export const ContentSheet: React.FC<ContentSheetProps> = ({
               onClose={content.closeContentModal}
               onGenerated={() => {
                 content.closeContentModal();
-                void content.refreshMedia();
+                void content.refreshMedia().then(() => {
+                  // Report new total media count to parent for badge update
+                  onContentGenerated?.(content.matchMedia.length + 1);
+                });
               }}
               matchData={match ? {
                 id: match.id,
