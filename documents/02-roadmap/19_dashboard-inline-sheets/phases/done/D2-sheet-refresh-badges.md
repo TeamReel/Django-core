@@ -1,8 +1,8 @@
 # D2 — Sheet Refresh & Badges
 
-> **Status:** 📋 Gepland
-> **Geschatte effort:** 1-2 uur
-> **Geschatte omvang:** ~80 regels aanpassingen
+> **Status:** ✅ Klaar
+> **Datum:** 2026-03-15
+> **Omvang:** 49 regels geänpasseerd over 5 bestanden
 
 ## Doel
 
@@ -82,8 +82,20 @@ Wanneer een child sheet sluit via `onBack`, re-fetch de data die de MatchSheet t
 
 ## Acceptatiecriteria
 
-- [ ] Na lineup save: lineup badge updated live op ActiveMatchCard
-- [ ] Na content generatie: content badge updated live op ActiveMatchCard
-- [ ] Badge animatie bij waarde-wijziging
-- [ ] Geen extra API calls — gebruik callback data
-- [ ] Works voor zowel lineup → back → match als direct sheet close
+- [x] Na lineup save: lineup badge updated live op ActiveMatchCard
+- [x] Na content generatie: content badge updated live op ActiveMatchCard
+- [x] Badge animatie bij waarde-wijziging
+- [x] Geen extra API calls — gebruik callback data
+- [x] Works voor zowel lineup → back → match als direct sheet close
+
+## Commits
+
+| Hash | Beschrijving |
+|------|-------------|
+| `c03348d6` | feat(dashboard): D2 — live badge refresh after lineup save & content generation |
+
+## Verificatie
+
+- TypeScript: ✅ `tsc --noEmit` clean
+- Build: ✅ `vite build` in 9.21s
+- Railway: ✅ pushed to main

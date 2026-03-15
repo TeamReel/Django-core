@@ -1,6 +1,6 @@
 # Roadmap #19 — Dashboard Inline Sheets & Data Layer
 
-> **Status:** 🚧 In progress (2/7 fases)
+> **Status:** 🚧 In progress (3/7 fases)
 > **Start:** 2026-03-14
 > **Scope:** `demo/src/` — dashboard, NavigationSheet, data fetching, caching
 > **Bron:** [optimalisatie-analyse.md](../../05-demo/features/optimalisatie-analyse.md), [ux-flows.md](../../05-demo/features/ux-flows.md)
@@ -57,7 +57,7 @@ Dashboard als **command center** — alle match-acties en dashboard cards openen
 |------|-------|--------|--------------|
 | **D0** | [Lineup Sheet + Back navigatie](phases/done/D0-lineup-sheet-back.md) | ✅ Klaar | LineupSheet inline, NavigationSheet `onBack`, Media knop verwijderd |
 | **D1** | [Content Sheet (volledig)](phases/done/D1-content-sheet.md) | ✅ Klaar | Content preview + generatie + preview overlay inline vanuit MatchSheet |
-| **D2** | [Sheet refresh & badges](phases/D2-sheet-refresh-badges.md) | 📋 Gepland | Live badge updates na save/generatie in child sheets |
+| **D2** | [Sheet refresh & badges](phases/done/D2-sheet-refresh-badges.md) | ✅ Klaar | Live badge updates na save/generatie in child sheets |
 | **D3** | [Dashboard card sheets](phases/D3-dashboard-card-sheets.md) | 📋 Gepland | ContentOverview, MemberProgress, Assets, AIQueue als inline sheets |
 
 ### ⚡ Data Layer — Performance (D4–D6)
