@@ -4,6 +4,18 @@
 > **Start:** 2026-03-15
 > **Scope:** `demo/src/pages/DashboardPage.tsx`, `demo/src/components/dashboard/`
 > **Bron:** Gamification analyse, Profile sheet-ification patroon, roadmap #19
+> **Fase docs:** [H0](phases/H0-layout-herstructurering.md) · [H1](phases/H1-alle-cards-sheet-pattern.md) · [H2](phases/H2-upcoming-matches-matchsheet.md) · [H3](phases/H3-smart-actions-verbetering.md) · [H4](phases/H4-matchday-mode-readiness.md) · [H5](phases/H5-polish-consistency.md)
+
+---
+
+## Design beslissingen
+
+| Vraag | Besluit |
+|-------|---------|
+| Merged card sheets | **Tabs** uit design system (`@django-core/design-system` Tabs/TabList/Tab/TabPanel) |
+| Upload actie (Smart Actions) | **Inline upload sheet** met FileUpload component — geen navigatie naar /medialib |
+| Credits card | **Hergebruik CreditsSheetContent** van ProfileHubPage — DRY, lazy-loaded |
+| Match-day mode | **Prominent** — header wordt countdown, card krijgt accent, smart actions gefilterd |
 
 ---
 
@@ -332,3 +344,41 @@ Dashboard
 - **PWA / offline** — niet van toepassing (besluit: responsive webapp)
 - **Social sharing** — apart gepland (B54)
 - **Onboarding wizard** — apart gepland
+
+---
+
+## Tech Debt Prevention
+
+### Design system alignment (geen custom UI primitives)
+
+| Wat | Gebruik | NIET doen |
+|-----|---------|-----------|
+| Card wrappers | `Card` van `@django-core/design-system` | Custom `div` met border-radius |
+| Tabs in sheets | `Tabs/TabList/Tab/TabPanel` van design system | Custom tab buttons met state |
+| Progress bars | `Progress` van design system | Custom `div` met width% |
+| File upload | `FileUpload` van design system | Custom `<input type="file">` |
+| Loading states | `Spinner` van design system | Custom CSS spinners |
+| Sheet component | `NavigationSheet` (app-level) | Custom modals of portals |
+| Kleuren | CSS variables (`--color-*`, `--bg-*`, `--text-*`) | Hardcoded `#hex` of `rgb()` |
+| Spacing | CSS variables (`--space-*`, `var(--radius-*)`) | Magic pixel numbers |
+
+### Hergebruik patronen (DRY)
+
+| Pattern | Bron | Hergebruikt door |
+|---------|------|-----------------|
+| `useMatchSheet` hook | Geëxtract uit ActiveMatchCard (H2) | ActiveMatchCard, UpcomingMatchesCard |
+| `MatchSheet` component | Geëxtract uit ActiveMatchCard (H2) | ActiveMatchCard, UpcomingMatchesCard |
+| `CreditsSheetContent` | `pages/config/CreditsSheetContent.tsx` (N1) | ProfileHubPage, CreditsTrendCard |
+| `teamreel:open-quick-create` event | MobileBottomNav (C3) | ActiveMatchCard, SmartActionsCard |
+| `teamreel:open-match-sheet` event | **Nieuw** (H3) | SmartActionsCard |
+| `ReadinessRing` component | **Nieuw** (H4) | ActiveMatchCard, UpcomingMatchesCard |
+| `useMatchDayMode` hook | **Nieuw** (H4) | DashboardPage, SmartActionsCard |
+
+### Anti-patterns (vermijden)
+
+1. **Geen inline styles in sheets** — AIQueueCard sheet used inline styles. Alle nieuwe sheets → CSS modules
+2. **Geen `navigate()` vanuit dashboard** — alles via events + sheets (na H1-H3)
+3. **Geen dubbele data fetching** — TanStack Query deduplicatie via `queryKeys`
+4. **Geen 3-deep sheet stacking** — max 2: card → sheet → child sheet
+5. **Geen component props drilling >2 niveaus** — gebruik hooks of context
+6. **Geen lazy imports zonder Suspense fallback** — altijd Spinner
