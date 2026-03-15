@@ -136,12 +136,13 @@ export function useMatchWizardGeneration(isOpen: boolean) {
     if (validationError) { setGenerationError(validationError); return; }
 
     // Sync lineup to selectedMembers before generation
-    seasonSquad.setSelectedMembers({
+    const syncedMembers = {
       goalkeeper: lineupSlotsRef.current.goalkeeper.filter(Boolean),
       player: lineupSlotsRef.current.player.filter(Boolean),
-      coach: [],
-      assistant: [],
-    });
+      coach: [] as string[],
+      assistant: [] as string[],
+    };
+    seasonSquad.setSelectedMembers(syncedMembers);
 
     let p = 0;
     const progressInterval = setInterval(() => {
@@ -164,7 +165,7 @@ export function useMatchWizardGeneration(isOpen: boolean) {
         selectedType,
         selectedTemplate: mw.selectedTemplate,
         lineupFormation: mw.lineupFormation,
-        selectedMembers: seasonSquad.selectedMembers,
+        selectedMembers: syncedMembers,
         options,
         getMemberAssetUrl: seasonSquad.getMemberAssetUrl,
         getMemberNameById: seasonSquad.getMemberNameById,

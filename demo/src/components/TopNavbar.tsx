@@ -217,6 +217,9 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
                 {d.queueBadgeCount > 0 && (
                   <span className={s.badge} style={{ backgroundColor: d.queueBadgeColor }}>{d.queueBadgeCount}</span>
                 )}
+                {d.queueBadgeCount === 0 && d.hasFailedJobs && (
+                  <span className={`${s.badge} ${s.badgeError}`} style={{ width: 8, height: 8, padding: 0 }} />
+                )}
               </button>
 
               {/* Notification Icon */}

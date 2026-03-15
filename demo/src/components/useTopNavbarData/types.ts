@@ -56,6 +56,7 @@ export interface UseTopNavbarDataReturn {
   queueCounts: QueueCounts;
   queueBadgeCount: number;
   queueBadgeColor: string;
+  hasFailedJobs: boolean;
   quickReviewOpen: boolean;
   setQuickReviewOpen: React.Dispatch<React.SetStateAction<boolean>>;
   openQuickReview: () => void;
