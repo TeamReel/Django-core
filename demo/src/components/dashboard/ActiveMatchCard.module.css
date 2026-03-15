@@ -446,7 +446,29 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) var(--space-4) var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.phaseHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.phaseChevron {
+  color: var(--app-muted-text);
+  transition: transform var(--duration-fast, 150ms) var(--ease-default);
+  transform: rotate(-90deg);
+}
+
+.phaseChevronOpen {
+  transform: rotate(0deg);
 }
 
 .phaseHeaderLeft {
@@ -473,7 +495,7 @@
 .phaseProgressTrack {
   height: 3px;
   background: var(--app-border, #333);
-  margin: var(--space-1) var(--space-4) 0;
+  margin: 0 var(--space-4);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -492,6 +514,13 @@
 .phaseItems {
   display: flex;
   flex-direction: column;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--duration-normal, 250ms) var(--ease-default);
+}
+
+.phaseItemsOpen {
+  max-height: 600px; /* generous upper bound for animation */
 }
 
 .phaseItem {
@@ -512,8 +541,7 @@
 }
 
 .phaseItem:first-child {
-  border-top: none;
-  margin-top: var(--space-2);
+  margin-top: var(--space-1);
 }
 
 .phaseItem:active {

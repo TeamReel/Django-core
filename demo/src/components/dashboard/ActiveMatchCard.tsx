@@ -13,7 +13,7 @@ import React, { memo, useEffect, useState, useMemo, useCallback, lazy, Suspense 
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
-  Zap, ChevronRight, MapPin, Clock, CheckCircle2,
+  Zap, ChevronRight, ChevronDown, MapPin, Clock, CheckCircle2,
   Circle, Trophy, Sparkles, Calendar, Users, ExternalLink,
   FileImage, AlertCircle,
 } from 'lucide-react';
@@ -109,6 +109,17 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
     | null
     | undefined;
   const content = useContentSheet(match, orgSport, match?.project?.id);
+
+  // Collapsible phase blocks (collapsed by default)
+  const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set());
+  const togglePhase = useCallback((key: string) => {
+    setExpandedPhases(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
 
   // Quick-generate modal state (opened from phase item rows in match sheet)
   const [quickGenOpen, setQuickGenOpen] = useState(false);
@@ -355,10 +366,17 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
               const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
               const allDone = doneCount === total;
 
+              const isExpanded = expandedPhases.has(key);
+
               return (
                 <div key={key} className={styles.phaseBlock}>
-                  {/* Phase header with progress */}
-                  <div className={styles.phaseHeader}>
+                  {/* Phase header — clickable to expand/collapse */}
+                  <button
+                    className={styles.phaseHeader}
+                    onClick={() => togglePhase(key)}
+                    aria-expanded={isExpanded}
+                    aria-label={`${phase.label} ${doneCount}/${total} — ${isExpanded ? 'inklappen' : 'uitklappen'}`}
+                  >
                     <div className={styles.phaseHeaderLeft}>
                       {allDone ? (
                         <CheckCircle2 size={16} className={styles.iconDone} />
@@ -367,8 +385,14 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
                       )}
                       <span className={styles.phaseTitle}>{phase.label}</span>
                     </div>
-                    <span className={styles.phaseCount}>{doneCount}/{total}</span>
-                  </div>
+                    <div className={styles.phaseHeaderRight}>
+                      <span className={styles.phaseCount}>{doneCount}/{total}</span>
+                      <ChevronDown
+                        size={16}
+                        className={`${styles.phaseChevron} ${isExpanded ? styles.phaseChevronOpen : ''}`}
+                      />
+                    </div>
+                  </button>
                   <div className={styles.phaseProgressTrack}>
                     <div
                       className={styles.phaseProgressFill}
@@ -377,8 +401,8 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
                     />
                   </div>
 
-                  {/* Individual content items */}
-                  <div className={styles.phaseItems}>
+                  {/* Individual content items — collapsible */}
+                  <div className={`${styles.phaseItems} ${isExpanded ? styles.phaseItemsOpen : ''}`}>
                     {phase.items.map((item) => {
                       const isDone = contentDoneSubtypes.includes(item.subtype);
                       const hasTemplate = (content.availableTemplates[item.subtype]?.length ?? 0) > 0;
