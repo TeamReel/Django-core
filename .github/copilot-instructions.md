@@ -1,111 +1,85 @@
-﻿# TeamReel — AI-Powered Content Platform for Sports Clubs
+﻿# TeamReel — AI Orchestrator
+
+> This file is the central router. It tells you **what TeamReel is**, **where to find things**, and **which agent to use**. It does NOT contain detailed conventions — those live in the instruction and prompt files below.
 
 ## What is TeamReel?
-A web application (desktop + mobile) that lets amateur sports clubs generate professional branded content (videos, visuals, line-ups, match graphics) in their own club style — automatically, using AI.
 
-**Core value:** Any team member can create match-day content in minutes, without design skills.
+An AI-powered content platform that lets amateur sports clubs generate professional branded content (videos, visuals, line-ups, match graphics) automatically. Any team member, no design skills needed.
 
 ## Tech Stack
+
 | Layer | Tech | Location |
 |-------|------|----------|
-| **Backend** | Django 5 + DRF | `src/` (Django apps) |
-| **Frontend** | React 18 + TypeScript + Vite | `demo/src/` |
-| **Database** | PostgreSQL | Railway (production) |
-| **Storage** | Amazon S3 | FileAsset model |
-| **Video** | FFmpeg pipeline | `src/video/` |
-| **AI** | OpenAI, Gemini, LangGraph | `src/generative/` |
-| **Deploy** | Railway (backend), Vercel (frontend) | |
+| Backend | Django 5 + DRF | `src/` |
+| Frontend | React 18 + TypeScript + Vite | `demo/src/` |
+| Database | PostgreSQL | Railway |
+| Storage | S3 | `src/files/` → FileAsset |
+| Video | FFmpeg | `src/video/` |
+| AI | OpenAI, Gemini, LangGraph | `src/generative/` |
+| Deploy | Railway (backend) · Vercel (frontend) | |
 
-## Data Hierarchy
+## Data Model
+
 ```
-Organisation (club/federation)
- └─ Project (club or team — nested via parent_project)
-     └─ BrandProfile (colors, logo, kits, tokens — inherits from parent)
-     └─ Period (season → competition — nested via parent_period)
-         └─ Activity (match, training, event)
-             └─ ActivityParticipation (members in activity + roles)
-     └─ Members (players, coaches, staff — with sport-specific metadata)
+Organisation → Project (nested) → BrandProfile + Period (nested) → Activity → Participation + Members
 ```
 
-## Content Generation Pipeline
-| App | Role |
-|-----|------|
-| `branding/` | BrandProfile + BrandAsset — club identity (logos, kits, colors, tokens) |
-| `content_generation/` | ContentTemplate + ContentField — defines what content types exist (pre-match, post-match, etc.) |
-| `generative/` | GenerationRequest + GenerationResult — AI pipeline (prompt → provider → output) |
-| `video/` | VideoJob + VideoPreset + VideoOverlay — FFmpeg transcoding, composition, platform exports |
-| `medialib/` | MediaItem + MediaTag — rich media library with search, tags, processing state |
-| `files/` | FileAsset — low-level S3 storage (org-scoped, mime type, soft-delete) |
+---
 
-## Media Architecture (4 layers)
-1. **Storage** — `FileAsset`: S3 path, size, mime type (knows nothing about business logic)
-2. **Rich Media** — `MediaItem`: processing state, search, tags, dimensions (project-scoped)
-3. **Linking** — `BrandAsset` / `MediaItemRelation`: semantic link to any business object (GenericFK)
-4. **Video Processing** — `VideoJob`: FFmpeg transcode, thumbnails, composition, platform exports
+## Agent Routing — Which Agent For What?
 
-## Key Backend Apps
-| App | Purpose |
-|-----|---------|
-| `organisations/` | Multi-tenancy: Organisation + Membership |
-| `projects/` | Club/Team hierarchy (nested Project via `parent_project`) |
-| `activities/` | Period (seasons/competitions) + Activity (matches/events) + Participation |
-| `sport_configuration/` | Sport → SportVariant → Position definitions |
-| `branding/` | Brand identity + asset management |
-| `workflows/` | State machine for approval flows |
-| `search/` | Hierarchical search + related results |
-| `navigation/` | Recents & Favorites (user navigation state) |
-| `credits/` | Credit system for AI generation |
-| `accounts/` | User auth (JWT) + profiles |
+### Auto-Attached Instructions (always active per file type)
 
-## Frontend Structure (`demo/src/`)
-| Folder | Purpose |
-|--------|---------|
-| `pages/` | Route-level pages (dashboard, projects, activities, identity, studio, etc.) |
-| `components/` | Shared UI: AppShell, Sidebar, MobileBottomNav, SearchBar, modals, wizards |
-| `providers/` | React context: Auth, Season, Theme, Organisation |
-| `adapters/` | API client layer (fetch wrappers with guardrails) |
-| `hooks/` | Shared hooks (useApi, useDebounce, etc.) |
-| `layouts/` | Page layout shells |
-| `styles/` | Global CSS + design tokens |
+| Instruction | Applies to | What it knows |
+|-------------|-----------|---------------|
+| `frontend.instructions.md` | `demo/src/**` | React/TS, tokens, a11y, mobile-first, UI primitives |
+| `backend.instructions.md` | `src/**` | Django models, serializers, viewsets, org-scoping |
+| `css.instructions.md` | `**/*.css` | Token system, focus-visible, reduced-motion |
+| `testing.instructions.md` | `tests/**` | pytest, Playwright, factories |
 
-**Mobile-first:** Components like `MobileBottomNav`, `MobileFilterSheet`, `SwipeableCard`, `QuickCreateFAB` ensure responsive mobile UX alongside desktop.
+### Task Agents (invoke with `#prompt:name`)
 
-## Code Conventions
-- **Python:** PEP8, type hints, clean imports. Django models use UUIDField PKs.
-- **TypeScript:** Strict mode, interfaces for API responses, no `any`.
-- **Database:** **NEVER DROP TABLES.** Use safe migrations (`update_or_create`). PostgreSQL features (SearchVector, JSONField, CTEs).
-- **API:** REST (DRF ViewSets), consistent pagination, org-scoped querysets.
-- **Git:** Conventional commits, push to `main`.
+| Agent | When to use |
+|-------|-------------|
+| `#prompt:debug` | Something is broken — systematic full-stack diagnosis |
+| `#prompt:ui-review` | Review a component for a11y, tokens, mobile, dark mode |
+| `#prompt:code-quality` | Scan for convention violations, `any` types, tech debt |
+| `#prompt:component` | Create a new component with all conventions baked in |
+| `#prompt:api-review` | Audit a DRF endpoint for security, N+1, correctness |
+| `#prompt:roadmap` | Execute a roadmap phase end-to-end (spec → code → commit) |
+| `#prompt:domain` | Look up any architecture/data/feature question |
+| `#prompt:performance` | Analyze and optimize bundle size, queries, rendering |
+| `#prompt:refactor` | Restructure code while preserving behavior and conventions |
+| `#prompt:migration` | Create safe Django migrations (never drop tables) |
 
-## Decision Protocol
-When choosing between approaches: present 2-3 options with trade-offs, recommend the one that best fits the 80/20 principle (core value first, avoid premature optimization).
+### Spec-Kitty (worktree-based feature lifecycle)
+Separate system in `.github/prompts/spec-kitty/`. For formal feature specification using git worktrees — not used in the direct-to-main workflow.
 
-## AI Agent System
+---
 
-### Instructions (auto-attached by file pattern)
-| Instruction | Applies to | Purpose |
-|-------------|-----------|---------|
-| `frontend.instructions.md` | `demo/src/**` | React/TS conventions, tokens, a11y, mobile-first |
-| `backend.instructions.md` | `src/**` | Django/DRF patterns, models, serializers, viewsets |
-| `css.instructions.md` | `**/*.css` | Token system, focus-visible, reduced-motion, mobile |
-| `testing.instructions.md` | `tests/**`, `demo/tests/**` | pytest + Playwright patterns |
+## Documentation Index
 
-### Prompts (invoke with `#prompt:name` in chat)
-| Prompt | Purpose |
-|--------|---------|
-| `#prompt:debug` | Full-stack debugging (Django + React) |
-| `#prompt:ui-review` | Accessibility, tokens, mobile, dark mode audit |
-| `#prompt:code-quality` | Convention compliance, tech debt scan |
-| `#prompt:component` | Scaffold new React component with full conventions |
-| `#prompt:api-review` | DRF endpoint security, performance, correctness review |
-| `#prompt:roadmap` | Execute frontend roadmap phase from spec to commit |
-| `#prompt:domain` | Quick domain knowledge lookup (architecture, models, features) |
-| `#prompt:performance` | Bundle analysis, query optimization, lazy loading |
+All domain documentation is mapped in: `documents/05-demo/ai-context-index.md`
 
-### Documentation Index
-See `documents/05-demo/ai-context-index.md` for a complete map of all domain documentation.
+Quick pointers:
+- **Architecture**: `documents/05-demo/features/application-architecture.md`
+- **Frontend design**: `documents/05-demo/frontend-design/` (6 docs)
+- **Data tables**: `documents/05-demo/data/tables.md`
+- **UX flows**: `documents/05-demo/features/ux-flows.md`
+- **Roadmap specs**: `documents/02-roadmap/`
+
+---
+
+## Working Conventions (summary)
+
+- **Git**: Conventional commits, push to `main`
+- **Database**: NEVER DROP TABLES. Safe migrations only.
+- **TypeScript**: Strict mode, no `any`, interfaces for API responses
+- **Python**: PEP8, type hints, docstrings
+- **CSS**: Design tokens only, no hardcoded values, mobile-first
+- **Decisions**: Present 2-3 options with trade-offs, recommend 80/20 winner
 
 ## Sources of Truth
-1. `documents/` — Active documentation + roadmap
-2. **Codebase** — The implementation
-3. **Railway/Production** — Real-world data state
+1. **Codebase** — the implementation
+2. `documents/` — active documentation + roadmap
+3. **Railway/Production** — real-world data state
