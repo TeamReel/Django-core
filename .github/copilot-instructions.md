@@ -80,6 +80,31 @@ Organisation (club/federation)
 ## Decision Protocol
 When choosing between approaches: present 2-3 options with trade-offs, recommend the one that best fits the 80/20 principle (core value first, avoid premature optimization).
 
+## AI Agent System
+
+### Instructions (auto-attached by file pattern)
+| Instruction | Applies to | Purpose |
+|-------------|-----------|---------|
+| `frontend.instructions.md` | `demo/src/**` | React/TS conventions, tokens, a11y, mobile-first |
+| `backend.instructions.md` | `src/**` | Django/DRF patterns, models, serializers, viewsets |
+| `css.instructions.md` | `**/*.css` | Token system, focus-visible, reduced-motion, mobile |
+| `testing.instructions.md` | `tests/**`, `demo/tests/**` | pytest + Playwright patterns |
+
+### Prompts (invoke with `#prompt:name` in chat)
+| Prompt | Purpose |
+|--------|---------|
+| `#prompt:debug` | Full-stack debugging (Django + React) |
+| `#prompt:ui-review` | Accessibility, tokens, mobile, dark mode audit |
+| `#prompt:code-quality` | Convention compliance, tech debt scan |
+| `#prompt:component` | Scaffold new React component with full conventions |
+| `#prompt:api-review` | DRF endpoint security, performance, correctness review |
+| `#prompt:roadmap` | Execute frontend roadmap phase from spec to commit |
+| `#prompt:domain` | Quick domain knowledge lookup (architecture, models, features) |
+| `#prompt:performance` | Bundle analysis, query optimization, lazy loading |
+
+### Documentation Index
+See `documents/05-demo/ai-context-index.md` for a complete map of all domain documentation.
+
 ## Sources of Truth
 1. `documents/` — Active documentation + roadmap
 2. **Codebase** — The implementation
