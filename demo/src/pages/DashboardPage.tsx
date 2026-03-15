@@ -12,7 +12,7 @@ import {
   CreditsTrendCard,
   OrgStatsCard,
   ContentProgressCard,
-  TeamReadinessCard,
+  MediaReadinessCard,
 } from '../components/dashboard';
 import { SmartActionsCard } from '../components/dashboard/SmartActionsCard';
 import { useUserRole } from '../components/PermissionGuards';
@@ -144,8 +144,8 @@ export default function DashboardPage() {
           {/* 4. Smart contextual quick actions */}
           <SmartActionsCard />
 
-          {/* 5. Team readiness (merged member progress + asset inventory) */}
-          {!isMemberLevel && <TeamReadinessCard />}
+          {/* 5. Media readiness (Club · Team · Members hierarchy) */}
+          {!isMemberLevel && <MediaReadinessCard />}
         </div>
       </div>
     </PullToRefresh>

@@ -10,6 +10,7 @@ export {
 export { RecentContentCard } from './RecentContentCard';
 export { ContentProgressCard } from './ContentProgressCard';
 export { TeamReadinessCard } from './TeamReadinessCard';
+export { MediaReadinessCard } from './MediaReadinessCard';
 export { SmartActionsCard } from './SmartActionsCard';
 
 // Legacy — kept for potential re-use during migration

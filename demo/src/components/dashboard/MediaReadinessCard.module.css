@@ -1,0 +1,505 @@
+/* MediaReadinessCard — Hierarchical media completeness (Club · Team · Members) */
+
+/* ── Card ─────────────────────────────────── */
+.card {
+  background: var(--app-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--app-border);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--duration-fast) var(--ease-default),
+              box-shadow var(--duration-fast) var(--ease-default);
+}
+
+@media (hover: hover) {
+  .card:hover { box-shadow: var(--shadow-sm); }
+}
+
+.card:active { transform: scale(0.98); }
+
+.card:focus-visible {
+  outline: 2px solid var(--app-primary, #6366f1);
+  outline-offset: 2px;
+}
+
+/* ── Header ───────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.headerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-indigo-500) 12%, transparent);
+  color: var(--color-indigo-500);
+  flex-shrink: 0;
+}
+
+.title {
+  flex: 1;
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--app-text);
+}
+
+.totalBadge {
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-indigo-500) 10%, transparent);
+  color: var(--color-indigo-500);
+}
+
+/* ── Tier row (card preview + sheet overview) ─ */
+.tierRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--app-surface-alt, var(--app-bg));
+  margin-bottom: var(--space-2);
+  cursor: pointer;
+  transition: background var(--duration-fast);
+  min-height: 44px;
+}
+
+@media (hover: hover) {
+  .tierRow:hover { background: var(--app-bg); }
+}
+
+.tierRow:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.tierIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.tierIconClub {
+  background: color-mix(in srgb, var(--color-amber-500) 12%, transparent);
+  color: var(--color-amber-500);
+}
+
+.tierIconTeam {
+  background: color-mix(in srgb, var(--color-blue-500) 12%, transparent);
+  color: var(--color-blue-500);
+}
+
+.tierIconMembers {
+  background: color-mix(in srgb, var(--color-green-500) 12%, transparent);
+  color: var(--color-green-500);
+}
+
+.tierInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.tierLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--app-text);
+  display: block;
+}
+
+.tierSub {
+  font-size: var(--text-xs);
+  color: var(--app-muted-text);
+  margin-top: 1px;
+}
+
+.tierRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.tierPercent {
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+}
+
+.tierPercentGood { color: var(--color-green-500); }
+.tierPercentWarn { color: var(--color-amber-500); }
+.tierPercentBad  { color: var(--color-red-500); }
+
+.tierChevron {
+  color: var(--app-muted-text);
+  display: flex;
+  align-items: center;
+}
+
+/* ── Progress bar ────────────────────────── */
+.progressTrack {
+  height: 6px;
+  background: var(--app-bg);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-top: var(--space-1);
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: var(--radius-sm);
+  transition: width var(--duration-slow) var(--ease-default);
+  min-width: 4px;
+}
+
+.progressFillGood { background: var(--color-green-400); }
+.progressFillWarn { background: var(--color-amber-400); }
+.progressFillBad  { background: var(--color-red-400); }
+
+/* ── Sheet content ───────────────────────── */
+.sheetContent {
+  padding: var(--space-2) 0;
+}
+
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-muted-text);
+  margin-bottom: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+/* ── Asset detail row (club/team detail sheets) ── */
+.assetRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--app-surface-alt, var(--app-bg));
+  margin-bottom: var(--space-2);
+  border: 1px solid transparent;
+  transition: border-color var(--duration-fast);
+}
+
+.assetRow[data-present='true'] {
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.assetRow[data-present='false'] {
+  border-color: rgba(239, 68, 68, 0.15);
+  opacity: 0.75;
+}
+
+.assetThumb {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--app-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.assetThumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.assetThumbPlaceholder {
+  color: var(--app-muted-text);
+  opacity: 0.4;
+}
+
+.assetInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.assetLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--app-text);
+  display: block;
+}
+
+.assetVariant {
+  font-size: var(--text-xs);
+  color: var(--app-muted-text);
+  margin-top: 1px;
+}
+
+.assetCheck {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.assetCheckOk  { color: var(--color-green-400); }
+.assetCheckMissing { color: var(--app-muted-text); opacity: 0.4; }
+
+/* ── Member row (members list) ─────────── */
+.memberRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-1);
+  cursor: pointer;
+  transition: background var(--duration-fast);
+  min-height: 44px;
+}
+
+@media (hover: hover) {
+  .memberRow:hover { background: var(--app-bg); }
+}
+
+.memberAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--app-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarInitial {
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  color: var(--app-muted-text);
+}
+
+.memberInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.memberName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--app-text);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.memberProgressTrack {
+  height: 4px;
+  border-radius: var(--radius-sm);
+  background: var(--app-bg);
+  overflow: hidden;
+  margin-top: var(--space-1);
+}
+
+.memberProgressFill {
+  height: 100%;
+  border-radius: var(--radius-sm);
+  background: var(--app-primary);
+  transition: width var(--duration-slow) var(--ease-default);
+  min-width: 4px;
+}
+
+.memberProgressComplete {
+  background: var(--color-green-400);
+}
+
+.memberMeta {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--app-muted-text);
+  white-space: nowrap;
+  min-width: 28px;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.memberMetaComplete {
+  color: var(--color-green-400);
+}
+
+/* ── Member detail (individual member sheet) ── */
+.memberDetailHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0 var(--space-4);
+}
+
+.memberDetailAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--app-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.memberDetailAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.memberDetailInitial {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--app-muted-text);
+}
+
+.memberDetailName {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--app-text);
+}
+
+.memberDetailSub {
+  font-size: var(--text-xs);
+  color: var(--app-muted-text);
+}
+
+/* ── Summary bar ────────────────────────── */
+.summaryBar {
+  margin-top: var(--space-3);
+}
+
+.summaryLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  margin-bottom: var(--space-1);
+}
+
+.summaryText {
+  font-weight: var(--font-semibold);
+  color: var(--app-text);
+}
+
+.summaryPercent {
+  font-weight: var(--font-bold);
+  color: var(--app-primary);
+}
+
+/* ── Callout (missing items) ────────────── */
+.callout {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--app-text);
+  margin-top: var(--space-3);
+  cursor: pointer;
+  transition: background var(--duration-fast);
+}
+
+.calloutWarn {
+  background: color-mix(in srgb, var(--color-amber-400) 8%, var(--app-surface));
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.calloutAction {
+  background: color-mix(in srgb, var(--app-primary) 8%, var(--app-surface));
+  border-color: color-mix(in srgb, var(--app-primary) 20%, transparent);
+}
+
+@media (hover: hover) {
+  .calloutWarn:hover {
+    background: color-mix(in srgb, var(--color-amber-400) 14%, var(--app-surface));
+  }
+  .calloutAction:hover {
+    background: color-mix(in srgb, var(--app-primary) 14%, var(--app-surface));
+  }
+}
+
+.calloutIcon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.calloutIconWarn { color: var(--color-amber-400); }
+.calloutIconAction { color: var(--app-primary); }
+
+.calloutText { flex: 1; }
+
+.calloutArrow {
+  display: flex;
+  align-items: center;
+  color: var(--app-muted-text);
+}
+
+/* ── Type dots (member detail media types) ── */
+.typeGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* ── Loading shimmer ────────────────────── */
+.shimmer {
+  height: 16px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, var(--app-bg) 25%, var(--app-surface) 50%, var(--app-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+  margin-bottom: var(--space-2);
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.shimmerWide   { width: 70%; }
+.shimmerHalf   { width: 50%; }
+.shimmerNarrow { width: 40%; }
+
+/* ── Reduced motion ──────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; }
+  .card:active { transform: none; }
+  .progressFill,
+  .memberProgressFill { transition: none; }
+  .shimmer { animation: none; }
+  .tierRow { transition: none; }
+}
