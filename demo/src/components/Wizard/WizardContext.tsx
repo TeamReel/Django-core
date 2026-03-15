@@ -19,6 +19,8 @@ export interface WizardStepConfig {
   skippable?: boolean;
   /** Steps that must be completed before this one */
   requires?: string[];
+  /** Whether this step is hidden from progress count (system/processing steps) */
+  hidden?: boolean;
 }
 
 /** Navigation direction for step transition animations */
@@ -77,6 +79,10 @@ export interface WizardContextValue extends WizardState, WizardActions {
   isLastStep: boolean;
   /** Progress percentage (0-100) */
   progress: number;
+  /** Total user-visible steps (excludes hidden/system steps) */
+  userStepCount: number;
+  /** Current user-visible step index (0-based) */
+  userStepIndex: number;
   /** Whether a step is completed */
   isCompleted: (stepId: string) => boolean;
   /** Whether a step is available (requirements met) */
@@ -132,6 +138,12 @@ export function WizardProvider({
   const isFirstStep = currentStepIndex === 0;
   const isLastStep = currentStepIndex === steps.length - 1;
   const progress = steps.length > 1 ? (currentStepIndex / (steps.length - 1)) * 100 : 100;
+
+  // User-visible step count (excludes hidden/system steps)
+  const visibleSteps = steps.filter(s => !s.hidden);
+  const visibleIdx = visibleSteps.findIndex(s => s.id === currentStepId);
+  const userStepCount = visibleSteps.length;
+  const userStepIndex = visibleIdx >= 0 ? visibleIdx : currentStepIndex;
 
   // Check if step requirements are met
   const isAvailable = useCallback((stepId: string): boolean => {
@@ -221,6 +233,8 @@ export function WizardProvider({
     isFirstStep,
     isLastStep,
     progress,
+    userStepCount,
+    userStepIndex,
     // Checks
     isCompleted,
     isAvailable,
@@ -238,7 +252,7 @@ export function WizardProvider({
     close,
   }), [
     currentStepId, currentStepIndex, steps, completedSteps, data, isSubmitting, error, direction,
-    currentStep, isFirstStep, isLastStep, progress,
+    currentStep, isFirstStep, isLastStep, progress, userStepCount, userStepIndex,
     isCompleted, isAvailable,
     next, back, goTo, complete, markCompleted, setData, updateData, setSubmitting, setError, reset, close,
   ]);

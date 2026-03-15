@@ -45,6 +45,8 @@ export function WizardShell({
     steps,
     isFirstStep,
     progress,
+    userStepCount,
+    userStepIndex,
     back,
     close,
   } = useWizard();
@@ -70,8 +72,8 @@ export function WizardShell({
   // Determine if back button should show
   const showBack = currentStep.showBack !== false && !isFirstStep;
 
-  // Screen reader step announcement (e.g. "Stap 2 van 4: Details")
-  const stepAnnouncement = `Stap ${currentStepIndex + 1} van ${steps.length}: ${currentStep.title}`;
+  // Screen reader step announcement — uses visible step count (excludes system steps)
+  const stepAnnouncement = `Stap ${userStepIndex + 1} van ${userStepCount}: ${currentStep.title}`;
 
   return (
     <BottomSheet

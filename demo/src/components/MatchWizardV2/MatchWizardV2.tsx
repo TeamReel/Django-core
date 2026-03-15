@@ -32,10 +32,10 @@ const WIZARD_STEPS: WizardStepConfig[] = [
   { id: 'lineup', title: 'Opstelling' },
   { id: 'options', title: 'Opties' },
   { id: 'review', title: 'Bevestig generatie' },
-  { id: 'generating', title: 'Bezig met genereren...', showBack: false },
-  { id: 'video_queued', title: 'In de wachtrij', showBack: false },
-  { id: 'success', title: 'Content klaar', showBack: false },
-  { id: 'error', title: 'Fout opgetreden' },
+  { id: 'generating', title: 'Bezig met genereren...', showBack: false, hidden: true },
+  { id: 'video_queued', title: 'In de wachtrij', showBack: false, hidden: true },
+  { id: 'success', title: 'Content klaar', showBack: false, hidden: true },
+  { id: 'error', title: 'Fout opgetreden', hidden: true },
 ];
 
 // ─── Props ────────────────────────────────────────────────
