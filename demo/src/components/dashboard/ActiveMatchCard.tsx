@@ -9,7 +9,8 @@
  * with match overview + quick actions instead of navigating away.
  * Match links use vanity URLs built from the active hierarchy context.
  */
-import React, { memo, useEffect, useState, useMemo, useCallback } from 'react';
+import React, { memo, useEffect, useState, useMemo, useCallback, lazy, Suspense } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
   Zap, ChevronRight, MapPin, Clock, CheckCircle2,
@@ -25,8 +26,14 @@ import { slugify } from '../../utils/periodPath';
 import { NavigationSheet } from '../ui/NavigationSheet';
 import { LineupSheet } from './LineupSheet';
 import { ContentSheet } from './ContentSheet';
+import { useContentSheet } from './useContentSheet';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
+import type { ContentTemplate } from '../../pages/identity/ContentGenerationModal';
 import styles from './ActiveMatchCard.module.css';
+
+const ContentGenerationModal = lazy(() =>
+  import('../../pages/identity/ContentGenerationModal'),
+);
 
 /* ── Types ──────────────────────────────────────────────────────────── */
 
@@ -94,6 +101,34 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [lineupSheetOpen, setLineupSheetOpen] = useState(false);
   const [contentSheetOpen, setContentSheetOpen] = useState(false);
+
+  // Content sheet hook for template data + generation modal
+  // context-switcher Organisation type doesn't include sport, but runtime data does
+  const orgSport = (context.organisation as any)?.sport as
+    | { id: string | number; name?: string; slug?: string; parent_sport_id?: number | null }
+    | null
+    | undefined;
+  const content = useContentSheet(match, orgSport, match?.project?.id);
+
+  // Quick-generate modal state (opened from phase item rows in match sheet)
+  const [quickGenOpen, setQuickGenOpen] = useState(false);
+  const [quickGenTemplate, setQuickGenTemplate] = useState<ContentTemplate | null>(null);
+  const [quickGenLabel, setQuickGenLabel] = useState('');
+
+  const handleQuickGenerate = useCallback((subtype: string, label: string) => {
+    // Find the first available template matching this subtype
+    const templates = content.availableTemplates[subtype];
+    const template = templates?.[0] ?? null;
+    setQuickGenTemplate(template);
+    setQuickGenLabel(label);
+    setQuickGenOpen(true);
+  }, [content.availableTemplates]);
+
+  const closeQuickGen = useCallback(() => {
+    setQuickGenOpen(false);
+    setQuickGenTemplate(null);
+    setQuickGenLabel('');
+  }, []);
 
   // Sync query counts → local state (callback overrides take precedence until next refetch)
   useEffect(() => {
@@ -306,7 +341,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
               <ChevronRight size={16} />
             </button>
 
-            {/* ── Content phase blocks ── */}
+            {/* ── Content phase blocks with item rows ── */}
             {([
               { key: 'pre_match' as const, phase: CONTENT_TYPES.pre_match },
               { key: 'during_match' as const, phase: CONTENT_TYPES.during_match },
@@ -321,33 +356,75 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
               const allDone = doneCount === total;
 
               return (
-                <button
-                  key={key}
-                  className={`${styles.sheetAction} ${allDone ? styles.sheetActionDone : ''}`}
-                  onClick={() => { setSheetOpen(false); setContentSheetOpen(true); }}
-                >
-                  {allDone ? (
-                    <CheckCircle2 size={18} className={styles.iconDone} />
-                  ) : doneCount > 0 ? (
-                    <FileImage size={18} className={styles.iconPartial} />
-                  ) : (
-                    <FileImage size={18} />
-                  )}
-                  <div className={styles.sheetActionText}>
-                    <span className={styles.sheetActionLabel}>{phase.label}</span>
-                    <div className={styles.phaseProgress}>
-                      <div className={styles.phaseProgressTrack}>
-                        <div
-                          className={styles.phaseProgressFill}
-                          style={{ width: `${pct}%` }}
-                          data-done={allDone ? 'true' : 'false'}
-                        />
-                      </div>
-                      <span className={styles.phaseProgressLabel}>{doneCount}/{total}</span>
+                <div key={key} className={styles.phaseBlock}>
+                  {/* Phase header with progress */}
+                  <div className={styles.phaseHeader}>
+                    <div className={styles.phaseHeaderLeft}>
+                      {allDone ? (
+                        <CheckCircle2 size={16} className={styles.iconDone} />
+                      ) : (
+                        <FileImage size={16} />
+                      )}
+                      <span className={styles.phaseTitle}>{phase.label}</span>
                     </div>
+                    <span className={styles.phaseCount}>{doneCount}/{total}</span>
                   </div>
-                  <ChevronRight size={16} />
-                </button>
+                  <div className={styles.phaseProgressTrack}>
+                    <div
+                      className={styles.phaseProgressFill}
+                      style={{ width: `${pct}%` }}
+                      data-done={allDone ? 'true' : 'false'}
+                    />
+                  </div>
+
+                  {/* Individual content items */}
+                  <div className={styles.phaseItems}>
+                    {phase.items.map((item) => {
+                      const isDone = contentDoneSubtypes.includes(item.subtype);
+                      const hasTemplate = (content.availableTemplates[item.subtype]?.length ?? 0) > 0;
+
+                      return (
+                        <button
+                          key={item.id}
+                          className={styles.phaseItem}
+                          onClick={() => {
+                            if (isDone) {
+                              // Open content sheet to view existing
+                              setSheetOpen(false);
+                              setContentSheetOpen(true);
+                            } else if (hasTemplate) {
+                              // Quick-generate directly
+                              handleQuickGenerate(item.subtype, item.label);
+                            } else {
+                              // Fallback: open full content sheet
+                              setSheetOpen(false);
+                              setContentSheetOpen(true);
+                            }
+                          }}
+                          aria-label={`${item.label}: ${isDone ? 'bekijk' : 'maak aan'}`}
+                        >
+                          <span className={styles.phaseItemIcon}>
+                            {isDone ? (
+                              <CheckCircle2 size={14} className={styles.iconDone} />
+                            ) : (
+                              <Circle size={14} />
+                            )}
+                          </span>
+                          <span className={`${styles.phaseItemLabel} ${isDone ? styles.phaseItemDone : ''}`}>
+                            {item.label}
+                          </span>
+                          {isDone ? (
+                            <span className={styles.phaseItemAction} data-variant="done">Bekijk ↗</span>
+                          ) : hasTemplate ? (
+                            <span className={styles.phaseItemAction} data-variant="create">Maak →</span>
+                          ) : (
+                            <span className={styles.phaseItemAction} data-variant="disabled">—</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
 
@@ -393,6 +470,43 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
           setTimeout(() => setBadgeBump(null), 400);
         }}
       />
+
+      {/* ── Quick-generate modal (portal — stacks above match sheet) ── */}
+      {quickGenOpen &&
+        createPortal(
+          <Suspense fallback={null}>
+            <ContentGenerationModal
+              isOpen={quickGenOpen}
+              onClose={closeQuickGen}
+              onGenerated={() => {
+                closeQuickGen();
+                void content.refreshMedia().then(() => {
+                  setContentCount((prev) => prev + 1);
+                  setBadgeBump('content');
+                  setTimeout(() => setBadgeBump(null), 400);
+                });
+              }}
+              matchData={match ? {
+                id: match.id,
+                title: match.title,
+                project: { id: match.project.id, name: match.project.name },
+                opponent_project: match.opponent_project
+                  ? { id: '', name: match.opponent_project.name }
+                  : undefined,
+                start_time: match.start_time,
+                location: match.location,
+                metadata: match.metadata,
+              } : null}
+              organisationSport={orgSport
+                ? { id: orgSport.id, name: orgSport.name ?? '', slug: orgSport.slug }
+                : undefined}
+              organisationId={match?.organisation?.id}
+              template={quickGenTemplate}
+              contentTypeLabel={quickGenLabel}
+            />
+          </Suspense>,
+          document.body,
+        )}
     </>
   );
 });
