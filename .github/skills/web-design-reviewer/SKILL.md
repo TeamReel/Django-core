@@ -10,7 +10,7 @@ Visually inspect the running TeamReel site through Playwright MCP to find layout
 
 ## Prerequisites
 
-1. **Dev server running**: `http://localhost:5173`
+1. **Target URL**: `https://demo.teamreel.app` (live demo) or `http://localhost:5173` (local dev server)
 2. **Playwright MCP available** (configured in `.vscode/mcp.json`)
 
 ## Review Workflow

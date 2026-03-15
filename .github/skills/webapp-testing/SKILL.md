@@ -10,21 +10,24 @@ Test the running TeamReel app by interacting with it through a real browser via 
 
 ## Prerequisites
 
-1. **Dev server must be running**: `cd demo && npm run dev` → `http://localhost:5173`
+1. **Target URL**: `https://demo.teamreel.app` (live demo) or `http://localhost:5173` (local dev server via `cd demo && npm run dev`)
 2. **Playwright MCP must be available** (configured in `.vscode/mcp.json`)
 
 ## Testing Workflow
 
-### Step 1: Verify the App is Running
+### Step 1: Verify the App is Accessible
 ```bash
-curl -s -o /dev/null -w "%{http_code}" http://localhost:5173
+# Check live demo
+curl -s -o /dev/null -w "%{http_code}" https://demo.teamreel.app
 # Should return 200
+
+# Or check local dev server
+curl -s -o /dev/null -w "%{http_code}" http://localhost:5173
 ```
 
-If not running:
+If testing locally and dev server not running:
 ```bash
 cd demo && npm run dev &
-# Wait for server to start
 sleep 5
 ```
 
@@ -75,7 +78,7 @@ Take screenshots for:
 
 | Flow | URL | What to verify |
 |------|-----|---------------|
-| Dashboard | `/` | Cards render, stats load, navigation works |
+| Dashboard | `/dashboard` | Cards render, stats load, navigation works |
 | Squad | `/squad` | Member list, filters, search, member detail |
 | Activities | `/activities` | Activity list, period selector, participation |
 | Match Day | `/match-day` | Line-up, readiness, countdown |

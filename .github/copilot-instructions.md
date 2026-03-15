@@ -17,6 +17,7 @@ AI-powered content platform for amateur sports clubs — auto-generates branded 
 | Video | FFmpeg | `src/video/` |
 | AI | OpenAI, Gemini, LangGraph | `src/generative/` |
 | Deploy | Railway (backend) · Vercel (frontend) | |
+| Live Demo | `https://demo.teamreel.app` | Playwright MCP target |
 
 ## Data Model
 
@@ -51,6 +52,7 @@ Pick from the agent dropdown or mention by name:
 | **Playwright Tester** | E2E testing via live browser | Read + Terminal + Playwright MCP | → Developer (fix) |
 | **PostgreSQL DBA** | Query optimization, indexing, schema | Read + Terminal (Railway) | → Developer (apply) |
 | **Ops & Deploy** | Railway logs, deploys, monitoring | Read + Terminal (Railway CLI) | → Developer / DBA |
+| **Refactoring** | Systematic code restructuring | Read + Edit + Terminal | → Reviewer (verify) |
 | **Documentation** | Generate & sync domain docs | Read + Edit | → Reviewer (verify) |
 
 ### 3. Skills (on-demand capabilities, invoked by relevance or `/skill-name`)
@@ -110,6 +112,7 @@ Worktree-based feature lifecycle in `.github/prompts/spec-kitty/`. For formal sp
 | Optimize database queries | **PostgreSQL DBA** agent |
 | Check Railway logs/deploys | **Ops & Deploy** agent |
 | Write/update documentation | **Documentation** agent |
+| Refactor / restructure code | **Refactoring** agent or `#prompt:refactor` |
 | Scaffold a component | `/frontend-component` skill |
 | Create an API endpoint | `/api-endpoint` skill |
 | Check migration safety | `/migration-safety` skill |

@@ -31,7 +31,7 @@ You test the running TeamReel application by navigating it like a real user. You
 ## Your Capabilities
 
 ### Live Site Exploration
-- Navigate to `http://localhost:5173` (Vite dev server)
+- Navigate to `https://demo.teamreel.app` (live demo) or `http://localhost:5173` (local dev)
 - Click buttons, fill forms, navigate between pages
 - Take screenshots at each step
 - Capture console errors and network failures
@@ -58,7 +58,7 @@ You test the running TeamReel application by navigating it like a real user. You
 | Flow | Entry Point | Steps |
 |------|------------|-------|
 | Login | `/login` | Enter credentials → redirect to dashboard |
-| Dashboard | `/` | All cards render, navigation works |
+| Dashboard | `/dashboard` | All cards render, navigation works |
 | Squad view | `/squad` | Members list, filters, search |
 | Activity feed | `/activities` | Activity cards, period switching |
 | Match day | `/match-day` | Line-up, countdown, readiness |

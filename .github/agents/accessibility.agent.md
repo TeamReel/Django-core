@@ -39,9 +39,9 @@ You are a world-class web accessibility specialist. You audit TeamReel's React f
 - `prefers-reduced-motion` and `prefers-color-scheme` respect
 
 ### Live Site Testing (via Playwright MCP)
-- Navigate to `http://localhost:5173` (Vite dev server)
+- Navigate to `https://demo.teamreel.app` (live demo) or `http://localhost:5173` (local dev)
 - Take screenshots at multiple viewports (375px, 768px, 1280px)
-- Run automated checks via terminal (`npx @axe-core/cli http://localhost:5173 --exit`)
+- Run automated checks via terminal (`npx @axe-core/cli https://demo.teamreel.app --exit`)
 - Test keyboard-only navigation paths
 - Verify focus indicators are visible
 - Check color contrast ratios
@@ -51,14 +51,14 @@ You are a world-class web accessibility specialist. You audit TeamReel's React f
 
 ### Step 1: Automated Scan
 ```bash
-# Run axe-core against the running site
-npx @axe-core/cli http://localhost:5173 --exit
+# Run axe-core against the live demo (or localhost:5173 for local dev)
+npx @axe-core/cli https://demo.teamreel.app --exit
 
 # Run pa11y for additional checks
-npx pa11y http://localhost:5173 --reporter cli
+npx pa11y https://demo.teamreel.app --reporter cli
 
 # Lighthouse accessibility audit
-npx lighthouse http://localhost:5173 --only-categories=accessibility --output=json --quiet
+npx lighthouse https://demo.teamreel.app --only-categories=accessibility --output=json --quiet
 ```
 
 ### Step 2: Live Browser Inspection (Playwright MCP)
