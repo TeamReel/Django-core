@@ -4,18 +4,22 @@
  * Tap a match → opens the reusable MatchSheet (same as ActiveMatchCard).
  * Each row shows date, title, location, and a readiness progress bar.
  */
-import React, { memo, useState, useCallback, useMemo } from 'react';
+import React, { memo, useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CalendarDays, ChevronRight, MapPin, Calendar } from 'lucide-react';
+import { Spinner } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { formatRelativeTime } from '../../utils/relativeTime';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import { useUpcomingMatches } from '../../hooks/useUpcomingMatches';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
 import { useMatchSheet } from './useMatchSheet';
-import { MatchSheet } from './MatchSheet';
-import { LineupSheet } from './LineupSheet';
-import { ContentSheet } from './ContentSheet';
+
+const MatchSheet = lazy(() => import('./MatchSheet').then(m => ({ default: m.MatchSheet })));
+const LineupSheet = lazy(() => import('./LineupSheet').then(m => ({ default: m.LineupSheet })));
+const ContentSheet = lazy(() => import('./ContentSheet').then(m => ({ default: m.ContentSheet })));
+
+const SheetFallback = () => <div style={{ padding: 24, textAlign: 'center' }}><Spinner size="md" /></div>;
 import { ReadinessRing } from './ReadinessRing';
 import { buildMatchVanityUrl, buildMatchVanityUrlWithTab } from './ActiveMatchCard';
 import type { Match } from './ActiveMatchCard';
@@ -109,7 +113,7 @@ export const UpcomingMatchesCard = memo(function UpcomingMatchesCard() {
 
       {/* Reusable MatchSheet — opens when a match is tapped */}
       {selectedMatch && (
-        <>
+        <Suspense fallback={<SheetFallback />}>
           <MatchSheet
             match={selectedMatch}
             sheet={sheet}
@@ -130,7 +134,7 @@ export const UpcomingMatchesCard = memo(function UpcomingMatchesCard() {
             organisationId={selectedMatch?.organisation?.id}
             onContentGenerated={sheet.handleContentGenerated}
           />
-        </>
+        </Suspense>
       )}
     </>
   );
@@ -166,6 +170,7 @@ const MatchRow: React.FC<MatchRowProps> = memo(function MatchRow({ match, onSele
     <div
       className={styles.matchRow}
       onClick={() => onSelect(match)}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(match); } }}
       role="button"
       tabIndex={0}
     >

@@ -8,11 +8,26 @@
   margin-bottom: var(--space-3);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  transition: transform var(--duration-fast, 0.1s) var(--ease-default, ease),
+              box-shadow var(--duration-fast, 0.15s) var(--ease-default, ease);
 }
 
 .card:active {
   transform: scale(0.98);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--app-primary, #6366f1);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+  .card:active {
+    transform: none;
+  }
 }
 
 @media (hover: hover) {

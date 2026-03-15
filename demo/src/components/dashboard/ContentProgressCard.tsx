@@ -331,6 +331,7 @@ export const ContentProgressCard: React.FC = () => {
       <div
         className={styles.card}
         onClick={() => !loading && (categories.length > 0 || sections.length > 0) && setSheetOpen(true)}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); !loading && (categories.length > 0 || sections.length > 0) && setSheetOpen(true); } }}
         role="button"
         tabIndex={0}
         aria-haspopup="dialog"

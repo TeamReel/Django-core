@@ -287,6 +287,7 @@ export const TeamReadinessCard: React.FC = () => {
       <div
         className={styles.card}
         onClick={() => !loading && setSheetOpen(true)}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); !loading && setSheetOpen(true); } }}
         role="button"
         tabIndex={0}
         aria-haspopup="dialog"

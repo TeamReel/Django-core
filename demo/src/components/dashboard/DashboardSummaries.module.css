@@ -11,7 +11,7 @@
   padding: var(--space-4);
   cursor: pointer;
   transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
-  min-height: 64px;
+  min-height: 72px;
 }
 
 @media (hover: hover) {
@@ -23,6 +23,20 @@
 
 .summaryCard:active {
   transform: scale(0.98);
+}
+
+.summaryCard:focus-visible {
+  outline: 2px solid var(--app-primary, #6366f1);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summaryCard {
+    transition: none;
+  }
+  .summaryCard:active {
+    transform: none;
+  }
 }
 
 .alertCard {

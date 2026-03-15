@@ -9,7 +9,8 @@
  * with match overview + quick actions instead of navigating away.
  * Match links use vanity URLs built from the active hierarchy context.
  */
-import React, { memo, useMemo, useCallback } from 'react';
+import React, { memo, useMemo, useCallback, lazy, Suspense } from 'react';
+import { Spinner } from '@django-core/design-system';
 import { useNavigate } from 'react-router-dom';
 import {
   MapPin, Clock, CheckCircle2, Circle, Users,
@@ -21,10 +22,13 @@ import { useAppSelection } from '../../hooks/useAppSelection';
 import { useClosestMatch } from '../../hooks/useClosestMatch';
 import { slugify } from '../../utils/periodPath';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
-import { LineupSheet } from './LineupSheet';
-import { ContentSheet } from './ContentSheet';
 import { useMatchSheet } from './useMatchSheet';
-import { MatchSheet } from './MatchSheet';
+
+const MatchSheet = lazy(() => import('./MatchSheet').then(m => ({ default: m.MatchSheet })));
+const LineupSheet = lazy(() => import('./LineupSheet').then(m => ({ default: m.LineupSheet })));
+const ContentSheet = lazy(() => import('./ContentSheet').then(m => ({ default: m.ContentSheet })));
+
+const SheetFallback = () => <div style={{ padding: 24, textAlign: 'center' }}><Spinner size="md" /></div>;
 import { ReadinessRing } from './ReadinessRing';
 import styles from './ActiveMatchCard.module.css';
 
@@ -135,8 +139,11 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
       <div
         className={`${styles.card} ${styles[sheet.matchState || '']}`}
         onClick={sheet.openSheet}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sheet.openSheet(); } }}
         role="button"
         tabIndex={0}
+        aria-haspopup="dialog"
+        aria-expanded={sheet.sheetOpen}
       >
         {/* Status badge + readiness ring */}
         <div className={styles.topRow}>
@@ -210,14 +217,18 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
         </div>
       </div>
 
-      {/* ── Match Sheet (reusable component — H2) ───────────────── */}
+      {/* ── Match Sheet (reusable component — H2, lazy H5) ──────── */}
+      <Suspense fallback={<SheetFallback />}>
       <MatchSheet
         match={match}
         sheet={sheet}
         onNavigateToMatch={handleNavigateToMatch}
       />
 
+      </Suspense>
+
       {/* ── Lineup Sheet (inline editing from dashboard) ──────── */}
+      <Suspense fallback={<SheetFallback />}>
       <LineupSheet
         isOpen={sheet.lineupSheetOpen}
         onClose={sheet.closeLineupSheet}
@@ -226,7 +237,10 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
         onLineupSaved={sheet.handleLineupSaved}
       />
 
+      </Suspense>
+
       {/* ── Content Sheet (inline content from dashboard) ─────── */}
+      <Suspense fallback={<SheetFallback />}>
       <ContentSheet
         isOpen={sheet.contentSheetOpen}
         onClose={sheet.closeContentSheet}
@@ -235,6 +249,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
         organisationId={match?.organisation?.id}
         onContentGenerated={sheet.handleContentGenerated}
       />
+      </Suspense>
     </>
   );
 });

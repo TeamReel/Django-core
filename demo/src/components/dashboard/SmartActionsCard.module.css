@@ -55,6 +55,20 @@
   transform: scale(0.99);
 }
 
+.actionItem:focus-visible {
+  outline: 2px solid var(--app-primary, #6366f1);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actionItem {
+    transition: none;
+  }
+  .actionItem:active {
+    transform: none;
+  }
+}
+
 /* ── Themed color variants ── */
 /* Each variant sets --_accent used by .actionIcon */
 

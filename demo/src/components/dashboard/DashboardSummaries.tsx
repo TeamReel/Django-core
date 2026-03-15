@@ -51,6 +51,7 @@ export const SquadReadinessCard: React.FC = () => {
       <div
         className={styles.summaryCard}
         onClick={() => setSheetOpen(true)}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSheetOpen(true); } }}
         role="button"
         tabIndex={0}
         aria-haspopup="dialog"
@@ -139,6 +140,7 @@ export const ContentStatsCard: React.FC = () => {
     <div
       className={styles.summaryCard}
       onClick={() => navigate('/content')}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/content'); } }}
       role="button"
       tabIndex={0}
     >
@@ -257,6 +259,7 @@ export const AIQueueCard: React.FC = () => {
     <div
       className={styles.summaryCard}
       onClick={() => setSheetOpen(true)}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSheetOpen(true); } }}
       role="button"
       tabIndex={0}
     >
@@ -415,6 +418,7 @@ export const OrgStatsCard: React.FC = () => {
       <div
         className={styles.summaryCard}
         onClick={() => setSheetOpen(true)}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSheetOpen(true); } }}
         role="button"
         tabIndex={0}
         aria-haspopup="dialog"

@@ -19,6 +19,21 @@
 .card:active {
   transform: scale(0.98);
 }
+
+.card:focus-visible {
+  outline: 2px solid var(--app-primary, #6366f1);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+  .card:active {
+    transform: none;
+  }
+}
+
 .card.live {
   border-color: var(--color-error, #ef4444);
   box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2), 0 2px 12px rgba(239, 68, 68, 0.1);
