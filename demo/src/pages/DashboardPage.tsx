@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
 import {
   ActiveMatchCard,
+  UpcomingMatchesCard,
   SquadReadinessCard,
   AIQueueCard,
   CreditsTrendCard,
@@ -106,6 +107,9 @@ export default function DashboardPage() {
 
             {/* 1. Active Match — the match closest to now */}
             <ActiveMatchCard />
+
+            {/* 1b. Upcoming Matches — next 5 matches with readiness */}
+            <UpcomingMatchesCard />
 
             {/* 2. Compact status row — only unique-value cards */}
             <div className={styles.summaryGrid}>

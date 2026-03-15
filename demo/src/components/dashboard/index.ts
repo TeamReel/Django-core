@@ -1,4 +1,5 @@
 export { ActiveMatchCard } from './ActiveMatchCard';
+export { UpcomingMatchesCard } from './UpcomingMatchesCard';
 export {
   SquadReadinessCard,
   ContentStatsCard,
