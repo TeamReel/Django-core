@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Zap, ChevronRight, MapPin, Clock, CheckCircle2,
   Circle, Trophy, Sparkles, Calendar, Users, ExternalLink,
-  FileImage,
+  FileImage, AlertCircle,
 } from 'lucide-react';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
@@ -25,6 +25,7 @@ import { slugify } from '../../utils/periodPath';
 import { NavigationSheet } from '../ui/NavigationSheet';
 import { LineupSheet } from './LineupSheet';
 import { ContentSheet } from './ContentSheet';
+import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
 import styles from './ActiveMatchCard.module.css';
 
 /* ── Types ──────────────────────────────────────────────────────────── */
@@ -86,6 +87,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
 
   // Local state for counts (overridable by sheet callbacks)
   const [contentCount, setContentCount] = useState(0);
+  const [contentDoneSubtypes, setContentDoneSubtypes] = useState<string[]>([]);
   const [lineupCount, setLineupCount] = useState(0);
   const [lineupFormationState, setLineupFormationState] = useState<string | undefined>(undefined);
   const [badgeBump, setBadgeBump] = useState<'lineup' | 'content' | null>(null);
@@ -97,6 +99,7 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   useEffect(() => {
     if (matchData) {
       setContentCount(matchData.contentCount);
+      setContentDoneSubtypes(matchData.contentDoneSubtypes);
       setLineupCount(matchData.lineupCount);
       if (matchData.lineupFormation) setLineupFormationState(matchData.lineupFormation);
     }
@@ -281,10 +284,15 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
             )}
           </div>
 
-          {/* Quick actions */}
+          {/* Quick actions — Lineup + Content phases + Navigate */}
           <div className={styles.sheetActions}>
-            <button className={styles.sheetAction} onClick={() => { setSheetOpen(false); setLineupSheetOpen(true); }}>
-              <Users size={18} />
+            {/* ── Lineup ── */}
+            <button className={`${styles.sheetAction} ${hasLineup ? styles.sheetActionDone : ''}`} onClick={() => { setSheetOpen(false); setLineupSheetOpen(true); }}>
+              {hasLineup ? (
+                <CheckCircle2 size={18} className={styles.iconDone} />
+              ) : (
+                <Users size={18} />
+              )}
               <div className={styles.sheetActionText}>
                 <span className={styles.sheetActionLabel}>Opstelling</span>
                 <span className={styles.sheetActionSub}>
@@ -294,19 +302,54 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
                   }
                 </span>
               </div>
+              {hasLineup && <span className={styles.readyBadge}>Klaar</span>}
               <ChevronRight size={16} />
             </button>
 
-            <button className={styles.sheetAction} onClick={() => { setSheetOpen(false); setContentSheetOpen(true); }}>
-              <FileImage size={18} />
-              <div className={styles.sheetActionText}>
-                <span className={styles.sheetActionLabel}>Content</span>
-                <span className={styles.sheetActionSub}>
-                  {contentCount > 0 ? `${contentCount} items gemaakt` : 'Content genereren'}
-                </span>
-              </div>
-              <ChevronRight size={16} />
-            </button>
+            {/* ── Content phase blocks ── */}
+            {([
+              { key: 'pre_match' as const, phase: CONTENT_TYPES.pre_match },
+              { key: 'during_match' as const, phase: CONTENT_TYPES.during_match },
+              { key: 'post_match' as const, phase: CONTENT_TYPES.post_match },
+            ]).map(({ key, phase }) => {
+              if (!phase) return null;
+              const total = phase.items.length;
+              const doneCount = phase.items.filter(i =>
+                contentDoneSubtypes.includes(i.subtype)
+              ).length;
+              const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+              const allDone = doneCount === total;
+
+              return (
+                <button
+                  key={key}
+                  className={`${styles.sheetAction} ${allDone ? styles.sheetActionDone : ''}`}
+                  onClick={() => { setSheetOpen(false); setContentSheetOpen(true); }}
+                >
+                  {allDone ? (
+                    <CheckCircle2 size={18} className={styles.iconDone} />
+                  ) : doneCount > 0 ? (
+                    <FileImage size={18} className={styles.iconPartial} />
+                  ) : (
+                    <FileImage size={18} />
+                  )}
+                  <div className={styles.sheetActionText}>
+                    <span className={styles.sheetActionLabel}>{phase.label}</span>
+                    <div className={styles.phaseProgress}>
+                      <div className={styles.phaseProgressTrack}>
+                        <div
+                          className={styles.phaseProgressFill}
+                          style={{ width: `${pct}%` }}
+                          data-done={allDone ? 'true' : 'false'}
+                        />
+                      </div>
+                      <span className={styles.phaseProgressLabel}>{doneCount}/{total}</span>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} />
+                </button>
+              );
+            })}
 
             <button
               className={`${styles.sheetAction} ${styles.sheetActionPrimary}`}

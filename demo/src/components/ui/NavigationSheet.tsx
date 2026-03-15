@@ -200,8 +200,7 @@ export const NavigationSheet: React.FC<NavigationSheetProps> = ({
           <button
             className={styles.closeButton}
             onClick={handleClose}
-            aria-label="Close"
-            style={onBack ? { visibility: 'hidden' } : undefined}
+            aria-label="Sluiten"
           >
             <X size={20} />
           </button>

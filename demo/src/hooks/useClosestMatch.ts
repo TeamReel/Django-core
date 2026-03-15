@@ -24,6 +24,8 @@ export interface ClosestMatchData {
   contentCount: number;
   lineupCount: number;
   lineupFormation?: string;
+  /** Content subtypes that already have media (e.g. 'flyer', 'lineup', 'goal') */
+  contentDoneSubtypes: string[];
 }
 
 async function fetchClosestMatch(projectId?: string): Promise<ClosestMatchData> {
@@ -44,7 +46,7 @@ async function fetchClosestMatch(projectId?: string): Promise<ClosestMatchData> 
   ]);
 
   const all = [...pastData.results, ...futureData.results];
-  if (all.length === 0) return { match: null, contentCount: 0, lineupCount: 0 };
+  if (all.length === 0) return { match: null, contentCount: 0, lineupCount: 0, contentDoneSubtypes: [] };
 
   // Pick match closest to now
   const nowMs = Date.now();
@@ -57,6 +59,7 @@ async function fetchClosestMatch(projectId?: string): Promise<ClosestMatchData> 
   let lineupCount = 0;
   let lineupFormation: string | undefined;
   let contentCount = 0;
+  let contentDoneSubtypes: string[] = [];
 
   // Lineup from metadata
   const lineupData = (closest.metadata?.lineup as any);
@@ -78,16 +81,28 @@ async function fetchClosestMatch(projectId?: string): Promise<ClosestMatchData> 
   }
 
   try {
-    const mediaData = await api.list<any>('/media/items/', {
+    const mediaData = await api.list<{ id: string; extraction_metadata?: { asset_type?: string } }>('/media/items/', {
       params: { activity: closest.id },
-      pageSize: 1,
+      pageSize: 50,
     });
     contentCount = mediaData.count ?? mediaData.results.length;
+    // Collect unique subtypes that have media (for per-phase progress)
+    const subtypeSet = new Set<string>();
+    for (const item of mediaData.results) {
+      const raw = item.extraction_metadata?.asset_type;
+      if (raw) {
+        let normalized = String(raw).replace(/_[a-f0-9]{8}$/i, '');
+        if (normalized === 'goal_celebration') normalized = 'goal';
+        if (normalized === 'match_flyer') normalized = 'flyer';
+        subtypeSet.add(normalized);
+      }
+    }
+    contentDoneSubtypes = [...subtypeSet];
   } catch {
     // Media items endpoint may fail — ignore
   }
 
-  return { match: closest, contentCount, lineupCount, lineupFormation };
+  return { match: closest, contentCount, lineupCount, lineupFormation, contentDoneSubtypes };
 }
 
 /**
