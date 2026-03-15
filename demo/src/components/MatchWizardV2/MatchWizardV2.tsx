@@ -175,7 +175,7 @@ export default function MatchWizardV2({ isOpen, onClose, initialMatchId }: Match
         initialStepId="match"
         onClose={onClose}
       >
-        <WizardShell isOpen={isOpen}>
+        <WizardShell isOpen={isOpen} showProgress>
           <MatchWizardInner isOpen={isOpen} initialMatchId={initialMatchId} />
         </WizardShell>
       </WizardProvider>

@@ -43,6 +43,8 @@ export interface WizardState {
   error: string | null;
   /** Navigation direction for transition animations */
   direction: WizardDirection;
+  /** Navigation history stack (step IDs the user actually visited) */
+  navigationHistory: string[];
 }
 
 export interface WizardActions {
@@ -131,19 +133,19 @@ export function WizardProvider({
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [direction, setDirection] = useState<WizardDirection>('initial');
+  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
 
   // Derived state
   const currentStepIndex = steps.findIndex(s => s.id === currentStepId);
   const currentStep = steps[currentStepIndex] || steps[0];
-  const isFirstStep = currentStepIndex === 0;
+  const isFirstStep = navigationHistory.length === 0;
   const isLastStep = currentStepIndex === steps.length - 1;
-  const progress = steps.length > 1 ? (currentStepIndex / (steps.length - 1)) * 100 : 100;
-
-  // User-visible step count (excludes hidden/system steps)
+  // Progress based on user-visible steps only
   const visibleSteps = steps.filter(s => !s.hidden);
   const visibleIdx = visibleSteps.findIndex(s => s.id === currentStepId);
   const userStepCount = visibleSteps.length;
   const userStepIndex = visibleIdx >= 0 ? visibleIdx : currentStepIndex;
+  const progress = userStepCount > 1 ? (userStepIndex / (userStepCount - 1)) * 100 : 100;
 
   // Check if step requirements are met
   const isAvailable = useCallback((stepId: string): boolean => {
@@ -156,31 +158,36 @@ export function WizardProvider({
     return completedSteps.has(stepId);
   }, [completedSteps]);
 
-  // Actions
+  // Actions — navigation uses a history stack so back() always returns
+  // to the step the user actually came from, even when steps are skipped.
   const next = useCallback(() => {
     if (currentStepIndex < steps.length - 1) {
+      setNavigationHistory(prev => [...prev, currentStepId]);
       setDirection('forward');
       setCurrentStepId(steps[currentStepIndex + 1].id);
       setError(null);
     }
-  }, [currentStepIndex, steps]);
+  }, [currentStepIndex, steps, currentStepId]);
 
   const back = useCallback(() => {
-    if (currentStepIndex > 0) {
+    if (navigationHistory.length > 0) {
+      const prevStepId = navigationHistory[navigationHistory.length - 1];
+      setNavigationHistory(prev => prev.slice(0, -1));
       setDirection('backward');
-      setCurrentStepId(steps[currentStepIndex - 1].id);
+      setCurrentStepId(prevStepId);
       setError(null);
     }
-  }, [currentStepIndex, steps]);
+  }, [navigationHistory]);
 
   const goTo = useCallback((stepId: string) => {
     const targetIndex = steps.findIndex(s => s.id === stepId);
     if (targetIndex >= 0 && isAvailable(stepId)) {
+      setNavigationHistory(prev => [...prev, currentStepId]);
       setDirection(targetIndex > currentStepIndex ? 'forward' : 'backward');
       setCurrentStepId(stepId);
       setError(null);
     }
-  }, [steps, isAvailable, currentStepIndex]);
+  }, [steps, isAvailable, currentStepIndex, currentStepId]);
 
   const markCompleted = useCallback((stepId: string) => {
     setCompletedSteps(prev => new Set(prev).add(stepId));
@@ -210,6 +217,7 @@ export function WizardProvider({
     setSubmitting(false);
     setError(null);
     setDirection('initial');
+    setNavigationHistory([]);
   }, [initialStepId, initialData, steps]);
 
   const close = useCallback(() => {
@@ -228,6 +236,7 @@ export function WizardProvider({
     isSubmitting,
     error,
     direction,
+    navigationHistory,
     // Derived
     currentStep,
     isFirstStep,
@@ -251,7 +260,7 @@ export function WizardProvider({
     reset,
     close,
   }), [
-    currentStepId, currentStepIndex, steps, completedSteps, data, isSubmitting, error, direction,
+    currentStepId, currentStepIndex, steps, completedSteps, data, isSubmitting, error, direction, navigationHistory,
     currentStep, isFirstStep, isLastStep, progress, userStepCount, userStepIndex,
     isCompleted, isAvailable,
     next, back, goTo, complete, markCompleted, setData, updateData, setSubmitting, setError, reset, close,

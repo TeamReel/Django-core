@@ -55,6 +55,7 @@ export const LINEUP_REQUIRED_SUBTYPES = new Set([
 
 export const HAS_OPTIONS_SUBTYPES = new Set([
   'lineup', 'lineup_flyer', 'flyer', 'goal', 'match_summary',
+  'walkon', 'poster', 'match_intro',
 ]);
 
 export const LINEUP_OPTIONS_SUBTYPES = new Set(['lineup', 'lineup_flyer']);

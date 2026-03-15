@@ -45,11 +45,16 @@ export function MembersStep({
   setSelectedBackgroundUrl,
   appBackgrounds,
 }: MembersStepProps) {
+  // All lineup-related subtypes that should see formation / style / background options
+  const LINEUP_SUBTYPES = new Set(['lineup', 'lineup_flyer', 'walkon', 'poster', 'match_intro']);
+  const subtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
+  const isLineupType = LINEUP_SUBTYPES.has(subtype);
+
   return (
     <div className="flex-col gap-24">
 
       {/* Lineup Options — Formation & Player Style */}
-      {(selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
+      {isLineupType && (
         <div className="border rounded-12 overflow-hidden bg-surface">
           {/* Section header */}
           <div className="border-bottom bg-surface-2 py-12 px-16">
@@ -68,7 +73,7 @@ export function MembersStep({
             />
 
             {/* Closeup style selector — not for poster */}
-            {!(selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
+            {subtype !== 'poster' && (
               <div>
                 <label className="form-label-upper">Weergave Stijl</label>
                 <div className="grid-cols-2 gap-8">
@@ -99,8 +104,8 @@ export function MembersStep({
               </div>
             )}
 
-            {/* Animation style selector — only for video */}
-            {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer' || selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
+            {/* Animation style selector — only for video types */}
+            {subtype !== 'lineup_flyer' && subtype !== 'poster' && (
               <div>
                 <label className="form-label-upper">Animatie Stijl</label>
                 <div className="flex-wrap gap-8">
@@ -130,8 +135,8 @@ export function MembersStep({
               </div>
             )}
 
-            {/* Intro style selector — per line vs per player — only for video */}
-            {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer' || selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
+            {/* Intro style selector — per line vs per player — only for video types */}
+            {subtype !== 'lineup_flyer' && subtype !== 'poster' && (
               <div>
                 <label className="form-label-upper">Introductie Stijl</label>
                 <div className="flex-row gap-8">
