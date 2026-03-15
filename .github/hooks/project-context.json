@@ -1,0 +1,13 @@
+{
+  "description": "Inject project context at session start — current branch, Node/Python versions, recent commits",
+  "SessionStart": [
+    {
+      "type": "command",
+      "command": "node -e \"const {execSync}=require('child_process'); const ctx={}; try{ctx.branch=execSync('git branch --show-current',{encoding:'utf8'}).trim();}catch(e){ctx.branch='unknown';} try{ctx.node=execSync('node --version',{encoding:'utf8'}).trim();}catch(e){} try{ctx.python=execSync('python --version',{encoding:'utf8'}).trim();}catch(e){} try{ctx.recentCommits=execSync('git log --oneline -5',{encoding:'utf8'}).trim().split('\\n');}catch(e){ctx.recentCommits=[];} try{ctx.status=execSync('git status --short',{encoding:'utf8'}).trim();}catch(e){ctx.status='';} console.log(JSON.stringify({hookSpecificOutput:{hookEventName:'SessionStart',additionalContext:'TeamReel project context: '+JSON.stringify(ctx)}}));\"",
+      "windows": {
+        "command": "node -e \"const {execSync}=require('child_process'); const ctx={}; try{ctx.branch=execSync('git branch --show-current',{encoding:'utf8'}).trim();}catch(e){ctx.branch='unknown';} try{ctx.node=execSync('node --version',{encoding:'utf8'}).trim();}catch(e){} try{ctx.python=execSync('python --version',{encoding:'utf8'}).trim();}catch(e){} try{ctx.recentCommits=execSync('git log --oneline -5',{encoding:'utf8'}).trim().split('\\n');}catch(e){ctx.recentCommits=[];} try{ctx.status=execSync('git status --short',{encoding:'utf8'}).trim();}catch(e){ctx.status='';} console.log(JSON.stringify({hookSpecificOutput:{hookEventName:'SessionStart',additionalContext:'TeamReel project context: '+JSON.stringify(ctx)}}));\""
+      },
+      "timeout": 10000
+    }
+  ]
+}

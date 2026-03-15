@@ -1,0 +1,13 @@
+{
+  "description": "Auto-format files after Copilot edits them (Prettier for frontend, black for Python)",
+  "PostToolUse": [
+    {
+      "type": "command",
+      "command": "node -e \"const p=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); const f=p.toolUse?.result?.filePath||''; if(!f)process.exit(0); if(f.endsWith('.ts')||f.endsWith('.tsx')||f.endsWith('.css')||f.endsWith('.json')) { require('child_process').execSync('npx prettier --write '+f, {cwd:'demo', stdio:'pipe'}); console.log(JSON.stringify({message:'Formatted: '+f})); }\"",
+      "windows": {
+        "command": "node -e \"const p=JSON.parse(require('fs').readFileSync(0,'utf8')); const f=p.toolUse?.result?.filePath||''; if(!f)process.exit(0); if(f.endsWith('.ts')||f.endsWith('.tsx')||f.endsWith('.css')||f.endsWith('.json')) { require('child_process').execSync('npx prettier --write '+f, {cwd:'demo', stdio:'pipe'}); console.log(JSON.stringify({message:'Formatted: '+f})); }\""
+      },
+      "timeout": 15000
+    }
+  ]
+}

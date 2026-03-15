@@ -1,0 +1,13 @@
+{
+  "description": "Block dangerous terminal commands — DROP TABLE, DELETE FROM without WHERE, destructive migrations",
+  "PreToolUse": [
+    {
+      "type": "command",
+      "command": "node -e \"const p=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); const cmd=(p.toolUse?.input?.command||'').toUpperCase(); const blocked=['DROP TABLE','DROP DATABASE','TRUNCATE TABLE','DELETE FROM']; const found=blocked.find(b=>cmd.includes(b)); if(found){console.log(JSON.stringify({decision:'deny',reason:'Blocked destructive command: '+found+'. TeamReel rule: NEVER DROP TABLES.'}));} else {console.log(JSON.stringify({decision:'allow'}));}\"",
+      "windows": {
+        "command": "node -e \"const p=JSON.parse(require('fs').readFileSync(0,'utf8')); const cmd=(p.toolUse?.input?.command||'').toUpperCase(); const blocked=['DROP TABLE','DROP DATABASE','TRUNCATE TABLE','DELETE FROM']; const found=blocked.find(b=>cmd.includes(b)); if(found){console.log(JSON.stringify({decision:'deny',reason:'Blocked destructive command: '+found+'. TeamReel rule: NEVER DROP TABLES.'}));} else {console.log(JSON.stringify({decision:'allow'}));}\""
+      },
+      "timeout": 5000
+    }
+  ]
+}
