@@ -61,8 +61,10 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void): Us
     refreshAiJobs: state.refreshAiJobs,
   });
 
-  const queueBadgeCount = state.queueCounts.review > 0 ? state.queueCounts.review : state.queueCounts.active;
-  const queueBadgeColor = state.queueCounts.review > 0 ? 'var(--app-error)' : 'var(--color-amber-400)';
+  // Badge priority: review + failed (needs attention) → active (in progress)
+  const needsAttention = state.queueCounts.review + state.queueCounts.rejected;
+  const queueBadgeCount = needsAttention > 0 ? needsAttention : state.queueCounts.active;
+  const queueBadgeColor = needsAttention > 0 ? 'var(--app-error)' : 'var(--color-amber-400)';
 
   return {
     // Auth / roles

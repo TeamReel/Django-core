@@ -139,17 +139,27 @@ export async function dispatchContentGeneration(p: DispatchParams): Promise<Disp
 
   // ── Video generators (return jobId) ──
   const videoGenerators: Record<string, () => Promise<string>> = {
-    lineup: () => generateLineupVideo({
-      matchData, seasonProjectId, selectedMembers: p.selectedMembers,
-      selectedType: p.selectedType, selectedTemplate: p.selectedTemplate,
-      lineupFormation: p.lineupFormation,
-      lineupCloseupStyle: o.lineupCloseupStyle,
-      lineupAnimationStyle: o.lineupAnimationStyle,
-      lineupIntroStyle: o.lineupIntroStyle,
-      selectedBackgroundUrl: o.selectedBackgroundUrl,
-      getMemberAssetUrl: p.getMemberAssetUrl,
-      getMemberNameById: p.getMemberNameById,
-    }),
+    lineup: () => {
+      // Pre-validate: activity must have participations for a lineup video
+      const participations = matchData?.participations ?? [];
+      if (participations.length === 0) {
+        throw new Error(
+          'Geen deelnemers gevonden voor deze wedstrijd. ' +
+          'Vul eerst de opstelling in voordat je een lineup video genereert.'
+        );
+      }
+      return generateLineupVideo({
+        matchData, seasonProjectId, selectedMembers: p.selectedMembers,
+        selectedType: p.selectedType, selectedTemplate: p.selectedTemplate,
+        lineupFormation: p.lineupFormation,
+        lineupCloseupStyle: o.lineupCloseupStyle,
+        lineupAnimationStyle: o.lineupAnimationStyle,
+        lineupIntroStyle: o.lineupIntroStyle,
+        selectedBackgroundUrl: o.selectedBackgroundUrl,
+        getMemberAssetUrl: p.getMemberAssetUrl,
+        getMemberNameById: p.getMemberNameById,
+      });
+    },
     goal: () => generateGoalCelebration({
       matchData, seasonProjectId,
       goalScorerId: o.goalScorerId,

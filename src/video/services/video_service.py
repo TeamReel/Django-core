@@ -117,139 +117,56 @@ class VideoService:
         return job
 
     def _dispatch_job(self, job: VideoJob) -> None:
-        """Dispatch job to appropriate task runner.
+        """Dispatch job to appropriate Celery task runner.
+
+        All video types are dispatched via Celery for resilience against
+        web-process restarts / redeployments.  The previous daemon-thread
+        approach was fragile: threads were killed on redeploy, leaving jobs
+        stuck in PROCESSING until the recovery task intervened.
 
         Important: dispatch must happen after the DB transaction commits.
-        Otherwise background threads / Celery workers may not be able to load
-        the newly-created VideoJob yet, leaving it stuck in QUEUED.
+        Otherwise Celery workers may not be able to load the newly-created
+        VideoJob yet, leaving it stuck in QUEUED.
         """
-        import threading
-
         from src.video.tasks import (
             compose_video,
             generate_thumbnail,
+            process_goal_celebration_video,
+            process_lineup_video,
+            process_match_intro_video,
+            process_then_vs_now_video,
             transcode_video,
         )
 
         job_id = str(job.id)
 
+        TASK_MAP: dict[str, object] = {
+            JobType.TRANSCODE: transcode_video,
+            JobType.THUMBNAIL: generate_thumbnail,
+            JobType.COMPOSE: compose_video,
+            JobType.LINEUP: process_lineup_video,
+            JobType.GOAL_CELEBRATION: process_goal_celebration_video,
+            JobType.MATCH_INTRO: process_match_intro_video,
+            JobType.THEN_VS_NOW: process_then_vs_now_video,
+        }
+
+        task = TASK_MAP.get(job.job_type)
+        if task is None:
+            logger.error(
+                "Unknown job type for dispatch",
+                extra={"job_id": job_id, "job_type": job.job_type},
+            )
+            raise ValidationError({"job_type": f"Unknown job type: {job.job_type}"})
+
         def _dispatch() -> None:
-            if job.job_type == JobType.TRANSCODE:
-                transcode_video.delay(job_id)
-            elif job.job_type == JobType.THUMBNAIL:
-                generate_thumbnail.delay(job_id)
-            elif job.job_type == JobType.COMPOSE:
-                compose_video.delay(job_id)
-            elif job.job_type == JobType.LINEUP:
-                # Always process lineup jobs in a background thread directly.
-                # Make dispatch idempotent: only one runner should transition QUEUED → PROCESSING.
-                updated = VideoJob.objects.filter(
-                    id=job.id,
-                    status=JobStatus.QUEUED,
-                    started_at__isnull=True,
-                ).update(
-                    status=JobStatus.PROCESSING,
-                    started_at=timezone.now(),
-                    progress_percent=1,
-                    updated_at=timezone.now(),
-                )
-
-                if not updated:
-                    logger.info(
-                        "Lineup job dispatch skipped (already started or not queued)",
-                        extra={"job_id": job_id},
-                    )
-                    return
-
-                logger.info(
-                    "Lineup job - processing in background thread",
-                    extra={"job_id": job_id},
-                )
-                self._start_lineup_thread(threading, job_id)
-            elif job.job_type == JobType.GOAL_CELEBRATION:
-                # Goal celebration jobs also run in a background thread (same pattern as lineup).
-                updated = VideoJob.objects.filter(
-                    id=job.id,
-                    status=JobStatus.QUEUED,
-                    started_at__isnull=True,
-                ).update(
-                    status=JobStatus.PROCESSING,
-                    started_at=timezone.now(),
-                    progress_percent=1,
-                    updated_at=timezone.now(),
-                )
-
-                if not updated:
-                    logger.info(
-                        "Goal celebration job dispatch skipped (already started or not queued)",
-                        extra={"job_id": job_id},
-                    )
-                    return
-
-                logger.info(
-                    "Goal celebration job - processing in background thread",
-                    extra={"job_id": job_id},
-                )
-                self._start_goal_celebration_thread(threading, job_id)
-            elif job.job_type == JobType.MATCH_INTRO:
-                # Match intro jobs also run in a background thread.
-                updated = VideoJob.objects.filter(
-                    id=job.id,
-                    status=JobStatus.QUEUED,
-                    started_at__isnull=True,
-                ).update(
-                    status=JobStatus.PROCESSING,
-                    started_at=timezone.now(),
-                    progress_percent=1,
-                    updated_at=timezone.now(),
-                )
-
-                if not updated:
-                    logger.info(
-                        "Match intro job dispatch skipped (already started or not queued)",
-                        extra={"job_id": job_id},
-                    )
-                    return
-
-                logger.info(
-                    "Match intro job - processing in background thread",
-                    extra={"job_id": job_id},
-                )
-                self._start_match_intro_thread(threading, job_id)
-            elif job.job_type == JobType.THEN_VS_NOW:
-                # Then vs Now compilation jobs run in a background thread.
-                updated = VideoJob.objects.filter(
-                    id=job.id,
-                    status=JobStatus.QUEUED,
-                    started_at__isnull=True,
-                ).update(
-                    status=JobStatus.PROCESSING,
-                    started_at=timezone.now(),
-                    progress_percent=1,
-                    updated_at=timezone.now(),
-                )
-
-                if not updated:
-                    logger.info(
-                        "Then vs Now job dispatch skipped (already started or not queued)",
-                        extra={"job_id": job_id},
-                    )
-                    return
-
-                logger.info(
-                    "Then vs Now job - processing in background thread",
-                    extra={"job_id": job_id},
-                )
-                self._start_then_vs_now_thread(threading, job_id)
-            else:
-                logger.error(
-                    "Unknown job type for dispatch",
-                    extra={"job_id": job_id, "job_type": job.job_type},
-                )
-                raise ValidationError({"job_type": f"Unknown job type: {job.job_type}"})
+            task.delay(job_id)  # type: ignore[union-attr]
+            logger.info(
+                "Dispatched video job to Celery",
+                extra={"job_id": job_id, "job_type": job.job_type},
+            )
 
         # If we're inside an atomic transaction (e.g., ATOMIC_REQUESTS=True),
-        # delay dispatch until commit so the worker/thread can reliably read the job.
+        # delay dispatch until commit so the worker can reliably read the job.
         # If we're not in a transaction, dispatch immediately.
         connection = transaction.get_connection()
         if getattr(connection, "in_atomic_block", False):
@@ -258,6 +175,13 @@ class VideoService:
             _dispatch()
 
     def _start_lineup_thread(self, threading_module, job_id: str) -> None:
+        """Start lineup processing in a daemon thread.
+
+        .. deprecated::
+            Use ``process_lineup_video.delay(job_id)`` (Celery task) instead.
+            Daemon threads are killed on web-process restart / redeploy.
+            Kept only for local-development fallback when Celery is unavailable.
+        """
         thread = threading_module.Thread(
             target=self._process_lineup_sync,
             args=(job_id,),
@@ -266,28 +190,26 @@ class VideoService:
         thread.start()
 
     def kick_lineup_job(self, job_id: str) -> bool:
-        """Idempotently start a lineup job in a background thread.
+        """Idempotently start a lineup job via Celery.
 
-        Returns True if this call started processing, False if the job was
+        Returns True if this call dispatched the task, False if the job was
         already started or not queued.
         """
-        import threading
+        from src.video.tasks import process_lineup_video
 
         updated = VideoJob.objects.filter(
             id=job_id,
             status=JobStatus.QUEUED,
             started_at__isnull=True,
         ).update(
-            status=JobStatus.PROCESSING,
-            started_at=timezone.now(),
-            progress_percent=1,
+            status=JobStatus.QUEUED,  # Keep QUEUED — the Celery task handles transition
             updated_at=timezone.now(),
         )
 
         if not updated:
             return False
 
-        self._start_lineup_thread(threading, str(job_id))
+        process_lineup_video.delay(str(job_id))
         return True
 
     def _process_lineup_sync(self, job_id: str) -> None:
@@ -714,6 +636,24 @@ class VideoService:
 
             # Deferred build mode (template/activity based)
             if config.get("activity_id") or config.get("match_id"):
+                # Pre-validate that the activity has participations or selected members
+                activity_id = config.get("activity_id") or config.get("match_id")
+                selected_ids = config.get("selected_user_ids") or []
+                if not selected_ids and activity_id:
+                    from src.activities.models import Participation
+
+                    count = Participation.objects.filter(
+                        activity_id=activity_id, deleted_at__isnull=True
+                    ).count()
+                    if count == 0:
+                        raise ValidationError(
+                            {
+                                "config": (
+                                    "No participations found for this activity. "
+                                    "Fill the match lineup first before generating a lineup video."
+                                )
+                            }
+                        )
                 return
 
             raise ValidationError(

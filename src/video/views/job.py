@@ -90,13 +90,19 @@ class VideoJobViewSet(viewsets.ModelViewSet):
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Retrieve job details.
 
-        Self-healing: if a lineup job remains QUEUED for too long without a start time,
-        attempt to kick it into processing (idempotent) and start the background thread.
+        Self-healing: if a video job remains QUEUED for too long without a start time,
+        attempt to redispatch it via Celery (idempotent).
         """
         job = self.get_object()
 
         if (
-            job.job_type == JobType.LINEUP
+            job.job_type
+            in (
+                JobType.LINEUP,
+                JobType.GOAL_CELEBRATION,
+                JobType.MATCH_INTRO,
+                JobType.THEN_VS_NOW,
+            )
             and job.status == JobStatus.QUEUED
             and job.started_at is None
             and job.created_at <= timezone.now() - timedelta(seconds=10)
@@ -104,11 +110,12 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             from src.video.services.video_service import VideoService
 
             try:
-                if VideoService().kick_lineup_job(str(job.id)):
-                    job.refresh_from_db()
+                svc = VideoService()
+                svc._dispatch_job(job)
+                job.refresh_from_db()
             except Exception:
                 logger.exception(
-                    "Auto-kick failed for stuck lineup job",
+                    "Auto-kick failed for stuck video job",
                     extra={"job_id": str(job.id)},
                 )
 

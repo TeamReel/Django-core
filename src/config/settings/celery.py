@@ -74,6 +74,8 @@ CELERY_TASK_ROUTES = {
     "src.video.tasks.asset_processing.auto_crop_closeup_from_fullbody": {"queue": "video_fast"},
     # default: lightweight / mixed tasks
     "src.video.tasks.lineup.process_lineup_video": {"queue": "default"},
+    "src.video.tasks.goal_celebration.process_goal_celebration_video": {"queue": "default"},
+    "src.video.tasks.match_intro.process_match_intro_video": {"queue": "default"},
     # ai_generation: rate-limited AI API calls (Gemini/MiniMax/Veo)
     "generative.tasks.generate_asset_task": {"queue": "ai_generation"},
 }
