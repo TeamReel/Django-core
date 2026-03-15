@@ -13,7 +13,7 @@
  *           SmartMatchStep  (match selection — bridges to MatchWizardContext)
  *           MatchWizardInner (content type → lineup → review → generate → …)
  */
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 
 import { WizardProvider, WizardShell, WizardStep, useWizard, type WizardStepConfig } from '../../Wizard';
 import { MatchWizardProvider, useMatchWizard, MatchWizardInner } from '../../MatchWizardV2';
@@ -41,6 +41,29 @@ const CONTENT_FLOW_STEPS: WizardStepConfig[] = [
   { id: 'success', title: 'Content klaar', showBack: false, hidden: true },
   { id: 'error', title: 'Fout opgetreden', hidden: true },
 ];
+
+/**
+ * Compute steps with correct hidden flags based on the content flow path.
+ * When launched with a specific subtype from MatchSheet, early steps (choose,
+ * smartMatch, content) are always skipped, and lineup/options are conditionally
+ * skipped based on the subtype. Marking skipped steps as hidden ensures the
+ * progress bar shows accurate "Stap X van Y" counts.
+ */
+function computeSteps(initialSubtype?: string, initialMatchId?: string): WizardStepConfig[] {
+  if (!initialSubtype || !initialMatchId) return CONTENT_FLOW_STEPS;
+
+  const skipIds = new Set(['choose', 'smartMatch', 'content']);
+  if (!LINEUP_REQUIRED_SUBTYPES.has(initialSubtype)) {
+    skipIds.add('lineup');
+  }
+  if (!HAS_OPTIONS_SUBTYPES.has(initialSubtype)) {
+    skipIds.add('options');
+  }
+
+  return CONTENT_FLOW_STEPS.map(step =>
+    skipIds.has(step.id) ? { ...step, hidden: true } : step,
+  );
+}
 
 // ─── Props ────────────────────────────────────────────────
 
@@ -76,10 +99,16 @@ export function ContentFlow({ isOpen, onClose, initialMatchId, initialSubtype }:
         ? 'smartMatch'
         : 'choose';
 
+  // Dynamic steps: hide skipped steps so the progress bar shows accurate counts
+  const steps = useMemo(
+    () => computeSteps(initialSubtype, initialMatchId),
+    [initialSubtype, initialMatchId],
+  );
+
   return (
     <MatchWizardProvider>
       <WizardProvider
-        steps={CONTENT_FLOW_STEPS}
+        steps={steps}
         initialStepId={startStep}
         onClose={handleClose}
       >
