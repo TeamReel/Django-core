@@ -47,6 +47,11 @@ Pick from the agent dropdown or mention by name:
 | **Reviewer** | Read-only code review & audit | Read-only | → Developer (fix) |
 | **Planner** | Architecture & implementation plans | Read-only | → Developer (build) |
 | **Debugger** | Systematic bug diagnosis & fix | Read + Terminal + Edit | → Reviewer (verify) |
+| **Accessibility** | WCAG 2.1/2.2 specialist | Read + Edit + Playwright MCP | → Developer (fix) |
+| **Playwright Tester** | E2E testing via live browser | Read + Terminal + Playwright MCP | → Developer (fix) |
+| **PostgreSQL DBA** | Query optimization, indexing, schema | Read + Terminal (Railway) | → Developer (apply) |
+| **Ops & Deploy** | Railway logs, deploys, monitoring | Read + Terminal (Railway CLI) | → Developer / DBA |
+| **Documentation** | Generate & sync domain docs | Read + Edit | → Reviewer (verify) |
 
 ### 3. Skills (on-demand capabilities, invoked by relevance or `/skill-name`)
 
@@ -55,8 +60,13 @@ Pick from the agent dropdown or mention by name:
 | `/frontend-component` | Scaffold React component (TSX + CSS Module + barrel + checklist) |
 | `/api-endpoint` | Create DRF endpoint (model + serializer + viewset + URL) |
 | `/migration-safety` | Audit Django migration for destructive operations |
-| `/ui-review` | Full a11y + token + mobile + dark mode audit |
+| `/ui-review` | Full a11y + token + mobile + dark mode audit (code-level) |
 | `/roadmap-execution` | Execute a roadmap phase end-to-end (spec → code → commit) |
+| `/webapp-testing` | Test running app via Playwright MCP (navigate, screenshot, verify flows) |
+| `/web-design-reviewer` | Visual UI review via live browser (layout, responsive, tokens) |
+| `/pytest-coverage` | Generate coverage reports, identify testing gaps |
+| `/conventional-commit` | Generate proper conventional commit messages |
+| `/documentation-writer` | Generate/update docs from code changes |
 
 ### 4. Prompts (reusable task prompts, invoke with `#prompt:name`)
 
@@ -95,12 +105,38 @@ Worktree-based feature lifecycle in `.github/prompts/spec-kitty/`. For formal sp
 | Review code | **Reviewer** agent |
 | Plan architecture | **Planner** agent |
 | Fix a bug | **Debugger** agent or `#prompt:debug` |
+| Test accessibility (WCAG) | **Accessibility** agent (uses Playwright MCP) |
+| Browse & test the live site | **Playwright Tester** agent |
+| Optimize database queries | **PostgreSQL DBA** agent |
+| Check Railway logs/deploys | **Ops & Deploy** agent |
+| Write/update documentation | **Documentation** agent |
 | Scaffold a component | `/frontend-component` skill |
 | Create an API endpoint | `/api-endpoint` skill |
 | Check migration safety | `/migration-safety` skill |
-| Audit a11y / design system | `/ui-review` skill |
+| Audit a11y / design system (code) | `/ui-review` skill |
+| Visual UI review (live browser) | `/web-design-reviewer` skill |
+| Test the running app | `/webapp-testing` skill |
+| Generate test coverage report | `/pytest-coverage` skill |
+| Write a commit message | `/conventional-commit` skill |
+| Update documentation | `/documentation-writer` skill |
 | Execute a roadmap phase | `/roadmap-execution` skill |
 | Quick task (no persona) | `#prompt:*` prompts |
+
+---
+
+## MCP Servers
+
+| Server | Purpose | Config |
+|--------|---------|--------|
+| **Playwright** | Browser automation for live site testing and visual review | `.vscode/mcp.json` → `npx @playwright/mcp@latest` |
+
+## External Tool Access
+
+| Tool | How | Used by |
+|------|-----|---------|
+| **Railway CLI** | `railway logs`, `railway status`, `railway run` | Ops & Deploy, PostgreSQL DBA |
+| **axe-core** | `npx @axe-core/cli <url> --exit` | Accessibility agent |
+| **Lighthouse** | `npx lighthouse <url> --only-categories=accessibility` | Accessibility agent |
 
 ---
 
