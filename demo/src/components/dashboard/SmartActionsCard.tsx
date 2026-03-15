@@ -49,18 +49,19 @@ export const SmartActionsCard: React.FC = () => {
   const project = context.project;
   const { orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId } = useAppSelection();
 
-  // ── Action handler — opens the right modal/page ──────────────────
+  // ── Action handler — stub for H1, full sheet-ification in H3 ──────
   const handleAction = useCallback((action: SmartAction) => {
+    // H3: replace with inline sheet / CreateWizard events
+    console.warn('[SmartActionsCard] Action stub — sheet pattern pending H3:', action.key);
+
     switch (action.mode.type) {
       case 'season-tab': {
-        // Navigate to the current season page with the right tab
         const base = orgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId
           ? `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}`
           : null;
         if (base) {
           navigate(`${base}?tab=${encodeURIComponent(action.mode.tab)}`);
         } else {
-          // Fallback: just go to dashboard
           navigate(routes.dashboard());
         }
         break;

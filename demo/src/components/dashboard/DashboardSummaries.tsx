@@ -4,13 +4,15 @@
  * Each card is a self-contained widget with its own data fetching.
  * Designed to be arranged in a responsive grid.
  */
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   Users, Calendar, Image, Cpu, CreditCard, TrendingUp,
   ChevronRight, Flame, Zap, CheckCircle2, Clock, AlertCircle,
+  Shield,
 } from 'lucide-react';
+import { Spinner } from '@django-core/design-system';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api';
 import type { ProjectMembership } from '@/types/api/project';
@@ -24,6 +26,10 @@ import { routes } from '../../routes';
 import { NavigationSheet } from '../ui/NavigationSheet';
 import styles from './DashboardSummaries.module.css';
 
+const CreditsSheetContent = lazy(() =>
+  import('../../pages/config/CreditsSheetContent').then(m => ({ default: m.CreditsSheetContent })),
+);
+
 /* ── Squad Readiness ──────────────────────────────────────────────── */
 
 export const SquadReadinessCard: React.FC = () => {
@@ -31,39 +37,79 @@ export const SquadReadinessCard: React.FC = () => {
   const navigate = useNavigate();
   const org = context.organisation as Organisation | null;
   const project = context.project;
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   // Shared members query — deduped across cards (D5)
   const { data: membersData } = useProjectMembers(org?.slug, project?.slug);
+  const members = membersData?.results ?? [];
   const memberCount = project
-    ? (membersData?.count ?? membersData?.results?.length ?? 0)
+    ? (membersData?.count ?? members.length ?? 0)
     : (org?.member_count || 0);
 
-  const handleClick = () => {
-    if (project) {
-      navigate(`/teams/${project.slug || project.id}/squad`);
-    } else if (org) {
-      navigate(routes.orgDetailLegacy({ orgId: org.slug || '' }));
-    } else {
-      navigate('/');
-    }
-  };
-
   return (
-    <div
-      className={styles.summaryCard}
-      onClick={handleClick}
-      role="button"
-      tabIndex={0}
-    >
-      <div className={`${styles.cardIcon} ${styles.iconPrimary}`}>
-        <Users size={18} />
+    <>
+      <div
+        className={styles.summaryCard}
+        onClick={() => setSheetOpen(true)}
+        role="button"
+        tabIndex={0}
+        aria-haspopup="dialog"
+      >
+        <div className={`${styles.cardIcon} ${styles.iconPrimary}`}>
+          <Users size={18} />
+        </div>
+        <div className={styles.cardContent}>
+          <div className={styles.cardValue}>{memberCount}</div>
+          <div className={styles.cardLabel}>{project ? 'Selectie' : 'Leden'}</div>
+        </div>
+        <ChevronRight size={16} className={styles.cardArrow} />
       </div>
-      <div className={styles.cardContent}>
-        <div className={styles.cardValue}>{memberCount}</div>
-        <div className={styles.cardLabel}>{project ? 'Selectie' : 'Leden'}</div>
-      </div>
-      <ChevronRight size={16} className={styles.cardArrow} />
-    </div>
+
+      <NavigationSheet
+        isOpen={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        title="Selectie"
+        icon={<Users size={18} />}
+      >
+        <div className={styles.squadBadge}>{memberCount} spelers</div>
+
+        <div className={styles.squadList}>
+          {members.map((m: any) => {
+            const name = m.user?.first_name
+              ? `${m.user.first_name} ${m.user.last_name || ''}`.trim()
+              : m.user_name || m.name || 'Onbekend';
+            const role = m.role || m.membership_role || 'speler';
+            const avatarUrl = m.user?.avatar_url || m.avatar_url;
+            return (
+              <div key={m.id} className={styles.squadRow}>
+                <div className={styles.squadAvatar}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="" className={styles.squadAvatarImg} loading="lazy" />
+                  ) : (
+                    <span className={styles.squadAvatarInitial}>{name.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <div className={styles.squadInfo}>
+                  <span className={styles.squadName}>{name}</span>
+                  <span className={styles.squadRole}>{role}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <button
+          className={styles.sheetNavLink}
+          onClick={() => {
+            setSheetOpen(false);
+            if (project) navigate(`/teams/${project.slug || project.id}/squad`);
+            else if (org) navigate(routes.orgDetailLegacy({ orgId: org.slug || '' }));
+          }}
+        >
+          Bekijk volledige selectie <ChevronRight size={14} />
+        </button>
+      </NavigationSheet>
+    </>
   );
 };
 
@@ -305,6 +351,7 @@ export const CreditsTrendCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
   const org = context.organisation;
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(
     org?.slug,
@@ -312,27 +359,41 @@ export const CreditsTrendCard: React.FC = () => {
   );
 
   return (
-    <div
-      className={`${styles.summaryCard} ${lowBalanceAlert ? styles.alertCard : ''}`}
-      onClick={() => navigate('/credits')}
-      role="button"
-      tabIndex={0}
-    >
-      <div className={styles.cardIcon} style={{
-        background: lowBalanceAlert ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-        color: lowBalanceAlert ? 'var(--color-red-400)' : 'var(--color-green-400)',
-      }}>
-        <CreditCard size={18} />
-      </div>
-      <div className={styles.cardContent}>
-        <div className={styles.cardValue}>
-          {balance ?? '—'}
-          {lowBalanceAlert && <AlertCircle size={14} className={styles.warnIcon} />}
+    <>
+      <div
+        className={`${styles.summaryCard} ${lowBalanceAlert ? styles.alertCard : ''}`}
+        onClick={() => setSheetOpen(true)}
+        role="button"
+        tabIndex={0}
+        aria-haspopup="dialog"
+      >
+        <div className={styles.cardIcon} style={{
+          background: lowBalanceAlert ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+          color: lowBalanceAlert ? 'var(--color-red-400)' : 'var(--color-green-400)',
+        }}>
+          <CreditCard size={18} />
         </div>
-        <div className={styles.cardLabel}>Credits</div>
+        <div className={styles.cardContent}>
+          <div className={styles.cardValue}>
+            {balance ?? '—'}
+            {lowBalanceAlert && <AlertCircle size={14} className={styles.warnIcon} />}
+          </div>
+          <div className={styles.cardLabel}>Credits</div>
+        </div>
+        <ChevronRight size={16} className={styles.cardArrow} />
       </div>
-      <ChevronRight size={16} className={styles.cardArrow} />
-    </div>
+
+      <NavigationSheet
+        isOpen={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        title="Credits"
+        icon={<CreditCard size={18} />}
+      >
+        <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}><Spinner size="md" /></div>}>
+          <CreditsSheetContent />
+        </Suspense>
+      </NavigationSheet>
+    </>
   );
 };
 
@@ -342,38 +403,67 @@ export const OrgStatsCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
   const org = context.organisation as Organisation | null;
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   if (!org) return null;
 
+  const clubsCount = org.clubs_count || org.project_count || 0;
+  const teamsCount = org.teams_count || 0;
+
   return (
-    <div
-      className={`${styles.summaryCard} ${styles.tallCard}`}
-      onClick={() => navigate(routes.orgDetailLegacy({ orgId: org.slug || '' }))}
-      role="button"
-      tabIndex={0}
-    >
-      <div className={styles.tallHeader}>
-        <TrendingUp size={16} />
-        <span className={styles.tallTitle}>Overzicht</span>
+    <>
+      <div
+        className={styles.summaryCard}
+        onClick={() => setSheetOpen(true)}
+        role="button"
+        tabIndex={0}
+        aria-haspopup="dialog"
+      >
+        <div className={`${styles.cardIcon} ${styles.iconPrimary}`}>
+          <TrendingUp size={18} />
+        </div>
+        <div className={styles.cardContent}>
+          <div className={styles.cardValue}>{teamsCount} teams</div>
+          <div className={styles.cardLabel}>Organisatie</div>
+        </div>
+        <ChevronRight size={16} className={styles.cardArrow} />
       </div>
-      <div className={styles.miniStats}>
-        <div className={styles.miniStat}>
-          <span className={styles.miniValue}>{org.clubs_count || org.project_count || 0}</span>
-          <span className={styles.miniLabel}>Clubs</span>
+
+      <NavigationSheet
+        isOpen={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        title="Organisatie overzicht"
+        icon={<TrendingUp size={18} />}
+      >
+        <div className={styles.miniStats}>
+          <div className={styles.miniStat}>
+            <span className={styles.miniValue}>{clubsCount}</span>
+            <span className={styles.miniLabel}>Clubs</span>
+          </div>
+          <div className={styles.miniStat}>
+            <span className={styles.miniValue}>{teamsCount}</span>
+            <span className={styles.miniLabel}>Teams</span>
+          </div>
+          <div className={styles.miniStat}>
+            <span className={styles.miniValue}>{org.matches_count || 0}</span>
+            <span className={styles.miniLabel}>Wedstrijden</span>
+          </div>
+          <div className={styles.miniStat}>
+            <span className={styles.miniValue}>{org.member_count || 0}</span>
+            <span className={styles.miniLabel}>Leden</span>
+          </div>
         </div>
-        <div className={styles.miniStat}>
-          <span className={styles.miniValue}>{org.teams_count || 0}</span>
-          <span className={styles.miniLabel}>Teams</span>
-        </div>
-        <div className={styles.miniStat}>
-          <span className={styles.miniValue}>{org.matches_count || 0}</span>
-          <span className={styles.miniLabel}>Wedstrijden</span>
-        </div>
-        <div className={styles.miniStat}>
-          <span className={styles.miniValue}>{org.member_count || 0}</span>
-          <span className={styles.miniLabel}>Leden</span>
-        </div>
-      </div>
-    </div>
+
+        <button
+          className={styles.sheetNavLink}
+          onClick={() => {
+            setSheetOpen(false);
+            navigate(routes.orgDetailLegacy({ orgId: org.slug || '' }));
+          }}
+        >
+          Bekijk organisatie <ChevronRight size={14} />
+        </button>
+      </NavigationSheet>
+    </>
   );
 };

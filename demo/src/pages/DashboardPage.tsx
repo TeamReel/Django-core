@@ -112,6 +112,7 @@ export default function DashboardPage() {
               {!isMemberLevel && <SquadReadinessCard />}
               {!isMemberLevel && <AIQueueCard />}
               {isOrgLevel && <CreditsTrendCard />}
+              {isOrgLevel && !isTeamScope && <OrgStatsCard />}
             </div>
 
             {/* 3. Content progress (merged breakdown + inventory) */}
@@ -122,9 +123,6 @@ export default function DashboardPage() {
 
             {/* 5. Team readiness (merged member progress + asset inventory) */}
             {!isMemberLevel && <TeamReadinessCard />}
-
-            {/* 6. Org Overview Stats (org admins without team scope) */}
-            {isOrgLevel && !isTeamScope && <OrgStatsCard />}
           </div>
 
           {/* ── Sidebar ──────────────────────────────────────────── */}
