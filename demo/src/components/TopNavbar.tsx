@@ -281,6 +281,7 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
           setQueueModalTab={d.setQueueModalTab}
           pendingReviewJobs={d.pendingReviewJobs}
           inProgressJobs={d.inProgressJobs}
+          inProgressVideoJobs={d.inProgressVideoJobs}
           quickReviewIdx={d.quickReviewIdx}
           setQuickReviewIdx={d.setQuickReviewIdx}
           selectedVariantIdxs={d.selectedVariantIdxs}

@@ -1,7 +1,7 @@
 /**
  * State management for useTopNavbarData hook
  */
-import { useRef, useMemo, useReducer } from 'react';
+import { useRef, useMemo, useReducer, useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth, useSignOut } from '@django-core/auth-ui';
 import { useTheme } from '@django-core/theme-system';
@@ -9,7 +9,9 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useUserRole } from '../PermissionGuards';
 import { useQueueCounts } from '../../hooks/useQueueCounts';
 import { useGenerationJobs, type GenerationJob } from '../../hooks/useGenerationJobs';
+import { videoApi } from '../../api';
 import { formReducer, makeSetter } from '../../utils/formReducer';
+import type { VideoJob } from '../../types/api';
 import type { PhotoCompositeFollowUpInfo } from '../topNavbarHelpers';
 import type { NotificationItem, LanguageCode } from './types';
 
@@ -97,6 +99,32 @@ export function useTopNavbarState(quickReviewOpen: boolean) {
     [allAiJobs],
   );
 
+  // ── Active video jobs (queued / processing) ──
+  const [inProgressVideoJobs, setInProgressVideoJobs] = useState<VideoJob[]>([]);
+  const videoJobPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const fetchActiveVideoJobs = useCallback(async () => {
+    if (document.hidden) return;
+    try {
+      const { results } = await videoApi.listJobs(
+        { ordering: '-created_at' },
+        { params: { status: 'queued' } },
+      );
+      const { results: processing } = await videoApi.listJobs(
+        { ordering: '-created_at' },
+        { params: { status: 'processing' } },
+      );
+      setInProgressVideoJobs([...processing, ...results]);
+    } catch { /* silently ignore — don't break the navbar */ }
+  }, []);
+
+  useEffect(() => {
+    fetchActiveVideoJobs();
+    const interval = quickReviewOpen ? 5000 : 30000;
+    videoJobPollRef.current = setInterval(fetchActiveVideoJobs, interval);
+    return () => { if (videoJobPollRef.current) clearInterval(videoJobPollRef.current); };
+  }, [quickReviewOpen, fetchActiveVideoJobs]);
+
   const isAdmin = isSystemAdmin || isLandAdmin;
   const currentThemeMode = mode || 'light';
   const orgIdForMyBalance = String(context?.organisation?.id || '').trim();
@@ -131,6 +159,6 @@ export function useTopNavbarState(quickReviewOpen: boolean) {
     createMenuRef,
 
     // Jobs
-    pendingReviewJobs, inProgressJobs, refreshAiJobs,
+    pendingReviewJobs, inProgressJobs, inProgressVideoJobs, refreshAiJobs,
   };
 }

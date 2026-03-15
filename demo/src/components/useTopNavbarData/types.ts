@@ -6,6 +6,7 @@ import type { Location, NavigateFunction } from 'react-router-dom';
 import type { User } from '@django-core/auth-ui';
 import type { QueueCounts } from '../../hooks/useQueueCounts';
 import type { GenerationJob } from '../../hooks/useGenerationJobs';
+import type { VideoJob } from '../../types/api';
 import type { PhotoCompositeFollowUpInfo } from '../topNavbarHelpers';
 import type { LucideIcon } from 'lucide-react';
 
@@ -69,6 +70,7 @@ export interface UseTopNavbarDataReturn {
   setSelectedVariantIdxs: React.Dispatch<React.SetStateAction<Set<number>>>;
   pendingReviewJobs: GenerationJob[];
   inProgressJobs: GenerationJob[];
+  inProgressVideoJobs: VideoJob[];
   refreshAiJobs: () => Promise<void>;
   handleQuickReview: (action: 'approve' | 'reject') => Promise<void>;
   // Photo composite follow-up

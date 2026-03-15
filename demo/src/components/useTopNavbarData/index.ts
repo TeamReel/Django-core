@@ -119,6 +119,7 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void): Us
     setSelectedVariantIdxs: state.setSelectedVariantIdxs,
     pendingReviewJobs: state.pendingReviewJobs,
     inProgressJobs: state.inProgressJobs,
+    inProgressVideoJobs: state.inProgressVideoJobs,
     refreshAiJobs: state.refreshAiJobs,
     handleQuickReview: handlers.handleQuickReview,
     // Photo composite follow-up

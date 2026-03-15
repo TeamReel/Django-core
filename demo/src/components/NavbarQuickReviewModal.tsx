@@ -3,12 +3,24 @@ import { clickableProps } from '@/utils/a11y';
 import s from './TopNavbar.module.css';
 import styles from './NavbarModals.module.css';
 import type { GenerationJob } from '../hooks/useGenerationJobs';
+import type { VideoJob } from '../types/api';
+
+const VIDEO_TYPE_LABELS: Record<string, string> = {
+  lineup: 'Lineup Video',
+  goal_celebration: 'Doelpunt Video',
+  match_intro: 'Match Intro',
+  then_vs_now: 'Transformatie',
+  transcode: 'Transcode',
+  thumbnail: 'Thumbnail',
+  compose: 'Compose',
+};
 
 export interface QuickReviewModalProps {
   queueModalTab: 'review' | 'in-progress';
   setQueueModalTab: (tab: 'review' | 'in-progress') => void;
   pendingReviewJobs: GenerationJob[];
   inProgressJobs: GenerationJob[];
+  inProgressVideoJobs: VideoJob[];
   quickReviewIdx: number;
   setQuickReviewIdx: (fn: number | ((prev: number) => number)) => void;
   selectedVariantIdxs: Set<number>;
@@ -24,6 +36,7 @@ export function NavbarQuickReviewModal({
   setQueueModalTab,
   pendingReviewJobs,
   inProgressJobs,
+  inProgressVideoJobs,
   quickReviewIdx,
   setQuickReviewIdx,
   selectedVariantIdxs,
@@ -34,11 +47,12 @@ export function NavbarQuickReviewModal({
   onNavigate,
 }: QuickReviewModalProps) {
   useEscapeKey(onClose);
+  const totalInProgress = inProgressJobs.length + inProgressVideoJobs.length;
   const jobsToShow = queueModalTab === 'review' ? pendingReviewJobs : inProgressJobs;
   const job = queueModalTab === 'review' ? jobsToShow[quickReviewIdx] : null;
 
   // Empty state
-  if (jobsToShow.length === 0) {
+  if (queueModalTab === 'review' ? pendingReviewJobs.length === 0 : totalInProgress === 0) {
     return (
       <div onClick={onClose} className={s.modalOverlay} role="presentation">
         <div onClick={e => e.stopPropagation()} className={s.modalPanelCentered} role="dialog">
@@ -53,7 +67,7 @@ export function NavbarQuickReviewModal({
               onClick={() => setQueueModalTab('in-progress')}
               className={`${s.tabBtn} ${styles.tabBtnProgress}`} data-active={queueModalTab === 'in-progress'}
             >
-              In Progress ({inProgressJobs.length})
+              In Progress ({totalInProgress})
             </button>
           </div>
           <div className={`mb-12 ${s.emptyIcon}`}>{queueModalTab === 'review' ? '\u2705' : '\u23f3'}</div>
@@ -95,7 +109,7 @@ export function NavbarQuickReviewModal({
                 onClick={() => setQueueModalTab('in-progress')}
                 className={`${s.tabBtn} ${styles.tabBtnAmberActive}`}
               >
-                In Progress ({inProgressJobs.length})
+                In Progress ({totalInProgress})
               </button>
             </div>
           </div>
@@ -111,6 +125,28 @@ export function NavbarQuickReviewModal({
                     {j.status === 'processing' ? 'Bezig...' : j.status === 'retrying' ? 'Opnieuw proberen...' : 'In wachtrij'} {'\u00b7'} {new Date(j.created_at).toLocaleTimeString()}
                   </div>
                 </div>
+              </div>
+            ))}
+            {inProgressVideoJobs.map((j) => (
+              <div key={j.id} className={`flex-row gap-12 p-12 rounded-8 mb-8 ${styles.jobRow}`}>
+                <div className={`${s.jobIcon} ${styles.jobIconStatus}`} data-processing={j.status === 'processing'}>
+                  {j.status === 'processing' ? '\u2699\ufe0f' : '\u23f3'}
+                </div>
+                <div className="flex-1">
+                  <div className="fs-13 fw-600 text-primary">
+                    {VIDEO_TYPE_LABELS[j.job_type] || j.job_type}
+                  </div>
+                  <div className={s.textSecondary11}>
+                    {j.status === 'processing'
+                      ? `Bezig... ${j.progress_percent > 0 ? `(${j.progress_percent}%)` : ''}`
+                      : 'In wachtrij'} {'\u00b7'} {new Date(j.created_at).toLocaleTimeString()}
+                  </div>
+                </div>
+                {j.status === 'processing' && j.progress_percent > 0 && (
+                  <div className="fs-12 fw-700" style={{ color: 'var(--color-blue-600)' }}>
+                    {j.progress_percent}%
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -168,7 +204,7 @@ export function NavbarQuickReviewModal({
               onClick={() => setQueueModalTab('in-progress')}
               className={`${s.tabBtnSmall} ${styles.tabBtnSurfaceInactive}`}
             >
-              In Progress ({inProgressJobs.length})
+              In Progress ({totalInProgress})
             </button>
             <button
               onClick={() => { onClose(); onNavigate('/approvals'); }}
