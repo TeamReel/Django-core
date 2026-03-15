@@ -144,7 +144,8 @@ export function WizardProvider({
   const visibleSteps = steps.filter(s => !s.hidden);
   const visibleIdx = visibleSteps.findIndex(s => s.id === currentStepId);
   const userStepCount = visibleSteps.length;
-  const userStepIndex = visibleIdx >= 0 ? visibleIdx : currentStepIndex;
+  // Hidden steps (generating, success, error) clamp to the last visible step
+  const userStepIndex = visibleIdx >= 0 ? visibleIdx : Math.max(0, userStepCount - 1);
   const progress = userStepCount > 1 ? (userStepIndex / (userStepCount - 1)) * 100 : 100;
 
   // Check if step requirements are met

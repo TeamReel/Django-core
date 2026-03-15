@@ -72,8 +72,13 @@ export function WizardShell({
   // Determine if back button should show
   const showBack = currentStep.showBack !== false && !isFirstStep;
 
+  // Hidden steps (generating, success, error) don't show step progress
+  const isHiddenStep = currentStep.hidden === true;
+
   // Screen reader step announcement — uses visible step count (excludes system steps)
-  const stepAnnouncement = `Stap ${userStepIndex + 1} van ${userStepCount}: ${currentStep.title}`;
+  const stepAnnouncement = isHiddenStep
+    ? currentStep.title
+    : `Stap ${userStepIndex + 1} van ${userStepCount}: ${currentStep.title}`;
 
   return (
     <BottomSheet
@@ -109,8 +114,8 @@ export function WizardShell({
           </button>
         </div>
 
-        {/* ── Progress bar (optional) ──────────────────────────── */}
-        {showProgress && (
+        {/* ── Progress bar (optional, hidden on system steps) ──── */}
+        {showProgress && !isHiddenStep && (
           <div
             className={styles.progressContainer}
             role="progressbar"
