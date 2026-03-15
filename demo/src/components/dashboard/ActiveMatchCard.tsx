@@ -9,8 +9,7 @@
  * with match overview + quick actions instead of navigating away.
  * Match links use vanity URLs built from the active hierarchy context.
  */
-import React, { memo, useEffect, useState, useMemo, useCallback, lazy, Suspense } from 'react';
-import { createPortal } from 'react-dom';
+import React, { memo, useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Zap, ChevronRight, ChevronDown, MapPin, Clock, CheckCircle2,
@@ -26,14 +25,8 @@ import { slugify } from '../../utils/periodPath';
 import { NavigationSheet } from '../ui/NavigationSheet';
 import { LineupSheet } from './LineupSheet';
 import { ContentSheet } from './ContentSheet';
-import { useContentSheet } from './useContentSheet';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
-import type { ContentTemplate } from '../../pages/identity/ContentGenerationModal';
 import styles from './ActiveMatchCard.module.css';
-
-const ContentGenerationModal = lazy(() =>
-  import('../../pages/identity/ContentGenerationModal'),
-);
 
 /* ── Types ──────────────────────────────────────────────────────────── */
 
@@ -102,14 +95,6 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const [lineupSheetOpen, setLineupSheetOpen] = useState(false);
   const [contentSheetOpen, setContentSheetOpen] = useState(false);
 
-  // Content sheet hook for template data + generation modal
-  // context-switcher Organisation type doesn't include sport, but runtime data does
-  const orgSport = (context.organisation as any)?.sport as
-    | { id: string | number; name?: string; slug?: string; parent_sport_id?: number | null }
-    | null
-    | undefined;
-  const content = useContentSheet(match, orgSport, match?.project?.id);
-
   // Collapsible phase blocks (collapsed by default)
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set());
   const togglePhase = useCallback((key: string) => {
@@ -121,25 +106,15 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
     });
   }, []);
 
-  // Quick-generate modal state (opened from phase item rows in match sheet)
-  const [quickGenOpen, setQuickGenOpen] = useState(false);
-  const [quickGenTemplate, setQuickGenTemplate] = useState<ContentTemplate | null>(null);
-  const [quickGenLabel, setQuickGenLabel] = useState('');
-
-  const handleQuickGenerate = useCallback((subtype: string, label: string) => {
-    // Find the first available template matching this subtype
-    const templates = content.availableTemplates[subtype];
-    const template = templates?.[0] ?? null;
-    setQuickGenTemplate(template);
-    setQuickGenLabel(label);
-    setQuickGenOpen(true);
-  }, [content.availableTemplates]);
-
-  const closeQuickGen = useCallback(() => {
-    setQuickGenOpen(false);
-    setQuickGenTemplate(null);
-    setQuickGenLabel('');
-  }, []);
+  // Open the CreateWizard (same as + button) pre-loaded with this match
+  const openCreateWizard = useCallback(() => {
+    if (!match?.id) return;
+    window.dispatchEvent(
+      new CustomEvent('teamreel:open-quick-create', {
+        detail: { matchId: match.id, flow: 'content' },
+      }),
+    );
+  }, [match?.id]);
 
   // Sync query counts → local state (callback overrides take precedence until next refetch)
   useEffect(() => {
@@ -416,8 +391,8 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
                               setSheetOpen(false);
                               setContentSheetOpen(true);
                             } else {
-                              // Open generation modal — with pre-selected template if available
-                              handleQuickGenerate(item.subtype, item.label);
+                              // Open the CreateWizard for this match
+                              openCreateWizard();
                             }
                           }}
                           aria-label={`${item.label}: ${isDone ? 'bekijk' : 'maak aan'}`}
@@ -487,43 +462,6 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
           setTimeout(() => setBadgeBump(null), 400);
         }}
       />
-
-      {/* ── Quick-generate modal (portal — stacks above match sheet) ── */}
-      {quickGenOpen &&
-        createPortal(
-          <Suspense fallback={null}>
-            <ContentGenerationModal
-              isOpen={quickGenOpen}
-              onClose={closeQuickGen}
-              onGenerated={() => {
-                closeQuickGen();
-                void content.refreshMedia().then(() => {
-                  setContentCount((prev) => prev + 1);
-                  setBadgeBump('content');
-                  setTimeout(() => setBadgeBump(null), 400);
-                });
-              }}
-              matchData={match ? {
-                id: match.id,
-                title: match.title,
-                project: { id: match.project.id, name: match.project.name },
-                opponent_project: match.opponent_project
-                  ? { id: '', name: match.opponent_project.name }
-                  : undefined,
-                start_time: match.start_time,
-                location: match.location,
-                metadata: match.metadata,
-              } : null}
-              organisationSport={orgSport
-                ? { id: orgSport.id, name: orgSport.name ?? '', slug: orgSport.slug }
-                : undefined}
-              organisationId={match?.organisation?.id}
-              template={quickGenTemplate}
-              contentTypeLabel={quickGenLabel}
-            />
-          </Suspense>,
-          document.body,
-        )}
     </>
   );
 });
