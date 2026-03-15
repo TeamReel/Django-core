@@ -19,6 +19,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useProjectMembers } from '../../hooks/useProjectMembers';
 import { useGenerativeRequests } from '../../hooks/useGenerativeRequests';
 import { useClosestMatch } from '../../hooks/useClosestMatch';
+import { useMatchDayMode } from '../../hooks/useMatchDayMode';
 import { UploadSheet } from './UploadSheet';
 import styles from './SmartActionsCard.module.css';
 
@@ -89,10 +90,13 @@ export const SmartActionsCard: React.FC = () => {
 
   const { data: genData, isLoading: genLoading } = useGenerativeRequests(genFilters);
 
-  // Closest match — for lineup action
+  // Closest match — for lineup action + match-day mode
   const { data: matchData } = useClosestMatch(project?.id);
   const activeMatch = matchData?.match ?? null;
   const lineupCount = matchData?.lineupCount ?? 0;
+
+  // Match-day mode (H4) — filter to match-relevant actions only
+  const matchDay = useMatchDayMode(activeMatch);
 
   const loading = (!org) ? false : (membersLoading || genLoading);
 
@@ -189,8 +193,16 @@ export const SmartActionsCard: React.FC = () => {
 
     // Sort by priority (highest first) and limit to 4
     computed.sort((a, b) => b.priority - a.priority);
+
+    // Match-day filter (H4): only show match-relevant actions on match day
+    if (matchDay.isMatchDay) {
+      const matchKeys = new Set(['lineup-fill', 'upload-media', 'missing-in_tenue', 'missing-profile_photo']);
+      const filtered = computed.filter(a => matchKeys.has(a.key));
+      return filtered.slice(0, 4);
+    }
+
     return computed.slice(0, 4);
-  }, [org, project, membersData, genData, activeMatch, lineupCount]);
+  }, [org, project, membersData, genData, activeMatch, lineupCount, matchDay.isMatchDay]);
 
   if (loading) {
     return (

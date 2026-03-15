@@ -20,10 +20,12 @@ import { routes } from '../../routes';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import { useClosestMatch } from '../../hooks/useClosestMatch';
 import { slugify } from '../../utils/periodPath';
+import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
 import { LineupSheet } from './LineupSheet';
 import { ContentSheet } from './ContentSheet';
 import { useMatchSheet } from './useMatchSheet';
 import { MatchSheet } from './MatchSheet';
+import { ReadinessRing } from './ReadinessRing';
 import styles from './ActiveMatchCard.module.css';
 
 /* ── Types ──────────────────────────────────────────────────────────── */
@@ -119,6 +121,15 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const relTime = formatRelativeTime(date, 'nl');
   const urgency = getDateUrgency(date);
 
+  // Readiness calculation (H4)
+  const totalContentItems =
+    (CONTENT_TYPES.pre_match?.items.length ?? 0) +
+    (CONTENT_TYPES.during_match?.items.length ?? 0) +
+    (CONTENT_TYPES.post_match?.items.length ?? 0);
+  const readinessPercent = totalContentItems > 0
+    ? Math.round((sheet.contentDoneSubtypes.length / totalContentItems) * 100)
+    : 0;
+
   return (
     <>
       <div
@@ -127,14 +138,17 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
         role="button"
         tabIndex={0}
       >
-        {/* Status badge */}
+        {/* Status badge + readiness ring */}
         <div className={styles.topRow}>
           <span className={`${styles.badge} ${styles[`badge_${sheet.matchState}`]}`}>
             {sheet.matchState === 'live' ? <><Circle size={8} fill="currentColor" /> LIVE</> : sheet.matchState === 'upcoming' ? 'Aankomend' : 'Gespeeld'}
           </span>
-          <span className={`${styles.timeLabel} ${styles[`time_${urgency}`]}`}>
-            {relTime}
-          </span>
+          <div className={styles.topRowRight}>
+            <ReadinessRing percent={readinessPercent} size={48} />
+            <span className={`${styles.timeLabel} ${styles[`time_${urgency}`]}`}>
+              {relTime}
+            </span>
+          </div>
         </div>
 
         {/* Match teams */}

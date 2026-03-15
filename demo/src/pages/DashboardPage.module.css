@@ -28,6 +28,70 @@
   margin: 0;
 }
 
+/* ── Match-day header (H4) ───────────────────────────────────────────── */
+.matchDayHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.countdownBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--color-amber-400, #fbbf24);
+}
+
+.liveDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-red-500, #ef4444);
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.matchDaySubtitle {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  margin: 0;
+}
+
+/* ── Match-day active match accent ───────────────────────────────────── */
+.matchDayActiveMatch {
+  border: 2px solid var(--color-amber-400, #fbbf24);
+  box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-3);
+}
+
+.matchDayActiveMatch > * {
+  margin-bottom: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .matchDayActiveMatch {
+    animation: matchDayPulse 3s ease-in-out infinite;
+  }
+}
+
+@keyframes matchDayPulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15); }
+  50% { box-shadow: 0 0 0 6px rgba(251, 191, 36, 0.25); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .liveDot {
+    animation: none;
+  }
+}
+
 /* ── Low balance banner ──────────────────────────────────────────────── */
 .lowBanner {
   display: flex;

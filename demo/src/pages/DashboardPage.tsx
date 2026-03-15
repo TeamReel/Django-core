@@ -3,7 +3,7 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { PullToRefresh } from '@django-core/design-system';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Zap } from 'lucide-react';
 import {
   ActiveMatchCard,
   UpcomingMatchesCard,
@@ -19,6 +19,9 @@ import { useUserRole } from '../components/PermissionGuards';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 import { useCreditBalance } from '../hooks/useCreditBalance';
 import { usePreloadRoutes } from '../hooks/usePreloadRoutes';
+import { useClosestMatch } from '../hooks/useClosestMatch';
+import { useMatchDayMode } from '../hooks/useMatchDayMode';
+import { CONTENT_TYPES } from './identity/ContentGenerationModal';
 import styles from './DashboardPage.module.css';
 
 export default function DashboardPage() {
@@ -41,6 +44,19 @@ export default function DashboardPage() {
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(
     org?.slug,
     org?.id?.toString(),
+  );
+
+  // ── Match-day mode (H4) ──
+  const { data: matchData } = useClosestMatch(project?.id);
+  const activeMatch = matchData?.match ?? null;
+  const totalContentItems =
+    (CONTENT_TYPES.pre_match?.items.length ?? 0) +
+    (CONTENT_TYPES.during_match?.items.length ?? 0) +
+    (CONTENT_TYPES.post_match?.items.length ?? 0);
+  const matchDay = useMatchDayMode(
+    activeMatch,
+    matchData?.contentDoneSubtypes ?? [],
+    totalContentItems,
   );
 
   // ── Role tiers ──
@@ -77,14 +93,29 @@ export default function DashboardPage() {
 
         {/* ── Header ─────────────────────────────────────────────── */}
         <div className={styles.header}>
-          <div>
-            <h1 className={styles.greeting}>
-              Welkom, {user?.first_name || 'there'}
-            </h1>
-            <p className={styles.orgSubtitle}>
-              {project ? project.name : org ? org.name : 'Selecteer een organisatie'}
-            </p>
-          </div>
+          {matchDay.isMatchDay ? (
+            <div className={styles.matchDayHeader}>
+              <div className={styles.countdownBadge} aria-live="polite" aria-label="Aftelling tot wedstrijd">
+                {matchDay.countdown === 'LIVE' ? (
+                  <><span className={styles.liveDot} /> LIVE</>
+                ) : (
+                  <><Zap size={16} /> {matchDay.countdown}</>
+                )}
+              </div>
+              <p className={styles.matchDaySubtitle}>
+                {activeMatch?.title || 'Wedstrijd'}{activeMatch?.location ? ` · ${activeMatch.location}` : ''}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <h1 className={styles.greeting}>
+                Welkom, {user?.first_name || 'there'}
+              </h1>
+              <p className={styles.orgSubtitle}>
+                {project ? project.name : org ? org.name : 'Selecteer een organisatie'}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* ── Low balance banner (org admins only) ──────────────── */}
@@ -106,7 +137,8 @@ export default function DashboardPage() {
           <div className={styles.mainCol}>
 
             {/* 1. Active Match — the match closest to now */}
-            <ActiveMatchCard />
+            {matchDay.isMatchDay && <div className={styles.matchDayActiveMatch}><ActiveMatchCard /></div>}
+            {!matchDay.isMatchDay && <ActiveMatchCard />}
 
             {/* 1b. Upcoming Matches — next 5 matches with readiness */}
             <UpcomingMatchesCard />

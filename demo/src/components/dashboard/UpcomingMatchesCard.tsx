@@ -16,6 +16,7 @@ import { useMatchSheet } from './useMatchSheet';
 import { MatchSheet } from './MatchSheet';
 import { LineupSheet } from './LineupSheet';
 import { ContentSheet } from './ContentSheet';
+import { ReadinessRing } from './ReadinessRing';
 import { buildMatchVanityUrl, buildMatchVanityUrlWithTab } from './ActiveMatchCard';
 import type { Match } from './ActiveMatchCard';
 import styles from './UpcomingMatchesCard.module.css';
@@ -190,19 +191,7 @@ const MatchRow: React.FC<MatchRowProps> = memo(function MatchRow({ match, onSele
       </div>
 
       <div className={styles.matchReadiness}>
-        <span
-          className={styles.readinessPercent}
-          data-ready={readiness === 100 ? 'true' : 'false'}
-        >
-          {readiness}%
-        </span>
-        <div className={styles.readinessBar}>
-          <div
-            className={styles.readinessFill}
-            style={{ width: `${readiness}%` }}
-            data-ready={readiness === 100 ? 'true' : 'false'}
-          />
-        </div>
+        <ReadinessRing percent={readiness} size={32} showLabel={false} />
       </div>
 
       <ChevronRight size={16} className={styles.chevron} />
