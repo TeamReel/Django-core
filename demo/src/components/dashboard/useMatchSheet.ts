@@ -67,6 +67,25 @@ export function useMatchSheet(
 
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set());
 
+  // Listen for external sheet open requests (e.g. SmartActionsCard lineup action)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.matchId === match?.id) {
+        setSheetOpen(true);
+        if (detail.autoOpenLineup) {
+          // Small delay to let sheet animate, then open lineup sub-sheet
+          setTimeout(() => {
+            setSheetOpen(false);
+            setLineupSheetOpen(true);
+          }, 300);
+        }
+      }
+    };
+    window.addEventListener('teamreel:open-match-sheet', handler);
+    return () => window.removeEventListener('teamreel:open-match-sheet', handler);
+  }, [match?.id]);
+
   // Sync from query data
   useEffect(() => {
     if (matchData) {

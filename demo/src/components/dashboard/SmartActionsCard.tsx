@@ -4,14 +4,12 @@
  * Analyzes the current state (team members, content completeness, matches)
  * and surfaces the most relevant actions the user should take next.
  *
- * Actions open the correct modal / wizard directly:
- * - Match actions → open MatchWizard via teamreel:open-quick-create event
- * - Member content → navigate to season media tab (batch generation)
- * - Upload → navigate to media library
+ * All actions stay inline — no navigate-away:
+ * - Content generation → CreateWizard via teamreel:open-quick-create event
+ * - Upload → inline UploadSheet (NavigationSheet + FileUpload)
+ * - Lineup → teamreel:open-match-sheet event → ActiveMatchCard opens lineup
  */
 import React, { useState, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { routes } from '../../routes';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   Zap, ChevronRight, Shirt, Camera, Image,
@@ -20,13 +18,15 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { useProjectMembers } from '../../hooks/useProjectMembers';
 import { useGenerativeRequests } from '../../hooks/useGenerativeRequests';
-import { useAppSelection } from '../../hooks/useAppSelection';
+import { useClosestMatch } from '../../hooks/useClosestMatch';
+import { UploadSheet } from './UploadSheet';
 import styles from './SmartActionsCard.module.css';
 
-/** How an action opens: navigate to page, or navigate with tab */
+/** How an action executes — all inline, never navigate */
 type ActionMode =
-  | { type: 'navigate'; path: string }
-  | { type: 'season-tab'; tab: string };
+  | { type: 'create-wizard'; flow: 'content'; subtype?: string }
+  | { type: 'upload' }
+  | { type: 'match-sheet'; matchId: string; autoOpenLineup?: boolean };
 
 interface SmartAction {
   key: string;
@@ -44,34 +44,37 @@ const MEMBER_CONTENT_TYPES = ['profile_photo', 'in_tenue', 'closeup', 'short_int
 
 export const SmartActionsCard: React.FC = () => {
   const { context } = useContextSwitcher();
-  const navigate = useNavigate();
   const org = context.organisation;
   const project = context.project;
-  const { orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId } = useAppSelection();
 
-  // ── Action handler — stub for H1, full sheet-ification in H3 ──────
+  // Upload sheet state
+  const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
+
+  // ── Action handler — all inline, zero navigate ──────────────────
   const handleAction = useCallback((action: SmartAction) => {
-    // H3: replace with inline sheet / CreateWizard events
-    console.warn('[SmartActionsCard] Action stub — sheet pattern pending H3:', action.key);
-
     switch (action.mode.type) {
-      case 'season-tab': {
-        const base = orgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId
-          ? `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}`
-          : null;
-        if (base) {
-          navigate(`${base}?tab=${encodeURIComponent(action.mode.tab)}`);
-        } else {
-          navigate(routes.dashboard());
-        }
+      case 'create-wizard':
+        window.dispatchEvent(
+          new CustomEvent('teamreel:open-quick-create', {
+            detail: { flow: action.mode.flow, subtype: action.mode.subtype },
+          }),
+        );
         break;
-      }
-
-      case 'navigate':
-        navigate(action.mode.path);
+      case 'upload':
+        setUploadSheetOpen(true);
+        break;
+      case 'match-sheet':
+        window.dispatchEvent(
+          new CustomEvent('teamreel:open-match-sheet', {
+            detail: {
+              matchId: action.mode.matchId,
+              autoOpenLineup: action.mode.autoOpenLineup,
+            },
+          }),
+        );
         break;
     }
-  }, [navigate, orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId]);
+  }, []);
 
   // Parallel queries — deduped via shared hooks (D5)
   const { data: membersData, isLoading: membersLoading } = useProjectMembers(
@@ -85,6 +88,11 @@ export const SmartActionsCard: React.FC = () => {
   }, [project?.id]);
 
   const { data: genData, isLoading: genLoading } = useGenerativeRequests(genFilters);
+
+  // Closest match — for lineup action
+  const { data: matchData } = useClosestMatch(project?.id);
+  const activeMatch = matchData?.match ?? null;
+  const lineupCount = matchData?.lineupCount ?? 0;
 
   const loading = (!org) ? false : (membersLoading || genLoading);
 
@@ -146,13 +154,27 @@ export const SmartActionsCard: React.FC = () => {
             Icon: cfg.Icon,
             colorClass: cfg.colorClass,
             priority: missing === totalMembers ? 100 : 80 + (missing / totalMembers) * 20,
-            mode: { type: 'season-tab', tab: 'media' },
+            mode: { type: 'create-wizard', flow: 'content', subtype: type },
           });
         }
       }
     }
 
-    // Upload action if project
+    // Lineup action — if active match has no lineup
+    if (activeMatch && lineupCount === 0) {
+      const matchTitle = activeMatch.title || `${activeMatch.project?.club_name || activeMatch.project?.name || 'Team'} vs ${activeMatch.opponent_project?.club_name || activeMatch.opponent_project?.name || 'Tegenstander'}`;
+      computed.push({
+        key: 'lineup-fill',
+        label: 'Lineup invullen',
+        subtitle: matchTitle,
+        Icon: Shirt,
+        colorClass: styles.colorBlue,
+        priority: 90, // High — match without lineup is urgent
+        mode: { type: 'match-sheet', matchId: activeMatch.id, autoOpenLineup: true },
+      });
+    }
+
+    // Upload action if project — inline sheet
     if (project) {
       computed.push({
         key: 'upload-media',
@@ -161,14 +183,14 @@ export const SmartActionsCard: React.FC = () => {
         Icon: Upload,
         colorClass: styles.colorViolet,
         priority: 30,
-        mode: { type: 'navigate', path: '/medialib' },
+        mode: { type: 'upload' },
       });
     }
 
     // Sort by priority (highest first) and limit to 4
     computed.sort((a, b) => b.priority - a.priority);
     return computed.slice(0, 4);
-  }, [org, project, membersData, genData]);
+  }, [org, project, membersData, genData, activeMatch, lineupCount]);
 
   if (loading) {
     return (
@@ -189,29 +211,37 @@ export const SmartActionsCard: React.FC = () => {
   if (actions.length === 0) return null;
 
   return (
-    <div className={styles.card}>
-      <div className={styles.header}>
-        <Zap size={16} />
-        <span className={styles.title}>Aanbevolen acties</span>
+    <>
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <Zap size={16} />
+          <span className={styles.title}>Aanbevolen acties</span>
+        </div>
+        <div className={styles.actionList}>
+          {actions.map(action => (
+            <button
+              key={action.key}
+              className={`${styles.actionItem} ${action.colorClass}`}
+              onClick={() => handleAction(action)}
+            >
+              <div className={styles.actionIcon}>
+                <action.Icon size={18} />
+              </div>
+              <div className={styles.actionText}>
+                <span className={styles.actionLabel}>{action.label}</span>
+                <span className={styles.actionSubtitle}>{action.subtitle}</span>
+              </div>
+              <ChevronRight size={16} className={styles.actionArrow} />
+            </button>
+          ))}
+        </div>
       </div>
-      <div className={styles.actionList}>
-        {actions.map(action => (
-          <button
-            key={action.key}
-            className={`${styles.actionItem} ${action.colorClass}`}
-            onClick={() => handleAction(action)}
-          >
-            <div className={styles.actionIcon}>
-              <action.Icon size={18} />
-            </div>
-            <div className={styles.actionText}>
-              <span className={styles.actionLabel}>{action.label}</span>
-              <span className={styles.actionSubtitle}>{action.subtitle}</span>
-            </div>
-            <ChevronRight size={16} className={styles.actionArrow} />
-          </button>
-        ))}
-      </div>
-    </div>
+
+      {/* Inline upload sheet */}
+      <UploadSheet
+        isOpen={uploadSheetOpen}
+        onClose={() => setUploadSheetOpen(false)}
+      />
+    </>
   );
 };

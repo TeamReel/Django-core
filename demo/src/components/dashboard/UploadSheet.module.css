@@ -1,0 +1,133 @@
+/* UploadSheet — inline upload styling */
+
+.sheetContent {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.uploadZone {
+  min-height: 160px;
+}
+
+/* ── File list ── */
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fileRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--app-surface-alt, #f9fafb);
+  border: 1px solid var(--app-border);
+}
+
+.fileThumbnail {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--app-bg);
+}
+
+.fileThumbnailPlaceholder {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--app-bg);
+  color: var(--app-muted-text);
+}
+
+.fileInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fileName {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileSize {
+  font-size: var(--text-xs);
+  color: var(--app-muted-text);
+}
+
+.fileStatus {
+  flex-shrink: 0;
+}
+
+.statusIcon {
+  color: var(--color-success, #22c55e);
+}
+
+.statusError {
+  color: var(--color-error, #ef4444);
+}
+
+.progressBar {
+  width: 48px;
+}
+
+/* ── Success grid ── */
+.successGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: var(--space-2);
+}
+
+.successThumb {
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  width: 100%;
+  border: 1px solid var(--app-border);
+}
+
+/* ── Footer ── */
+.sheetFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--app-border);
+}
+
+.doneButton {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--app-primary);
+  color: white;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  border: none;
+  cursor: pointer;
+  transition: opacity var(--duration-fast);
+}
+
+.doneButton:hover {
+  opacity: 0.9;
+}
+
+.doneButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

@@ -63,6 +63,7 @@
 .colorAmber  { --_accent: var(--color-amber, #f59e0b); }
 .colorGreen  { --_accent: var(--color-green, #22c55e); }
 .colorViolet { --_accent: var(--color-violet, #8b5cf6); }
+.colorBlue   { --_accent: var(--color-blue, #3b82f6); }
 
 .actionIcon {
   display: flex;
