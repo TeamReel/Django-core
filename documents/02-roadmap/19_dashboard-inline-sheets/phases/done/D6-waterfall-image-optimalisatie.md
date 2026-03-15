@@ -1,6 +1,6 @@
 # D6 — Waterfall Eliminatie & Image Optimalisatie
 
-> **Status:** 📋 Gepland
+> **Status:** ✅ Afgerond (commit `63b57c4d`)
 > **Geschatte effort:** 2-3 uur
 > **Geschatte omvang:** ~100 regels wijzigingen
 > **Bron:** [optimalisatie-analyse.md — §2 & §3](../../../05-demo/features/optimalisatie-analyse.md)
@@ -113,11 +113,11 @@ const breadcrumbData = useQuery({
 
 ## Acceptatiecriteria
 
-- [ ] Geen sequentiële API waterfalls in dashboard cards
-- [ ] Template flags + templates parallel gefetcht
-- [ ] Breadcrumb data cached met `staleTime: 30min`
-- [ ] 14/16 images hebben `loading="lazy"`
-- [ ] Above-the-fold images (logo, avatar) NIET lazy
-- [ ] Network waterfall chart toont parallelle calls (DevTools verificatie)
-- [ ] TypeScript clean, Vite build succesvol
-- [ ] Geen regressies in data weergave of breadcrumbs
+- [x] Geen sequentiële API waterfalls in dashboard cards
+- [x] Template flags + templates parallel gefetcht
+- [x] Breadcrumb data cached met `staleTime: 30min`
+- [x] 14/16 images hebben `loading="lazy"`
+- [x] Above-the-fold images (logo, avatar) NIET lazy
+- [x] Network waterfall chart toont parallelle calls (DevTools verificatie)
+- [x] TypeScript clean, Vite build succesvol
+- [x] Geen regressies in data weergave of breadcrumbs

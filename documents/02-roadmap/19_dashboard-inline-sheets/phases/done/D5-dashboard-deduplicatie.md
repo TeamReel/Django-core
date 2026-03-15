@@ -1,6 +1,6 @@
 # D5 — Dashboard Request Deduplicatie
 
-> **Status:** 📋 Gepland
+> **Status:** ✅ Afgerond (commit `ce44e1a8`)
 > **Geschatte effort:** 4-6 uur
 > **Geschatte omvang:** ~400 regels migratie
 > **Bron:** [optimalisatie-analyse.md — §1](../../../05-demo/features/optimalisatie-analyse.md)
@@ -117,11 +117,11 @@ Geen loading spinner bij terugnavigatie.
 
 ## Acceptatiecriteria
 
-- [ ] Alle dashboard cards gebruiken `useQuery` i.p.v. `useEffect` + `useState`
-- [ ] Dashboard API calls ≤ 12 (gemeten via browser DevTools Network tab)
-- [ ] 0 duplicate requests op dashboard mount
-- [ ] `staleTime` per data type geconfigureerd
-- [ ] Navigatie dashboard → pagina → dashboard: instant uit cache
-- [ ] Mutaties (save/generate) invalidaten relevante queries
-- [ ] TypeScript clean, Vite build succesvol
-- [ ] Geen regressies in card data weergave
+- [x] Alle dashboard cards gebruiken `useQuery` i.p.v. `useEffect` + `useState`
+- [x] Dashboard API calls ≤ 12 (gemeten via browser DevTools Network tab)
+- [x] 0 duplicate requests op dashboard mount
+- [x] `staleTime` per data type geconfigureerd
+- [x] Navigatie dashboard → pagina → dashboard: instant uit cache
+- [x] Mutaties (save/generate) invalidaten relevante queries
+- [x] TypeScript clean, Vite build succesvol
+- [x] Geen regressies in card data weergave
