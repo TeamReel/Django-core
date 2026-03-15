@@ -70,7 +70,7 @@ export function MemberCelebrationTab({
             <div key={`celebration-kit-${kit.id}`} className={s.kitSectionMargin}>
               <div className={`${s.flexCenterGap8} ${styles.kitHeader}`}>
                 {kit.url ? (
-                  <img src={kit.url} alt={kit.label} className={s.kitIconImg} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <img src={kit.url} alt={kit.label} className={s.kitIconImg} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : (
                   <span className={styles.kitIconFallback}>{kit.icon}</span>
                 )}

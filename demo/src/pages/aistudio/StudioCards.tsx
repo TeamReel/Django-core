@@ -136,7 +136,7 @@ export function StudioPreviewModal({
               controls
             />
           ) : url ? (
-            <img src={url} alt={item.title || ''} className={styles.previewMediaEl} />
+            <img src={url} alt={item.title || ''} className={styles.previewMediaEl} loading="lazy" />
           ) : (
             <div className={styles.previewFallback}>Geen preview beschikbaar</div>
           )}

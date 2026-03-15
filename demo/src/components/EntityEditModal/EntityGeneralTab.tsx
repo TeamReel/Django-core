@@ -96,7 +96,7 @@ export function EntityGeneralTab({ entityType, formData, setFormData, disabled, 
               {uploading ? (
                 <Loader2 size={24} className={styles.spinner} />
               ) : logoUrl ? (
-                <img src={logoUrl} alt="Logo preview" className={`w-full h-full p-4 ${styles.logoImg}`} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <img src={logoUrl} alt="Logo preview" className={`w-full h-full p-4 ${styles.logoImg}`} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               ) : (
                 <span className={`text-muted fw-700 ${styles.logoPlaceholder}`}>{String(formData.name || '?').charAt(0).toUpperCase()}</span>
               )}

@@ -227,7 +227,7 @@ export function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Phot
 
         {!submitted && (
           <div className={s.previewCenter}>
-            <img src={info.approvedImageUrl} alt="Approved composite" className={s.previewImg} />
+            <img src={info.approvedImageUrl} alt="Approved composite" className={s.previewImg} loading="lazy" />
           </div>
         )}
 

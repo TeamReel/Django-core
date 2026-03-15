@@ -144,7 +144,7 @@ function ScoreColumn({ teamName, logoUrl, score, onDecrement, onIncrement }: Sco
   return (
     <div className={`text-center ${styles.scoreColumn}`}>
       {logoUrl ? (
-        <img src={logoUrl} alt="" className={styles.teamLogo} />
+        <img src={logoUrl} alt="" className={styles.teamLogo} loading="lazy" />
       ) : null}
       <div className={styles.teamName}>
         {teamName}

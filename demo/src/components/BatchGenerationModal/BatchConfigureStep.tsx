@@ -155,7 +155,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
               data-has-overrides={hasOverrides}
             >
               {member.profilePhotoUrl ? (
-                <img src={getAssetUrl(member.profilePhotoUrl) || ''} alt="" className={styles.avatar} />
+                <img src={getAssetUrl(member.profilePhotoUrl) || ''} alt="" className={styles.avatar} loading="lazy" />
               ) : (
                 <div className={`flex-center ${styles.avatarFallback}`}>
                   👤

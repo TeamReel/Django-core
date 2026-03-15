@@ -158,7 +158,7 @@ export function ContentTypeStep({
             >
               <div className={styles.thumbArea} data-output={content.outputType}>
                 {content.thumbnail ? (
-                  <img src={content.thumbnail} alt={content.label} className={styles.thumbImg} />
+                  <img src={content.thumbnail} alt={content.label} className={styles.thumbImg} loading="lazy" />
                 ) : (
                   <Icon size={28} className={styles.thumbIcon} />
                 )}
@@ -219,7 +219,7 @@ export function ReviewStep({
       {/* Large preview */}
       <div className={styles.reviewPreview} data-output={outputType}>
         {thumbnail ? (
-          <img src={thumbnail} alt={contentLabel} className={styles.reviewPreviewImg} />
+          <img src={thumbnail} alt={contentLabel} className={styles.reviewPreviewImg} loading="lazy" />
         ) : (
           <Icon size={48} className={styles.reviewPreviewIcon} />
         )}

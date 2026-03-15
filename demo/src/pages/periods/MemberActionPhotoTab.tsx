@@ -71,7 +71,7 @@ export function MemberActionPhotoTab({
             <div key={`action-kit-${kit.id}`} className={s.kitSectionMargin}>
               <div className={`${s.flexCenterGap8} ${m.kitHeader}`}>
                 {kit.url ? (
-                  <img src={kit.url} alt={kit.label} className={s.kitIconImg} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <img src={kit.url} alt={kit.label} className={s.kitIconImg} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : (
                   <span className={m.kitIconFallback}>{kit.icon}</span>
                 )}

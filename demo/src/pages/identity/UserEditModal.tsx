@@ -71,7 +71,7 @@ export default function UserEditModal({
                 <div className="flex-row gap-16">
                   <div className={`rounded-full overflow-hidden border bg-surface-2 flex-center ${styles.avatar}`}>
                     {d.avatarPreview || user?.avatar_url ? (
-                      <img src={d.avatarPreview || user?.avatar_url} alt="Avatar" className={`w-full h-full ${styles.avatarImg}`} />
+                      <img src={d.avatarPreview || user?.avatar_url} alt="Avatar" className={`w-full h-full ${styles.avatarImg}`} loading="lazy" />
                     ) : (
                       <span className="fs-24 text-muted">
                         {(user?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase()}

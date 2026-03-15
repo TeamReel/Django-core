@@ -111,7 +111,7 @@ export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModa
                         isVideo(v) ? (
                           <video src={url} controls autoPlay={variants.length === 1} loop className={`block ${styles.variantMedia}`} data-single={variants.length === 1} />
                         ) : (
-                          <img src={url} alt={`Variant ${v.variant_index + 1}`} className={`block object-contain ${styles.variantMedia}`} data-single={variants.length === 1} />
+                          <img src={url} alt={`Variant ${v.variant_index + 1}`} className={`block object-contain ${styles.variantMedia}`} data-single={variants.length === 1} loading="lazy" />
                         )
                       ) : (
                         <div className={`flex-col flex-center gap-6 fs-12 ${styles.noPreview}`} data-single={variants.length === 1}>

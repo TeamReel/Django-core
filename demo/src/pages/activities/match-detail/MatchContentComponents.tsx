@@ -79,7 +79,7 @@ export function Thumbnail({ url, isVideo, icon }: { url: string | null; isVideo:
           <div className={`absolute flex-center fs-18 ${styles.playOverlay}`}></div>
         </>
       ) : (
-        <img src={url} alt="" className={styles.thumbnailMedia} />
+        <img src={url} alt="" className={styles.thumbnailMedia} loading="lazy" />
       )}
     </div>
   );

@@ -46,7 +46,7 @@ export function ReviewStep({ onGenerate, saveError }: ReviewStepProps) {
       {/* Large preview */}
       <div className={styles.reviewPreview} data-output={ct.outputType}>
         {ct.thumbnail ? (
-          <img src={ct.thumbnail} alt={ct.label} className={styles.reviewPreviewImg} />
+          <img src={ct.thumbnail} alt={ct.label} className={styles.reviewPreviewImg} loading="lazy" />
         ) : (
           <Icon size={48} className={styles.reviewPreviewIcon} />
         )}

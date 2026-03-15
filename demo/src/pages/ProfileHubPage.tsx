@@ -158,7 +158,7 @@ export default function ProfileHubPage() {
           aria-label="Change profile photo"
         >
           {avatarUrl ? (
-            <img src={avatarUrl} alt={fullName} className={s.avatarImg} />
+            <img src={avatarUrl} alt={fullName} className={s.avatarImg} loading="lazy" />
           ) : (
             <span className={s.avatarInitials}>{initials}</span>
           )}

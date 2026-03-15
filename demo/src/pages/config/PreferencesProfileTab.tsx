@@ -72,7 +72,7 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
               }}
             >
               {String(u?.avatar_url || '').trim() ? (
-                <img src={String(u?.avatar_url)} alt="Profile" className={`w-full h-full ${styles.avatarImage}`} />
+                <img src={String(u?.avatar_url)} alt="Profile" className={`w-full h-full ${styles.avatarImage}`} loading="lazy" />
               ) : (
                 <span className="text-primary">
                   {String(u?.first_name || u?.email || 'U').trim().slice(0, 1).toUpperCase()}

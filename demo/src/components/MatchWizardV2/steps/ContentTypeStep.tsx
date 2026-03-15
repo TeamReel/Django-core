@@ -127,7 +127,7 @@ export function ContentTypeStep() {
             >
               <div className={styles.thumbArea} data-output={content.outputType}>
                 {content.thumbnail ? (
-                  <img src={content.thumbnail} alt={content.label} className={styles.thumbImg} />
+                  <img src={content.thumbnail} alt={content.label} className={styles.thumbImg} loading="lazy" />
                 ) : (
                   <Icon size={28} className={styles.thumbIcon} />
                 )}

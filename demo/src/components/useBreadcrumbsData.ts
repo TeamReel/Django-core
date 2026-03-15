@@ -3,7 +3,7 @@
  * 7 useEffect hooks that fetch switcher options for each hierarchy level.
  * Keeps Breadcrumbs.tsx focused on route matching and crumbs building.
  */
-import { useEffect, useMemo, useReducer } from 'react';
+import { useEffect, useMemo, useReducer, useRef } from 'react';
 import type { BreadcrumbSwitcherOption } from '@django-core/page-templates';
 import { api } from '@/api';
 import { fetchAllPages } from '../utils/fetchAllPages';
@@ -108,7 +108,7 @@ export function useBreadcrumbsData({
         const users = await fetchAllPages<ApiUser>(
           `${apiBaseUrl}/admin/users/?page_size=200`,
           { credentials: 'include' },
-          { ttlMs: 60_000, cacheKey: 'breadcrumbs:users', maxItems: 200 }
+          { ttlMs: 1_800_000, cacheKey: 'breadcrumbs:users', maxItems: 200 }
         );
         if (cancelled) return;
         const nextOptions = (Array.isArray(users) ? users : []).map((u: ApiUser) => {
@@ -197,13 +197,19 @@ export function useBreadcrumbsData({
     fetchTeams();
   }, [isTeamDetail, orgSlug, clubSlugOrId, s.clubOptions]);
 
-  // ─── Shared helper: resolve project ID from team slug ───
+  // ─── Cached project ID resolver (avoids redundant API calls across effects) ───
+  const projectIdCache = useRef<Map<string, string>>(new Map());
   const resolveProjectId = async (org: string, team: string): Promise<string> => {
+    const cacheKey = `${org}:${team}`;
+    const cached = projectIdCache.current.get(cacheKey);
+    if (cached) return cached;
     try {
       const projectJson = await api.get<ApiProject>(
         `/organisations/${encodeURIComponent(org)}/projects/${encodeURIComponent(team)}/`,
       );
-      return String(projectJson?.id || '').trim();
+      const id = String(projectJson?.id || '').trim();
+      if (id) projectIdCache.current.set(cacheKey, id);
+      return id;
     } catch {
       return '';
     }
@@ -214,7 +220,7 @@ export function useBreadcrumbsData({
     return fetchAllPages<ApiPeriod>(
       `${apiBaseUrl}/periods/?project_id=${encodeURIComponent(projectId)}&parent_id=null&page_size=500`,
       { credentials: 'include' },
-      { ttlMs: 60_000, cacheKey: `periods:root:breadcrumb:${projectId}` }
+      { ttlMs: 1_800_000, cacheKey: `periods:root:breadcrumb:${projectId}` }
     );
   };
 
@@ -223,7 +229,7 @@ export function useBreadcrumbsData({
     return fetchAllPages<ApiPeriod>(
       `${apiBaseUrl}/periods/?parent_id=${encodeURIComponent(parentId)}&page_size=500`,
       { credentials: 'include' },
-      { ttlMs: 60_000, cacheKey: `periods:children:breadcrumb:${parentId}` }
+      { ttlMs: 1_800_000, cacheKey: `periods:children:breadcrumb:${parentId}` }
     );
   };
 
@@ -379,7 +385,7 @@ export function useBreadcrumbsData({
         const matchRows = await fetchAllPages<ApiMatch>(
           matchesUrl,
           { credentials: 'include' },
-          { ttlMs: 30_000, cacheKey: `matches:competition:breadcrumb:${projectId}:${competitionId}`, maxItems: 250 }
+          { ttlMs: 1_800_000, cacheKey: `matches:competition:breadcrumb:${projectId}:${competitionId}`, maxItems: 250 }
         );
         const opts: BreadcrumbSwitcherOption[] = (matchRows || []).map((m: ApiMatch) => ({
           id: String(m.id),

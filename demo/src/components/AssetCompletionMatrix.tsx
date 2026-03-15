@@ -189,7 +189,7 @@ export function AssetCompletionMatrix({
                       <div className={styles.cellContent}>
                         <span className={styles.cellStatus}>{upload.exists ? 'OK' : '—'}</span>
                         {upload.url && (
-                          <img src={upload.url} alt="" className={styles.thumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                          <img src={upload.url} alt="" className={styles.thumbnail} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         )}
                       </div>
                     ) : (
@@ -203,7 +203,7 @@ export function AssetCompletionMatrix({
                       <div className={styles.cellContent}>
                         <span className={styles.cellStatus}>{processed.exists ? 'OK' : '—'}</span>
                         {processed.url && (
-                          <img src={processed.url} alt="" className={styles.thumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                          <img src={processed.url} alt="" className={styles.thumbnail} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         )}
                       </div>
                     ) : (

@@ -75,7 +75,7 @@ export function MemberPhotoCompositeTab({
           <div className={`${s.prerequisiteCard} ${m.prerequisiteCardDynamic}`} data-ready={Boolean(legacyHalfbodyUrl)}>
             <div className="fs-12 fw-600 mb-8">🏆 Legacy Halfbody</div>
             {legacyHalfbodyUrl ? (
-              <img src={legacyHalfbodyUrl} alt="Legacy" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <img src={legacyHalfbodyUrl} alt="Legacy" className={s.prereqThumbnail} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
               <div className="text-muted fs-11">Genereer eerst Legacy Halfbody</div>
             )}
@@ -83,7 +83,7 @@ export function MemberPhotoCompositeTab({
           <div className={`${s.prerequisiteCard} ${m.prerequisiteCardDynamic}`} data-ready={Boolean(currentHalfbodyUrl)}>
             <div className="fs-12 fw-600 mb-8">👕 Huidige Halfbody</div>
             {currentHalfbodyUrl ? (
-              <img src={currentHalfbodyUrl} alt="Current" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <img src={currentHalfbodyUrl} alt="Current" className={s.prereqThumbnail} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
               <div className="text-muted fs-11">Genereer eerst Halfbody</div>
             )}
@@ -98,7 +98,7 @@ export function MemberPhotoCompositeTab({
               <div className={`${s.variantPreview916} ${m.previewDynamic}`} data-dark={hasCompositeImage}>
                 {hasCompositeImage && compositeImageUrl ? (
                   <>
-                    <img key={compositeImageUrl} src={compositeImageUrl} alt="Gemini Composite" className={s.mediaCoverContain} />
+                    <img key={compositeImageUrl} src={compositeImageUrl} alt="Gemini Composite" className={s.mediaCoverContain} loading="lazy" />
                     <div className={s.overlayBadgeContainer}><div className={s.aiBadge}>AI</div></div>
                   </>
                 ) : (

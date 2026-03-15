@@ -230,7 +230,7 @@ export function NavbarQuickReviewModal({
                 {v.presigned_url && isVideo(v) ? (
                   <video src={v.presigned_url} controls muted playsInline autoPlay loop className={s.previewMedia} />
                 ) : v.presigned_url ? (
-                  <img src={v.presigned_url} alt={`Variant ${v.variant_index + 1}`} className={s.previewMedia} />
+                  <img src={v.presigned_url} alt={`Variant ${v.variant_index + 1}`} className={s.previewMedia} loading="lazy" />
                 ) : (
                   <div className={s.noPreview}>Geen preview</div>
                 )}

@@ -80,7 +80,7 @@ export function MemberWalkingCompositeTab({
           <div className={`${s.prerequisiteCard} ${styles.prerequisiteCard}`} data-ready={!!legacyFullbodyUrl}>
             <div className="fs-12 fw-600 mb-8">🏆 Legacy Fullbody</div>
             {legacyFullbodyUrl ? (
-              <img src={legacyFullbodyUrl} alt="Legacy" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <img src={legacyFullbodyUrl} alt="Legacy" className={s.prereqThumbnail} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
               <div className={styles.missingHint}>Genereer eerst Legacy Fullbody</div>
             )}
@@ -88,7 +88,7 @@ export function MemberWalkingCompositeTab({
           <div className={`${s.prerequisiteCard} ${styles.prerequisiteCard}`} data-ready={!!currentFullbodyUrl}>
             <div className="fs-12 fw-600 mb-8">👕 Huidige Fullbody</div>
             {currentFullbodyUrl ? (
-              <img src={currentFullbodyUrl} alt="Current" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <img src={currentFullbodyUrl} alt="Current" className={s.prereqThumbnail} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
               <div className={styles.missingHint}>Genereer eerst Fullbody</div>
             )}
@@ -103,7 +103,7 @@ export function MemberWalkingCompositeTab({
               <div className={`${s.variantPreview916} ${styles.variantPreview}`} data-has-content={!!hasFarImage}>
                 {hasFarImage && farImageUrl ? (
                   <>
-                    <img key={farImageUrl} src={farImageUrl} alt="Far composite" className={s.mediaCoverContain} />
+                    <img key={farImageUrl} src={farImageUrl} alt="Far composite" className={s.mediaCoverContain} loading="lazy" />
                     <div className={s.overlayBadgeContainer}><div className={s.aiBadge}>AI</div></div>
                   </>
                 ) : (
@@ -125,7 +125,7 @@ export function MemberWalkingCompositeTab({
               <div className={`${s.variantPreview916} ${styles.variantPreview}`} data-has-content={!!hasNearImage}>
                 {hasNearImage && nearImageUrl ? (
                   <>
-                    <img key={nearImageUrl} src={nearImageUrl} alt="Near composite" className={s.mediaCoverContain} />
+                    <img key={nearImageUrl} src={nearImageUrl} alt="Near composite" className={s.mediaCoverContain} loading="lazy" />
                     <div className={s.overlayBadgeContainer}><div className={s.aiBadge}>AI</div></div>
                   </>
                 ) : (

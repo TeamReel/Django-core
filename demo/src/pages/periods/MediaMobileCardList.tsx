@@ -241,7 +241,7 @@ const MediaMobileCardList: React.FC<MediaMobileCardListProps> = ({
               }}
             />
             {avatarUrl ? (
-              <img src={avatarUrl} alt="" className={styles.mediaCardAvatar} />
+              <img src={avatarUrl} alt="" className={styles.mediaCardAvatar} loading="lazy" />
             ) : (
               <div className={styles.mediaCardAvatarEmpty}>
                 {name.charAt(0).toUpperCase()}

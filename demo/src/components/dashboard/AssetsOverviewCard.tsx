@@ -183,7 +183,7 @@ export const AssetsOverviewCard: React.FC = () => {
       <div key={member.id} className={styles.memberRow}>
         <div className={styles.memberAvatar}>
           {member.avatarUrl ? (
-            <img src={member.avatarUrl} alt="" className={styles.avatarImg} />
+            <img src={member.avatarUrl} alt="" className={styles.avatarImg} loading="lazy" />
           ) : (
             <span className={styles.avatarInitial}>{member.name.charAt(0).toUpperCase()}</span>
           )}

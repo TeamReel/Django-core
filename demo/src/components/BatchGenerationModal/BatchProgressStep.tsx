@@ -69,7 +69,7 @@ export const BatchProgressStep: React.FC<BatchProgressStepProps> = ({
       return (
         <div key={member.id} className={`${configStyles.memberRow} ${styles.cursorDefault}`}>
           {member.profilePhotoUrl ? (
-            <img src={getAssetUrl(member.profilePhotoUrl) || ''} alt="" className={configStyles.avatar} />
+            <img src={getAssetUrl(member.profilePhotoUrl) || ''} alt="" className={configStyles.avatar} loading="lazy" />
           ) : (
             <div className={`flex-center ${configStyles.avatarFallback}`}>
               ?

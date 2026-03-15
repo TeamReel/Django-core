@@ -123,43 +123,28 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
     return keys;
   };
 
-  const isTemplateEnabled = (template: ContentTemplate): boolean => {
-    if (!templateFlagMap || Object.keys(templateFlagMap).length === 0) return true;
-    const keys = buildTemplateFlagKeys(template);
-    for (const key of keys) {
-      const normalized = normalizeFlagKey(key);
-      if (normalized in templateFlagMap) return Boolean(templateFlagMap[normalized]);
-    }
-    return true;
-  };
-
-  // ── Fetch template availability flags ──
-  const fetchTemplateAvailabilityFlags = useCallback(async () => {
+  // ── Fetch template flags + available templates (parallel — D6 waterfall fix) ──
+  const fetchFlagsAndTemplates = useCallback(async () => {
     if (!org?.id) return;
     setTemplateFlagsLoading(true);
+    setTemplatesLoading(true);
     try {
-      const flags = await fetchFlags(String(org.id), club?.id ? String(club.id) : undefined);
+      // Parallel fetch: flags + templates simultaneously (was sequential waterfall)
+      const [flags, { results: allTemplates }] = await Promise.all([
+        fetchFlags(String(org.id), club?.id ? String(club.id) : undefined),
+        contentApi.listTemplates(
+          { isActive: true },
+          { pageSize: 500 },
+        ) as unknown as Promise<{ results: ContentTemplate[]; count: number; next: string | null; previous: string | null }>,
+      ]);
+
+      // Build flag map from fetched flags
       const map: Record<string, boolean> = {};
       flags.forEach((flag) => { map[normalizeFlagKey(flag.key)] = Boolean(flag.enabled); });
       setTemplateFlagMap(map);
-    } catch (err) {
-      logger.error('Content: Failed to fetch template availability flags', err);
-    } finally {
       setTemplateFlagsLoading(false);
-    }
-  }, [org?.id, club?.id]);
 
-  useEffect(() => { fetchTemplateAvailabilityFlags(); }, [fetchTemplateAvailabilityFlags]);
-
-  // ── Fetch available templates ──
-  const fetchAvailableTemplates = useCallback(async () => {
-    setTemplatesLoading(true);
-    try {
-      const { results: allTemplates } = await contentApi.listTemplates(
-        { isActive: true },
-        { pageSize: 500 },
-      ) as unknown as { results: ContentTemplate[]; count: number; next: string | null; previous: string | null };
-
+      // Filter templates by sport matching
       const competitionSport = competition?.sport;
       const orgSport = org?.sport;
       const sportId = competitionSport?.id ? Number(competitionSport.id) : (orgSport?.id ? Number(orgSport.id) : undefined);
@@ -184,7 +169,17 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
         return false;
       });
 
-      const availabilityFiltered = matchingTemplates.filter((t) => isTemplateEnabled(t));
+      // Filter by availability flags (using local map — no stale closure)
+      const availabilityFiltered = matchingTemplates.filter((t) => {
+        if (Object.keys(map).length === 0) return true;
+        const keys = buildTemplateFlagKeys(t);
+        for (const key of keys) {
+          const normalized = normalizeFlagKey(key);
+          if (normalized in map) return Boolean(map[normalized]);
+        }
+        return true;
+      });
+
       const grouped: Record<string, ContentTemplate[]> = {};
       availabilityFiltered.forEach(t => {
         const subtype = t.template_subtype || t.template_type;
@@ -193,13 +188,14 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
       });
       setAvailableTemplates(grouped);
     } catch (err) {
-      logger.error('Content: Error fetching templates', err);
+      logger.error('Content: Error fetching flags/templates', err);
     } finally {
+      setTemplateFlagsLoading(false);
       setTemplatesLoading(false);
     }
-  }, [apiBaseUrl, competition?.sport, org?.sport, org?.id, club?.id, templateFlagMap]);
+  }, [org?.id, club?.id, competition?.sport, org?.sport]);
 
-  useEffect(() => { fetchAvailableTemplates(); }, [fetchAvailableTemplates]);
+  useEffect(() => { fetchFlagsAndTemplates(); }, [fetchFlagsAndTemplates]);
 
   // ── Toasts ──
   const pushToast = useCallback((message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {

@@ -85,7 +85,7 @@ export function MemberAssetsTab({
             <div key={`assets-kit-${kit.id}`} className={s.kitSectionMargin}>
               <div className={`${s.flexCenterGap8} mb-12`}>
                 {kit.url ? (
-                  <img src={kit.url} alt={kit.label} className={s.kitIconImg} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <img src={kit.url} alt={kit.label} className={s.kitIconImg} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : (
                   <span className="fs-20">{kit.icon}</span>
                 )}

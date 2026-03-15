@@ -63,7 +63,7 @@ export const ContentCard = memo(function ContentCard({
             isVideo ? (
               <video src={url} className={`object-contain ${styles.thumbMedia}`} muted playsInline preload="metadata" />
             ) : (
-              <img src={url} alt={item.title || getAssetTypeLabel(normalizedType)} className={`p-8 object-contain ${styles.thumbMedia}`} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <img src={url} alt={item.title || getAssetTypeLabel(normalizedType)} className={`p-8 object-contain ${styles.thumbMedia}`} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             )
           ) : (
             <span className={styles.fallbackIcon}>{getAssetTypeIcon(normalizedType)}</span>
@@ -239,7 +239,7 @@ export function ContentPreviewModal({ item, onClose, onDownload, onShare, onDele
                 </div>
               ) : (
                 <img src={url} alt={item.title || ''} className={styles.detailMedia}
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               )
             ) : (
               <div className={styles.detailMediaFallback}>
