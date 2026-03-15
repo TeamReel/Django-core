@@ -7,8 +7,12 @@ export {
   OrgStatsCard,
 } from './DashboardSummaries';
 export { RecentContentCard } from './RecentContentCard';
+export { ContentProgressCard } from './ContentProgressCard';
+export { TeamReadinessCard } from './TeamReadinessCard';
+export { SmartActionsCard } from './SmartActionsCard';
+
+// Legacy — kept for potential re-use during migration
 export { ContentBreakdownCard } from './ContentBreakdownCard';
 export { MemberContentProgressCard } from './MemberContentProgressCard';
-export { SmartActionsCard } from './SmartActionsCard';
 export { ContentOverviewCard } from './ContentOverviewCard';
 export { AssetsOverviewCard } from './AssetsOverviewCard';

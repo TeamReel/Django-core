@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { PullToRefresh } from '@django-core/design-system';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
 import {
   ActiveMatchCard,
@@ -10,10 +10,8 @@ import {
   AIQueueCard,
   CreditsTrendCard,
   OrgStatsCard,
-  ContentBreakdownCard,
-  MemberContentProgressCard,
-  ContentOverviewCard,
-  AssetsOverviewCard,
+  ContentProgressCard,
+  TeamReadinessCard,
 } from '../components/dashboard';
 import { SmartActionsCard } from '../components/dashboard/SmartActionsCard';
 import { useUserRole } from '../components/PermissionGuards';
@@ -116,20 +114,14 @@ export default function DashboardPage() {
               {isOrgLevel && <CreditsTrendCard />}
             </div>
 
-            {/* 3. Content breakdown with progress bars */}
-            <ContentBreakdownCard />
-
-            {/* 3b. Content overview — full inventory */}
-            <ContentOverviewCard />
+            {/* 3. Content progress (merged breakdown + inventory) */}
+            <ContentProgressCard />
 
             {/* 4. Smart contextual quick actions */}
             <SmartActionsCard />
 
-            {/* 5. Member content progress */}
-            {!isMemberLevel && <MemberContentProgressCard />}
-
-            {/* 5b. Asset inventory — team & member assets */}
-            {!isMemberLevel && <AssetsOverviewCard />}
+            {/* 5. Team readiness (merged member progress + asset inventory) */}
+            {!isMemberLevel && <TeamReadinessCard />}
 
             {/* 6. Org Overview Stats (org admins without team scope) */}
             {isOrgLevel && !isTeamScope && <OrgStatsCard />}
