@@ -5,9 +5,12 @@
  * a navigate-to-match link. Reusable by ActiveMatchCard + UpcomingMatchesCard.
  */
 import React from 'react';
+import type { LucideIcon } from 'lucide-react';
 import {
   ChevronRight, ChevronDown, MapPin, Calendar, Trophy,
-  CheckCircle2, Circle, ExternalLink, Users, FileImage,
+  CheckCircle2, ExternalLink, Users, FileImage,
+  Image, Video, Play, Camera, Music, Target, Hash,
+  Flag, BarChart3, Film,
 } from 'lucide-react';
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
 import { NavigationSheet } from '../ui/NavigationSheet';
@@ -15,6 +18,22 @@ import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
 import type { Match } from './ActiveMatchCard';
 import type { UseMatchSheetReturn } from './useMatchSheet';
 import styles from './ActiveMatchCard.module.css';
+
+/* ── Content-type icon map ─────────────────────────────── */
+const SUBTYPE_ICONS: Record<string, LucideIcon> = {
+  flyer: Image,
+  lineup: Video,
+  lineup_flyer: Users,
+  match_intro: Play,
+  poster: Camera,
+  walkon: Film,
+  anthem: Music,
+  goal: Target,
+  score_update: Hash,
+  end_score: Flag,
+  match_summary: BarChart3,
+  highlights: Film,
+};
 
 interface MatchSheetProps {
   match: Match;
@@ -28,6 +47,15 @@ export const MatchSheet: React.FC<MatchSheetProps> = ({ match, sheet, onNavigate
   const urgency = getDateUrgency(date);
   const hasLineup = sheet.lineupCount > 0;
 
+  // Overall readiness
+  const totalContentItems =
+    (CONTENT_TYPES.pre_match?.items.length ?? 0) +
+    (CONTENT_TYPES.during_match?.items.length ?? 0) +
+    (CONTENT_TYPES.post_match?.items.length ?? 0);
+  const readinessPercent = totalContentItems > 0
+    ? Math.round((sheet.contentDoneSubtypes.length / totalContentItems) * 100)
+    : 0;
+
   return (
     <NavigationSheet
       isOpen={sheet.sheetOpen}
@@ -39,7 +67,7 @@ export const MatchSheet: React.FC<MatchSheetProps> = ({ match, sheet, onNavigate
         {/* Match overview */}
         <div className={styles.sheetMatchHeader}>
           <span className={`${styles.badge} ${styles[`badge_${sheet.matchState}`]}`}>
-            {sheet.matchState === 'live' ? <><Circle size={8} fill="currentColor" /> LIVE</> : sheet.matchState === 'upcoming' ? 'Aankomend' : 'Gespeeld'}
+            {sheet.matchState === 'live' ? 'LIVE' : sheet.matchState === 'upcoming' ? 'Aankomend' : 'Gespeeld'}
           </span>
           <span className={`${styles.timeLabel} ${styles[`time_${urgency}`]}`}>
             {relTime}
@@ -75,6 +103,24 @@ export const MatchSheet: React.FC<MatchSheetProps> = ({ match, sheet, onNavigate
               <Trophy size={14} /> {match.period.name}
             </span>
           )}
+        </div>
+
+        {/* Overall readiness bar */}
+        <div className={styles.readinessBar}>
+          <div className={styles.readinessBarHeader}>
+            <span className={styles.readinessBarLabel}>Wedstrijd gereedheid</span>
+            <span className={styles.readinessBarValue}>{readinessPercent}%</span>
+          </div>
+          <div className={styles.readinessBarTrack}>
+            <div
+              className={styles.readinessBarFill}
+              style={{ width: `${readinessPercent}%` }}
+              data-complete={readinessPercent === 100 ? 'true' : 'false'}
+            />
+          </div>
+          <span className={styles.readinessBarSub}>
+            {sheet.contentDoneSubtypes.length} van {totalContentItems} items{hasLineup ? ' · Opstelling klaar' : ''}
+          </span>
         </div>
 
         {/* Quick actions — Lineup + Content phases + Navigate */}
@@ -152,6 +198,7 @@ export const MatchSheet: React.FC<MatchSheetProps> = ({ match, sheet, onNavigate
                 <div className={`${styles.phaseItems} ${isExpanded ? styles.phaseItemsOpen : ''}`}>
                   {phase.items.map((item) => {
                     const isDone = sheet.contentDoneSubtypes.includes(item.subtype);
+                    const ItemIcon = SUBTYPE_ICONS[item.subtype] ?? FileImage;
                     return (
                       <button
                         key={item.id}
@@ -165,11 +212,11 @@ export const MatchSheet: React.FC<MatchSheetProps> = ({ match, sheet, onNavigate
                         }}
                         aria-label={`${item.label}: ${isDone ? 'bekijk' : 'maak aan'}`}
                       >
-                        <span className={styles.phaseItemIcon}>
+                        <span className={`${styles.phaseItemIcon} ${isDone ? styles.phaseItemIconDone : ''}`}>
                           {isDone ? (
-                            <CheckCircle2 size={14} className={styles.iconDone} />
+                            <CheckCircle2 size={16} className={styles.iconDone} />
                           ) : (
-                            <Circle size={14} />
+                            <ItemIcon size={16} />
                           )}
                         </span>
                         <span className={`${styles.phaseItemLabel} ${isDone ? styles.phaseItemDone : ''}`}>
