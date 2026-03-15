@@ -176,13 +176,17 @@ export function useMediaReadiness(): MediaReadiness {
     if (members.length === 0) return [];
 
     // Build member → completed subtypes map
+    // Note: The API returns `template` as an expanded object (with template_type,
+    // template_subtype) even though the TS type declares it as `number`.
+    // This is a known backend serializer expansion — see SmartActionsCard for same pattern.
     const memberContentMap = new Map<string, Set<string>>();
-    for (const req of genItems as any[]) {
-      const tplType = req.template?.template_type || '';
+    for (const req of genItems) {
+      const tpl = req.template as unknown as { template_type?: string; template_subtype?: string } | undefined;
+      const tplType = tpl?.template_type ?? '';
       if (tplType !== 'member') continue;
-      const subtype = req.template?.template_subtype || req.input_data?.template_subtype || '';
-      const memberIds: string[] = req.input_data?.member_ids || [];
-      const singleMemberId = req.input_data?.member_id;
+      const subtype = tpl?.template_subtype ?? String((req.input_data as Record<string, unknown>)?.template_subtype ?? '');
+      const memberIds = ((req.input_data as Record<string, unknown>)?.member_ids ?? []) as string[];
+      const singleMemberId = (req.input_data as Record<string, unknown>)?.member_id as string | undefined;
       const allIds = singleMemberId ? [singleMemberId, ...memberIds] : memberIds;
       for (const mid of allIds) {
         const key = String(mid);
@@ -194,18 +198,18 @@ export function useMediaReadiness(): MediaReadiness {
     const expected = MEMBER_MEDIA_TYPES.length;
 
     return members
-      .map((m: any) => {
-        const userId = String(m.user?.id || m.id);
+      .map((m) => {
+        const userId = String(m.user?.id ?? m.id);
         const memberId = String(m.id);
-        const completed = memberContentMap.get(userId) || memberContentMap.get(memberId) || new Set<string>();
+        const completed = memberContentMap.get(userId) ?? memberContentMap.get(memberId) ?? new Set<string>();
         const count = Math.min(completed.size, expected);
         const name = m.user?.first_name
-          ? `${m.user.first_name} ${m.user.last_name || ''}`.trim()
-          : m.user_name || m.name || 'Onbekend';
+          ? `${m.user.first_name} ${m.user.last_name ?? ''}`.trim()
+          : 'Onbekend';
         return {
           id: memberId,
           name,
-          avatarUrl: m.user?.avatar_url || m.avatar_url,
+          avatarUrl: m.user?.avatar_url ?? undefined,
           completedTypes: completed,
           completedCount: count,
           percent: Math.round((count / expected) * 100),

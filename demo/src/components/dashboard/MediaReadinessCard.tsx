@@ -151,23 +151,23 @@ export const MediaReadinessCard: React.FC = () => {
 
   // ── Asset detail sheet (club or team) ─────
 
-  const renderAssetDetail = (assets: AssetStatus[], tierLabel: string) => (
+  const renderAssetDetail = (assets: AssetStatus[]) => {
+    const presentCount = assets.filter(a => a.present).length;
+    const pct = assets.length > 0 ? Math.round((presentCount / assets.length) * 100) : 0;
+
+    return (
     <div className={styles.sheetContent}>
       <div className={styles.summaryBar}>
         <div className={styles.summaryLabel}>
           <span className={styles.summaryText}>
-            {assets.filter(a => a.present).length} van {assets.length} aanwezig
+            {presentCount} van {assets.length} aanwezig
           </span>
-          <span className={styles.summaryPercent}>
-            {assets.length > 0 ? Math.round((assets.filter(a => a.present).length / assets.length) * 100) : 0}%
-          </span>
+          <span className={styles.summaryPercent}>{pct}%</span>
         </div>
         <div className={styles.progressTrack}>
           <div
-            className={`${styles.progressFill} ${progressClass(
-              assets.length > 0 ? Math.round((assets.filter(a => a.present).length / assets.length) * 100) : 0,
-            )}`}
-            style={{ width: `${Math.max(4, assets.length > 0 ? Math.round((assets.filter(a => a.present).length / assets.length) * 100) : 0)}%` }}
+            className={`${styles.progressFill} ${progressClass(pct)}`}
+            style={{ width: `${Math.max(4, pct)}%` }}
           />
         </div>
       </div>
@@ -200,19 +200,23 @@ export const MediaReadinessCard: React.FC = () => {
         ))}
       </div>
 
-      {assets.some(a => !a.present) && (
-        <div className={`${styles.callout} ${styles.calloutWarn}`}>
-          <span className={`${styles.calloutIcon} ${styles.calloutIconWarn}`}>
-            <AlertTriangle size={14} />
-          </span>
-          <span className={styles.calloutText}>
-            {assets.filter(a => !a.present).length} asset{assets.filter(a => !a.present).length > 1 ? 's' : ''} ontbre{assets.filter(a => !a.present).length > 1 ? 'ken' : 'ekt'}
-          </span>
-          <span className={styles.calloutArrow}><ChevronRight size={14} /></span>
-        </div>
-      )}
+      {presentCount < assets.length && (() => {
+        const missing = assets.length - presentCount;
+        return (
+          <div className={`${styles.callout} ${styles.calloutWarn}`}>
+            <span className={`${styles.calloutIcon} ${styles.calloutIconWarn}`}>
+              <AlertTriangle size={14} />
+            </span>
+            <span className={styles.calloutText}>
+              {missing} asset{missing > 1 ? 's' : ''} ontbre{missing > 1 ? 'ken' : 'ekt'}
+            </span>
+            <span className={styles.calloutArrow}><ChevronRight size={14} /></span>
+          </div>
+        );
+      })()}
     </div>
-  );
+    );
+  };
 
   // ── Members list sheet ────────────────────
 
@@ -313,35 +317,23 @@ export const MediaReadinessCard: React.FC = () => {
         })}
       </div>
 
-      {!member.isComplete && (
+      {!member.isComplete && (() => {
+        const handleGenerate = () => {
+          closeSheet();
+          const firstMissing = MEMBER_MEDIA_TYPES.find(t => !member.completedTypes.has(t.key));
+          if (firstMissing) {
+            window.dispatchEvent(
+              new CustomEvent('teamreel:open-quick-create', {
+                detail: { flow: 'content', subtype: firstMissing.key },
+              }),
+            );
+          }
+        };
+        return (
         <div
           className={`${styles.callout} ${styles.calloutAction}`}
-          onClick={() => {
-            closeSheet();
-            // Dispatch wizard open for the first missing type
-            const firstMissing = MEMBER_MEDIA_TYPES.find(t => !member.completedTypes.has(t.key));
-            if (firstMissing) {
-              window.dispatchEvent(
-                new CustomEvent('teamreel:open-quick-create', {
-                  detail: { flow: 'content', subtype: firstMissing.key },
-                }),
-              );
-            }
-          }}
-          onKeyDown={e => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              closeSheet();
-              const firstMissing = MEMBER_MEDIA_TYPES.find(t => !member.completedTypes.has(t.key));
-              if (firstMissing) {
-                window.dispatchEvent(
-                  new CustomEvent('teamreel:open-quick-create', {
-                    detail: { flow: 'content', subtype: firstMissing.key },
-                  }),
-                );
-              }
-            }
-          }}
+          onClick={handleGenerate}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGenerate(); } }}
           role="button"
           tabIndex={0}
         >
@@ -353,7 +345,8 @@ export const MediaReadinessCard: React.FC = () => {
           </span>
           <span className={styles.calloutArrow}><ChevronRight size={14} /></span>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 
@@ -366,8 +359,8 @@ export const MediaReadinessCard: React.FC = () => {
   const sheetContent = (() => {
     switch (view.level) {
       case 'overview': return renderOverview();
-      case 'club': return renderAssetDetail(data.club.assets, 'Club');
-      case 'team': return renderAssetDetail(data.team.assets, 'Team');
+      case 'club': return renderAssetDetail(data.club.assets);
+      case 'team': return renderAssetDetail(data.team.assets);
       case 'members': return renderMembersList();
       case 'member': return renderMemberDetail(view.member);
       default: return null;

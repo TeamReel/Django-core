@@ -56,6 +56,7 @@ Reference this file when you need to find the right documentation for a task. Ea
 | Notifications | [notification-routing.md](features/notification-routing.md) | Notification types, delivery channels |
 | Member management | [members-batch-actions.md](features/members-batch-actions.md) | Bulk operations, import/export |
 | Member assets | [member-asset-save-flow.md](features/member-asset-save-flow.md) | Photo upload and processing flow |
+| Media readiness | [media-readiness-card.md](features/media-readiness-card.md) | Dashboard card: Club/Team/Member media completeness, drill-down navigation |
 | Seeding | [seeding-guide.md](features/seeding-guide.md) | Development data seeding |
 
 ## Infrastructure
