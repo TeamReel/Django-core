@@ -280,6 +280,7 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
           queueModalTab={d.queueModalTab}
           setQueueModalTab={d.setQueueModalTab}
           pendingReviewJobs={d.pendingReviewJobs}
+          pendingReviewVideoJobs={d.pendingReviewVideoJobs}
           inProgressJobs={d.inProgressJobs}
           inProgressVideoJobs={d.inProgressVideoJobs}
           quickReviewIdx={d.quickReviewIdx}
@@ -288,6 +289,7 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
           setSelectedVariantIdxs={d.setSelectedVariantIdxs}
           quickReviewBusy={d.quickReviewBusy}
           handleQuickReview={d.handleQuickReview}
+          refreshVideoJobs={d.refreshVideoJobs}
           onClose={() => d.setQuickReviewOpen(false)}
           onNavigate={d.navigate}
         />

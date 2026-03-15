@@ -1,9 +1,13 @@
+import { useState, useCallback } from 'react';
 import { useEscapeKey } from '../hooks/useEscapeKey';
-import { clickableProps } from '@/utils/a11y';
 import s from './TopNavbar.module.css';
 import styles from './NavbarModals.module.css';
 import type { GenerationJob } from '../hooks/useGenerationJobs';
 import type { VideoJob } from '../types/api';
+import { videoApi } from '../api';
+import { logger } from '@/utils/logger';
+
+/* ─── Constants ──────────────────────────────────────────────────── */
 
 const VIDEO_TYPE_LABELS: Record<string, string> = {
   lineup: 'Lineup Video',
@@ -15,10 +19,13 @@ const VIDEO_TYPE_LABELS: Record<string, string> = {
   compose: 'Compose',
 };
 
+/* ─── Props ──────────────────────────────────────────────────────── */
+
 export interface QuickReviewModalProps {
   queueModalTab: 'review' | 'in-progress';
   setQueueModalTab: (tab: 'review' | 'in-progress') => void;
   pendingReviewJobs: GenerationJob[];
+  pendingReviewVideoJobs: VideoJob[];
   inProgressJobs: GenerationJob[];
   inProgressVideoJobs: VideoJob[];
   quickReviewIdx: number;
@@ -27,14 +34,18 @@ export interface QuickReviewModalProps {
   setSelectedVariantIdxs: (fn: Set<number> | ((prev: Set<number>) => Set<number>)) => void;
   quickReviewBusy: boolean;
   handleQuickReview: (action: 'approve' | 'reject') => Promise<void>;
+  refreshVideoJobs: () => Promise<void>;
   onClose: () => void;
   onNavigate: (path: string) => void;
 }
+
+/* ─── Component ──────────────────────────────────────────────────── */
 
 export function NavbarQuickReviewModal({
   queueModalTab,
   setQueueModalTab,
   pendingReviewJobs,
+  pendingReviewVideoJobs,
   inProgressJobs,
   inProgressVideoJobs,
   quickReviewIdx,
@@ -43,261 +54,320 @@ export function NavbarQuickReviewModal({
   setSelectedVariantIdxs,
   quickReviewBusy,
   handleQuickReview,
+  refreshVideoJobs,
   onClose,
   onNavigate,
 }: QuickReviewModalProps) {
   useEscapeKey(onClose);
-  const totalInProgress = inProgressJobs.length + inProgressVideoJobs.length;
-  const jobsToShow = queueModalTab === 'review' ? pendingReviewJobs : inProgressJobs;
-  const job = queueModalTab === 'review' ? jobsToShow[quickReviewIdx] : null;
 
-  // Empty state
-  if (queueModalTab === 'review' ? pendingReviewJobs.length === 0 : totalInProgress === 0) {
-    return (
-      <div onClick={onClose} className={s.modalOverlay} role="presentation">
-        <div onClick={e => e.stopPropagation()} className={s.modalPanelCentered} role="dialog">
-          <div className={s.tabsRowCenter}>
-            <button
-              onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); }}
-              className={`${s.tabBtn} ${styles.tabBtnReview}`} data-active={queueModalTab === 'review'}
-            >
-              Te Reviewen ({pendingReviewJobs.length})
-            </button>
-            <button
-              onClick={() => setQueueModalTab('in-progress')}
-              className={`${s.tabBtn} ${styles.tabBtnProgress}`} data-active={queueModalTab === 'in-progress'}
-            >
-              In Progress ({totalInProgress})
-            </button>
-          </div>
-          <div className={`mb-12 ${s.emptyIcon}`}>{queueModalTab === 'review' ? '\u2705' : '\u23f3'}</div>
-          <div className={`mb-8 ${s.modalTitle}`}>
-            {queueModalTab === 'review' ? 'Alles beoordeeld!' : 'Geen actieve jobs'}
-          </div>
-          <div className={`mb-20 ${s.textSecondary13}`}>
-            {queueModalTab === 'review' ? 'Er zijn geen items meer die review nodig hebben.' : 'Er zijn geen jobs in uitvoering.'}
-          </div>
-          <div className={s.actionsRowCenter}>
-            <button onClick={() => { onClose(); onNavigate('/approvals'); }} className={s.btnSecondary}>
-              Open Queue {'\u2192'}
-            </button>
-            <button onClick={onClose} className={s.btnPrimary}>Sluiten</button>
+  const totalInProgress = inProgressJobs.length + inProgressVideoJobs.length;
+  const totalReview = pendingReviewJobs.length + pendingReviewVideoJobs.length;
+
+  /* ── Video job approve/reject ─────────────────────────────────── */
+  const [videoReviewBusy, setVideoReviewBusy] = useState<string | null>(null);
+
+  const handleVideoReview = useCallback(async (jobId: string, action: 'approve' | 'reject') => {
+    setVideoReviewBusy(jobId);
+    try {
+      if (action === 'approve') {
+        await videoApi.approveJob(jobId);
+      } else {
+        await videoApi.rejectJob(jobId);
+      }
+      refreshVideoJobs();
+    } catch (err) {
+      logger.error('Video review failed', err);
+    } finally {
+      setVideoReviewBusy(null);
+    }
+  }, [refreshVideoJobs]);
+
+  /* ── Inline AI review expand state ────────────────────────────── */
+  const [expandedAiJobId, setExpandedAiJobId] = useState<string | null>(null);
+
+  /* ── Tab content renderers ────────────────────────────────────── */
+
+  const renderReviewContent = () => {
+    if (totalReview === 0) {
+      return (
+        <div className="flex-col items-center justify-center flex-1 p-24">
+          <div className={`mb-12 ${s.emptyIcon}`}>{'\u2705'}</div>
+          <div className={`mb-8 ${s.modalTitle}`}>Alles beoordeeld!</div>
+          <div className={s.textSecondary13}>
+            Er zijn geen items meer die review nodig hebben.
           </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  // In-progress tab: list view
-  if (queueModalTab === 'in-progress') {
     return (
-      <div onClick={onClose} className={s.modalOverlay} role="presentation">
-        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.inProgressPanel}`} role="dialog">
-          <div className={s.modalHeader}>
-            <div className="flex-between mb-12">
-              <div className={s.modalTitle}>Queue</div>
-              <button onClick={onClose} className={s.closeBtn}>{'\u2715'}</button>
-            </div>
-            <div className={s.tabsRow}>
-              <button
-                onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); }}
-                className={`${s.tabBtn} ${styles.tabBtnInactive}`}
+      <div className="flex-1 overflow-y-auto p-16">
+        {/* AI generation jobs needing review */}
+        {pendingReviewJobs.map((j, idx) => {
+          const isExpanded = expandedAiJobId === j.task_id;
+          const thumb = j.output_variants?.[0]?.presigned_url || j.output_url;
+          const isVideo = j.output_type === 'video' || j.output_variants?.[0]?.mime_type?.startsWith('video/');
+
+          return (
+            <div key={j.task_id} className={`rounded-8 mb-8 ${styles.jobRow}`}>
+              {/* Row */}
+              <div
+                className="flex-row gap-12 p-12 cursor-pointer"
+                onClick={() => setExpandedAiJobId(isExpanded ? null : j.task_id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedAiJobId(isExpanded ? null : j.task_id); } }}
               >
-                Te Reviewen ({pendingReviewJobs.length})
-              </button>
-              <button
-                onClick={() => setQueueModalTab('in-progress')}
-                className={`${s.tabBtn} ${styles.tabBtnAmberActive}`}
-              >
-                In Progress ({totalInProgress})
-              </button>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-16">
-            {inProgressJobs.map((j) => (
-              <div key={j.task_id} className={`flex-row gap-12 p-12 rounded-8 mb-8 ${styles.jobRow}`}>
-                <div className={`${s.jobIcon} ${styles.jobIconStatus}`} data-processing={j.status === 'processing'}>
-                  {j.status === 'processing' ? '\u2699\ufe0f' : j.status === 'retrying' ? '\ud83d\udd04' : '\u23f3'}
-                </div>
+                {/* Thumbnail */}
+                {thumb && !isVideo ? (
+                  <img
+                    src={thumb}
+                    alt=""
+                    style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', objectFit: 'cover', flexShrink: 0 }}
+                  />
+                ) : (
+                  <div className={`${s.jobIcon} ${styles.jobIconStatus}`} style={{ backgroundColor: 'var(--color-blue-600)' }}>
+                    {isVideo ? '\ud83c\udfa5' : '\ud83d\uddbc\ufe0f'}
+                  </div>
+                )}
                 <div className="flex-1">
                   <div className="fs-13 fw-600 text-primary">{j.label || j.template_id}</div>
                   <div className={s.textSecondary11}>
-                    {j.status === 'processing' ? 'Bezig...' : j.status === 'retrying' ? 'Opnieuw proberen...' : 'In wachtrij'} {'\u00b7'} {new Date(j.created_at).toLocaleTimeString()}
+                    {j.output_type} {'\u00b7'} {new Date(j.created_at).toLocaleTimeString()}
                   </div>
+                </div>
+                <div className="flex-row gap-4" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => { setQuickReviewIdx(idx); handleQuickReview('reject'); }}
+                    disabled={quickReviewBusy}
+                    className={s.btnSecondary}
+                    style={{ color: 'var(--color-red-500)', borderColor: 'var(--color-red-500)', padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-xs)' }}
+                    title="Afwijzen"
+                  >
+                    {'\u2715'}
+                  </button>
+                  <button
+                    onClick={() => { setQuickReviewIdx(idx); setSelectedVariantIdxs(new Set()); handleQuickReview('approve'); }}
+                    disabled={quickReviewBusy}
+                    className={s.btnPrimary}
+                    style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-xs)', backgroundColor: 'var(--color-green-500)' }}
+                    title="Goedkeuren"
+                  >
+                    {'\u2713'}
+                  </button>
                 </div>
               </div>
-            ))}
-            {inProgressVideoJobs.map((j) => (
-              <div key={j.id} className={`flex-row gap-12 p-12 rounded-8 mb-8 ${styles.jobRow}`}>
-                <div className={`${s.jobIcon} ${styles.jobIconStatus}`} data-processing={j.status === 'processing'}>
-                  {j.status === 'processing' ? '\u2699\ufe0f' : '\u23f3'}
+
+              {/* Expanded preview */}
+              {isExpanded && thumb && (
+                <div className="p-12" style={{ borderTop: '1px solid var(--app-border)' }}>
+                  {isVideo ? (
+                    <video
+                      src={thumb}
+                      controls
+                      muted
+                      playsInline
+                      autoPlay
+                      loop
+                      style={{ width: '100%', maxHeight: '40vh', objectFit: 'contain', borderRadius: 'var(--radius-md)' }}
+                    />
+                  ) : (
+                    <img
+                      src={thumb}
+                      alt={j.label || 'Preview'}
+                      style={{ width: '100%', maxHeight: '40vh', objectFit: 'contain', borderRadius: 'var(--radius-md)' }}
+                    />
+                  )}
+                  {/* Multi-variant selector */}
+                  {j.output_variants && j.output_variants.length > 1 && (
+                    <div className="flex-row gap-8 mt-8 overflow-x-auto">
+                      {j.output_variants.map((v) => (
+                        <img
+                          key={v.variant_index}
+                          src={v.presigned_url}
+                          alt={`Variant ${v.variant_index + 1}`}
+                          onClick={() => setSelectedVariantIdxs((prev: Set<number>) => {
+                            const next = new Set(prev);
+                            if (next.has(v.variant_index)) next.delete(v.variant_index); else next.add(v.variant_index);
+                            return next;
+                          })}
+                          style={{
+                            width: 56,
+                            height: 56,
+                            borderRadius: 'var(--radius-sm)',
+                            objectFit: 'cover',
+                            cursor: 'pointer',
+                            border: selectedVariantIdxs.has(v.variant_index)
+                              ? '2px solid var(--color-green-500)'
+                              : '2px solid var(--app-border)',
+                            opacity: selectedVariantIdxs.size > 0 && !selectedVariantIdxs.has(v.variant_index) ? 0.5 : 1,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="flex-1">
-                  <div className="fs-13 fw-600 text-primary">
-                    {VIDEO_TYPE_LABELS[j.job_type] || j.job_type}
-                  </div>
-                  <div className={s.textSecondary11}>
-                    {j.status === 'processing'
-                      ? `Bezig... ${j.progress_percent > 0 ? `(${j.progress_percent}%)` : ''}`
-                      : 'In wachtrij'} {'\u00b7'} {new Date(j.created_at).toLocaleTimeString()}
-                  </div>
-                </div>
-                {j.status === 'processing' && j.progress_percent > 0 && (
-                  <div className="fs-12 fw-700" style={{ color: 'var(--color-blue-600)' }}>
-                    {j.progress_percent}%
-                  </div>
-                )}
+              )}
+            </div>
+          );
+        })}
+
+        {/* Video jobs needing review */}
+        {pendingReviewVideoJobs.map((j) => {
+          const busy = videoReviewBusy === j.id;
+          return (
+            <div key={j.id} className={`flex-row gap-12 p-12 rounded-8 mb-8 ${styles.jobRow}`}>
+              <div className={s.jobIcon} style={{ backgroundColor: 'var(--color-blue-600)' }}>
+                {'\ud83c\udfa5'}
               </div>
-            ))}
-          </div>
-          <div className={`flex-between ${s.modalFooter}`}>
-            <button onClick={() => { onClose(); onNavigate('/approvals?tab=ai_queue'); }} className={s.btnSecondary}>
-              Open Queue {'\u2192'}
-            </button>
-            <button onClick={onClose} className={s.btnPrimary}>Sluiten</button>
-          </div>
-        </div>
+              <div className="flex-1">
+                <div className="fs-13 fw-600 text-primary">
+                  {VIDEO_TYPE_LABELS[j.job_type] || j.job_type}
+                </div>
+                <div className={s.textSecondary11}>
+                  Video {'\u00b7'} {new Date(j.created_at).toLocaleTimeString()}
+                </div>
+              </div>
+              {j.output_url && (
+                <a
+                  href={j.output_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={s.btnSecondary}
+                  style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-xs)', textDecoration: 'none' }}
+                  title="Bekijk video"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {'\u25b6'}
+                </a>
+              )}
+              <div className="flex-row gap-4">
+                <button
+                  onClick={() => handleVideoReview(j.id, 'reject')}
+                  disabled={busy}
+                  className={s.btnSecondary}
+                  style={{ color: 'var(--color-red-500)', borderColor: 'var(--color-red-500)', padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-xs)', opacity: busy ? 0.6 : 1 }}
+                  title="Afwijzen"
+                >
+                  {'\u2715'}
+                </button>
+                <button
+                  onClick={() => handleVideoReview(j.id, 'approve')}
+                  disabled={busy}
+                  className={s.btnPrimary}
+                  style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-xs)', backgroundColor: 'var(--color-green-500)', opacity: busy ? 0.6 : 1 }}
+                  title="Goedkeuren"
+                >
+                  {'\u2713'}
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
-  }
+  };
 
-  // Review tab: no current job
-  if (!job) {
+  const renderInProgressContent = () => {
+    if (totalInProgress === 0) {
+      return (
+        <div className="flex-col items-center justify-center flex-1 p-24">
+          <div className={`mb-12 ${s.emptyIcon}`}>{'\u23f3'}</div>
+          <div className={`mb-8 ${s.modalTitle}`}>Geen actieve jobs</div>
+          <div className={s.textSecondary13}>
+            Er zijn geen jobs in uitvoering.
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div onClick={onClose} className={s.modalOverlay} role="presentation">
-        <div onClick={e => e.stopPropagation()} className={s.modalPanelCenteredLarge} role="dialog">
-          <div className={`mb-12 ${s.emptyIcon}`}>{'\u2705'}</div>
-          <div className={`mb-8 ${s.modalTitle}`}>Alles beoordeeld!</div>
-          <div className="fs-13 mb-8 text-secondary">Er zijn geen items meer die review nodig hebben.</div>
-          <button onClick={onClose} className={s.btnPrimary}>Sluiten</button>
-        </div>
+      <div className="flex-1 overflow-y-auto p-16">
+        {inProgressJobs.map((j) => (
+          <div key={j.task_id} className={`flex-row gap-12 p-12 rounded-8 mb-8 ${styles.jobRow}`}>
+            <div className={`${s.jobIcon} ${styles.jobIconStatus}`} data-processing={j.status === 'processing'}>
+              {j.status === 'processing' ? '\u2699\ufe0f' : j.status === 'retrying' ? '\ud83d\udd04' : '\u23f3'}
+            </div>
+            <div className="flex-1">
+              <div className="fs-13 fw-600 text-primary">{j.label || j.template_id}</div>
+              <div className={s.textSecondary11}>
+                {j.status === 'processing' ? 'Bezig...' : j.status === 'retrying' ? 'Opnieuw proberen...' : 'In wachtrij'} {'\u00b7'} {new Date(j.created_at).toLocaleTimeString()}
+              </div>
+            </div>
+          </div>
+        ))}
+        {inProgressVideoJobs.map((j) => (
+          <div key={j.id} className={`flex-row gap-12 p-12 rounded-8 mb-8 ${styles.jobRow}`}>
+            <div className={`${s.jobIcon} ${styles.jobIconStatus}`} data-processing={j.status === 'processing'}>
+              {j.status === 'processing' ? '\u2699\ufe0f' : '\u23f3'}
+            </div>
+            <div className="flex-1">
+              <div className="fs-13 fw-600 text-primary">
+                {VIDEO_TYPE_LABELS[j.job_type] || j.job_type}
+              </div>
+              <div className={s.textSecondary11}>
+                {j.status === 'processing'
+                  ? `Bezig... ${j.progress_percent > 0 ? `(${j.progress_percent}%)` : ''}`
+                  : 'In wachtrij'} {'\u00b7'} {new Date(j.created_at).toLocaleTimeString()}
+              </div>
+            </div>
+            {j.status === 'processing' && j.progress_percent > 0 && (
+              <div className="fs-12 fw-700" style={{ color: 'var(--color-blue-600)' }}>
+                {j.progress_percent}%
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     );
-  }
+  };
 
-  // Build variants
-  const variants = job.output_variants?.length
-    ? job.output_variants
-    : job.output_url
-    ? [{ variant_index: 0, presigned_url: job.output_url, storage_path: '', file_asset_id: null as null, mime_type: job.output_type === 'video' ? 'video/mp4' : 'image/jpeg', filename: '', approved: null as null }]
-    : [];
-
-  const isVideo = (v: { mime_type?: string; filename?: string }) =>
-    v.mime_type?.startsWith('video/') || v.filename?.endsWith('.mp4') || job.output_type === 'video';
+  /* ── Render: single unified panel ────────────────────────────── */
 
   return (
     <div onClick={onClose} className={s.modalOverlay} role="presentation">
       <div
         onClick={e => e.stopPropagation()}
-        className={`w-full ${s.modalPanel} ${styles.reviewPanel}`} data-multi={variants.length > 1}
+        className={`w-full ${s.modalPanel} ${styles.inProgressPanel}`}
+        role="dialog"
+        aria-label="Queue"
       >
-        {/* Header with tabs */}
+        {/* Header */}
         <div className={s.modalHeader}>
-          <div className={`mb-12 ${s.tabsRow}`}>
+          <div className="flex-between mb-12">
+            <div className={s.modalTitle}>Queue</div>
+            <button onClick={onClose} className={s.closeBtn}>{'\u2715'}</button>
+          </div>
+          <div className={s.tabsRow}>
             <button
-              onClick={() => setQueueModalTab('review')}
-              className={`${s.tabBtnSmall} ${styles.tabBtnPrimaryActive}`}
+              onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); setExpandedAiJobId(null); }}
+              className={`${s.tabBtn} ${queueModalTab === 'review' ? styles.tabBtnReview : styles.tabBtnInactive}`}
+              data-active={queueModalTab === 'review'}
             >
-              Te Reviewen ({pendingReviewJobs.length})
+              Te Reviewen ({totalReview})
             </button>
             <button
               onClick={() => setQueueModalTab('in-progress')}
-              className={`${s.tabBtnSmall} ${styles.tabBtnSurfaceInactive}`}
+              className={`${s.tabBtn} ${queueModalTab === 'in-progress' ? styles.tabBtnAmberActive : styles.tabBtnInactive}`}
+              data-active={queueModalTab === 'in-progress'}
             >
               In Progress ({totalInProgress})
             </button>
-            <button
-              onClick={() => { onClose(); onNavigate('/approvals'); }}
-              className={`ml-auto ${s.btnGhost}`}
-            >
-              Volledige Queue {'\u2192'}
-            </button>
-          </div>
-          <div className="flex-row gap-12">
-            <div className="flex-1">
-              <div className={s.modalTitle15}>{job.label || job.template_id}</div>
-              <div className={s.modalSubtitle}>
-                {job.output_type} {'\u00b7'} {new Date(job.created_at).toLocaleString()}
-                {pendingReviewJobs.length > 0 && ` \u00b7 ${quickReviewIdx + 1} van ${pendingReviewJobs.length}`}
-              </div>
-            </div>
-            <div className={`gap-4 ${s.tabsRow}`}>
-              <button
-                disabled={quickReviewIdx <= 0}
-                onClick={() => { setQuickReviewIdx((i: number) => Math.max(0, i - 1)); setSelectedVariantIdxs(new Set()); }}
-                className={`${s.navArrow} ${styles.navArrowBtn}`}
-                data-disabled={quickReviewIdx <= 0}
-              >
-                {'\u2039'}
-              </button>
-              <button
-                disabled={quickReviewIdx >= pendingReviewJobs.length - 1}
-                onClick={() => { setQuickReviewIdx((i: number) => Math.min(pendingReviewJobs.length - 1, i + 1)); setSelectedVariantIdxs(new Set()); }}
-                className={`${s.navArrow} ${styles.navArrowBtn}`}
-                data-disabled={quickReviewIdx >= pendingReviewJobs.length - 1}
-              >
-                {'\u203a'}
-              </button>
-            </div>
-            <button onClick={onClose} className={s.closeBtn}>{'\u2715'}</button>
           </div>
         </div>
 
-        {/* Variants */}
-        <div className="flex-1 overflow-y-auto p-16">
-          <div className={`grid gap-12 ${styles.variantsGrid}`} style={{
-            gridTemplateColumns: variants.length > 1 ? `repeat(${Math.min(variants.length, 4)}, 1fr)` : '1fr',
-          }}>
-            {variants.map((v) => (
-              <div
-                key={v.variant_index}
-                onClick={() => variants.length > 1 ? setSelectedVariantIdxs((prev: Set<number>) => { const next = new Set(prev); if (next.has(v.variant_index)) next.delete(v.variant_index); else next.add(v.variant_index); return next; }) : undefined}
-                {...(variants.length > 1 ? clickableProps(() => setSelectedVariantIdxs((prev: Set<number>) => { const next = new Set(prev); if (next.has(v.variant_index)) next.delete(v.variant_index); else next.add(v.variant_index); return next; })) : {})}
-                className={`${s.variantCard} ${styles.variantCardItem}`}
-                data-selected={selectedVariantIdxs.has(v.variant_index)}
-                data-single={variants.length === 1}
-                data-dimmed={variants.length > 1 && selectedVariantIdxs.size > 0 && !selectedVariantIdxs.has(v.variant_index)}
-              >
-                {variants.length > 1 && (
-                  <div className={`${s.variantCheckmark} ${styles.variantCheckmarkDot}`} data-selected={selectedVariantIdxs.has(v.variant_index)}>
-                    {selectedVariantIdxs.has(v.variant_index) ? '\u2713' : (v.variant_index + 1)}
-                  </div>
-                )}
-                {v.presigned_url && isVideo(v) ? (
-                  <video src={v.presigned_url} controls muted playsInline autoPlay loop className={s.previewMedia} />
-                ) : v.presigned_url ? (
-                  <img src={v.presigned_url} alt={`Variant ${v.variant_index + 1}`} className={s.previewMedia} loading="lazy" />
-                ) : (
-                  <div className={s.noPreview}>Geen preview</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Content */}
+        {queueModalTab === 'review' ? renderReviewContent() : renderInProgressContent()}
 
         {/* Footer */}
         <div className={`flex-between ${s.modalFooter}`}>
           <button
-            onClick={() => handleQuickReview('reject')}
-            disabled={quickReviewBusy}
-            className={`${s.rejectBtn} ${styles.rejectBtnAction}`}
-            data-busy={quickReviewBusy}
+            onClick={() => { onClose(); onNavigate(queueModalTab === 'review' ? '/approvals?tab=review' : '/approvals?tab=ai_queue'); }}
+            className={s.btnSecondary}
           >
-            {'\u274c'} Afwijzen
+            Open Queue {'\u2192'}
           </button>
-          <div className="flex-row gap-8">
-            <button onClick={() => { onClose(); onNavigate('/approvals?tab=review'); }} className={s.btnSecondary}>
-              Open Queue {'\u2192'}
-            </button>
-            <button
-              onClick={() => handleQuickReview('approve')}
-              disabled={quickReviewBusy}
-              className={`${s.approveBtn} ${styles.approveBtnAction}`}
-              data-busy={quickReviewBusy}
-            >
-              {'\u2705'} {variants.length > 1 && selectedVariantIdxs.size > 0 ? `${selectedVariantIdxs.size === variants.length ? 'Alles' : Array.from(selectedVariantIdxs).map(i => `#${i + 1}`).join(' + ')} Goedkeuren` : 'Goedkeuren'}
-            </button>
-          </div>
+          <button onClick={onClose} className={s.btnPrimary}>Sluiten</button>
         </div>
       </div>
     </div>

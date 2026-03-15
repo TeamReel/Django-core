@@ -69,9 +69,11 @@ export interface UseTopNavbarDataReturn {
   selectedVariantIdxs: Set<number>;
   setSelectedVariantIdxs: React.Dispatch<React.SetStateAction<Set<number>>>;
   pendingReviewJobs: GenerationJob[];
+  pendingReviewVideoJobs: VideoJob[];
   inProgressJobs: GenerationJob[];
   inProgressVideoJobs: VideoJob[];
   refreshAiJobs: () => Promise<void>;
+  refreshVideoJobs: () => Promise<void>;
   handleQuickReview: (action: 'approve' | 'reject') => Promise<void>;
   // Photo composite follow-up
   photoCompositeFollowUp: PhotoCompositeFollowUpInfo | null;

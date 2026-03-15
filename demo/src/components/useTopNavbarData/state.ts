@@ -99,31 +99,32 @@ export function useTopNavbarState(quickReviewOpen: boolean) {
     [allAiJobs],
   );
 
-  // ── Active video jobs (queued / processing) ──
+  // ── Video jobs (in-progress + pending review) ──
   const [inProgressVideoJobs, setInProgressVideoJobs] = useState<VideoJob[]>([]);
+  const [pendingReviewVideoJobs, setPendingReviewVideoJobs] = useState<VideoJob[]>([]);
   const videoJobPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const fetchActiveVideoJobs = useCallback(async () => {
+  const fetchVideoJobs = useCallback(async () => {
     if (document.hidden) return;
     try {
-      const { results } = await videoApi.listJobs(
-        { ordering: '-created_at' },
-        { params: { status: 'queued' } },
+      const [queued, processing, completed] = await Promise.all([
+        videoApi.listJobs({ ordering: '-created_at' }, { params: { status: 'queued' } }),
+        videoApi.listJobs({ ordering: '-created_at' }, { params: { status: 'processing' } }),
+        videoApi.listJobs({ ordering: '-created_at' }, { params: { status: 'completed' } }),
+      ]);
+      setInProgressVideoJobs([...processing.results, ...queued.results]);
+      setPendingReviewVideoJobs(
+        completed.results.filter(j => j.workflow_instance?.current_state === 'ready_for_review'),
       );
-      const { results: processing } = await videoApi.listJobs(
-        { ordering: '-created_at' },
-        { params: { status: 'processing' } },
-      );
-      setInProgressVideoJobs([...processing, ...results]);
     } catch { /* silently ignore — don't break the navbar */ }
   }, []);
 
   useEffect(() => {
-    fetchActiveVideoJobs();
+    fetchVideoJobs();
     const interval = quickReviewOpen ? 5000 : 30000;
-    videoJobPollRef.current = setInterval(fetchActiveVideoJobs, interval);
+    videoJobPollRef.current = setInterval(fetchVideoJobs, interval);
     return () => { if (videoJobPollRef.current) clearInterval(videoJobPollRef.current); };
-  }, [quickReviewOpen, fetchActiveVideoJobs]);
+  }, [quickReviewOpen, fetchVideoJobs]);
 
   const isAdmin = isSystemAdmin || isLandAdmin;
   const currentThemeMode = mode || 'light';
@@ -159,6 +160,8 @@ export function useTopNavbarState(quickReviewOpen: boolean) {
     createMenuRef,
 
     // Jobs
-    pendingReviewJobs, inProgressJobs, inProgressVideoJobs, refreshAiJobs,
+    pendingReviewJobs, pendingReviewVideoJobs,
+    inProgressJobs, inProgressVideoJobs,
+    refreshAiJobs, refreshVideoJobs: fetchVideoJobs,
   };
 }

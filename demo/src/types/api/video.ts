@@ -85,6 +85,13 @@ export interface VideoJobOutputFile {
   url?: string;
 }
 
+export interface VideoJobWorkflowInfo {
+  id: number;
+  current_state: string;
+  template_name: string;
+  available_actions: string[];
+}
+
 export interface VideoJob {
   id: string;                    // UUID
   job_type: string;
@@ -98,7 +105,7 @@ export interface VideoJob {
   retry_count: number;
   output_url: string | null;
   thumbnail_url: string | null;
-  workflow_instance: string | null;  // UUID
+  workflow_instance: VideoJobWorkflowInfo | null;
   created_at: string;
   updated_at: string;
   started_at: string | null;
