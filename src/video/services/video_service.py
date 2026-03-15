@@ -636,24 +636,6 @@ class VideoService:
 
             # Deferred build mode (template/activity based)
             if config.get("activity_id") or config.get("match_id"):
-                # Pre-validate that the activity has participations or selected members
-                activity_id = config.get("activity_id") or config.get("match_id")
-                selected_ids = config.get("selected_user_ids") or []
-                if not selected_ids and activity_id:
-                    from src.activities.models import Participation
-
-                    count = Participation.objects.filter(
-                        activity_id=activity_id, deleted_at__isnull=True
-                    ).count()
-                    if count == 0:
-                        raise ValidationError(
-                            {
-                                "config": (
-                                    "No participations found for this activity. "
-                                    "Fill the match lineup first before generating a lineup video."
-                                )
-                            }
-                        )
                 return
 
             raise ValidationError(
