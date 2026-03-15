@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { BarChart3, ChevronRight, User, Trophy, Calendar } from 'lucide-react';
 import { api } from '@/api';
+import { NavigationSheet } from '../ui/NavigationSheet';
 import styles from './ContentBreakdownCard.module.css';
 
 interface CategoryCount {
@@ -24,6 +25,7 @@ export const ContentBreakdownCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const [categories, setCategories] = useState<CategoryCount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const navigate = useNavigate();
   const project = context.project;
 
@@ -85,6 +87,7 @@ export const ContentBreakdownCard: React.FC = () => {
   if (!loading && categories.length === 0) return null;
 
   return (
+    <>
     <div className={styles.card}>
       <div className={styles.header}>
         <BarChart3 size={16} />
@@ -92,7 +95,7 @@ export const ContentBreakdownCard: React.FC = () => {
         {totalCount > 0 && (
           <span className={styles.totalBadge}>{totalCount} totaal</span>
         )}
-        <button className={styles.seeAll} onClick={() => navigate('/content')}>
+        <button className={styles.seeAll} onClick={() => setSheetOpen(true)}>
           <ChevronRight size={14} />
         </button>
       </div>
@@ -128,5 +131,54 @@ export const ContentBreakdownCard: React.FC = () => {
         </div>
       )}
     </div>
+
+    {/* ── Content Breakdown Sheet ───────────────────────── */}
+    <NavigationSheet
+      isOpen={sheetOpen}
+      onClose={() => setSheetOpen(false)}
+      title="Content overzicht"
+      icon={<BarChart3 size={18} />}
+    >
+      {/* Full breakdown bars */}
+      {categories.length > 0 && (
+        <div className={styles.barList}>
+          {categories.map(cat => (
+            <div key={cat.label} className={styles.barRow}>
+              <div className={styles.barLabel}>
+                <span className={styles.barIcon} style={{ color: cat.color }}>{cat.icon}</span>
+                <span className={styles.barText}>{cat.label}</span>
+                <span className={styles.barCount}>{cat.count}</span>
+              </div>
+              <div className={styles.barTrack}>
+                <div
+                  className={styles.barFill}
+                  style={{
+                    width: `${Math.max(4, (cat.count / maxCount) * 100)}%`,
+                    backgroundColor: cat.color,
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Summary */}
+      {totalCount > 0 && (
+        <div style={{ marginTop: 16, padding: '12px', borderRadius: 8, background: 'var(--bg-secondary)', textAlign: 'center' }}>
+          <span style={{ fontSize: 24, fontWeight: 700 }}>{totalCount}</span>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>totaal gegenereerde content</div>
+        </div>
+      )}
+
+      {/* Navigate to full content page */}
+      <button
+        onClick={() => { setSheetOpen(false); navigate('/content'); }}
+        style={{ marginTop: 16, width: '100%', padding: '10px 16px', borderRadius: 8, border: '1px solid var(--border-primary)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+      >
+        Bekijk alle content <ChevronRight size={14} />
+      </button>
+    </NavigationSheet>
+    </>
   );
 };

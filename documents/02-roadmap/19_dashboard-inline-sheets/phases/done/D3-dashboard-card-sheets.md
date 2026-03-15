@@ -1,6 +1,6 @@
 # D3 — Dashboard Card Sheets
 
-> **Status:** 📋 Gepland
+> **Status:** ✅ Voltooid
 > **Geschatte effort:** 6-8 uur
 > **Geschatte omvang:** ~500 regels nieuw
 
@@ -129,10 +129,10 @@ Geen `onBack` nodig — dit zijn root sheets, niet child sheets van een parent.
 
 ## Acceptatiecriteria
 
-- [ ] 5 dashboard cards openen als inline sheets
-- [ ] Sheets sluiten met × (root sheet pattern)
-- [ ] Content in sheets is uitgebreider dan op de card
-- [ ] Geen data duplication — hooks delen data waar mogelijk
-- [ ] SmartActions, SquadReadiness, Credits, OrgStats blijven navigeren
-- [ ] TypeScript clean, Vite build succesvol
-- [ ] Mobile + desktop responsive
+- [x] 5 dashboard cards openen als inline sheets
+- [x] Sheets sluiten met × (root sheet pattern)
+- [x] Content in sheets is uitgebreider dan op de card
+- [x] Geen data duplication — hooks delen data waar mogelijk
+- [x] SmartActions, SquadReadiness, Credits, OrgStats blijven navigeren
+- [x] TypeScript clean, Vite build succesvol
+- [x] Mobile + desktop responsive

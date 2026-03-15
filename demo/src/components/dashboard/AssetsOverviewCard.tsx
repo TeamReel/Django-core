@@ -17,6 +17,7 @@ import {
 import { api } from '@/api';
 import type { BrandAsset } from '@/types/api/branding';
 import type { GenerationRequest } from '@/types/api/generative';
+import { NavigationSheet } from '../ui/NavigationSheet';
 import styles from './AssetsOverviewCard.module.css';
 
 /* ── Helpers ────────────────────────────────────────────── */
@@ -75,6 +76,7 @@ export const AssetsOverviewCard: React.FC = () => {
   const [teamAssets, setTeamAssets] = useState<TeamAssetStatus[]>([]);
   const [memberProgress, setMemberProgress] = useState<MemberAssetProgress[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     if (!org) {
@@ -184,8 +186,48 @@ export const AssetsOverviewCard: React.FC = () => {
 
   if (!loading && teamAssets.length === 0 && memberProgress.length === 0) return null;
 
+  /** Render a member row (shared between card and sheet) */
+  const renderMemberRow = (member: MemberAssetProgress) => {
+    const completed = Math.min(member.completedTypes.size, memberExpected);
+    const pct = Math.round((completed / memberExpected) * 100);
+    const isComplete = pct >= 100;
+    return (
+      <div key={member.id} className={styles.memberRow}>
+        <div className={styles.memberAvatar}>
+          {member.avatarUrl ? (
+            <img src={member.avatarUrl} alt="" className={styles.avatarImg} />
+          ) : (
+            <span className={styles.avatarInitial}>{member.name.charAt(0).toUpperCase()}</span>
+          )}
+        </div>
+        <div className={styles.memberInfo}>
+          <span className={styles.memberName}>{member.name}</span>
+          <div className={styles.typeDots}>
+            {EXPECTED_MEMBER_TYPES.map(t => (
+              <span
+                key={t.key}
+                className={styles.typeDot}
+                data-ok={member.completedTypes.has(t.key)}
+                title={`${t.label}: ${member.completedTypes.has(t.key) ? '✓' : '✗'}`}
+              />
+            ))}
+          </div>
+        </div>
+        <span className={`${styles.memberMeta} ${isComplete ? styles.memberMetaComplete : ''}`}>
+          {isComplete ? <CheckCircle2 size={13} /> : `${completed}/${memberExpected}`}
+        </span>
+      </div>
+    );
+  };
+
   return (
-    <div className={styles.card}>
+    <>
+    <div
+      className={styles.card}
+      onClick={() => !loading && (teamAssets.length > 0 || memberProgress.length > 0) && setSheetOpen(true)}
+      role="button"
+      tabIndex={0}
+    >
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerIcon}>
@@ -243,11 +285,10 @@ export const AssetsOverviewCard: React.FC = () => {
             </div>
           </div>
 
-          {/* Missing callout */}
           {teamMissing > 0 && (
             <div
               className={styles.missingCallout}
-              onClick={() => navigate(project ? `/teams/${project.slug || project.id}/identity` : '/identity')}
+              onClick={(e) => { e.stopPropagation(); navigate(project ? `/teams/${project.slug || project.id}/identity` : '/identity'); }}
             >
               <span className={styles.missingIcon}><AlertTriangle size={14} /></span>
               <span className={styles.missingText}>
@@ -283,49 +324,16 @@ export const AssetsOverviewCard: React.FC = () => {
             </div>
           </div>
 
-          {/* Individual members */}
+          {/* Individual members (top 8 in card) */}
           <div className={styles.memberList}>
-            {memberProgress.slice(0, 8).map(member => {
-              const completed = Math.min(member.completedTypes.size, memberExpected);
-              const pct = Math.round((completed / memberExpected) * 100);
-              const isComplete = pct >= 100;
-
-              return (
-                <div key={member.id} className={styles.memberRow}>
-                  <div className={styles.memberAvatar}>
-                    {member.avatarUrl ? (
-                      <img src={member.avatarUrl} alt="" className={styles.avatarImg} />
-                    ) : (
-                      <span className={styles.avatarInitial}>{member.name.charAt(0).toUpperCase()}</span>
-                    )}
-                  </div>
-                  <div className={styles.memberInfo}>
-                    <span className={styles.memberName}>{member.name}</span>
-                    {/* Type indicator dots */}
-                    <div className={styles.typeDots}>
-                      {EXPECTED_MEMBER_TYPES.map(t => (
-                        <span
-                          key={t.key}
-                          className={styles.typeDot}
-                          data-ok={member.completedTypes.has(t.key)}
-                          title={`${t.label}: ${member.completedTypes.has(t.key) ? '✓' : '✗'}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <span className={`${styles.memberMeta} ${isComplete ? styles.memberMetaComplete : ''}`}>
-                    {isComplete ? <CheckCircle2 size={13} /> : `${completed}/${memberExpected}`}
-                  </span>
-                </div>
-              );
-            })}
+            {memberProgress.slice(0, 8).map(renderMemberRow)}
           </div>
 
           {/* Missing callout */}
           {memberComplete < memberTotal && (
             <div
               className={styles.missingCallout}
-              onClick={() => navigate(project ? `/teams/${project.slug || project.id}/squad` : '/squad')}
+              onClick={(e) => { e.stopPropagation(); navigate(project ? `/teams/${project.slug || project.id}/squad` : '/squad'); }}
             >
               <span className={styles.missingIcon}><AlertTriangle size={14} /></span>
               <span className={styles.missingText}>
@@ -337,5 +345,97 @@ export const AssetsOverviewCard: React.FC = () => {
         </div>
       )}
     </div>
+
+    {/* ── Assets Overview Sheet ──────────────────────────────── */}
+    <NavigationSheet
+      isOpen={sheetOpen}
+      onClose={() => setSheetOpen(false)}
+      title="Asset inventaris"
+      icon={<Package size={18} />}
+    >
+      {/* Team Brand Assets — full detail */}
+      {teamAssets.length > 0 && (
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>
+            <Shield size={12} />
+            Team Assets
+          </div>
+          <div className={styles.assetGrid}>
+            {teamAssets.map(asset => (
+              <div key={asset.key} className={styles.assetItem} data-present={asset.present}>
+                <span className={styles.assetCheck} data-ok={asset.present}>
+                  {asset.present ? <CheckCircle2 size={14} /> : <Circle size={14} />}
+                </span>
+                <span className={styles.assetLabel}>{asset.label}</span>
+              </div>
+            ))}
+          </div>
+          <div className={styles.summaryBar}>
+            <div className={styles.summaryLabel}>
+              <span className={styles.summaryText}>{teamPresent} van {teamTotal} aanwezig</span>
+              <span className={styles.summaryPercent}>{teamPercent}%</span>
+            </div>
+            <div className={styles.progressTrack}>
+              <div
+                className={`${styles.progressFill} ${progressClass(teamPercent)}`}
+                style={{ width: `${Math.max(4, teamPercent)}%` }}
+              />
+            </div>
+          </div>
+          {teamMissing > 0 && (
+            <div
+              className={styles.missingCallout}
+              onClick={() => { setSheetOpen(false); navigate(project ? `/teams/${project.slug || project.id}/identity` : '/identity'); }}
+            >
+              <span className={styles.missingIcon}><AlertTriangle size={14} /></span>
+              <span className={styles.missingText}>
+                {teamMissing} asset{teamMissing > 1 ? 's' : ''} ontbre{teamMissing > 1 ? 'ken' : 'ekt'}
+              </span>
+              <span className={styles.missingArrow}><ChevronRight size={14} /></span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Member Assets — full list (all members) */}
+      {memberProgress.length > 0 && (
+        <div className={styles.memberSection}>
+          <div className={styles.sectionLabel}>
+            <Users size={12} />
+            Speler Assets
+          </div>
+          <div className={styles.memberTeamBar}>
+            <div className={styles.summaryLabel}>
+              <span className={styles.summaryText}>
+                {memberComplete}/{memberTotal} spelers volledig
+              </span>
+              <span className={styles.summaryPercent}>{memberPercent}%</span>
+            </div>
+            <div className={styles.progressTrack}>
+              <div
+                className={`${styles.progressFill} ${progressClass(memberPercent)}`}
+                style={{ width: `${Math.max(4, memberPercent)}%` }}
+              />
+            </div>
+          </div>
+          <div className={styles.memberList}>
+            {memberProgress.map(renderMemberRow)}
+          </div>
+          {memberComplete < memberTotal && (
+            <div
+              className={styles.missingCallout}
+              onClick={() => { setSheetOpen(false); navigate(project ? `/teams/${project.slug || project.id}/squad` : '/squad'); }}
+            >
+              <span className={styles.missingIcon}><AlertTriangle size={14} /></span>
+              <span className={styles.missingText}>
+                {memberTotal - memberComplete} speler{memberTotal - memberComplete > 1 ? 's' : ''} onvolledig
+              </span>
+              <span className={styles.missingArrow}><ChevronRight size={14} /></span>
+            </div>
+          )}
+        </div>
+      )}
+    </NavigationSheet>
+    </>
   );
 };

@@ -19,6 +19,7 @@ import {
 import { api } from '@/api';
 import type { GenerationRequest } from '@/types/api/generative';
 import type { MediaItem } from '@/types/api/media';
+import { NavigationSheet } from '../ui/NavigationSheet';
 import styles from './ContentOverviewCard.module.css';
 
 /* ── Helpers ──────────────────────────────────────────── */
@@ -110,6 +111,7 @@ export const ContentOverviewCard: React.FC = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['match']));
   const [loading, setLoading] = useState(true);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const project = context.project;
 
   const toggleSection = useCallback((key: string) => {
@@ -294,9 +296,60 @@ export const ContentOverviewCard: React.FC = () => {
 
   if (!loading && sections.length === 0) return null;
 
-  /* ── Render ───────────────────────────────── */
+  /* ── Render helpers ──────────────────── */
+
+  /** Render a single section's content (matches or items) */
+  const renderSectionBody = (sec: SectionData) => (
+    <>
+      {sec.matches && (
+        <div>
+          {sec.matches.map(mg => (
+            <div key={mg.matchId} className={styles.matchGroup}>
+              <div className={styles.matchLabel}>
+                <Trophy size={12} />
+                <span>{mg.title}</span>
+                {mg.date && (
+                  <span className={styles.matchDate}>
+                    {new Date(mg.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
+                  </span>
+                )}
+              </div>
+              <div className={styles.typeChips}>
+                {mg.items.map(item => (
+                  <span key={item.subtype} className={styles.typeChip} data-type={item.outputType}>
+                    {item.outputType === 'video' ? <Film size={10} /> : item.outputType === 'text' ? <FileText size={10} /> : <Image size={10} />}
+                    {SUBTYPE_LABELS[item.subtype] || item.subtype}
+                    {item.count > 1 && ` ×${item.count}`}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {sec.items && (
+        <div className={`${styles.typeChips} ${styles.paddingTopSmall}`}>
+          {sec.items.map(item => (
+            <span key={item.subtype} className={styles.typeChip} data-type={item.outputType}>
+              {item.outputType === 'video' ? <Film size={10} /> : item.outputType === 'text' ? <FileText size={10} /> : <Image size={10} />}
+              {SUBTYPE_LABELS[item.subtype] || item.subtype}
+              {item.count > 1 && ` ×${item.count}`}
+            </span>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
+  /* ── Render ───────────────────────────── */
   return (
-    <div className={styles.card}>
+    <>
+    <div
+      className={styles.card}
+      onClick={() => !loading && sections.length > 0 && setSheetOpen(true)}
+      role="button"
+      tabIndex={0}
+    >
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerIcon}>
@@ -327,12 +380,12 @@ export const ContentOverviewCard: React.FC = () => {
         </div>
       )}
 
-      {/* Sections */}
+      {/* Sections (collapsible in card) */}
       {!loading && sections.map(sec => (
         <div key={sec.key} className={styles.section}>
           <button
             className={styles.sectionHeader}
-            onClick={() => toggleSection(sec.key)}
+            onClick={(e) => { e.stopPropagation(); toggleSection(sec.key); }}
           >
             <span className={styles.sectionIcon}>{sec.icon}</span>
             <span className={styles.sectionTitle}>{sec.label}</span>
@@ -342,52 +395,7 @@ export const ContentOverviewCard: React.FC = () => {
             </span>
           </button>
 
-          {openSections.has(sec.key) && sec.matches && (
-            <div>
-              {sec.matches.map(mg => (
-                <div key={mg.matchId} className={styles.matchGroup}>
-                  <div className={styles.matchLabel}>
-                    <Trophy size={12} />
-                    <span>{mg.title}</span>
-                    {mg.date && (
-                      <span className={styles.matchDate}>
-                        {new Date(mg.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
-                      </span>
-                    )}
-                  </div>
-                  <div className={styles.typeChips}>
-                    {mg.items.map(item => (
-                      <span
-                        key={item.subtype}
-                        className={styles.typeChip}
-                        data-type={item.outputType}
-                      >
-                        {item.outputType === 'video' ? <Film size={10} /> : item.outputType === 'text' ? <FileText size={10} /> : <Image size={10} />}
-                        {SUBTYPE_LABELS[item.subtype] || item.subtype}
-                        {item.count > 1 && ` ×${item.count}`}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {openSections.has(sec.key) && sec.items && (
-            <div className={`${styles.typeChips} ${styles.paddingTopSmall}`}>
-              {sec.items.map(item => (
-                <span
-                  key={item.subtype}
-                  className={styles.typeChip}
-                  data-type={item.outputType}
-                >
-                  {item.outputType === 'video' ? <Film size={10} /> : item.outputType === 'text' ? <FileText size={10} /> : <Image size={10} />}
-                  {SUBTYPE_LABELS[item.subtype] || item.subtype}
-                  {item.count > 1 && ` ×${item.count}`}
-                </span>
-              ))}
-            </div>
-          )}
+          {openSections.has(sec.key) && renderSectionBody(sec)}
         </div>
       ))}
 
@@ -399,5 +407,37 @@ export const ContentOverviewCard: React.FC = () => {
         </div>
       )}
     </div>
+
+    {/* ── Content Inventory Sheet ────────────────────────────── */}
+    <NavigationSheet
+      isOpen={sheetOpen}
+      onClose={() => setSheetOpen(false)}
+      title="Content inventaris"
+      icon={<Layers size={18} />}
+    >
+      {/* Stat blocks */}
+      {sections.length > 0 && (
+        <div className={styles.statRow}>
+          {sections.map(sec => (
+            <div key={sec.key} className={styles.statBlock}>
+              <div className={styles.statValue}>{sec.total}</div>
+              <div className={styles.statLabel}>{sec.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+      {/* All sections expanded */}
+      {sections.map(sec => (
+        <div key={sec.key} className={styles.section}>
+          <div className={styles.sectionHeader} style={{ cursor: 'default' }}>
+            <span className={styles.sectionIcon}>{sec.icon}</span>
+            <span className={styles.sectionTitle}>{sec.label}</span>
+            <span className={styles.sectionCount}>{sec.total} items</span>
+          </div>
+          {renderSectionBody(sec)}
+        </div>
+      ))}
+    </NavigationSheet>
+    </>
   );
 };

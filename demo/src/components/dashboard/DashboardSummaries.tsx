@@ -18,6 +18,7 @@ import { useCreditBalance } from '../../hooks/useCreditBalance';
 import { useQueueCounts } from '../../hooks/useQueueCounts';
 import type { Organisation } from '../../types';
 import { routes } from '../../routes';
+import { NavigationSheet } from '../ui/NavigationSheet';
 import styles from './DashboardSummaries.module.css';
 
 /* ── Squad Readiness ──────────────────────────────────────────────── */
@@ -212,15 +213,22 @@ export const UpcomingMatchesCard: React.FC = () => {
 export const AIQueueCard: React.FC = () => {
   const queueCounts = useQueueCounts();
   const navigate = useNavigate();
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const activeJobs = queueCounts?.active || 0;
   const reviewJobs = queueCounts?.review || 0;
+  const completedJobs = queueCounts?.completed || 0;
+  const rejectedJobs = queueCounts?.rejected || 0;
+  const aiJobs = queueCounts?.ai_queue || 0;
+  const videoJobs = queueCounts?.video || 0;
+  const allJobs = queueCounts?.all || 0;
   const hasWork = activeJobs > 0 || reviewJobs > 0;
 
   return (
+    <>
     <div
       className={styles.summaryCard}
-      onClick={() => navigate('/content')}
+      onClick={() => setSheetOpen(true)}
       role="button"
       tabIndex={0}
     >
@@ -250,6 +258,62 @@ export const AIQueueCard: React.FC = () => {
       </div>
       <ChevronRight size={16} className={styles.cardArrow} />
     </div>
+
+    {/* ── AI Queue Sheet ───────────────────────────────── */}
+    <NavigationSheet
+      isOpen={sheetOpen}
+      onClose={() => setSheetOpen(false)}
+      title="AI Queue"
+      icon={<Cpu size={18} />}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Status overview */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div style={{ padding: 12, borderRadius: 8, background: 'var(--bg-secondary)' }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: activeJobs > 0 ? 'var(--color-amber-400)' : 'var(--text-secondary)' }}>{activeJobs}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Actief</div>
+          </div>
+          <div style={{ padding: 12, borderRadius: 8, background: 'var(--bg-secondary)' }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: reviewJobs > 0 ? 'var(--color-blue-400)' : 'var(--text-secondary)' }}>{reviewJobs}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Te reviewen</div>
+          </div>
+          <div style={{ padding: 12, borderRadius: 8, background: 'var(--bg-secondary)' }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-green-400)' }}>{completedJobs}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Voltooid</div>
+          </div>
+          <div style={{ padding: 12, borderRadius: 8, background: 'var(--bg-secondary)' }}>
+            <div style={{ fontSize: 24, fontWeight: 700, color: rejectedJobs > 0 ? 'var(--color-red-400)' : 'var(--text-secondary)' }}>{rejectedJobs}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Afgewezen</div>
+          </div>
+        </div>
+
+        {/* Pipeline breakdown */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Pipeline</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: 'var(--bg-secondary)' }}>
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>AI generatie</span>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>{aiJobs}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: 'var(--bg-secondary)' }}>
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Video processing</span>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>{videoJobs}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-primary)' }}>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>Totaal</span>
+            <span style={{ fontSize: 13, fontWeight: 700 }}>{allJobs}</span>
+          </div>
+        </div>
+
+        {/* Navigate to full content page */}
+        <button
+          onClick={() => { setSheetOpen(false); navigate('/content'); }}
+          style={{ width: '100%', padding: '10px 16px', borderRadius: 8, border: '1px solid var(--border-primary)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+        >
+          Bekijk alle content <ChevronRight size={14} />
+        </button>
+      </div>
+    </NavigationSheet>
+    </>
   );
 };
 

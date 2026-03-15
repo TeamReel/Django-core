@@ -11,6 +11,7 @@ import { Users, ChevronRight, CheckCircle2, Circle } from 'lucide-react';
 import { api } from '@/api';
 import type { ProjectMembership } from '@/types/api/project';
 import type { GenerationRequest } from '@/types/api/generative';
+import { NavigationSheet } from '../ui/NavigationSheet';
 import styles from './MemberContentProgressCard.module.css';
 
 /** Expected member content types for a complete profile */
@@ -43,6 +44,7 @@ export const MemberContentProgressCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const [members, setMembers] = useState<MemberProgress[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const navigate = useNavigate();
   const org = context.organisation;
   const project = context.project;
@@ -134,6 +136,7 @@ export const MemberContentProgressCard: React.FC = () => {
     : 0;
 
   return (
+    <>
     <div className={styles.card}>
       <div className={styles.header}>
         <Users size={16} />
@@ -141,7 +144,7 @@ export const MemberContentProgressCard: React.FC = () => {
         <span className={styles.teamBadge}>
           {teamPercent}% compleet
         </span>
-        <button className={styles.seeAll} onClick={() => navigate(`/teams/${project.slug || project.id}/squad`)}>
+        <button className={styles.seeAll} onClick={() => setSheetOpen(true)}>
           <ChevronRight size={14} />
         </button>
       </div>
@@ -199,5 +202,65 @@ export const MemberContentProgressCard: React.FC = () => {
         </div>
       )}
     </div>
+
+    {/* ── Member Content Progress Sheet ───────────────────── */}
+    <NavigationSheet
+      isOpen={sheetOpen}
+      onClose={() => setSheetOpen(false)}
+      title="Spelers content"
+      icon={<Users size={18} />}
+    >
+      {/* Team-level progress bar */}
+      <div className={styles.teamBar}>
+        <div className={styles.teamBarTrack}>
+          <div className={styles.teamBarFill} style={{ width: `${teamPercent}%` }} />
+        </div>
+        <span className={styles.teamBarLabel}>
+          {totalComplete}/{members.length} spelers volledig
+        </span>
+      </div>
+
+      {/* Full member list (all members) */}
+      <div className={styles.memberList}>
+        {members.map(member => {
+          const percent = Math.round((Math.min(member.completedTypes.length, member.totalExpected) / member.totalExpected) * 100);
+          const isComplete = percent >= 100;
+          return (
+            <div key={member.id} className={styles.memberRow}>
+              <div className={styles.memberAvatar}>
+                {member.avatarUrl ? (
+                  <img src={member.avatarUrl} alt="" className={styles.avatarImg} />
+                ) : (
+                  <span className={styles.avatarInitial}>
+                    {member.name.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div className={styles.memberInfo}>
+                <span className={styles.memberName}>{member.name}</span>
+                <div className={styles.progressTrack}>
+                  <div
+                    className={`${styles.progressFill} ${isComplete ? styles.progressComplete : ''}`}
+                    style={{ width: `${Math.max(4, percent)}%` }}
+                  />
+                </div>
+              </div>
+              <span className={`${styles.memberPercent} ${isComplete ? styles.percentComplete : ''}`}>
+                {isComplete ? <CheckCircle2 size={14} /> : `${percent}%`}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Navigate to squad */}
+      <button
+        onClick={() => { setSheetOpen(false); navigate(`/teams/${project.slug || project.id}/squad`); }}
+        style={{ marginTop: 16, width: '100%', padding: '10px 16px', borderRadius: 8, border: '1px solid var(--border-primary)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+      >
+        Ga naar squad <ChevronRight size={14} />
+      </button>
+    </NavigationSheet>
+    </>
   );
 };
