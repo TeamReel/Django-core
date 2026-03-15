@@ -52,15 +52,31 @@
 
 /* ── Phase tab bar ──────────────────────────────────── */
 .phaseTabBar {
+  display: flex;
+  gap: var(--space-1);
   padding: var(--space-1);
+  background: var(--app-surface-2, #f3f4f6);
+  border-radius: var(--radius-lg);
 }
 
 .phaseTab {
-  padding: var(--space-3) var(--space-2);
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-2);
+  border: none;
+  border-radius: var(--radius-md);
   background-color: transparent;
-  color: var(--app-text-muted);
-  font-weight: var(--font-normal);
-  transition: background-color var(--duration-fast), color var(--duration-fast), transform var(--duration-fast);
+  color: var(--app-muted-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: background-color var(--duration-fast), color var(--duration-fast),
+              box-shadow var(--duration-fast), transform var(--duration-fast);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .phaseTab:active {
@@ -68,9 +84,29 @@
 }
 
 .phaseTab[data-active='true'] {
-  background-color: var(--app-primary);
-  color: var(--color-white, #fff);
+  background-color: var(--app-surface, #fff);
+  color: var(--app-text);
   font-weight: var(--font-semibold);
+  box-shadow: var(--shadow-sm);
+}
+
+.phaseTabLabel {
+  /* inherits color/weight from parent */
+}
+
+.phaseTabCount {
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  color: var(--app-muted-text);
+  background: var(--app-border, #e5e7eb);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  line-height: 1.4;
+}
+
+.phaseTab[data-active='true'] .phaseTabCount {
+  background: var(--app-primary);
+  color: var(--color-white, #fff);
 }
 
 /* ── Phase recommended dot (C2) ─────────────────────── */
@@ -82,10 +118,20 @@
   background: var(--app-warning, #f59e0b);
   margin-left: var(--space-1);
   flex-shrink: 0;
+  animation: pulseDot 2s ease-in-out infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .phaseRecommendedDot { animation: none; }
 }
 
 .phaseTab[data-active='true'] .phaseRecommendedDot {
-  background: var(--app-surface);
+  background: var(--app-warning, #f59e0b);
 }
 
 .phaseHint {
@@ -96,24 +142,83 @@
   margin-top: -8px;
 }
 
+/* ── Content group (output type grouping) ───────────── */
+.contentGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.contentGroupHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-1);
+}
+
+.contentGroupIcon {
+  flex-shrink: 0;
+}
+
+.contentGroupIcon[data-output='video'] { color: var(--color-indigo-500, #6366f1); }
+.contentGroupIcon[data-output='image'] { color: var(--color-primary-400, #3B8EA5); }
+.contentGroupIcon[data-output='text']  { color: var(--color-amber-500, #f59e0b); }
+
+.contentGroupLabel {
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-muted-text);
+}
+
+.contentGroupCount {
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  color: var(--app-muted-text);
+  background: var(--app-surface-2, #f3f4f6);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  margin-left: auto;
+}
+
+.contentGroupGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
 /* ── Content type card ──────────────────────────────── */
 .contentCard {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
-  background-color: var(--color-white, #fff);
+  background-color: var(--app-surface, #fff);
   cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
+  transition: transform var(--duration-fast) var(--ease-default),
+              box-shadow var(--duration-fast) var(--ease-default),
+              border-color var(--duration-fast) var(--ease-default);
+  -webkit-tap-highlight-color: transparent;
 }
+
+/* Subtle left accent bar per output type */
+.contentCard[data-output='video'] { border-left: 3px solid var(--color-indigo-500, #6366f1); }
+.contentCard[data-output='image'] { border-left: 3px solid var(--color-primary-400, #3B8EA5); }
+.contentCard[data-output='text']  { border-left: 3px solid var(--color-amber-500, #f59e0b); }
 
 @media (hover: hover) {
   .contentCard:hover {
-  box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-sm);
+    border-color: var(--app-primary);
+  }
+  .contentCard:hover .contentCardChevron {
+    color: var(--app-primary);
+    transform: translateX(2px);
   }
 }
 
@@ -121,13 +226,43 @@
   transform: scale(0.97);
 }
 
+.contentCard:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.contentCardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.contentCardTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--app-text);
+  line-height: var(--leading-tight);
+}
+
+.contentCardDesc {
+  font-size: var(--text-xs);
+  color: var(--app-muted-text);
+  line-height: var(--leading-body);
+  margin-top: 1px;
+}
+
+.contentCardChevron {
+  flex-shrink: 0;
+  color: var(--app-muted-text);
+  transition: color var(--duration-fast), transform var(--duration-fast);
+}
+
 /* ── Thumbnail area ─────────────────────────────────── */
 .thumbArea {
   position: relative;
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -157,23 +292,10 @@
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
 }
 
-/* ── Output type badge ──────────────────────────────── */
+/* ── Output type badge (deprecated – kept for back-compat) ─ */
 .outputBadge {
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
-  font-size: 8px;
-  font-weight: var(--font-extrabold);
-  letter-spacing: 0.06em;
-  padding: 1px var(--space-1);
-  border-radius: var(--radius-sm);
-  line-height: var(--leading-normal);
-  text-transform: uppercase;
+  display: none;
 }
-
-.outputBadge[data-output='video'] { background: rgba(99, 102, 241, 0.85); color: var(--color-white, #fff); }
-.outputBadge[data-output='image'] { background: rgba(13, 148, 136, 0.85); color: var(--color-white, #fff); }
-.outputBadge[data-output='text'] { background: rgba(217, 119, 6, 0.85); color: var(--color-white, #fff); }
 
 /* ── Primary action button ──────────────────────────── */
 .primaryBtn {
@@ -497,6 +619,8 @@
   .phaseTab { min-height: 44px; }
   .reviewCard { padding: 16px; }
   .reviewRow { min-height: 32px; }
+  .thumbArea { width: 44px; height: 44px; }
+  .thumbIcon { width: 20px; height: 20px; }
 
   .stepActions {
     margin-bottom: calc(var(--tr-bottom-navbar-offset, 96px) + 8px);

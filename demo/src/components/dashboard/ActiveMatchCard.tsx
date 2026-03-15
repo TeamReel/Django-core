@@ -9,7 +9,7 @@
  * with match overview + quick actions instead of navigating away.
  * Match links use vanity URLs built from the active hierarchy context.
  */
-import React, { memo, useMemo, useCallback, lazy, Suspense } from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { Spinner } from '@django-core/design-system';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -23,12 +23,7 @@ import { useClosestMatch } from '../../hooks/useClosestMatch';
 import { slugify } from '../../utils/periodPath';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
 import { useMatchSheet } from './useMatchSheet';
-
-const MatchSheet = lazy(() => import('./MatchSheet').then(m => ({ default: m.MatchSheet })));
-const LineupSheet = lazy(() => import('./LineupSheet').then(m => ({ default: m.LineupSheet })));
-const ContentSheet = lazy(() => import('./ContentSheet').then(m => ({ default: m.ContentSheet })));
-
-const SheetFallback = () => <div style={{ padding: 24, textAlign: 'center' }}><Spinner size="md" /></div>;
+import { MatchSheetFlow } from './MatchSheetFlow';
 import { ReadinessRing } from './ReadinessRing';
 import styles from './ActiveMatchCard.module.css';
 
@@ -217,39 +212,14 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
         </div>
       </div>
 
-      {/* ── Match Sheet (reusable component — H2, lazy H5) ──────── */}
-      <Suspense fallback={<SheetFallback />}>
-      <MatchSheet
+      {/* ── Unified Match Sheet Flow (overview + lineup + content creation) ── */}
+      <MatchSheetFlow
+        isOpen={sheet.sheetOpen}
+        onClose={sheet.closeSheet}
         match={match}
         sheet={sheet}
         onNavigateToMatch={handleNavigateToMatch}
       />
-
-      </Suspense>
-
-      {/* ── Lineup Sheet (inline editing from dashboard) ──────── */}
-      <Suspense fallback={<SheetFallback />}>
-      <LineupSheet
-        isOpen={sheet.lineupSheetOpen}
-        onClose={sheet.closeLineupSheet}
-        match={match}
-        onBack={() => { sheet.closeLineupSheet(); sheet.openSheet(); }}
-        onLineupSaved={sheet.handleLineupSaved}
-      />
-
-      </Suspense>
-
-      {/* ── Content Sheet (inline content from dashboard) ─────── */}
-      <Suspense fallback={<SheetFallback />}>
-      <ContentSheet
-        isOpen={sheet.contentSheetOpen}
-        onClose={sheet.closeContentSheet}
-        match={match}
-        onBack={() => { sheet.closeContentSheet(); sheet.openSheet(); }}
-        organisationId={match?.organisation?.id}
-        onContentGenerated={sheet.handleContentGenerated}
-      />
-      </Suspense>
     </>
   );
 });

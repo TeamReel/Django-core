@@ -4,7 +4,7 @@
  * Tap a match → opens the reusable MatchSheet (same as ActiveMatchCard).
  * Each row shows date, title, location, and a readiness progress bar.
  */
-import React, { memo, useState, useCallback, useMemo, lazy, Suspense } from 'react';
+import React, { memo, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CalendarDays, ChevronRight, MapPin, Calendar } from 'lucide-react';
 import { Spinner } from '@django-core/design-system';
@@ -14,12 +14,7 @@ import { useAppSelection } from '../../hooks/useAppSelection';
 import { useUpcomingMatches } from '../../hooks/useUpcomingMatches';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
 import { useMatchSheet } from './useMatchSheet';
-
-const MatchSheet = lazy(() => import('./MatchSheet').then(m => ({ default: m.MatchSheet })));
-const LineupSheet = lazy(() => import('./LineupSheet').then(m => ({ default: m.LineupSheet })));
-const ContentSheet = lazy(() => import('./ContentSheet').then(m => ({ default: m.ContentSheet })));
-
-const SheetFallback = () => <div style={{ padding: 24, textAlign: 'center' }}><Spinner size="md" /></div>;
+import { MatchSheetFlow } from './MatchSheetFlow';
 import { ReadinessRing } from './ReadinessRing';
 import { buildMatchVanityUrl, buildMatchVanityUrlWithTab } from './ActiveMatchCard';
 import type { Match } from './ActiveMatchCard';
@@ -111,30 +106,15 @@ export const UpcomingMatchesCard = memo(function UpcomingMatchesCard() {
         </div>
       </div>
 
-      {/* Reusable MatchSheet — opens when a match is tapped */}
+      {/* Unified Match Sheet Flow — opens when a match is tapped */}
       {selectedMatch && (
-        <Suspense fallback={<SheetFallback />}>
-          <MatchSheet
-            match={selectedMatch}
-            sheet={sheet}
-            onNavigateToMatch={handleNavigateToMatch}
-          />
-          <LineupSheet
-            isOpen={sheet.lineupSheetOpen}
-            onClose={sheet.closeLineupSheet}
-            match={selectedMatch}
-            onBack={() => { sheet.closeLineupSheet(); sheet.openSheet(); }}
-            onLineupSaved={sheet.handleLineupSaved}
-          />
-          <ContentSheet
-            isOpen={sheet.contentSheetOpen}
-            onClose={sheet.closeContentSheet}
-            match={selectedMatch}
-            onBack={() => { sheet.closeContentSheet(); sheet.openSheet(); }}
-            organisationId={selectedMatch?.organisation?.id}
-            onContentGenerated={sheet.handleContentGenerated}
-          />
-        </Suspense>
+        <MatchSheetFlow
+          isOpen={sheet.sheetOpen}
+          onClose={sheet.closeSheet}
+          match={selectedMatch}
+          sheet={sheet}
+          onNavigateToMatch={handleNavigateToMatch}
+        />
       )}
     </>
   );
