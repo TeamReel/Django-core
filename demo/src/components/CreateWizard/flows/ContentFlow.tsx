@@ -130,17 +130,23 @@ function ContentFlowInner({
           subtype: found.subtype,
           templateType: found.templateType,
         });
-        fetchTemplates();
-        selectTemplateForSubtype(found.subtype);
 
-        // Navigate to the correct next step
-        if (LINEUP_REQUIRED_SUBTYPES.has(found.subtype)) {
-          goTo('lineup');
-        } else if (HAS_OPTIONS_SUBTYPES.has(found.subtype)) {
-          goTo('options');
-        } else {
-          goTo('review');
-        }
+        // Fetch templates then resolve — must await so the template is
+        // available before OptionsStep checks selectedTemplate.
+        const autoSelect = async () => {
+          const loaded = await fetchTemplates();
+          selectTemplateForSubtype(found.subtype, loaded);
+
+          // Navigate to the correct next step
+          if (LINEUP_REQUIRED_SUBTYPES.has(found.subtype)) {
+            goTo('lineup');
+          } else if (HAS_OPTIONS_SUBTYPES.has(found.subtype)) {
+            goTo('options');
+          } else {
+            goTo('review');
+          }
+        };
+        autoSelect();
         break;
       }
     }

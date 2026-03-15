@@ -12,6 +12,7 @@ import { MembersStep } from '@/pages/identity/ContentGenerationModal/MembersStep
 import { ConfirmStep } from '@/pages/identity/ContentGenerationModal/ConfirmStep';
 import type { ContentTemplate, Participation } from '@/pages/identity/ContentGenerationModal/types';
 import type { BackgroundItem } from '@/pages/identity/ContentGenerationModal/BackgroundSelector';
+import { useTemplatesData } from '../hooks';
 import styles from '../MatchWizardV2.module.css';
 
 // Subtypes that show MembersStep (lineup config: formation, closeup, animation, background)
@@ -90,6 +91,7 @@ export function OptionsStep({ selectedType, selectedTemplate, matchDataForApi, s
     homeTeamName,
     awayTeamName,
   } = useMatchWizard();
+  const { resolveTemplate } = useTemplatesData();
 
   if (!pendingContent) {
     return <div className="text-center p-32 text-muted">Geen content geselecteerd</div>;
@@ -100,13 +102,16 @@ export function OptionsStep({ selectedType, selectedTemplate, matchDataForApi, s
   const isGoalType = pendingContent.subtype === 'goal';
   const isDisabled = isGoalType && !options.goalScorerId;
 
+  // Resolve template fallback if not yet set (e.g. race condition on auto-advance)
+  const resolvedTemplate = selectedTemplate ?? resolveTemplate(pendingContent.subtype);
+
   // Lineup-type options: formation, closeup style, animation, background
-  if (LINEUP_OPTIONS_SUBTYPES.has(pendingContent.subtype) && selectedTemplate) {
+  if (LINEUP_OPTIONS_SUBTYPES.has(pendingContent.subtype) && resolvedTemplate) {
     return (
       <>
         <MembersStep
           selectedType={selectedType}
-          selectedTemplate={selectedTemplate}
+          selectedTemplate={resolvedTemplate}
           isLineupFlow={true}
           seasonSquad={seasonSquad.seasonSquad}
           selectedMembers={seasonSquad.selectedMembers}
@@ -140,7 +145,7 @@ export function OptionsStep({ selectedType, selectedTemplate, matchDataForApi, s
     <>
       <ConfirmStep
         selectedType={selectedType}
-        selectedTemplate={selectedTemplate}
+        selectedTemplate={resolvedTemplate}
         contentTypeLabel={pendingContent.label}
         matchData={matchDataForApi}
         seasonSquad={seasonSquad.seasonSquad}
