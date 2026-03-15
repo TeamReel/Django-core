@@ -7,9 +7,9 @@
  *
  * Flow: match → content → lineup → options → review → generating → result
  */
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
-import { WizardProvider, WizardStep, WizardShell, type WizardStepConfig } from '../Wizard';
+import { WizardProvider, WizardStep, WizardShell, useWizard, type WizardStepConfig } from '../Wizard';
 import { MatchWizardProvider, useMatchWizard } from './MatchWizardContext';
 import {
   MatchSelectStep,
@@ -51,6 +51,23 @@ export interface MatchWizardV2Props {
 export function MatchWizardInner({ isOpen, initialMatchId }: { isOpen: boolean; initialMatchId?: string }) {
   const mw = useMatchWizard();
   const gen = useMatchWizardGeneration(isOpen);
+  const { goTo } = useWizard();
+
+  // ── Regeneration handler (navigates wizard after generation) ──
+  const handleRegenerate = useCallback(async () => {
+    goTo('generating');
+    try {
+      const result = await gen.handleGenerate();
+      switch (result) {
+        case 'success': goTo('success'); break;
+        case 'video_queued': goTo('video_queued'); break;
+        case 'error': goTo('error'); break;
+        // 'abort' / undefined — stay or handled elsewhere
+      }
+    } catch {
+      goTo('error');
+    }
+  }, [gen.handleGenerate, goTo]);
 
   // ── Auto-select match from initialMatchId ───────────────
   useEffect(() => {
@@ -145,7 +162,7 @@ export function MatchWizardInner({ isOpen, initialMatchId }: { isOpen: boolean; 
           handleSaveAsAsset={gen.handleSaveAsAsset}
           handleSaveAllAsAssets={gen.handleSaveAllAsAssets}
           handleSaveVariantByIndex={gen.handleSaveVariantByIndex}
-          handleGenerateInternal={gen.handleGenerate}
+          handleGenerateInternal={handleRegenerate}
           onClose={() => {}}
         />
       </WizardStep>
@@ -154,7 +171,7 @@ export function MatchWizardInner({ isOpen, initialMatchId }: { isOpen: boolean; 
       <WizardStep stepId="error">
         <ErrorStep
           error={gen.generationError}
-          onRetry={() => {}}
+          onRetry={handleRegenerate}
           onClose={() => {}}
         />
       </WizardStep>

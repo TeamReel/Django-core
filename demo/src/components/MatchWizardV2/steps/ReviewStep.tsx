@@ -9,12 +9,12 @@ import { CONTENT_TYPES, LINEUP_REQUIRED_SUBTYPES } from '../types';
 import styles from '../MatchWizardV2.module.css';
 
 export interface ReviewStepProps {
-  onGenerate: () => void;
+  onGenerate: () => Promise<string | undefined>;
   saveError: string | null;
 }
 
 export function ReviewStep({ onGenerate, saveError }: ReviewStepProps) {
-  const { setSubmitting } = useWizard();
+  const { setSubmitting, goTo } = useWizard();
   const {
     selectedMatch,
     pendingContent,
@@ -36,9 +36,36 @@ export function ReviewStep({ onGenerate, saveError }: ReviewStepProps) {
   const needsLineup = LINEUP_REQUIRED_SUBTYPES.has(ct.subtype);
   const matchDate = new Date(selectedMatch.start_time);
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setSubmitting(true);
-    onGenerate();
+    goTo('generating');
+
+    try {
+      const result = await onGenerate();
+
+      switch (result) {
+        case 'success':
+          goTo('success');
+          break;
+        case 'video_queued':
+          goTo('video_queued');
+          break;
+        case 'error':
+          goTo('error');
+          break;
+        case 'abort':
+          // User cancelled — stay on generating (will be handled by close)
+          break;
+        default:
+          // Unexpected result or undefined (e.g. validation error) — go back to review
+          goTo('review');
+          break;
+      }
+    } catch {
+      goTo('error');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
