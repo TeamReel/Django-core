@@ -1,6 +1,6 @@
 # D4 — TanStack Query Introductie
 
-> **Status:** 📋 Gepland
+> **Status:** ✅ Voltooid
 > **Geschatte effort:** 4-6 uur
 > **Geschatte omvang:** ~200 regels nieuw + ~300 regels migratie
 > **Bron:** [optimalisatie-analyse.md — §1](../../../05-demo/features/optimalisatie-analyse.md)
@@ -134,11 +134,11 @@ D4 is puur **infrastructuur + proof of concept** met 1-2 hooks.
 
 ## Acceptatiecriteria
 
-- [ ] `@tanstack/react-query` v5 geïnstalleerd
-- [ ] `QueryClientProvider` wraps de hele app
-- [ ] Query key conventie gedocumenteerd in `queryKeys.ts`
-- [ ] Minimaal 1 dashboard hook gemigreerd (ActiveMatchCard)
-- [ ] React Query Devtools beschikbaar in development
-- [ ] `staleTime` + `gcTime` defaults geconfigureerd
-- [ ] Bestaande functionaliteit ongewijzigd (geen regressies)
-- [ ] TypeScript clean, Vite build succesvol
+- [x] `@tanstack/react-query` v5 geïnstalleerd
+- [x] `QueryClientProvider` wraps de hele app
+- [x] Query key conventie gedocumenteerd in `queryKeys.ts`
+- [x] Minimaal 1 dashboard hook gemigreerd (ActiveMatchCard)
+- [x] React Query Devtools beschikbaar in development
+- [x] `staleTime` + `gcTime` defaults geconfigureerd
+- [x] Bestaande functionaliteit ongewijzigd (geen regressies)
+- [x] TypeScript clean, Vite build succesvol

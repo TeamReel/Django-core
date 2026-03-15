@@ -1,0 +1,106 @@
+/**
+ * useClosestMatch — Fetch the match closest to now for a given project.
+ *
+ * First TanStack Query–powered hook (D4 proof of concept).
+ * Fetches recent past + near future matches, picks the one whose
+ * start_time is closest to Date.now().
+ *
+ * Also resolves lineup count (from metadata or participations API)
+ * and content count (from media items API) in the same query.
+ *
+ * @example
+ * ```ts
+ * const { data, isLoading } = useClosestMatch(project?.id);
+ * // data?.match, data?.lineupCount, data?.contentCount
+ * ```
+ */
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/api';
+import type { Match } from '../components/dashboard/ActiveMatchCard';
+import { queryKeys } from '../utils/queryKeys';
+
+export interface ClosestMatchData {
+  match: Match | null;
+  contentCount: number;
+  lineupCount: number;
+  lineupFormation?: string;
+}
+
+async function fetchClosestMatch(projectId?: string): Promise<ClosestMatchData> {
+  const now = new Date().toISOString();
+  const baseParams: Record<string, string> = { activity_type: 'match' };
+  if (projectId) baseParams.project = projectId;
+
+  // Fetch both recent past and near future matches in parallel
+  const [pastData, futureData] = await Promise.all([
+    api.list<Match>('/activities/', {
+      params: { ...baseParams, start_time__lte: now, ordering: '-start_time' },
+      pageSize: 3,
+    }),
+    api.list<Match>('/activities/', {
+      params: { ...baseParams, start_time__gte: now, ordering: 'start_time' },
+      pageSize: 3,
+    }),
+  ]);
+
+  const all = [...pastData.results, ...futureData.results];
+  if (all.length === 0) return { match: null, contentCount: 0, lineupCount: 0 };
+
+  // Pick match closest to now
+  const nowMs = Date.now();
+  const closest = all.reduce((best, m) => {
+    const diff = Math.abs(new Date(m.start_time).getTime() - nowMs);
+    const bestDiff = Math.abs(new Date(best.start_time).getTime() - nowMs);
+    return diff < bestDiff ? m : best;
+  });
+
+  let lineupCount = 0;
+  let lineupFormation: string | undefined;
+  let contentCount = 0;
+
+  // Lineup from metadata
+  const lineupData = (closest.metadata?.lineup as any);
+  const lineupPositions = lineupData?.positions;
+  if (Array.isArray(lineupPositions) && lineupPositions.length > 0) {
+    lineupCount = lineupPositions.length;
+    lineupFormation = lineupData?.formation;
+  } else {
+    // Fallback: fetch participations count
+    try {
+      const partData = await api.list<any>('/participations/', {
+        params: { activity_id: closest.id },
+        pageSize: 1,
+      });
+      lineupCount = partData.count ?? partData.results.length;
+    } catch {
+      // ignore
+    }
+  }
+
+  try {
+    const mediaData = await api.list<any>('/media/items/', {
+      params: { activity: closest.id },
+      pageSize: 1,
+    });
+    contentCount = mediaData.count ?? mediaData.results.length;
+  } catch {
+    // Media items endpoint may fail — ignore
+  }
+
+  return { match: closest, contentCount, lineupCount, lineupFormation };
+}
+
+/**
+ * Returns the closest match to now, with lineup and content counts.
+ * Uses TanStack Query for caching and deduplication.
+ *
+ * staleTime is shorter (2 min) than the global default because
+ * match-day data should refresh more frequently.
+ */
+export function useClosestMatch(projectId?: string) {
+  return useQuery({
+    queryKey: queryKeys.activities.closest(projectId || '__none__'),
+    queryFn: () => fetchClosestMatch(projectId),
+    staleTime: 2 * 60 * 1000, // 2 min for real-time match data
+  });
+}

@@ -17,10 +17,10 @@ import {
   FileImage,
 } from 'lucide-react';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { api } from '@/api';
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
 import { routes } from '../../routes';
 import { useAppSelection } from '../../hooks/useAppSelection';
+import { useClosestMatch } from '../../hooks/useClosestMatch';
 import { slugify } from '../../utils/periodPath';
 import { NavigationSheet } from '../ui/NavigationSheet';
 import { LineupSheet } from './LineupSheet';
@@ -77,97 +77,30 @@ function buildMatchVanityUrlWithTab(
 export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const { context } = useContextSwitcher();
   const hierarchy = useAppSelection();
-  const [match, setMatch] = useState<Match | null>(null);
+  const navigate = useNavigate();
+  const project = context.project;
+
+  // ── Data via TanStack Query (D4) ──
+  const { data: matchData, isLoading: loading } = useClosestMatch(project?.id);
+  const match = matchData?.match ?? null;
+
+  // Local state for counts (overridable by sheet callbacks)
   const [contentCount, setContentCount] = useState(0);
   const [lineupCount, setLineupCount] = useState(0);
   const [lineupFormationState, setLineupFormationState] = useState<string | undefined>(undefined);
   const [badgeBump, setBadgeBump] = useState<'lineup' | 'content' | null>(null);
-  const [loading, setLoading] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [lineupSheetOpen, setLineupSheetOpen] = useState(false);
   const [contentSheetOpen, setContentSheetOpen] = useState(false);
-  const navigate = useNavigate();
-  const project = context.project;
 
+  // Sync query counts → local state (callback overrides take precedence until next refetch)
   useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      try {
-        setLoading(true);
-        const now = new Date().toISOString();
-        const baseParams: Record<string, string> = {
-          activity_type: 'match',
-        };
-        if (project) baseParams.project = project.id;
-
-        // Fetch both recent past and near future matches in parallel
-        const [pastData, futureData] = await Promise.all([
-          api.list<Match>('/activities/', {
-            params: { ...baseParams, start_time__lte: now, ordering: '-start_time' },
-            pageSize: 3,
-          }),
-          api.list<Match>('/activities/', {
-            params: { ...baseParams, start_time__gte: now, ordering: 'start_time' },
-            pageSize: 3,
-          }),
-        ]);
-
-        const all = [...pastData.results, ...futureData.results];
-
-        if (all.length === 0) {
-          if (!cancelled) setMatch(null);
-          return;
-        }
-
-        // Pick match closest to now
-        const nowMs = Date.now();
-        const closest = all.reduce((best, m) => {
-          const diff = Math.abs(new Date(m.start_time).getTime() - nowMs);
-          const bestDiff = Math.abs(new Date(best.start_time).getTime() - nowMs);
-          return diff < bestDiff ? m : best;
-        });
-
-        if (!cancelled) setMatch(closest);
-
-        // Count content items & lineup for this match (gracefully handle 500s)
-        if (closest) {
-          // Lineup from metadata
-          const lineupPositions = (closest.metadata?.lineup as any)?.positions;
-          if (Array.isArray(lineupPositions) && lineupPositions.length > 0) {
-            if (!cancelled) setLineupCount(lineupPositions.length);
-          } else {
-            // Fallback: fetch participations count
-            try {
-              const partData = await api.list<any>('/participations/', {
-                params: { activity_id: closest.id },
-                pageSize: 1,
-              });
-              if (!cancelled) setLineupCount(partData.count ?? partData.results.length);
-            } catch {
-              // ignore
-            }
-          }
-
-          try {
-            const mediaData = await api.list<any>('/media/items/', {
-              params: { activity: closest.id },
-              pageSize: 1,
-            });
-            if (!cancelled) setContentCount(mediaData.count ?? mediaData.results.length);
-          } catch {
-            // Media items endpoint may fail — ignore
-          }
-        }
-      } catch {
-        // silently fail
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-
-    return () => { cancelled = true; };
-  }, [project?.id]);
+    if (matchData) {
+      setContentCount(matchData.contentCount);
+      setLineupCount(matchData.lineupCount);
+      if (matchData.lineupFormation) setLineupFormationState(matchData.lineupFormation);
+    }
+  }, [matchData]);
 
   // Derived state
   const matchState = useMemo(() => {

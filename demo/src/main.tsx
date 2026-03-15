@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router-dom';
 import { AuthProvider } from '@django-core/auth-ui';
 import type { AuthConfig } from '@django-core/auth-ui';
 import { ThemeProvider, LocalStorageAdapter } from '@django-core/theme-system';
+import { QueryProvider } from './providers/QueryProvider';
 import { router } from './router';
 import { routes } from './routes';
 import '@django-core/design-system/tokens.css';
@@ -48,9 +49,11 @@ const authConfig: AuthConfig = {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider storage={themeStorage}>
-      <AuthProvider config={authConfig}>
-        <RouterProvider router={router} />
-      </AuthProvider>
+      <QueryProvider>
+        <AuthProvider config={authConfig}>
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </QueryProvider>
     </ThemeProvider>
   </React.StrictMode>
 );

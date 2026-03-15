@@ -25,6 +25,7 @@
     "@django-core/design-system": "workspace:*",
     "@django-core/page-templates": "workspace:*",
     "@django-core/theme-system": "workspace:*",
+    "@tanstack/react-query": "^5.90.21",
     "lucide-react": "^0.563.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -35,6 +36,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
     "@playwright/test": "^1.40.0",
+    "@tanstack/react-query-devtools": "^5.91.3",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
