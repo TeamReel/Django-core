@@ -55,7 +55,7 @@ def _create_media_item_for_completed_job(job: VideoJob) -> dict[str, Any]:
     try:
         Activity = apps.get_model("activities", "Activity")
         MediaItem = apps.get_model("medialib", "MediaItem")
-        from src.medialib.models import MediaItemState
+        from medialib.models import MediaItemState
 
         activity = Activity.objects.select_related(
             "project",
