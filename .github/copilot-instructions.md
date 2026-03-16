@@ -24,6 +24,7 @@ Read the user's request and match it to one of these categories:
 | "look at the UI", "visual review", "how does it look", "responsive", "mobile" | → **Visual Review** — read `.github/skills/web-design-reviewer/SKILL.md` |
 | "database", "query", "slow query", "index", "N+1", "PostgreSQL" | → **DBA** — read `.github/agents/postgresql-dba.agent.md` |
 | "deploy", "railway", "logs", "production", "server down" | → **Ops** — read `.github/agents/ops-deploy.agent.md` |
+| "seed", "management command", "run on railway", "railway run" | → **Railway Ops** — read `.github/skills/railway-ops/SKILL.md` + `.github/prompts/seed.prompt.md` |
 | "docs", "document", "update docs", "write documentation" | → **Docs** — read `.github/skills/documentation-writer/SKILL.md` |
 | "new component", "scaffold component" | → **Scaffold** — read `.github/skills/frontend-component/SKILL.md` |
 | "new endpoint", "API", "new model", "serializer" | → **API** — read `.github/skills/api-endpoint/SKILL.md` |
@@ -179,6 +180,7 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 | `/pytest-coverage` | Generate coverage reports, identify testing gaps |
 | `/conventional-commit` | Generate proper conventional commit messages |
 | `/documentation-writer` | Generate/update docs from code changes |
+| `/railway-ops` | Run management commands on Railway — seed data, logs, migrations, health checks |
 
 ## Available Prompts
 
@@ -194,6 +196,7 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 | `performance` | Optimize bundle, queries, rendering |
 | `refactor` | Restructure code preserving behavior |
 | `migration` | Create safe Django migrations |
+| `seed` | Seed data on Railway — management commands, dependency order, verification |
 
 ## Hooks (run automatically)
 
@@ -300,21 +303,35 @@ psql "postgresql://postgres:<password>@switchback.proxy.rlwy.net:17304/railway"
 
 ### Seeding Data
 
-Available seed commands:
+> **⚠️ `railway run` does NOT work for DB commands from local** — it injects the internal `postgres.railway.internal` URL which is unreachable from your machine.
 
-```bash
-# Full demo data (orgs, users, projects, audit events)
-railway run python manage.py seed_demo_data
+**Correct approach: Local execution with public DB URL**
 
-# App backgrounds (sport-linked video backgrounds)
-railway run python manage.py seed_app_backgrounds
-railway run python manage.py seed_app_backgrounds --force  # Recreate existing
+```powershell
+# 1. Get the public DB URL from Postgres service:
+railway link -s Postgres
+railway variables  # → copy DATABASE_PUBLIC_URL
+
+# 2. Get AWS vars from backend service:
+railway link -s backend
+railway variables  # → copy AWS_* values
+
+# 3. Set env vars and run:
+$env:DATABASE_URL = "<DATABASE_PUBLIC_URL>"
+$env:DJANGO_SETTINGS_MODULE = "config.settings.seeding"
+$env:AWS_ACCESS_KEY_ID = "<value>"
+$env:AWS_SECRET_ACCESS_KEY = "<value>"
+$env:AWS_S3_BUCKET_NAME = "<value>"
+$env:AWS_S3_REGION = "<value>"
+python manage.py seed_app_backgrounds --force
+
+# 4. Clean up env vars:
+$env:DATABASE_URL = ""; $env:DJANGO_SETTINGS_MODULE = ""
+$env:AWS_ACCESS_KEY_ID = ""; $env:AWS_SECRET_ACCESS_KEY = ""
 ```
 
-To run seed commands:
-1. **Link to the `backend` service**: `railway link` → select `teamreel-backend` → `backend`
-2. Run: `railway run python manage.py <command>`
-3. **S3 env vars** (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME) must be on the `backend` service for file uploads
+Key settings module: `config.settings.seeding` (extends production, disables Celery).
+See `.github/skills/railway-ops/SKILL.md` for full seed command catalog (63 commands).
 
 ### Monitoring & Debugging
 
