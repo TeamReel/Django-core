@@ -59,7 +59,67 @@ Ask the user **only when** you cannot reasonably determine:
 
 Do NOT ask about things you can determine from context (file paths, tech stack, conventions).
 
-### Step 4: Execute
+### Step 4: Spec-First Gate (for large changes)
+
+Before implementing any **large change** (new page, new feature, multi-file refactor, new model + API), first create a roadmap spec:
+
+**When to create a spec:**
+- New page or major UI feature → always
+- New model + API endpoint → always
+- Multi-file refactor touching 5+ files → always
+- Bug fix or small tweak → skip, just implement
+
+**Spec workflow:**
+1. Determine the next roadmap number: check `documents/02-roadmap/` for highest existing number, increment by 1
+2. Create `documents/02-roadmap/{number}_{kebab-name}/index.md` with this structure:
+
+```markdown
+# Roadmap #{number} — {Title}
+
+> **Status:** 🚧 In uitvoering
+> **Start:** {date}
+> **Scope:** `{files/folders affected}`
+
+## Doel
+
+{1-2 sentences: what this achieves for the user}
+
+## Huidige staat
+
+### Wat werkt ✅
+{existing functionality}
+
+### Wat ontbreekt / niet klopt ❌
+{problems to solve}
+
+## Design beslissingen
+
+| Vraag | Besluit |
+|-------|---------|
+| {decision 1} | {choice + reasoning} |
+
+## Fasering
+
+### H0 — {Foundation}
+- {task 1}
+- {task 2}
+
+### H1 — {Core features} (if needed)
+- {task 1}
+
+## Acceptatiecriteria
+
+- [ ] {criterion 1}
+- [ ] {criterion 2}
+```
+
+3. **Show the spec to the user** and ask for confirmation before implementing
+4. After user approves (or says "doe maar" / "go"), proceed with implementation
+5. After completion, update spec status to ✅ and move to `done/` if fully complete
+
+**Quick changes** (bug fixes, tweaks, small additions) skip the spec and go straight to implementation.
+
+### Step 5: Execute
 
 Follow the loaded workflow. Use `manage_todo_list` for multi-step work. After completion, suggest the logical next step (e.g. "Want me to review these changes?" or "Should I run E2E tests on this?").
 
@@ -155,6 +215,17 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 ## Spec-Kitty (separate system)
 
 Worktree-based feature lifecycle in `.github/prompts/spec-kitty/`. For formal specification — not used in direct-to-main workflow.
+
+## Single-Chat Workflow (preferred)
+
+The user prefers working in a **single running chat** rather than switching between agents. In this mode:
+
+1. **I am the orchestrator** — I detect intent, load the right instructions/skills, and execute
+2. **Spec-first for big changes** — Before implementing new pages, features, or multi-file refactors, I create a spec in `documents/02-roadmap/` and get user approval
+3. **Quick changes skip the spec** — Bug fixes, tweaks, small additions go straight to implementation
+4. **I auto-load context** — Before editing `src/**` I read `backend.instructions.md`, before `demo/src/**` I read `frontend.instructions.md`, etc.
+5. **I suggest next steps** — After completing work, I suggest the logical follow-up (review, test, deploy)
+6. **Dutch is fine** — The user communicates in Dutch, I respond in Dutch when they do
 
 ---
 
