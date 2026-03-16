@@ -254,9 +254,20 @@ class WorkflowEngine:
         else:
             transition = self._get_transition(instance, action)
             if transition:
-                required_roles = [transition.get("required_permission", "member")]
+                # Read permissions list (plural) from workflow definition.
+                # Fall back to legacy "required_permission" (singular) for compat.
+                permissions = transition.get("permissions")
+                if isinstance(permissions, list):
+                    required_roles = permissions
+                else:
+                    perm = transition.get("required_permission")
+                    required_roles = [perm] if perm else []
             else:
                 required_roles = ["member"]
+
+        # Empty permissions list = no permission required (system transitions)
+        if not required_roles:
+            return True
 
         # Project creators have implicit permission (consistent with ViewSet access)
         if user.id == instance.project.creator_id:
