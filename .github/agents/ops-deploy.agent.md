@@ -36,44 +36,94 @@ You are the operations specialist for TeamReel. You manage Railway deployments, 
 
 ## Railway CLI Commands
 
+> **IMPORTANT**: Railway CLI on Windows/PowerShell does NOT support `--tail` or `--num` flags.
+> Use PowerShell piping (`Select-Object`, `Select-String`) to filter output.
+
+### Service Linking
+```bash
+# Link to a specific service (interactive)
+railway link
+# → Select project: teamreel-backend
+# → Select service: backend / frontend / celery-worker / etc.
+
+# Check which service you're linked to
+railway status
+```
+
 ### Deployment Status
 ```bash
-# Current deployment status
-railway status
-
-# Recent deployments
-railway logs --tail 50
+# Recent logs (link to correct service first!)
+railway logs 2>&1 | Select-Object -First 50
 
 # Environment variables (names only, not values)
 railway variables
 ```
 
-### Log Analysis
-```bash
-# Tail live logs
-railway logs --tail 100
-
+### Log Analysis (PowerShell)
+```powershell
 # Search for errors
-railway logs --tail 500 | grep -i "error\|exception\|traceback\|500"
+railway logs 2>&1 | Select-String -Pattern "error|exception|traceback|500"
+
+# Get last N lines
+railway logs 2>&1 | Select-Object -Last 100
 
 # Search for slow queries
-railway logs --tail 500 | grep -i "slow\|duration\|query"
+railway logs 2>&1 | Select-String -Pattern "slow|duration|query"
 
 # Search for specific endpoint issues
-railway logs --tail 200 | grep "api/v1/endpoint-name"
+railway logs 2>&1 | Select-String "api/v1/endpoint-name"
 ```
 
 ### Health Checks
 ```bash
 # API health (if health endpoint exists)
-curl -s https://api.teamreel.io/health/ | python -m json.tool
+Invoke-RestMethod -Uri https://api.teamreel.io/health/
 
 # Check if the service is responding
-curl -s -o /dev/null -w "%{http_code}" https://api.teamreel.io/api/v1/
+(Invoke-WebRequest -Uri https://api.teamreel.io/api/v1/ -Method Head).StatusCode
 
-# Database connectivity
+# Database connectivity (link to backend first!)
 railway run python manage.py check --database default
+
+# Check migrations
+railway run python manage.py showmigrations --list
 ```
+
+### Seeding Data
+```bash
+# Link to backend service first!
+railway link  # → teamreel-backend → backend
+
+# Full demo data (orgs, users, projects, audit events)
+railway run python manage.py seed_demo_data
+
+# App backgrounds (sport-linked video backgrounds)
+railway run python manage.py seed_app_backgrounds
+railway run python manage.py seed_app_backgrounds --force  # Recreate existing
+```
+
+> **S3 note**: File uploads require AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME env vars on the `backend` service.
+
+### Database Access
+```bash
+# Via Railway (internal network)
+railway run python manage.py shell
+railway run python manage.py dbshell
+
+# Direct access via public URL
+# postgresql://postgres:<password>@switchback.proxy.rlwy.net:17304/railway
+psql "postgresql://postgres:<password>@switchback.proxy.rlwy.net:17304/railway"
+```
+
+### Diagnosing Frontend vs Backend
+
+| Error type | How to diagnose |
+|------------|----------------|
+| Build error (frontend) | `railway link` → frontend → `railway logs` |
+| TypeScript error | `cd demo && npx tsc --noEmit` locally |
+| Runtime error | Browser console on `demo.teamreel.app` |
+| API 500 | `railway link` → backend → `railway logs` → find traceback |
+| Migration fail | `railway run python manage.py showmigrations` |
 
 ## Diagnosis Workflow
 

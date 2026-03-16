@@ -229,10 +229,7 @@ export const AppBackgroundsPage: React.FC = () => {
           </Card>
         ) : (
           <div className={styles.grid}>
-            {d.backgrounds.map((bg: {
-              id: string; label: string; sport_name: string; sport_id?: string;
-              url: string | null; sort_order: number; is_active: boolean;
-            }) => (
+            {d.backgrounds.map((bg) => (
               <Card key={bg.id} className={styles.card}>
                 {bg.url ? (
                   <div

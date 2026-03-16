@@ -244,7 +244,110 @@ The user prefers working in a **single running chat** rather than switching betw
 | **Lighthouse** | `npx lighthouse <url> --only-categories=accessibility` | Accessibility agent |
 
 ---
+## Operational Runbook
 
+### Railway Project & Services
+
+| Service | Purpose | Notes |
+|---------|---------|-------|
+| `backend` | Django API server | Main application |
+| `frontend` | React/Vite build | Served via nginx |
+| `celery-worker` | Async task processing | Video, AI, emails |
+| `celery-beat` | Scheduled tasks | Periodic triggers |
+| `worker-ai` | AI processing worker | Generative tasks |
+| `Postgres` | PostgreSQL database | Primary datastore |
+| `Redis` | Cache + Celery broker | Message queue |
+
+**Project**: `teamreel-backend` (Railway workspace: `teamreel`)
+
+### Switching Railway Services
+
+```bash
+# Link to a specific service (interactive — choose project then service)
+railway link
+
+# Check which service you're linked to
+railway status
+
+# View logs of the currently linked service
+railway logs
+
+# IMPORTANT: `--tail` and `--num` flags do NOT exist.
+# Use PowerShell piping to filter:
+railway logs 2>&1 | Select-String -Pattern "error|traceback|500"
+railway logs 2>&1 | Select-Object -First 100
+```
+
+### Database Access
+
+```bash
+# Public DB URL (reachable from local machine):
+# postgresql://postgres:<password>@switchback.proxy.rlwy.net:17304/railway
+
+# Run Django management commands against Railway DB:
+railway run python manage.py shell
+railway run python manage.py dbshell
+
+# Or use psql directly with public URL:
+psql "postgresql://postgres:<password>@switchback.proxy.rlwy.net:17304/railway"
+
+# Query from Python locally (set DATABASE_URL env var):
+# $env:DATABASE_URL = "postgresql://postgres:<password>@switchback.proxy.rlwy.net:17304/railway"
+# python manage.py shell
+```
+
+> **Note**: `railway run` connects to the INTERNAL Railway network. Commands needing DB access must run via `railway run` OR use the **public** proxy URL.
+
+### Seeding Data
+
+Available seed commands:
+
+```bash
+# Full demo data (orgs, users, projects, audit events)
+railway run python manage.py seed_demo_data
+
+# App backgrounds (sport-linked video backgrounds)
+railway run python manage.py seed_app_backgrounds
+railway run python manage.py seed_app_backgrounds --force  # Recreate existing
+```
+
+To run seed commands:
+1. **Link to the `backend` service**: `railway link` → select `teamreel-backend` → `backend`
+2. Run: `railway run python manage.py <command>`
+3. **S3 env vars** (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME) must be on the `backend` service for file uploads
+
+### Monitoring & Debugging
+
+```bash
+# Backend logs (link to backend first)
+railway logs 2>&1 | Select-String "error|Error|500|traceback"
+
+# Frontend build logs (link to frontend first)
+railway logs 2>&1 | Select-String "error|failed|ERR"
+
+# Check environment variables (names only)
+railway variables
+
+# Run a quick health check
+railway run python manage.py check
+railway run python manage.py showmigrations --list
+```
+
+### Diagnosing Frontend Errors
+
+1. **Build errors**: Link to `frontend` service → check build logs
+2. **TypeScript errors**: Run `cd demo && npx tsc --noEmit` locally
+3. **Runtime errors**: Check browser console on `demo.teamreel.app`
+4. **API errors**: Link to `backend` service → check response logs
+
+### Diagnosing Backend Errors
+
+1. **500 errors**: `railway logs` → find traceback
+2. **Migration issues**: `railway run python manage.py showmigrations`
+3. **Import errors**: Check `requirements/` and `Dockerfile`
+4. **S3 issues**: Verify `AWS_*` env vars on `backend` service
+
+---
 ## Documentation Index
 
 All domain documentation mapped in: `documents/05-demo/ai-context-index.md`
