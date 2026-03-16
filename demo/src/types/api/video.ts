@@ -106,6 +106,7 @@ export interface VideoJob {
   output_url: string | null;
   thumbnail_url: string | null;
   workflow_instance: VideoJobWorkflowInfo | null;
+  approval_status: string | null;
   created_at: string;
   updated_at: string;
   started_at: string | null;

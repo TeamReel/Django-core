@@ -114,7 +114,11 @@ export function useTopNavbarState(quickReviewOpen: boolean) {
       ]);
       setInProgressVideoJobs([...processing.results, ...queued.results]);
       setPendingReviewVideoJobs(
-        completed.results.filter(j => j.workflow_instance?.current_state === 'ready_for_review'),
+        completed.results.filter(j =>
+          j.workflow_instance?.current_state === 'ready_for_review' ||
+          j.approval_status === 'pending' ||
+          (!j.workflow_instance && !j.approval_status)
+        ),
       );
     } catch { /* silently ignore — don't break the navbar */ }
   }, []);

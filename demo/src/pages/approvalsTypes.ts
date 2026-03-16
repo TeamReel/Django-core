@@ -77,8 +77,11 @@ export function filterVideoJobsByTab(jobs: VideoJob[], tab: FilterState): VideoJ
       );
     case 'review':
       return jobs.filter(j =>
-        j.status === 'completed' &&
-        j.workflow_instance?.current_state === 'ready_for_review'
+        j.status === 'completed' && (
+          j.workflow_instance?.current_state === 'ready_for_review' ||
+          j.approval_status === 'pending' ||
+          (!j.workflow_instance && !j.approval_status)
+        )
       );
     case 'ai_queue':
       return [];

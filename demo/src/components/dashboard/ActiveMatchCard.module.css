@@ -526,6 +526,7 @@
   margin: 0 var(--space-4);
   border-radius: 2px;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .phaseProgressFill {

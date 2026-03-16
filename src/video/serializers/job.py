@@ -66,6 +66,7 @@ class VideoJobListSerializer(serializers.ModelSerializer):
     output_url = serializers.SerializerMethodField()
     thumbnail_url = serializers.SerializerMethodField()
     workflow_instance = serializers.SerializerMethodField()
+    approval_status = serializers.SerializerMethodField()
 
     config = serializers.JSONField(read_only=True)
 
@@ -88,6 +89,7 @@ class VideoJobListSerializer(serializers.ModelSerializer):
             "output_url",
             "thumbnail_url",
             "workflow_instance",
+            "approval_status",
         ]
         read_only_fields = fields
 
@@ -99,6 +101,22 @@ class VideoJobListSerializer(serializers.ModelSerializer):
     def get_thumbnail_url(self, obj: VideoJob) -> str | None:
         thumbnail = obj.metadata.get("thumbnail_url") if obj.metadata else None
         return thumbnail
+
+    def get_approval_status(self, obj: VideoJob) -> str | None:
+        """Derive approval status from workflow state or metadata fallback."""
+        if obj.workflow_instance:
+            state = obj.workflow_instance.current_state
+            name = state.name if hasattr(state, "name") else str(state)
+            if name == "approved":
+                return "approved"
+            if name == "rejected":
+                return "rejected"
+            if name == "ready_for_review":
+                return "pending"
+            return None
+        # Fallback: check metadata (set by approve/reject endpoints)
+        meta = obj.metadata or {}
+        return meta.get("approval_status")
 
     def get_workflow_instance(self, obj: VideoJob) -> dict | None:
         """Return workflow instance info with available actions for approval UI."""

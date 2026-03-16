@@ -51,6 +51,7 @@ export interface VideoJob {
   preset?: string | null;
   preset_name?: string;
   workflow_instance?: VideoJobWorkflowInfo | null;
+  approval_status: string | null;
   config: Record<string, unknown>;
   metadata: Record<string, unknown>;
   error_message?: string | null;
