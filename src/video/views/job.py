@@ -239,12 +239,38 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 from src.workflows.services.engine import WorkflowEngine
 
                 engine = WorkflowEngine()
+
+                # If the workflow is stuck at "processing" (the
+                # processing_complete transition on job completion may have
+                # failed silently), advance it first so the "approve"
+                # transition can proceed.
+                wf_state = (
+                    job.workflow_instance.current_state.name
+                    if hasattr(job.workflow_instance.current_state, "name")
+                    else str(job.workflow_instance.current_state)
+                )
+                if wf_state == "processing":
+                    logger.info(
+                        "Workflow stuck at 'processing' — executing processing_complete first",
+                        extra={"job_id": str(job.id)},
+                    )
+                    engine.execute_transition(
+                        instance=job.workflow_instance,
+                        action="processing_complete",
+                        user=request.user,
+                        comment="Auto-advanced from processing (was stuck)",
+                    )
+                    # Refresh so the next transition sees ready_for_review
+                    job.workflow_instance.refresh_from_db()
+
                 engine.execute_transition(
                     instance=job.workflow_instance,
                     action="approve",
                     user=request.user,
                     comment="Approved via video approval UI",
                 )
+                # Refresh so the serializer sees the updated state
+                job.workflow_instance.refresh_from_db()
             except Exception as exc:
                 logger.warning(
                     "Workflow approve transition failed – saving metadata anyway: %s",
@@ -420,12 +446,29 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 from src.workflows.services.engine import WorkflowEngine
 
                 engine = WorkflowEngine()
+
+                # Handle stuck workflow at "processing" state
+                wf_state = (
+                    job.workflow_instance.current_state.name
+                    if hasattr(job.workflow_instance.current_state, "name")
+                    else str(job.workflow_instance.current_state)
+                )
+                if wf_state == "processing":
+                    engine.execute_transition(
+                        instance=job.workflow_instance,
+                        action="processing_complete",
+                        user=request.user,
+                        comment="Auto-advanced from processing (was stuck)",
+                    )
+                    job.workflow_instance.refresh_from_db()
+
                 engine.execute_transition(
                     instance=job.workflow_instance,
                     action="reject",
                     user=request.user,
                     comment="Rejected via video approval UI",
                 )
+                job.workflow_instance.refresh_from_db()
             except Exception as exc:
                 logger.warning(
                     "Workflow reject transition failed – saving metadata anyway: %s",

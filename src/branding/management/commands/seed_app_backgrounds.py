@@ -236,9 +236,9 @@ class Command(BaseCommand):
             return
 
         # Import storage backend
-        from files.storage import get_backend
+        from files.utils import get_storage_backend
 
-        backend = get_backend()
+        backend = get_storage_backend()
         created_count = 0
 
         for bg_def in FOOTBALL_BACKGROUNDS:
@@ -260,7 +260,7 @@ class Command(BaseCommand):
 
             # Upload to S3
             storage_path = f"app-backgrounds/{uuid.uuid4()}.png"
-            backend.upload(storage_path, png_bytes, content_type="image/png")
+            backend.save_from_bytes(storage_path, png_bytes, content_type="image/png")
 
             # Create FileAsset
             file_asset = FileAsset.objects.create(

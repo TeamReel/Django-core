@@ -113,7 +113,9 @@ class VideoJobListSerializer(serializers.ModelSerializer):
                 return "rejected"
             if name == "ready_for_review":
                 return "pending"
-            return None
+            # Workflow in unknown/stuck state (e.g. "processing") — fall
+            # through to metadata so approve/reject actions persisted via
+            # metadata are still surfaced to the frontend.
         # Fallback: check metadata (set by approve/reject endpoints)
         meta = obj.metadata or {}
         return meta.get("approval_status")

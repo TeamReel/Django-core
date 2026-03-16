@@ -1,5 +1,7 @@
 {
     "python.defaultInterpreterPath": "${workspaceFolder}/venv/Scripts/python.exe",
+    "github.copilot.chat.codeGeneration.useInstructionFiles": true,
+    "chat.agent.enabled": true,
     "chat.promptFilesRecommendations": {
         "spec-kitty.constitution": true,
         "spec-kitty.specify": true,

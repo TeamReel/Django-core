@@ -80,6 +80,9 @@ export function filterVideoJobsByTab(jobs: VideoJob[], tab: FilterState): VideoJ
         j.status === 'completed' && (
           j.workflow_instance?.current_state === 'ready_for_review' ||
           j.approval_status === 'pending' ||
+          // Workflow stuck at 'processing' (transition on completion may
+          // have failed) — still needs review.
+          (j.workflow_instance?.current_state === 'processing' && !j.approval_status) ||
           (!j.workflow_instance && !j.approval_status)
         )
       );
