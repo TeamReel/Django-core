@@ -165,51 +165,49 @@ export function MembersStep({
               </div>
             )}
 
-            {/* Background / Location selector */}
-            {appBackgrounds.length > 0 && (
-              <div>
-                <label className="form-label-upper">Achtergrond / Locatie</label>
-                <div className={`grid gap-8 ${styles.backgroundGrid}`}>
-                  {/* Default option */}
-                  <button
-                    onClick={() => setSelectedBackgroundUrl(null)}
-                    className={`relative overflow-hidden cursor-pointer p-0 rounded-10 transition ${styles.bgButton}`}
-                    data-selected={!selectedBackgroundUrl}
-                  >
-                    <div className={`w-full flex-center ${styles.autoPreview}`}>
-                      <span className="fs-14 fw-700 text-inverse">Auto</span>
-                    </div>
-                    <div className={`text-center fw-600 ${styles.bgLabel}`} data-selected={!selectedBackgroundUrl}>
-                      Standaard
-                    </div>
-                    {!selectedBackgroundUrl && (
-                      <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeTiny}`}>OK</div>
-                    )}
-                  </button>
+            {/* Background / Location selector — always visible for lineup types */}
+            <div>
+              <label className="form-label-upper">Achtergrond / Locatie</label>
+              <div className={`grid gap-8 ${styles.backgroundGrid}`}>
+                {/* Default option */}
+                <button
+                  onClick={() => setSelectedBackgroundUrl(null)}
+                  className={`relative overflow-hidden cursor-pointer p-0 rounded-10 transition ${styles.bgButton}`}
+                  data-selected={!selectedBackgroundUrl}
+                >
+                  <div className={`w-full flex-center ${styles.autoPreview}`}>
+                    <span className="fs-14 fw-700 text-inverse">Auto</span>
+                  </div>
+                  <div className={`text-center fw-600 ${styles.bgLabel}`} data-selected={!selectedBackgroundUrl}>
+                    Standaard
+                  </div>
+                  {!selectedBackgroundUrl && (
+                    <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeTiny}`}>OK</div>
+                  )}
+                </button>
 
-                  {/* App-level backgrounds */}
-                  {appBackgrounds.map((bg) => {
-                    const isSelected = selectedBackgroundUrl === bg.url;
-                    return (
-                      <button
-                        key={bg.id}
-                        onClick={() => setSelectedBackgroundUrl(bg.url)}
-                        className={`relative overflow-hidden cursor-pointer p-0 rounded-10 transition ${styles.bgButton}`}
-                        data-selected={isSelected}
-                      >
-                        <div className={`w-full ${styles.bgImagePreview}`} style={{ backgroundImage: `url(${bg.url})` }} />
-                        <div className={`text-center fw-600 truncate ${styles.bgLabel}`} data-selected={isSelected}>
-                          {bg.label || bg.profile_name || 'Locatie'}
-                        </div>
-                        {isSelected && (
-                          <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeTiny}`}>OK</div>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                {/* App-level backgrounds */}
+                {appBackgrounds.map((bg) => {
+                  const isSelected = selectedBackgroundUrl === bg.url;
+                  return (
+                    <button
+                      key={bg.id}
+                      onClick={() => setSelectedBackgroundUrl(bg.url)}
+                      className={`relative overflow-hidden cursor-pointer p-0 rounded-10 transition ${styles.bgButton}`}
+                      data-selected={isSelected}
+                    >
+                      <div className={`w-full ${styles.bgImagePreview}`} style={{ backgroundImage: `url(${bg.url})` }} />
+                      <div className={`text-center fw-600 truncate ${styles.bgLabel}`} data-selected={isSelected}>
+                        {bg.label || bg.profile_name || 'Locatie'}
+                      </div>
+                      {isSelected && (
+                        <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeTiny}`}>OK</div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-            )}
+            </div>
 
           </div>
         </div>
