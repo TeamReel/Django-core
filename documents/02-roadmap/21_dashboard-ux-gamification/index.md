@@ -1,6 +1,6 @@
 # Roadmap #21 — Dashboard UX Polish & Gamification
 
-> **Status:** 🚧 In uitvoering
+> **Status:** ✅ Afgerond
 > **Start:** 2026-03-16
 > **Scope:** `demo/src/pages/DashboardPage.tsx`, `demo/src/components/dashboard/`
 > **Bron:** UX review dashboard, gebruikersfeedback
