@@ -32,6 +32,22 @@ class AppBackgroundSerializer(serializers.ModelSerializer):
         return obj.get_url()
 
 
+class AppBackgroundWriteSerializer(serializers.ModelSerializer):
+    """Write serializer for creating/updating sport-linked backgrounds."""
+
+    class Meta:
+        model = AppBackground
+        fields = [
+            "id",
+            "sport",
+            "file",
+            "label",
+            "sort_order",
+            "is_active",
+        ]
+        read_only_fields = ["id"]
+
+
 class BrandProfileSerializer(serializers.ModelSerializer):
     """Serializer for BrandProfile with nested counts.
 

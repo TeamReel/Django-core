@@ -133,6 +133,7 @@ export const routes = {
   // ── Config (admin) ───────────────────────────────────────────────
   contentTemplates: () => '/content-templates' as const,
   workflowTemplates: () => '/workflow-templates' as const,
+  appBackgrounds: () => '/app-backgrounds' as const,
   permissions: () => '/permissions' as const,
   audit: () => '/audit' as const,
   orgAudit: () => '/organisation/audit' as const,

@@ -11,13 +11,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import BrandAsset, BrandProfile, DesignToken
+from src.accounts.permissions import IsSuperadmin
+
+from .models import AppBackground, BrandAsset, BrandProfile, DesignToken
 from .permissions import (
     BrandAssetPermission,
     BrandProfilePermission,
     DesignTokenPermission,
 )
 from .serializers import (
+    AppBackgroundSerializer,
+    AppBackgroundWriteSerializer,
     BrandAssetSerializer,
     BrandProfileDetailSerializer,
     BrandProfileSerializer,
@@ -31,6 +35,34 @@ class BrandPagination(PageNumberPagination):
     page_size = 20
     page_size_query_param = "page_size"
     max_page_size = 500  # Increased for bulk fetching with organisation_scope
+
+
+class AppBackgroundViewSet(viewsets.ModelViewSet):
+    """CRUD for global sport-linked background images.
+
+    - GET  (list/retrieve): Any authenticated user
+    - POST/PUT/PATCH/DELETE: Superadmin only
+
+    The frontend admin page uses this for management.
+    The content generation modal uses the list endpoint via
+    BrandAssetViewSet.app_backgrounds action (which queries the same model).
+    """
+
+    queryset = AppBackground.objects.select_related("sport", "file").all()
+    pagination_class = BrandPagination
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsSuperadmin()]
+
+    def get_serializer_class(self):
+        if self.action in ("create", "update", "partial_update"):
+            return AppBackgroundWriteSerializer
+        return AppBackgroundSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
 
 
 class BrandProfileViewSet(viewsets.ModelViewSet):

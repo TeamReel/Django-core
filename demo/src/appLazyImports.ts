@@ -49,6 +49,7 @@ export const BillingPage = lazyWithRetry(() => import('./pages/config/BillingPag
 export const UsageEventsPage = lazyWithRetry(() => import('./pages/config/UsageEventsPage'));
 export const ContentTemplatesPage = lazyWithRetry(() => import('./pages/config/ContentTemplatesPage'));
 export const WorkflowTemplatesPage = lazyWithRetry(() => import('./pages/config/WorkflowTemplatesPage'));
+export const AppBackgroundsPage = lazyWithRetry(() => import('./pages/config/AppBackgroundsPage'));
 export const ApprovalsPage = lazyWithRetry(() => import('./pages/ApprovalsPage'));
 
 // Profile Hub

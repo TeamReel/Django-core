@@ -1,0 +1,54 @@
+/* AppBackgroundsPage — superadmin background management */
+
+.superadminBadge {
+  padding: var(--space-1) var(--space-3);
+  background: var(--app-warning);
+  color: #000;
+}
+
+.form {
+  padding: var(--space-4);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  overflow: hidden;
+}
+
+.thumbnail {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.thumbnailPlaceholder {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--app-surface-2);
+  color: var(--app-muted-text);
+  font-size: 12px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.cardBody {
+  padding: var(--space-3);
+}

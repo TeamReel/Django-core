@@ -55,6 +55,7 @@ export const NAV_CONFIG: NavSection[] = [
       { path: routes.preferences({ tab: 'profile' }), label: 'Preferences', icon: Settings, visibility: 'everyone' },
       { path: routes.contentTemplates(), label: 'Templates', icon: Palette, visibility: 'superadmin' },
       { path: routes.workflowTemplates(), label: 'Workflows', icon: GitBranch, visibility: 'superadmin' },
+      { path: routes.appBackgrounds(), label: 'Achtergronden', icon: Library, visibility: 'superadmin' },
       { path: routes.permissions(), label: 'Organisation', icon: Users, visibility: 'superadmin' },
       { path: routes.health(), label: 'Platform', icon: Activity, visibility: 'superadmin' },
     ],

@@ -6,6 +6,7 @@ from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
 from .views import (
+    AppBackgroundViewSet,
     BrandAssetViewSet,
     BrandProfileViewSet,
     DesignTokenViewSet,
@@ -20,6 +21,7 @@ router.register(r"profiles", BrandProfileViewSet, basename="brandprofile")
 # Note: These are scoped by profile_pk kwarg from URL pattern
 router.register(r"tokens", DesignTokenViewSet, basename="designtoken")
 router.register(r"assets", BrandAssetViewSet, basename="brandasset")
+router.register(r"app-backgrounds", AppBackgroundViewSet, basename="appbackground")
 
 urlpatterns = [
     # Token resolution endpoint - MUST be BEFORE router.urls to prevent

@@ -57,7 +57,7 @@ export function buildPanelBConfig(params: PanelBConfigParams): PanelBResult | nu
 
     let activeSection: 'work' | 'content' | 'templates' | 'preferences' | 'organisation' | 'platform' | 'help' = 'work';
 
-    if (path.startsWith('/content-templates') || path.startsWith('/workflow-templates')) activeSection = 'templates';
+    if (path.startsWith('/content-templates') || path.startsWith('/workflow-templates') || path.startsWith('/app-backgrounds')) activeSection = 'templates';
     else if (path.startsWith('/content') || path.startsWith('/studio') || path.startsWith('/approvals') || path.startsWith('/medialib')) activeSection = 'content';
     else if (path.startsWith('/credits')) activeSection = isPersonalWallet ? 'preferences' : 'organisation';
     else if (path.startsWith('/permissions') || path === '/users') activeSection = 'organisation';
@@ -154,7 +154,7 @@ export function buildPanelBConfig(params: PanelBConfigParams): PanelBResult | nu
                 { label: 'During Match', path: '/content-templates?tab=during_match', icon: Sparkles },
                 { label: 'Post-Match', path: '/content-templates?tab=post_match', icon: Trophy },
                 { label: 'Member', path: '/content-templates?tab=member', icon: UserCircle },
-                { label: 'Workflows', path: '/workflow-templates', icon: GitBranch },
+                { label: 'Workflows', path: '/workflow-templates', icon: GitBranch },\n                { label: 'Achtergronden', path: '/app-backgrounds', icon: Film },
             ];
             break;
 
