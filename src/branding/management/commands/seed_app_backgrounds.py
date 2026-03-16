@@ -51,8 +51,8 @@ FOOTBALL_BACKGROUNDS = [
     },
 ]
 
-WIDTH = 1080
-HEIGHT = 1920  # 9:16 portrait for video
+WIDTH = 1920
+HEIGHT = 1080  # 16:9 landscape
 
 
 def generate_field_image(
@@ -60,7 +60,7 @@ def generate_field_image(
     field_color_2: str,
     line_color: str,
 ) -> bytes:
-    """Generate a football field background image (9:16 portrait).
+    """Generate a football field background image (16:9 landscape).
 
     Returns PNG bytes.
     """
@@ -78,13 +78,13 @@ def generate_field_image(
     center_y = HEIGHT // 2
     line_width = 3
 
-    # Grass stripes
-    stripe_height = field_height // 10
+    # Grass stripes (vertical stripes for landscape field)
+    stripe_width = field_width // 10
     for i in range(10):
-        y_start = field_top + i * stripe_height
+        x_start = field_left + i * stripe_width
         stripe_color = field_color_1 if i % 2 == 0 else field_color_2
         draw.rectangle(
-            [field_left, y_start, field_right, y_start + stripe_height],
+            [x_start, field_top, x_start + stripe_width, field_bottom],
             fill=stripe_color,
         )
 
@@ -95,15 +95,15 @@ def generate_field_image(
         width=line_width,
     )
 
-    # Center line
+    # Center line (vertical)
     draw.line(
-        [(field_left, center_y), (field_right, center_y)],
+        [(center_x, field_top), (center_x, field_bottom)],
         fill=line_color,
         width=line_width,
     )
 
     # Center circle
-    circle_radius = int(field_width * 0.15)
+    circle_radius = int(field_height * 0.15)
     draw.ellipse(
         [
             center_x - circle_radius,
@@ -121,49 +121,53 @@ def generate_field_image(
         fill=line_color,
     )
 
-    # Penalty areas
-    penalty_width = int(field_width * 0.6)
-    penalty_height = int(field_height * 0.15)
+    # Penalty areas (left and right)
+    penalty_height = int(field_height * 0.6)
+    penalty_width = int(field_width * 0.15)
+    # Left penalty area
     draw.rectangle(
         [
-            center_x - penalty_width // 2,
-            field_top,
-            center_x + penalty_width // 2,
-            field_top + penalty_height,
+            field_left,
+            center_y - penalty_height // 2,
+            field_left + penalty_width,
+            center_y + penalty_height // 2,
         ],
         outline=line_color,
         width=line_width,
     )
+    # Right penalty area
     draw.rectangle(
         [
-            center_x - penalty_width // 2,
-            field_bottom - penalty_height,
-            center_x + penalty_width // 2,
-            field_bottom,
+            field_right - penalty_width,
+            center_y - penalty_height // 2,
+            field_right,
+            center_y + penalty_height // 2,
         ],
         outline=line_color,
         width=line_width,
     )
 
-    # Goal areas
-    goal_width = int(field_width * 0.3)
-    goal_height = int(field_height * 0.05)
+    # Goal areas (left and right)
+    goal_height = int(field_height * 0.3)
+    goal_width = int(field_width * 0.05)
+    # Left goal area
     draw.rectangle(
         [
-            center_x - goal_width // 2,
-            field_top,
-            center_x + goal_width // 2,
-            field_top + goal_height,
+            field_left,
+            center_y - goal_height // 2,
+            field_left + goal_width,
+            center_y + goal_height // 2,
         ],
         outline=line_color,
         width=line_width,
     )
+    # Right goal area
     draw.rectangle(
         [
-            center_x - goal_width // 2,
-            field_bottom - goal_height,
-            center_x + goal_width // 2,
-            field_bottom,
+            field_right - goal_width,
+            center_y - goal_height // 2,
+            field_right,
+            center_y + goal_height // 2,
         ],
         outline=line_color,
         width=line_width,
