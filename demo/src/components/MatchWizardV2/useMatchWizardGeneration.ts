@@ -15,6 +15,7 @@ import { useSeasonSquadData } from '@/pages/identity/ContentGenerationModal/useS
 import { useVideoJobPolling } from '@/pages/identity/ContentGenerationModal/useVideoJobPolling';
 import { saveGeneratedVariant } from '@/pages/identity/ContentGenerationModal/contentGenerationApi';
 import { useToast } from '@/components/ui/Toast';
+import { useWizard } from '../Wizard';
 import { useMatchWizard } from './MatchWizardContext';
 import { validateLineup, dispatchContentGeneration } from './contentDispatchers';
 
@@ -28,6 +29,7 @@ const VIDEO_QUEUE_LABELS: Record<string, string> = {
 
 export function useMatchWizardGeneration(isOpen: boolean) {
   const navigate = useNavigate();
+  const { currentStepId } = useWizard();
   const { pushToast } = useToast();
   const mw = useMatchWizard();
 
@@ -98,7 +100,7 @@ export function useMatchWizardGeneration(isOpen: boolean) {
 
   const videoPoll = useVideoJobPolling({
     isOpen,
-    step: 'generating',
+    step: currentStepId,
     onGenerated: undefined,
   });
 

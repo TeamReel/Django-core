@@ -477,14 +477,16 @@ class BrandAssetViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="app-backgrounds")
     def app_backgrounds(self, request):
-        """List background images for video generation, filtered by sport.
+        """List background images for video generation.
 
         GET /api/v1/branding/assets/app-backgrounds/
         GET /api/v1/branding/assets/app-backgrounds/?sport=<sport_id>
 
-        Returns AppBackground entries matching the user's organisation sport.
-        Falls back to all active backgrounds if sport cannot be determined.
-        Superadmins manage these via Django admin.
+        Returns a combined list of:
+        1. Global AppBackground entries (sport-linked, managed by superadmins)
+        2. Legacy BrandAsset backgrounds (stadium_background, club_background)
+
+        Sport auto-detection filters AppBackgrounds by the user's org sport.
         """
         from src.branding.models import AppBackground
         from src.branding.serializers import AppBackgroundSerializer
@@ -506,13 +508,53 @@ class BrandAssetViewSet(viewsets.ModelViewSet):
             except Exception:
                 pass
 
-        qs = AppBackground.objects.filter(is_active=True).select_related("sport", "file")
+        # ── Source 1: Global AppBackground records (sport-filtered) ──
+        app_bg_qs = AppBackground.objects.filter(is_active=True).select_related("sport", "file")
         if sport_id:
-            # Include backgrounds for the sport category AND its variants
-            qs = qs.filter(models.Q(sport_id=sport_id) | models.Q(sport__parent_sport_id=sport_id))
+            app_bg_qs = app_bg_qs.filter(
+                models.Q(sport_id=sport_id) | models.Q(sport__parent_sport_id=sport_id)
+            )
+        app_bg_items = AppBackgroundSerializer(
+            app_bg_qs, many=True, context=self.get_serializer_context()
+        ).data
 
-        serializer = AppBackgroundSerializer(qs, many=True, context=self.get_serializer_context())
-        return Response(serializer.data)
+        # ── Source 2: Legacy BrandAsset backgrounds ──────────────────
+        legacy_qs = (
+            BrandAsset.objects.filter(
+                asset_type__in=["stadium_background", "club_background"],
+                is_active=True,
+            )
+            .select_related(
+                "profile",
+                "profile__project",
+                "profile__project__parent_project",
+                "file",
+            )
+            .order_by("-created_at")
+        )
+        # Normalise legacy items to match AppBackground shape
+        legacy_items = []
+        for asset in legacy_qs:
+            url = asset.get_url() if hasattr(asset, "get_url") else None
+            if not url:
+                continue
+            profile_label = ""
+            if asset.profile and asset.profile.project:
+                profile_label = asset.profile.project.name
+            elif asset.profile and asset.profile.organisation:
+                profile_label = asset.profile.organisation.name
+            legacy_items.append(
+                {
+                    "id": str(asset.id),
+                    "label": asset.label or profile_label or asset.asset_type,
+                    "sport_name": "",
+                    "url": url,
+                    "sort_order": 100,  # After global backgrounds
+                    "created_at": asset.created_at.isoformat() if asset.created_at else None,
+                }
+            )
+
+        return Response(list(app_bg_items) + legacy_items)
 
     @action(detail=False, methods=["get"], url_path="club-backgrounds")
     def club_backgrounds(self, request):
