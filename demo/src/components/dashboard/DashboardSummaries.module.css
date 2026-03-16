@@ -257,6 +257,16 @@
   color: var(--color-red-400);
 }
 
+.iconAmber {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--color-amber-400);
+}
+
+.iconGreen {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-green-400);
+}
+
 /* ── Squad sheet ─────────────────────────────────────────────────── */
 .squadBadge {
   display: inline-flex;
@@ -328,6 +338,97 @@
   font-size: var(--text-xs);
   color: var(--app-muted-text);
   text-transform: capitalize;
+}
+
+/* ── AI Queue sheet content ──────────────────────────────────────── */
+.queueSheetContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.queueStatsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.queueStatCell {
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--app-bg);
+}
+
+.queueStatValue {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--app-muted-text);
+}
+
+.queueStatValueActive {
+  color: var(--color-amber-400);
+}
+
+.queueStatValueReview {
+  color: var(--color-blue-400);
+}
+
+.queueStatValueGreen {
+  color: var(--color-green-400);
+}
+
+.queueStatValueRed {
+  color: var(--color-red-400);
+}
+
+.queueStatLabel {
+  font-size: var(--text-xs);
+  color: var(--app-muted-text);
+}
+
+.queuePipeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.queuePipelineTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--app-text);
+}
+
+.queuePipelineRow {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--app-bg);
+}
+
+.queuePipelineLabel {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+}
+
+.queuePipelineValue {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.queuePipelineTotal {
+  composes: queuePipelineRow;
+  border-top: 1px solid var(--app-border);
+}
+
+.queuePipelineTotalLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.queuePipelineTotalValue {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
 }
 
 /* ── Shared sheet nav link ───────────────────────────────────────── */

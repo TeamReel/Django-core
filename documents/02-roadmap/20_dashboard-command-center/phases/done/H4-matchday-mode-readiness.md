@@ -1,6 +1,6 @@
 # H4 — Match-day Mode & Match Readiness
 
-> **Status:** 📋 Gepland
+> **Status:** ✅ Voltooid
 > **Geschatte effort:** 3-4 uur
 > **Geschatte omvang:** ~200 regels nieuw, ~80 regels gewijzigd
 

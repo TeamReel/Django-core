@@ -1,6 +1,6 @@
 # H2 — UpcomingMatchesCard + MatchSheet Hergebruik
 
-> **Status:** 📋 Gepland
+> **Status:** ✅ Voltooid
 > **Geschatte effort:** 3-4 uur
 > **Geschatte omvang:** ~250 regels nieuw, ~100 regels refactor
 

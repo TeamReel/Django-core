@@ -1,6 +1,6 @@
 # H3 — Smart Actions Verbetering
 
-> **Status:** 📋 Gepland
+> **Status:** ✅ Voltooid
 > **Geschatte effort:** 3-4 uur
 > **Geschatte omvang:** ~200 regels gewijzigd, ~120 regels nieuw
 

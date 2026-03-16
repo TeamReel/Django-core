@@ -1,6 +1,6 @@
 # H5 — Polish & Consistency Pass
 
-> **Status:** 📋 Gepland
+> **Status:** ✅ Voltooid
 > **Geschatte effort:** 2-3 uur
 > **Geschatte omvang:** ~100 regels gewijzigd (verspreid over veel bestanden)
 

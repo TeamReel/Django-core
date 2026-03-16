@@ -1,6 +1,6 @@
 # H1 — Alle Cards → Sheet Pattern
 
-> **Status:** 📋 Gepland
+> **Status:** ✅ Voltooid
 > **Geschatte effort:** 4-6 uur
 > **Geschatte omvang:** ~300 regels gewijzigd
 

@@ -1,6 +1,6 @@
 # Roadmap #19 — Dashboard Inline Sheets & Data Layer
 
-> **Status:** 🚧 In progress (3/7 fases)
+> **Status:** ✅ Afgerond (7/7 fases)
 > **Start:** 2026-03-14
 > **Scope:** `demo/src/` — dashboard, NavigationSheet, data fetching, caching
 > **Bron:** [optimalisatie-analyse.md](../../05-demo/features/optimalisatie-analyse.md), [ux-flows.md](../../05-demo/features/ux-flows.md)
@@ -58,15 +58,15 @@ Dashboard als **command center** — alle match-acties en dashboard cards openen
 | **D0** | [Lineup Sheet + Back navigatie](phases/done/D0-lineup-sheet-back.md) | ✅ Klaar | LineupSheet inline, NavigationSheet `onBack`, Media knop verwijderd |
 | **D1** | [Content Sheet (volledig)](phases/done/D1-content-sheet.md) | ✅ Klaar | Content preview + generatie + preview overlay inline vanuit MatchSheet |
 | **D2** | [Sheet refresh & badges](phases/done/D2-sheet-refresh-badges.md) | ✅ Klaar | Live badge updates na save/generatie in child sheets |
-| **D3** | [Dashboard card sheets](phases/D3-dashboard-card-sheets.md) | 📋 Gepland | ContentOverview, MemberProgress, Assets, AIQueue als inline sheets |
+| **D3** | [Dashboard card sheets](phases/done/D3-dashboard-card-sheets.md) | ✅ Klaar | ContentOverview, MemberProgress, Assets, AIQueue als inline sheets |
 
 ### ⚡ Data Layer — Performance (D4–D6)
 
 | Fase | Titel | Status | Beschrijving |
 |------|-------|--------|--------------|
-| **D4** | [TanStack Query introductie](phases/D4-tanstack-query.md) | 📋 Gepland | React Query v5 installatie, QueryClient, dashboard hooks migratie |
-| **D5** | [Dashboard request deduplicatie](phases/D5-dashboard-deduplicatie.md) | 📋 Gepland | Shared query keys, 23 → ~10 calls, stale-while-revalidate |
-| **D6** | [Waterfall eliminatie & image optimalisatie](phases/D6-waterfall-image-optimalisatie.md) | 📋 Gepland | Parallel fetches, image lazy loading, breadcrumb batch |
+| **D4** | [TanStack Query introductie](phases/done/D4-tanstack-query.md) | ✅ Klaar | React Query v5 installatie, QueryClient, dashboard hooks migratie |
+| **D5** | [Dashboard request deduplicatie](phases/done/D5-dashboard-deduplicatie.md) | ✅ Klaar | Shared query keys, 23 → ~10 calls, stale-while-revalidate |
+| **D6** | [Waterfall eliminatie & image optimalisatie](phases/done/D6-waterfall-image-optimalisatie.md) | ✅ Klaar | Parallel fetches, image lazy loading, breadcrumb batch |
 
 ---
 

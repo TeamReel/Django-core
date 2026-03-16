@@ -263,10 +263,7 @@ export const AIQueueCard: React.FC = () => {
       role="button"
       tabIndex={0}
     >
-      <div className={styles.cardIcon} style={{
-        background: hasWork ? 'rgba(245, 158, 11, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-        color: hasWork ? 'var(--color-amber-400)' : 'var(--color-green-400)',
-      }}>
+      <div className={`${styles.cardIcon} ${hasWork ? styles.iconAmber : styles.iconGreen}`}>
         <Cpu size={18} />
       </div>
       <div className={styles.cardContent}>
@@ -297,48 +294,48 @@ export const AIQueueCard: React.FC = () => {
       title="AI Queue"
       icon={<Cpu size={18} />}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className={styles.queueSheetContent}>
         {/* Status overview */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div style={{ padding: 12, borderRadius: 8, background: 'var(--bg-secondary)' }}>
-            <div style={{ fontSize: 24, fontWeight: 700, color: activeJobs > 0 ? 'var(--color-amber-400)' : 'var(--text-secondary)' }}>{activeJobs}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Actief</div>
+        <div className={styles.queueStatsGrid}>
+          <div className={styles.queueStatCell}>
+            <div className={`${styles.queueStatValue} ${activeJobs > 0 ? styles.queueStatValueActive : ''}`}>{activeJobs}</div>
+            <div className={styles.queueStatLabel}>Actief</div>
           </div>
-          <div style={{ padding: 12, borderRadius: 8, background: 'var(--bg-secondary)' }}>
-            <div style={{ fontSize: 24, fontWeight: 700, color: reviewJobs > 0 ? 'var(--color-blue-400)' : 'var(--text-secondary)' }}>{reviewJobs}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Te reviewen</div>
+          <div className={styles.queueStatCell}>
+            <div className={`${styles.queueStatValue} ${reviewJobs > 0 ? styles.queueStatValueReview : ''}`}>{reviewJobs}</div>
+            <div className={styles.queueStatLabel}>Te reviewen</div>
           </div>
-          <div style={{ padding: 12, borderRadius: 8, background: 'var(--bg-secondary)' }}>
-            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-green-400)' }}>{completedJobs}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Voltooid</div>
+          <div className={styles.queueStatCell}>
+            <div className={`${styles.queueStatValue} ${styles.queueStatValueGreen}`}>{completedJobs}</div>
+            <div className={styles.queueStatLabel}>Voltooid</div>
           </div>
-          <div style={{ padding: 12, borderRadius: 8, background: 'var(--bg-secondary)' }}>
-            <div style={{ fontSize: 24, fontWeight: 700, color: rejectedJobs > 0 ? 'var(--color-red-400)' : 'var(--text-secondary)' }}>{rejectedJobs}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Afgewezen</div>
+          <div className={styles.queueStatCell}>
+            <div className={`${styles.queueStatValue} ${rejectedJobs > 0 ? styles.queueStatValueRed : ''}`}>{rejectedJobs}</div>
+            <div className={styles.queueStatLabel}>Afgewezen</div>
           </div>
         </div>
 
         {/* Pipeline breakdown */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Pipeline</div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: 'var(--bg-secondary)' }}>
-            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>AI generatie</span>
-            <span style={{ fontSize: 13, fontWeight: 600 }}>{aiJobs}</span>
+        <div className={styles.queuePipeline}>
+          <div className={styles.queuePipelineTitle}>Pipeline</div>
+          <div className={styles.queuePipelineRow}>
+            <span className={styles.queuePipelineLabel}>AI generatie</span>
+            <span className={styles.queuePipelineValue}>{aiJobs}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: 'var(--bg-secondary)' }}>
-            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Video processing</span>
-            <span style={{ fontSize: 13, fontWeight: 600 }}>{videoJobs}</span>
+          <div className={styles.queuePipelineRow}>
+            <span className={styles.queuePipelineLabel}>Video processing</span>
+            <span className={styles.queuePipelineValue}>{videoJobs}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-primary)' }}>
-            <span style={{ fontSize: 13, fontWeight: 600 }}>Totaal</span>
-            <span style={{ fontSize: 13, fontWeight: 700 }}>{allJobs}</span>
+          <div className={styles.queuePipelineTotal}>
+            <span className={styles.queuePipelineTotalLabel}>Totaal</span>
+            <span className={styles.queuePipelineTotalValue}>{allJobs}</span>
           </div>
         </div>
 
         {/* Navigate to full content page */}
         <button
           onClick={() => { setSheetOpen(false); navigate('/content'); }}
-          style={{ width: '100%', padding: '10px 16px', borderRadius: 8, border: '1px solid var(--border-primary)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+          className={styles.sheetNavLink}
         >
           Bekijk alle content <ChevronRight size={14} />
         </button>

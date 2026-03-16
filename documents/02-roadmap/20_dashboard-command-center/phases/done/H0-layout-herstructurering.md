@@ -1,6 +1,6 @@
 # H0 — Dashboard Layout Herstructurering
 
-> **Status:** 📋 Gepland
+> **Status:** ✅ Voltooid
 > **Geschatte effort:** 4-6 uur
 > **Geschatte omvang:** ~200 regels gewijzigd, ~150 regels nieuw
 

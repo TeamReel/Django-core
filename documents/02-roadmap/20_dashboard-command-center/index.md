@@ -1,6 +1,6 @@
 # Roadmap #20 — Dashboard Command Center
 
-> **Status:** 📋 Gepland
+> **Status:** ✅ Afgerond (6/6 fases)
 > **Start:** 2026-03-15
 > **Scope:** `demo/src/pages/DashboardPage.tsx`, `demo/src/components/dashboard/`
 > **Bron:** Gamification analyse, Profile sheet-ification patroon, roadmap #19
