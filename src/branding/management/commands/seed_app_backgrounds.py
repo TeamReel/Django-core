@@ -14,9 +14,9 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from PIL import Image, ImageDraw
 
-from src.branding.models import AppBackground
-from src.files.models import FileAsset
-from src.sport_configuration.models import Sport
+from branding.models import AppBackground
+from files.models import FileAsset
+from sport_configuration.models import Sport
 
 
 # Background definitions: (label, field_color_1, field_color_2, line_color, description)
@@ -228,7 +228,7 @@ class Command(BaseCommand):
         self.stdout.write(f"Using sport: {football.name} (id={football.id})")
 
         # Get first organisation for FileAsset (required FK)
-        from src.organisations.models import Organisation
+        from organisations.models import Organisation
 
         org = Organisation.objects.first()
         if not org:
@@ -236,7 +236,7 @@ class Command(BaseCommand):
             return
 
         # Import storage backend
-        from src.files.storage import get_backend
+        from files.storage import get_backend
 
         backend = get_backend()
         created_count = 0
