@@ -5,8 +5,11 @@ tools:
   - semantic_search
   - grep_search
   - read_file
-  - get_errors
+  - replace_string_in_file
+  - create_file
   - run_in_terminal
+  - get_errors
+  - manage_todo_list
 ---
 
 # UI Review Agent — TeamReel

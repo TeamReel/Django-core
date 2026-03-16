@@ -5,8 +5,11 @@ tools:
   - semantic_search
   - grep_search
   - read_file
+  - replace_string_in_file
+  - create_file
   - run_in_terminal
   - get_errors
+  - manage_todo_list
 ---
 
 # Performance Agent — TeamReel
