@@ -19,7 +19,7 @@ beat: celery -A config beat --loglevel=info
 # Each worker handles a different queue tier to prevent blocking.
 # Create a separate Railway service for EACH worker type.
 
-# Worker 1: Fast/default tasks (thumbnails, lineup, quick operations)
+# Worker 1: Fast/default tasks (thumbnails, auto-crop, quick operations)
 # Concurrency=2: handles multiple lightweight tasks in parallel
 # Command: celery -A config worker --loglevel=info --concurrency=2 -Q default,video_fast -n worker-fast@%h
 worker: celery -A config worker --loglevel=info --concurrency=2 -Q default,video_fast -n worker-fast@%h

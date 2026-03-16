@@ -72,10 +72,10 @@ CELERY_TASK_ROUTES = {
     "src.video.tasks.then_vs_now.process_then_vs_now_video": {"queue": "video_slow"},
     # video_fast: auto-crop closeup from fullbody (Pillow only, seconds)
     "src.video.tasks.asset_processing.auto_crop_closeup_from_fullbody": {"queue": "video_fast"},
-    # default: lightweight / mixed tasks
-    "src.video.tasks.lineup.process_lineup_video": {"queue": "default"},
-    "src.video.tasks.goal_celebration.process_goal_celebration_video": {"queue": "default"},
-    "src.video.tasks.match_intro.process_match_intro_video": {"queue": "default"},
+    # video_slow: heavy FFmpeg video composition (minutes)
+    "src.video.tasks.lineup.process_lineup_video": {"queue": "video_slow"},
+    "src.video.tasks.goal_celebration.process_goal_celebration_video": {"queue": "video_slow"},
+    "src.video.tasks.match_intro.process_match_intro_video": {"queue": "video_slow"},
     # ai_generation: rate-limited AI API calls (Gemini/MiniMax/Veo)
     "generative.tasks.generate_asset_task": {"queue": "ai_generation"},
 }
