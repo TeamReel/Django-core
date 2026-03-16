@@ -12,6 +12,9 @@ import {
   CreditsTrendCard,
   OrgStatsCard,
   ContentProgressCard,
+  ContentPipelineCard,
+  NextStepCard,
+  SeasonProgressCard,
   MediaReadinessCard,
 } from '../components/dashboard';
 import { SmartActionsCard } from '../components/dashboard/SmartActionsCard';
@@ -123,12 +126,18 @@ export default function DashboardPage() {
         {/* ── Main layout ────────────────────────────────────────── */}
         <div className={styles.mainCol}>
 
+          {/* 0. Next step suggestion — context-aware guidance */}
+          <NextStepCard />
+
           {/* 1. Active Match — the match closest to now */}
           {matchDay.isMatchDay && <div className={styles.matchDayActiveMatch}><ActiveMatchCard /></div>}
           {!matchDay.isMatchDay && <ActiveMatchCard />}
 
           {/* 1b. Upcoming Matches — next 5 matches with readiness */}
           <UpcomingMatchesCard />
+
+          {/* 1c. Content Pipeline — processing → review → approved */}
+          <ContentPipelineCard />
 
           {/* 2. Compact status row — only unique-value cards */}
           <div className={styles.summaryGrid}>
@@ -140,6 +149,9 @@ export default function DashboardPage() {
 
           {/* 3. Content progress (merged breakdown + inventory) */}
           <ContentProgressCard />
+
+          {/* 3b. Season progress — matches played, content generated */}
+          <SeasonProgressCard />
 
           {/* 4. Smart contextual quick actions */}
           <SmartActionsCard />

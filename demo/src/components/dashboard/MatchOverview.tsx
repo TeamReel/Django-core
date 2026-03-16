@@ -8,7 +8,7 @@
 import React, { useCallback } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  ChevronRight, ChevronDown, MapPin, Calendar, Trophy,
+  ChevronRight, ChevronDown, MapPin, Calendar,
   CheckCircle2, ExternalLink, Users, FileImage,
   Image, Video, Play, Camera, Music, Target, Hash,
   Flag, BarChart3, Film,
@@ -126,11 +126,7 @@ export const MatchOverview: React.FC<MatchOverviewProps> = ({
           {' om '}
           {date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
         </span>
-        {match.period?.name && (
-          <span className={styles.metaItem}>
-            <Trophy size={14} /> {match.period.name}
-          </span>
-        )}
+        {/* Period/competition name hidden — adds noise without value (roadmap #21 H0) */}
       </div>
 
       {/* Overall readiness bar */}

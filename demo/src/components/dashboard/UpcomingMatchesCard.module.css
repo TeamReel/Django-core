@@ -29,6 +29,51 @@
   color: var(--app-muted-text);
 }
 
+/* Add match button */
+.addMatchBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--app-primary);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-default),
+              color var(--duration-fast) var(--ease-default);
+  flex-shrink: 0;
+  margin-left: var(--space-2);
+}
+
+@media (hover: hover) {
+  .addMatchBtn:hover {
+    background: var(--app-bg);
+    color: var(--app-text);
+  }
+}
+
+.addMatchBtn:active {
+  transform: scale(0.95);
+}
+
+.addMatchBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .addMatchBtn {
+    transition: none;
+  }
+  .addMatchBtn:active {
+    transform: none;
+  }
+}
+
 /* Match list */
 .matchList {
   display: flex;

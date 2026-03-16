@@ -6,7 +6,7 @@
  */
 import React, { memo, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarDays, ChevronRight, MapPin, Calendar } from 'lucide-react';
+import { CalendarDays, ChevronRight, MapPin, Calendar, Plus } from 'lucide-react';
 import { Spinner } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { formatRelativeTime } from '../../utils/relativeTime';
@@ -61,6 +61,13 @@ export const UpcomingMatchesCard = memo(function UpcomingMatchesCard() {
         <div className={styles.header}>
           <CalendarDays size={16} className={styles.headerIcon} />
           <span>Komende wedstrijden</span>
+          <button
+            className={styles.addMatchBtn}
+            onClick={() => window.dispatchEvent(new CustomEvent('teamreel:open-quick-create', { detail: { flow: 'match' } }))}
+            aria-label="Wedstrijd toevoegen"
+          >
+            <Plus size={16} />
+          </button>
         </div>
         <div className={styles.loadingState}>
           <div className={styles.shimmerLine} />
@@ -77,6 +84,13 @@ export const UpcomingMatchesCard = memo(function UpcomingMatchesCard() {
         <div className={styles.header}>
           <CalendarDays size={16} className={styles.headerIcon} />
           <span>Komende wedstrijden</span>
+          <button
+            className={styles.addMatchBtn}
+            onClick={() => window.dispatchEvent(new CustomEvent('teamreel:open-quick-create', { detail: { flow: 'match' } }))}
+            aria-label="Wedstrijd toevoegen"
+          >
+            <Plus size={16} />
+          </button>
         </div>
         <div className={styles.emptyState}>
           <CalendarDays size={32} className={styles.emptyIcon} />
@@ -93,6 +107,13 @@ export const UpcomingMatchesCard = memo(function UpcomingMatchesCard() {
           <CalendarDays size={16} className={styles.headerIcon} />
           <span>Komende wedstrijden</span>
           <span className={styles.headerCount}>{data?.total ?? matches.length} totaal</span>
+          <button
+            className={styles.addMatchBtn}
+            onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent('teamreel:open-quick-create', { detail: { flow: 'match' } })); }}
+            aria-label="Wedstrijd toevoegen"
+          >
+            <Plus size={16} />
+          </button>
         </div>
 
         <div className={styles.matchList}>

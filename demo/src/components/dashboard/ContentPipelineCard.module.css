@@ -1,0 +1,156 @@
+/* ContentPipelineCard — horizontal pipeline status steps */
+
+.card {
+  background: var(--app-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--app-border);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.headerIcon {
+  color: var(--app-primary);
+}
+
+.title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--app-text);
+  flex: 1;
+}
+
+.seeAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--app-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  min-height: 44px;
+  min-width: 44px;
+  transition: opacity var(--duration-fast);
+}
+
+.seeAll:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .seeAll:hover {
+    opacity: 0.7;
+  }
+}
+
+/* Pipeline layout */
+.pipeline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.connector {
+  flex-shrink: 0;
+  width: 16px;
+  height: 2px;
+  background: var(--app-border);
+  margin-top: 20px;
+  align-self: flex-start;
+}
+
+/* Individual step */
+.step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  transition: background var(--duration-fast) var(--ease-default);
+}
+
+.step:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .step:hover {
+    background: var(--app-bg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step,
+  .stepPulse .stepIcon {
+    transition: none;
+    animation: none;
+  }
+}
+
+.stepIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--app-bg);
+  color: var(--app-muted-text);
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+
+.stepActive .stepIcon {
+  background: color-mix(in srgb, var(--app-primary) 15%, transparent);
+  color: var(--app-primary);
+}
+
+.stepCount {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--app-text);
+  line-height: 1;
+}
+
+.stepActive .stepCount {
+  color: var(--app-primary);
+}
+
+.stepLabel {
+  font-size: 10px;
+  color: var(--app-muted-text);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Pulse on "Te reviewen" when items waiting */
+.stepPulse .stepIcon {
+  animation: reviewPulse 2s ease-in-out infinite;
+}
+
+@keyframes reviewPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--app-primary) 30%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--app-primary) 0%, transparent);
+  }
+}
