@@ -1385,10 +1385,14 @@ def compose_lineup_video(
     sponsor_path = asset_dir / "sponsor.png"
 
     if not lineup_data.field_background_url:
-        raise ValueError(
-            "No field background URL in lineup data. "
-            "Upload a stadium_background BrandAsset for the club/team."
+        logger.warning(
+            "No stadium_background BrandAsset found — generating synthetic field background",
+            extra={"activity_id": str(getattr(lineup_data, "activity_id", None))},
         )
+        from src.video.services.header_generator import generate_field_background
+
+        fallback_url = generate_field_background(width=WIDTH, height=HEIGHT - HEADER_HEIGHT)
+        lineup_data.field_background_url = fallback_url
 
     if not _download_file(lineup_data.field_background_url, bg_path):
         raise ValueError("Failed to download field background image.")

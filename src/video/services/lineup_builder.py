@@ -1519,12 +1519,14 @@ class LineupSegmentBuilder:
             )
 
             if not background_url:
-                trace_str = " | ".join(self._debug_trace)
-                raise ValueError(
-                    "No stadium_background BrandAsset found for this club/team/organisation brand profile. "
-                    "Upload asc/background.png as BrandAsset asset_type=stadium_background (e.g. Club → Assets tab). "
-                    f"Debug Trace: {trace_str}"
+                logger.warning(
+                    "No stadium_background BrandAsset — generating synthetic field background",
+                    extra={"debug_trace": self._debug_trace},
                 )
+                from src.video.services.header_generator import generate_field_background
+
+                background_url = generate_field_background(width=1080, height=1620)
+                data.field_background_url = background_url
 
             line_defs = [
                 ("KEEPER", data.keepers, 85),  # (title, players, y_position_pct)

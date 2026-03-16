@@ -206,8 +206,14 @@ def compose_goal_celebration_video(
     sponsor_path = asset_dir / "sponsor.png"
 
     if not data.field_background_url:
-        raise ValueError(
-            "No field background URL. Upload a stadium_background BrandAsset for the club/team."
+        logger.warning(
+            "No stadium_background BrandAsset — generating synthetic field background",
+            extra={"activity_id": str(getattr(data, "activity_id", None))},
+        )
+        from src.video.services.header_generator import generate_field_background
+
+        data.field_background_url = generate_field_background(
+            width=WIDTH, height=HEIGHT - HEADER_HEIGHT
         )
 
     if not _download_file(data.field_background_url, bg_path):

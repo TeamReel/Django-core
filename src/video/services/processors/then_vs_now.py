@@ -241,11 +241,13 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 BrandAsset,
             )
         if not background_url:
-            raise ValueError(
-                "No stadium_background BrandAsset found. "
-                "Upload a location background for the club/team, "
-                "or select a location in the generation modal."
+            logger.warning(
+                "No stadium_background BrandAsset — generating synthetic field background",
+                extra={"job_id": str(self.job.id)},
             )
+            from src.video.services.header_generator import generate_field_background
+
+            background_url = generate_field_background(width=1080, height=1620)
 
         # ── Club logo URL ──
         logo_url = self._resolve_brand_asset_url(
