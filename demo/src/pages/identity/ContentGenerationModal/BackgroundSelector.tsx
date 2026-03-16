@@ -9,7 +9,7 @@ export interface BackgroundItem {
   id: string;
   url: string;
   label?: string;
-  profile_name?: string;
+  sport_name?: string;
 }
 
 interface BackgroundSelectorProps {
@@ -41,7 +41,7 @@ export function BackgroundSelector({
           return (
             <button key={bg.id} onClick={() => onSelect(bg.url)} className={styles.bgButton} data-selected={isSel}>
               <div className={styles.thumbnail} style={{ background: `url(${bg.url}) center/cover` }} />
-              <div className={styles.bgLabel}>{bg.label || bg.profile_name || 'Locatie'}</div>
+              <div className={styles.bgLabel}>{bg.label || bg.sport_name || 'Achtergrond'}</div>
               {isSel && <div className={styles.checkBadge}>OK</div>}
             </button>
           );

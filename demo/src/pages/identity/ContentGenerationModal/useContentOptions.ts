@@ -20,7 +20,7 @@ export function useContentOptions({ isOpen, matchData }: ContentOptionsConfig) {
     lineupAnimationStyle: 'slide_up' | 'appear' | 'slide_in' | 'zoom' | 'fade';
     lineupIntroStyle: 'per_line' | 'per_player';
     selectedBackgroundUrl: string | null;
-    appBackgrounds: Array<{ id: string; url: string; label?: string; profile_name?: string }>;
+    appBackgrounds: Array<{ id: string; url: string; label?: string; sport_name?: string }>;
     matchFlyerVariant: 'modern' | 'action' | 'stadium';
     flyerMemberId: string | null;
     flyerActionStyle: string;
@@ -84,8 +84,8 @@ export function useContentOptions({ isOpen, matchData }: ContentOptionsConfig) {
         const data = await api.get<any>('/branding/assets/app-backgrounds/');
         const items = Array.isArray(data) ? data : (data?.results || []);
         setAppBackgrounds(
-          items.filter((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => a.url).map((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => ({
-            id: a.id, url: a.url, label: a.label || '', profile_name: a.project_name || a.profile_name || '',
+          items.filter((a: { id?: string; label?: string; sport_name?: string; url?: string }) => a.url).map((a: { id?: string; label?: string; sport_name?: string; url?: string }) => ({
+            id: a.id, url: a.url, label: a.label || '', sport_name: a.sport_name || '',
           })),
         );
       } catch (err) {

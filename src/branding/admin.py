@@ -10,7 +10,7 @@ Provides admin interfaces for:
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import BrandAsset, BrandProfile, DesignToken
+from .models import AppBackground, BrandAsset, BrandProfile, DesignToken
 
 
 class DesignTokenInline(admin.TabularInline):
@@ -189,3 +189,33 @@ class BrandAssetAdmin(admin.ModelAdmin):
         return "-"
 
     file_url_display.short_description = "File URL"
+
+
+@admin.register(AppBackground)
+class AppBackgroundAdmin(admin.ModelAdmin):
+    """Admin interface for global sport-linked backgrounds (superadmin only)."""
+
+    list_display = ["label", "sport", "file", "sort_order", "is_active", "created_at"]
+    list_filter = ["sport", "is_active"]
+    search_fields = ["label", "sport__name"]
+    readonly_fields = ["id", "created_at", "updated_at", "created_by"]
+    ordering = ["sort_order", "label"]
+
+    fieldsets = (
+        (
+            None,
+            {"fields": ("label", "sport", "file", "sort_order", "is_active")},
+        ),
+        (
+            "Audit",
+            {
+                "fields": ("id", "created_at", "updated_at", "created_by"),
+                "classes": ("collapse",),
+            },
+        ),
+    )
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)

@@ -7,7 +7,29 @@ import re
 
 from rest_framework import serializers
 
-from .models import BrandAsset, BrandProfile, DesignToken
+from .models import AppBackground, BrandAsset, BrandProfile, DesignToken
+
+
+class AppBackgroundSerializer(serializers.ModelSerializer):
+    """Serializer for global sport-linked background images."""
+
+    url = serializers.SerializerMethodField()
+    sport_name = serializers.CharField(source="sport.name", read_only=True)
+
+    class Meta:
+        model = AppBackground
+        fields = [
+            "id",
+            "label",
+            "sport_name",
+            "url",
+            "sort_order",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+    def get_url(self, obj: AppBackground) -> str | None:
+        return obj.get_url()
 
 
 class BrandProfileSerializer(serializers.ModelSerializer):

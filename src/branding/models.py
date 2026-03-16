@@ -192,6 +192,73 @@ class DesignToken(models.Model):
         return self.key in WELL_KNOWN_TOKEN_KEYS
 
 
+class AppBackground(models.Model):
+    """Global background images available for video generation.
+
+    Managed by superadmins only. Linked to a Sport category so users
+    only see backgrounds relevant to their organisation's sport.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    sport = models.ForeignKey(
+        "sport_configuration.Sport",
+        on_delete=models.CASCADE,
+        related_name="app_backgrounds",
+        help_text="Sport category this background belongs to (e.g. Football)",
+    )
+    file = models.ForeignKey(
+        "files.FileAsset",
+        on_delete=models.PROTECT,
+        related_name="app_backgrounds",
+        help_text="Background image file",
+    )
+    label = models.CharField(
+        max_length=100,
+        help_text="Display name shown in picker (e.g. 'Voetbalveld', 'Grasmat avond')",
+    )
+    sort_order = models.IntegerField(
+        default=0,
+        help_text="Lower = shown first in picker",
+    )
+    is_active = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+
+    class Meta:
+        ordering = ["sort_order", "label"]
+        verbose_name = "App Background"
+        verbose_name_plural = "App Backgrounds"
+
+    def get_url(self) -> str | None:
+        """Return presigned URL for the background image."""
+        if not self.file or not self.file.storage_path:
+            return None
+        try:
+            from files.utils import get_storage_backend
+
+            backend = get_storage_backend()
+            return backend.get_url(self.file.storage_path, signed=True, expiry_seconds=3600)
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).warning(
+                "Failed to generate presigned URL for AppBackground %s",
+                self.pk,
+                exc_info=True,
+            )
+            return None
+
+    def __str__(self) -> str:
+        return f"{self.label} ({self.sport.name})"
+
+
 class BrandAsset(models.Model):
     """Brand asset (logo, watermark, etc) linked to file storage."""
 

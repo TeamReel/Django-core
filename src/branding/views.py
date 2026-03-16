@@ -3,6 +3,7 @@
 This module implements DRF ViewSets for CRUD operations on brand profiles,
 design tokens, and brand assets, plus the critical token resolution endpoint.
 """
+from django.db import models
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -444,28 +445,41 @@ class BrandAssetViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="app-backgrounds")
     def app_backgrounds(self, request):
-        """List ALL background assets across all profiles (app-level).
+        """List background images for video generation, filtered by sport.
 
         GET /api/v1/branding/assets/app-backgrounds/
+        GET /api/v1/branding/assets/app-backgrounds/?sport=<sport_id>
 
-        Returns deduplicated list of backgrounds available for any video,
-        regardless of which project/club originally generated them.
-        Includes both stadium_background and club_background assets.
+        Returns AppBackground entries matching the user's organisation sport.
+        Falls back to all active backgrounds if sport cannot be determined.
+        Superadmins manage these via Django admin.
         """
-        qs = (
-            BrandAsset.objects.filter(
-                asset_type__in=["stadium_background", "club_background"],
-                is_active=True,
-            )
-            .select_related(
-                "profile",
-                "profile__project",
-                "profile__project__parent_project",
-                "file",
-            )
-            .order_by("-created_at")
-        )
-        serializer = BrandAssetSerializer(qs, many=True, context=self.get_serializer_context())
+        from src.branding.models import AppBackground
+        from src.branding.serializers import AppBackgroundSerializer
+
+        sport_id = request.query_params.get("sport")
+
+        # Auto-detect sport from user's organisation if not explicit
+        if not sport_id and hasattr(request, "user") and request.user.is_authenticated:
+            try:
+                from src.organisations.models import Membership
+
+                membership = (
+                    Membership.objects.filter(user=request.user, is_active=True)
+                    .select_related("organisation__sport")
+                    .first()
+                )
+                if membership and membership.organisation and membership.organisation.sport:
+                    sport_id = str(membership.organisation.sport_id)
+            except Exception:
+                pass
+
+        qs = AppBackground.objects.filter(is_active=True).select_related("sport", "file")
+        if sport_id:
+            # Include backgrounds for the sport category AND its variants
+            qs = qs.filter(models.Q(sport_id=sport_id) | models.Q(sport__parent_sport_id=sport_id))
+
+        serializer = AppBackgroundSerializer(qs, many=True, context=self.get_serializer_context())
         return Response(serializer.data)
 
     @action(detail=False, methods=["get"], url_path="club-backgrounds")
