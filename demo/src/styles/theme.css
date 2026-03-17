@@ -47,6 +47,22 @@
   --app-surface-1: var(--app-surface);          /* Alias for primary surface */
   --app-surface-elevated: #ffffff;              /* Elevated surface (popover/dropdown) */
   --app-surface-hover: var(--app-surface-2);    /* Surface hover state */
+  --app-hover: rgba(0, 0, 0, 0.04);             /* Generic hover background */
+  --app-error-bg: rgba(239, 68, 68, 0.08);      /* Error background tint */
+  --app-warning-bg: rgba(245, 158, 11, 0.08);   /* Warning background tint */
+  --app-warning-text: #b45309;                   /* Warning text — dark amber */
+  --app-warning-subtle: rgba(245, 158, 11, 0.04); /* Warning tint — very light */
+  --app-warning-ring: rgba(245, 158, 11, 0.12);  /* Warning focus ring color */
+  --app-primary-subtle: rgba(59, 142, 165, 0.04); /* Primary tint — very light */
+  --app-primary-ring: rgba(59, 142, 165, 0.15);  /* Primary focus ring / outline glow */
+  --app-overlay: rgba(0, 0, 0, 0.5);             /* Modal overlay */
+  --app-overlay-heavy: rgba(0, 0, 0, 0.72);      /* Heavy overlay (lightbox) */
+  --app-overlay-backdrop: rgba(0, 0, 0, 0.6);    /* Backdrop overlay */
+  --app-surface-glass: rgba(255, 255, 255, 0.06); /* Glassy surface — dark contexts */
+  --app-surface-glass-hover: rgba(255, 255, 255, 0.08); /* Glassy surface hover */
+  --color-error: var(--app-error);               /* Alias for error color */
+  --color-success: var(--app-success);           /* Alias for success color */
+  --color-white: #ffffff;                        /* Pure white */
 
   /* Mapping for SearchBar and other components using design system tokens */
   --color-text-primary: var(--app-text);
@@ -98,6 +114,22 @@
   --app-surface-1: var(--app-surface);          /* Alias for primary surface */
   --app-surface-elevated: #243f6e;              /* Elevated surface (popover/dropdown) */
   --app-surface-hover: #2e4a6d;                 /* Surface hover state */
+  --app-hover: rgba(255, 255, 255, 0.06);       /* Generic hover background — dark mode */
+  --app-error-bg: rgba(239, 68, 68, 0.12);      /* Error background tint — dark mode */
+  --app-warning-bg: rgba(245, 158, 11, 0.12);   /* Warning background tint — dark mode */
+  --app-warning-text: var(--color-amber-300);    /* Warning text — amber — dark mode */
+  --app-warning-subtle: rgba(245, 158, 11, 0.06); /* Warning tint — very light */
+  --app-warning-ring: rgba(245, 158, 11, 0.15);  /* Warning focus ring color */
+  --app-primary-subtle: rgba(76, 161, 255, 0.04); /* Primary tint — very light */
+  --app-primary-ring: rgba(76, 161, 255, 0.15);  /* Primary focus ring / outline glow */
+  --app-overlay: rgba(0, 0, 0, 0.6);             /* Modal overlay */
+  --app-overlay-heavy: rgba(0, 0, 0, 0.8);       /* Heavy overlay (lightbox) */
+  --app-overlay-backdrop: rgba(0, 0, 0, 0.72);   /* Backdrop overlay */
+  --app-surface-glass: rgba(255, 255, 255, 0.06); /* Glassy surface */
+  --app-surface-glass-hover: rgba(255, 255, 255, 0.08); /* Glassy surface hover */
+  --color-error: var(--app-error);               /* Alias for error color */
+  --color-success: var(--app-success);           /* Alias for success color */
+  --color-white: #ffffff;                        /* Pure white (invariant) */
 
   /* Reset border for dark mode to be less aggressive than Teal if needed */
   --app-border: #2e4a6d;

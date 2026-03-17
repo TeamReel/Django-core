@@ -12,7 +12,7 @@
 }
 
 .nav {
-  background-color: var(--app-surface, #fff);
+  background-color: var(--app-surface);
   border-bottom: 1px solid var(--app-border);
   position: fixed;
   top: 0;
@@ -84,7 +84,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--app-primary, #1976d2);
+  color: var(--app-primary);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   padding: var(--space-2) var(--space-3) var(--space-2) var(--space-1);
@@ -98,7 +98,7 @@
 
 @media (hover: hover) {
   .backBtn:hover {
-  background: var(--app-hover, rgba(0, 0, 0, 0.04));
+  background: var(--app-hover);
   }
 }
 
@@ -142,7 +142,7 @@
 
 .groupTrigger[data-active="true"],
 .groupTrigger[data-open="true"] {
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: var(--app-primary-light);
 }
 
 .groupTrigger[data-active="true"] {
@@ -162,7 +162,7 @@
 }
 
 .megaPanelInner {
-  background-color: var(--app-surface, #fff);
+  background-color: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -189,7 +189,7 @@
 
 .megaItem[data-active="true"] {
   color: var(--color-blue-600);
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: var(--app-primary-light);
 }
 
 @media (hover: hover) {
@@ -303,7 +303,7 @@
 
 .createMainBtn[data-open="true"],
 .createChevronBtn[data-open="true"] {
-  background: rgba(59, 130, 246, 0.12);
+  background: var(--app-primary-light);
 }
 
 .createDropdown {
@@ -311,7 +311,7 @@
   top: calc(100% + 12px);
   right: 0;
   min-width: 256px;
-  background-color: var(--app-surface, #fff);
+  background-color: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -365,7 +365,7 @@
   top: 100%;
   right: 0;
   margin-top: var(--space-1);
-  background-color: var(--app-surface, #fff);
+  background-color: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
@@ -387,7 +387,7 @@
 }
 
 .langItem[data-selected="true"] {
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: var(--app-primary-light);
   color: var(--app-link);
   font-weight: var(--font-semibold);
 }
@@ -428,7 +428,7 @@
   position: absolute;
   top: 4px;
   right: 4px;
-  color: var(--color-white, #fff);
+  color: var(--color-white);
   border-radius: var(--radius-lg);
   padding: var(--space-1) var(--space-2);
   font-size: var(--text-xs);
@@ -457,9 +457,9 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   text-decoration: none;
-  color: var(--color-white, #fff);
-  background-color: var(--color-blue-600, #2563eb);
-  border: 1px solid var(--color-blue-600, #2563eb);
+  color: var(--color-white);
+  background-color: var(--color-blue-600);
+  border: 1px solid var(--color-blue-600);
 }
 
 /* ─── Mobile Overlay ──────────────────────────────────────────────────────── */
@@ -470,7 +470,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--app-surface, #fff);
+  background-color: var(--app-surface);
   border-top: 1px solid var(--app-border);
   overflow-y: auto;
   z-index: 999;
@@ -491,7 +491,7 @@
 
 .mobileDashLink[data-active="true"] {
   color: var(--color-blue-600);
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: var(--app-primary-light);
   font-weight: var(--font-semibold);
 }
 
@@ -518,15 +518,15 @@
 
 .mobileGroupItem[data-active="true"] {
   color: var(--color-blue-600);
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: var(--app-primary-light);
   font-weight: var(--font-semibold);
 }
 
 /* ─── Modal System ────────────────────────────────────────────────────────── */
 
 @keyframes navOverlayFadeIn {
-  from { background-color: rgba(0, 0, 0, 0); }
-  to   { background-color: rgba(0, 0, 0, 0.72); }
+  from { background-color: transparent; }
+  to   { background-color: var(--app-overlay-heavy); }
 }
 
 @keyframes navPanelSlideUp {
@@ -538,7 +538,7 @@
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background-color: rgba(0, 0, 0, 0.72);
+  background-color: var(--app-overlay-heavy);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -554,7 +554,7 @@
   position: fixed;
   inset: 0;
   z-index: 10001;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: var(--app-overlay-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -567,7 +567,7 @@
 }
 
 .modalPanel {
-  background-color: var(--app-surface, #1e293b);
+  background-color: var(--app-surface);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-xl);
@@ -576,7 +576,7 @@
 }
 
 .modalPanelCentered {
-  background-color: var(--app-surface, #1e293b);
+  background-color: var(--app-surface);
   border-radius: var(--radius-lg);
   padding: var(--space-6) var(--space-8);
   text-align: center;
@@ -585,7 +585,7 @@
 }
 
 .modalPanelCenteredLarge {
-  background-color: var(--app-surface, #1e293b);
+  background-color: var(--app-surface);
   border-radius: var(--radius-lg);
   padding: var(--space-10) var(--space-12);
   text-align: center;
@@ -594,13 +594,13 @@
 
 .modalHeader {
   padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--app-border, #334155);
+  border-bottom: 1px solid var(--app-border);
   flex-shrink: 0;
 }
 
 .modalHeaderRow {
   padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--app-border, #334155);
+  border-bottom: 1px solid var(--app-border);
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -609,7 +609,7 @@
 
 .modalFooter {
   padding: var(--space-4) var(--space-5);
-  border-top: 1px solid var(--app-border, #334155);
+  border-top: 1px solid var(--app-border);
   flex-shrink: 0;
 }
 
@@ -629,29 +629,29 @@
 
 .modalSubtitle {
   font-size: var(--text-xs);
-  color: var(--app-text-secondary, #9ca3af);
+  color: var(--app-text-secondary);
   margin-top: var(--space-1);
 }
 
 .modalSubtitle12 {
   font-size: var(--text-xs);
-  color: var(--app-text-secondary, #9ca3af);
+  color: var(--app-text-secondary);
   margin-top: var(--space-1);
 }
 
 .textSecondary13 {
   font-size: var(--text-sm);
-  color: var(--app-text-secondary, #9ca3af);
+  color: var(--app-text-secondary);
 }
 
 .textSecondary11 {
   font-size: var(--text-xs);
-  color: var(--app-text-secondary, #9ca3af);
+  color: var(--app-text-secondary);
 }
 
 .textSecondary10 {
   font-size: var(--text-xs);
-  color: var(--app-text-secondary, #6b7280);
+  color: var(--app-text-secondary);
   margin-top: var(--space-1);
 }
 
@@ -688,7 +688,7 @@
   border-radius: var(--radius-md);
   border: none;
   background: var(--color-blue-600);
-  color: var(--color-white, #fff);
+  color: var(--color-white);
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);
   cursor: pointer;
@@ -708,9 +708,9 @@
 .btnGhost {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  border: 1px solid var(--app-border, #475569);
+  border: 1px solid var(--app-border);
   background-color: transparent;
-  color: var(--app-text-secondary, #9ca3af);
+  color: var(--app-text-secondary);
   font-size: var(--text-xs);
   cursor: pointer;
 }
@@ -719,7 +719,7 @@
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   border: none;
-  color: var(--color-white, #fff);
+  color: var(--color-white);
   font-weight: var(--font-semibold);
   font-size: var(--text-xs);
   cursor: pointer;
@@ -749,7 +749,7 @@
   border-radius: var(--radius-md);
   border: none;
   background: var(--color-green-500);
-  color: var(--color-white, #fff);
+  color: var(--color-white);
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);
 }
@@ -825,7 +825,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-white, #fff);
+  color: var(--color-white);
   font-size: var(--text-sm);
   font-weight: var(--font-bold);
 }
@@ -852,7 +852,7 @@
 
 .notifDetail {
   font-size: var(--text-xs);
-  color: var(--app-text-secondary, #9ca3af);
+  color: var(--app-text-secondary);
   margin-top: var(--space-1);
 }
 
@@ -861,12 +861,12 @@
 .creditsBalance {
   font-size: 48px;
   font-weight: var(--font-bold);
-  color: var(--app-primary, #3b82f6);
+  color: var(--app-primary);
 }
 
 .creditsLabel {
   font-size: var(--text-sm);
-  color: var(--app-text-secondary, #9ca3af);
+  color: var(--app-text-secondary);
   margin-top: var(--space-1);
 }
 
@@ -874,7 +874,7 @@
   margin-top: var(--space-5);
   padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-md);
-  border: 1px solid var(--app-border, #475569);
+  border: 1px solid var(--app-border);
   background-color: transparent;
   color: var(--app-text);
   font-weight: var(--font-semibold);
@@ -888,7 +888,7 @@
 .followUpPanel {
   width: 100%;
   max-width: 480px;
-  background-color: var(--app-surface, #1e293b);
+  background-color: var(--app-surface);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-xl);
@@ -896,7 +896,7 @@
 
 .followUpHeader {
   padding: var(--space-5) var(--space-6) var(--space-3);
-  border-bottom: 1px solid var(--app-border, #334155);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .followUpTitle {
@@ -907,7 +907,7 @@
 
 .followUpSubtitle {
   font-size: var(--text-xs);
-  color: var(--app-text-secondary, #9ca3af);
+  color: var(--app-text-secondary);
   margin-top: var(--space-1);
 }
 
@@ -935,7 +935,7 @@
 
 .followUpFooter {
   padding: var(--space-4) var(--space-6);
-  border-top: 1px solid var(--app-border, #334155);
+  border-top: 1px solid var(--app-border);
   display: flex;
   align-items: center;
 }
@@ -943,9 +943,9 @@
 .followUpSkipBtn {
   padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-md);
-  border: 1px solid var(--app-border, #334155);
+  border: 1px solid var(--app-border);
   background: transparent;
-  color: var(--app-text-secondary, #9ca3af);
+  color: var(--app-text-secondary);
   font-weight: var(--font-medium);
   font-size: var(--text-sm);
 }
@@ -955,7 +955,7 @@
   border-radius: var(--radius-md);
   border: none;
   background: var(--color-blue-600);
-  color: var(--color-white, #fff);
+  color: var(--color-white);
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);
 }
