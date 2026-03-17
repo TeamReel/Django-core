@@ -1,7 +1,8 @@
 # Roadmap #22 — Frontend Quality Hardening
 
-> **Status:** 🚧 In uitvoering
+> **Status:** ✅ Afgerond
 > **Start:** 2026-03-17
+> **Afgerond:** 2026-03-18
 > **Scope:** `demo/src/` — CSS tokens, TypeScript strictness, a11y, inline styles
 > **Bron:** Automatische code/UX audit (1.723 hardcoded colors, 180× `any`, 53 files zonder focus-visible)
 
@@ -124,13 +125,13 @@ Alle overige CSS modules met hardcoded kleuren migreren. Batch van 4-5 bestanden
 
 ## Acceptatiecriteria
 
-- [ ] 0 hardcoded hex kleuren in CSS modules (of <50 met gedocumenteerde uitzonderingen)
-- [ ] 0 `any` types in productie-code (test bestanden uitgezonderd)
-- [ ] Alle interactieve elementen hebben `:focus-visible` states
-- [ ] Geen CSS module > 300 regels (stretch goal: 150)
-- [ ] Alle inline styles zijn dynamisch (JS/API-driven)
-- [ ] TypeScript `--noEmit` compileert zonder fouten
-- [ ] Dark mode visueel getest na elke token migratie batch
+- [x] 0 hardcoded hex kleuren in CSS modules (of <50 met gedocumenteerde uitzonderingen)
+- [x] 0 `any` types in productie-code (test bestanden uitgezonderd)
+- [x] Alle interactieve elementen hebben `:focus-visible` states
+- [x] Geen CSS module > 300 regels (stretch goal: 150)
+- [x] Alle inline styles zijn dynamisch (JS/API-driven)
+- [x] TypeScript `--noEmit` compileert zonder fouten
+- [x] Dark mode visueel getest na elke token migratie batch
 
 ---
 
