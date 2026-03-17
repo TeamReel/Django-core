@@ -1,5 +1,5 @@
 import { useEscapeKey } from '../hooks/useEscapeKey';
-import s from './TopNavbar.module.css';
+import s from './TopNavbarModals.module.css';
 import styles from './NavbarModals.module.css';
 
 export interface CreditsModalProps {

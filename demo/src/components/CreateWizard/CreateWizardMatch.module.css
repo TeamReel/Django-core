@@ -1,0 +1,270 @@
+/* ══════════════════════════════════════════════════════
+   Match Create Flow (M1)
+   ══════════════════════════════════════════════════════ */
+
+/* Shared context hint (also used in ChooseFlow) */
+.contextHint {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  background: var(--app-surface-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  margin: 0;
+  text-align: center;
+}
+
+.matchStepWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-1) var(--space-4) var(--space-4);
+}
+
+/* ── Field groups ────────────────────────────────────── */
+.matchFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.matchFieldLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--app-text-primary);
+}
+
+.matchReadonlyValue {
+  padding: var(--space-3);
+  font-size: var(--text-base);
+  color: var(--app-text-secondary);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  background: var(--app-surface-secondary, var(--app-bg));
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.matchFieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+/* ── Form controls ───────────────────────────────────── */
+.matchInput,
+.matchSelect {
+  width: 100%;
+  padding: var(--space-3) var(--space-3);
+  font-size: var(--text-base);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  background: var(--app-surface);
+  color: var(--app-text-primary);
+  transition: border-color var(--duration-fast);
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 44px;
+}
+
+.matchInput:focus,
+.matchSelect:focus {
+  outline: none;
+  border-color: var(--app-primary);
+  box-shadow: 0 0 0 2px var(--app-primary-ring);
+}
+
+.matchSelect {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 4 3.5-4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: var(--space-8);
+}
+
+.matchSelect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Venue toggle ────────────────────────────────────── */
+.matchVenueToggle {
+  display: flex;
+  gap: var(--space-1);
+  background: var(--app-surface-2);
+  border-radius: var(--radius-lg);
+  padding: var(--space-1);
+}
+
+.matchVenueBtn {
+  flex: 1;
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background: transparent;
+  color: var(--app-text-muted);
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+
+.matchVenueBtn[data-active='true'] {
+  background: var(--app-primary);
+  color: var(--color-white);
+  font-weight: var(--font-semibold);
+}
+
+/* ── Next / Submit button ────────────────────────────── */
+.matchNextBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-4);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--app-primary);
+  color: var(--color-white);
+  cursor: pointer;
+  transition: opacity var(--duration-fast), transform var(--duration-fast);
+  margin-top: var(--space-1);
+  min-height: 48px;
+}
+
+.matchNextBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.matchNextBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Summary card (confirm step) ─────────────────────── */
+.matchSummaryCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.matchSummaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.matchSummaryRow:last-child {
+  border-bottom: none;
+}
+
+.matchSummaryLabel {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+.matchSummaryValue {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--app-text-primary);
+  text-align: right;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Error banner ────────────────────────────────────── */
+.matchError {
+  font-size: var(--text-sm);
+  color: var(--app-error);
+  background: var(--app-error-bg);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+}
+
+/* ── Spinner ─────────────────────────────────────────── */
+.matchSpinner {
+  animation: matchSpin 0.8s linear infinite;
+}
+
+@keyframes matchSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Post-create success ─────────────────────────────── */
+.matchConfirmSuccess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-6);
+  text-align: center;
+}
+
+.matchConfirmSuccessIcon {
+  color: var(--app-success);
+}
+
+.matchConfirmSuccessTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--app-text-primary);
+  margin: 0;
+}
+
+.matchConfirmSuccessSubtitle {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  margin: 0;
+}
+
+.matchConfirmActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+.matchConfirmActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  border: none;
+  transition: opacity var(--duration-fast), transform var(--duration-fast);
+  min-height: 48px;
+}
+
+.matchConfirmActionBtn:active {
+  transform: scale(0.98);
+}
+
+.matchConfirmActionBtn[data-variant='primary'] {
+  background: var(--app-primary);
+  color: var(--color-white);
+}
+
+.matchConfirmActionBtn[data-variant='secondary'] {
+  background: var(--app-surface-2);
+  color: var(--app-text-primary);
+}

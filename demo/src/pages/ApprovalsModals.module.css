@@ -1,0 +1,549 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background-color: var(--app-overlay-heavy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  animation: overlayFadeIn 0.2s ease-out;
+}
+
+
+.modalOverlay > .modalPanel,
+.modalOverlay > .modalPanelCentered,
+.modalOverlay > .modalPanelCenteredLarge {
+  animation: panelSlideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+.modalOverlayHigh {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  background-color: var(--app-overlay-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  animation: overlayFadeIn 0.2s ease-out;
+}
+
+
+.modalOverlayHigh > * {
+  animation: panelSlideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+.modalPanel {
+  width: 100%;
+  background-color: var(--app-surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+}
+
+
+.modalHeader {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--app-border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+
+.modalHeaderSimple {
+  padding: var(--space-5) var(--space-6) var(--space-3);
+  border-bottom: 1px solid var(--app-border);
+}
+
+
+.modalFooter {
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--app-border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+
+.modalTitle {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--app-text, var(--app-surface));
+}
+
+
+.modalTitle15 {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--app-text);
+}
+
+
+.modalSubtitle {
+  font-size: var(--text-xs);
+  color: var(--app-text-secondary);
+  margin-top: var(--space-1);
+}
+
+
+.modalSubtitle11 {
+  font-size: var(--text-xs);
+  color: var(--app-text-secondary);
+  margin-top: var(--space-1);
+}
+
+
+.closeBtn {
+  background: none;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  color: var(--color-neutral-400);
+  cursor: pointer;
+  font-size: var(--text-lg);
+  padding: var(--space-1) var(--space-3);
+  transition: background var(--duration-fast), transform var(--duration-fast);
+}
+
+
+@media (hover: hover) {
+  .closeBtn:hover {
+  background: var(--app-surface-2);
+  }
+
+.closeBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+}
+
+
+.closeBtn:active {
+  transform: scale(0.9);
+}
+
+
+.closeBtnMuted {
+  background: none;
+  border: none;
+  color: var(--color-neutral-300);
+  cursor: pointer;
+  font-size: var(--text-lg);
+  padding: var(--space-1) var(--space-2);
+}
+
+
+/* ─── Body ────────────────────────────────────────────────────────────────── */
+
+.modalBody {
+  padding: var(--space-4) var(--space-6);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+
+.previewCenter {
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  justify-content: center;
+}
+
+
+.previewImg {
+  max-height: 200px;
+  max-width: 100%;
+  border-radius: var(--radius-md);
+  object-fit: contain;
+}
+
+
+.previewArea {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--color-neutral-900);
+}
+
+
+.previewVideo {
+  width: 100%;
+  max-height: 448px;
+}
+
+
+/* ─── Buttons ─────────────────────────────────────────────────────────────── */
+
+.btnPrimary {
+  padding: var(--space-2) var(--space-6);
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-blue-600);
+  color: var(--color-white);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--duration-fast), transform var(--duration-fast);
+}
+
+
+@media (hover: hover) {
+  .btnPrimary:hover {
+  background: var(--color-blue-700);
+  }
+
+.btnPrimary:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+}
+
+
+.btnPrimary:active {
+  transform: scale(0.96);
+}
+
+
+.btnGhost {
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--app-border);
+  background: transparent;
+  color: var(--app-text-secondary);
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+
+.btnApprove {
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-green-500);
+  color: var(--color-white);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--duration-fast), transform var(--duration-fast);
+}
+
+
+@media (hover: hover) {
+  .btnApprove:hover {
+  background: var(--color-green-500);
+  }
+
+.btnApprove:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+}
+
+
+.btnApprove:active {
+  transform: scale(0.95);
+}
+
+
+.btnReject {
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-red-200);
+  background: var(--color-red-50);
+  color: var(--color-red-500);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--duration-fast), transform var(--duration-fast);
+}
+
+
+@media (hover: hover) {
+  .btnReject:hover {
+  background: var(--color-red-50);
+  }
+
+.btnReject:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+}
+
+
+.btnReject:active {
+  transform: scale(0.95);
+}
+
+
+/* ─── Select-All Buttons ──────────────────────────────────────────────────── */
+
+.selectAllRow {
+  display: flex;
+  gap: var(--space-2);
+}
+
+
+.btnSelectAll {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-green-100);
+  background: var(--color-green-50);
+  color: var(--color-green-500);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: background var(--duration-fast), transform var(--duration-fast);
+}
+
+
+.btnSelectAll:active {
+  transform: scale(0.94);
+}
+
+
+.btnRejectAll {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-red-200);
+  background: var(--color-red-50);
+  color: var(--color-red-500);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: background var(--duration-fast), transform var(--duration-fast);
+}
+
+
+.btnRejectAll:active {
+  transform: scale(0.94);
+}
+
+
+/* ─── Chip / Picker Grid ──────────────────────────────────────────────────── */
+
+.sectionLabel {
+  color: var(--app-text);
+}
+
+
+.sectionDescription {
+  font-size: var(--text-xs);
+  margin-bottom: var(--space-3);
+}
+
+
+.grid3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+
+.grid2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+
+
+.chipLabel {
+  color: var(--app-text);
+}
+
+
+.chipDescription {
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+
+/* ─── Error Alert ─────────────────────────────────────────────────────────── */
+
+.errorAlert {
+  font-size: var(--text-xs);
+  color: var(--color-red-500);
+  background-color: var(--color-red-50);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+
+
+.emptyIcon {
+  font-size: 32px;
+  margin-bottom: var(--space-2);
+}
+
+
+.emptyGallery {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  text-align: center;
+  color: var(--app-text-secondary);
+}
+
+
+/* ─── Provider Info ───────────────────────────────────────────────────────── */
+
+.providerInfo {
+  font-size: var(--text-xs);
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  color: var(--app-text-secondary);
+}
+
+
+/* ─── Variant Gallery ─────────────────────────────────────────────────────── */
+
+.variantsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+
+.variantBtnRow {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-1);
+}
+
+
+.variantBadge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+  background: var(--app-overlay);
+  color: var(--color-white);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+}
+
+
+.emptyHint {
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+}
+
+
+.storagePath {
+  font-size: var(--text-xs);
+  color: var(--app-text-secondary);
+  word-break: break-all;
+  padding: var(--space-1) var(--space-2);
+  margin-top: var(--space-1);
+}
+
+
+/* ─── Review Status Text ──────────────────────────────────────────────────── */
+
+.reviewError {
+  flex: 1;
+  font-size: var(--text-xs);
+  color: var(--color-red-500);
+}
+
+
+.reviewStatus {
+  flex: 1;
+  font-size: var(--text-xs);
+  color: var(--color-neutral-400);
+}
+
+
+.reviewApproved {
+  flex: 1;
+  font-size: var(--text-xs);
+  color: var(--color-green-500);
+  font-weight: var(--font-semibold);
+}
+
+
+.reviewRejected {
+  flex: 1;
+  font-size: var(--text-xs);
+  color: var(--color-red-500);
+  font-weight: var(--font-semibold);
+}
+
+
+/* ── Mobile responsive ── */
+@media (max-width: 639px) {
+  .modalOverlay,
+  .modalOverlayHigh {
+    padding: var(--space-3);
+  }
+
+  .modalPanel {
+    border-radius: var(--radius-lg);
+  }
+
+  .modalHeader {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .modalFooter {
+    padding: var(--space-3) var(--space-4);
+    flex-direction: column;
+  }
+
+  .modalFooter > * {
+    width: 100%;
+  }
+
+  .workflowCardHeader {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .toastContainer {
+    left: 16px;
+    right: 16px;
+    bottom: 88px;
+  }
+
+  .emptyState {
+    padding: var(--space-8) var(--space-4);
+  }
+
+  .actionsRow {
+    flex-direction: column;
+  }
+
+  .actionsRow > * {
+    width: 100%;
+  }
+
+  .btnApprove,
+  .btnReject,
+  .btnRetry,
+  .btnCancel {
+    min-height: 44px;
+    justify-content: center;
+  }
+}
+
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .modalOverlay,
+  .modalOverlay > * ,
+  .toastContainer > div {
+    animation: none;
+  }
+}

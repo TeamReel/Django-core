@@ -4,7 +4,7 @@
 import React from 'react';
 import { Type, FileText, ChevronRight } from 'lucide-react';
 import { useWizard } from '../../Wizard';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardProject.module.css';
 
 // ─── Types ────────────────────────────────────────────────
 

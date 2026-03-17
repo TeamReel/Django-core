@@ -1,0 +1,71 @@
+/* ══════════════════════════════════════════════════════
+   Wizard Empty / Error States (P2)
+   ══════════════════════════════════════════════════════ */
+
+.wizardEmptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 36px var(--space-6) 28px;
+  text-align: center;
+}
+
+.wizardEmptyIcon {
+  color: var(--app-muted-text);
+  margin-bottom: var(--space-1);
+}
+
+.wizardEmptyTitle {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--app-text-primary);
+  margin: 0;
+}
+
+.wizardEmptyDescription {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  margin: 0;
+  max-width: 280px;
+  line-height: 1.45;
+}
+
+.wizardEmptyActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 256px;
+  margin-top: var(--space-2);
+}
+
+.wizardEmptyActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  border: none;
+  transition: opacity var(--duration-fast), transform var(--duration-fast);
+  min-height: 44px;
+}
+
+.wizardEmptyActionBtn:active {
+  transform: scale(0.97);
+}
+
+.wizardEmptyActionBtn[data-variant='primary'] {
+  background: var(--app-primary);
+  color: var(--color-white);
+}
+
+.wizardEmptyActionBtn[data-variant='secondary'] {
+  background: var(--app-surface-2);
+  color: var(--app-text-primary);
+}

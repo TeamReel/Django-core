@@ -8,7 +8,7 @@
 import React, { useState } from 'react';
 import { CheckCircle, UserPlus, ArrowLeft, Plus, Loader } from 'lucide-react';
 import { useCreateWizard } from '../CreateWizardContext';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardMember.module.css';
 
 // ─── Types ────────────────────────────────────────────────
 

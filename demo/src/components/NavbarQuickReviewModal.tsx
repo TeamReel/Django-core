@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useEscapeKey } from '../hooks/useEscapeKey';
-import s from './TopNavbar.module.css';
+import s from './TopNavbarModals.module.css';
 import styles from './NavbarModals.module.css';
 import type { GenerationJob } from '../hooks/useGenerationJobs';
 import type { VideoJob } from '../types/api';

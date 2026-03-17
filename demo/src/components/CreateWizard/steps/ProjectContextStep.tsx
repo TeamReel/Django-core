@@ -11,7 +11,7 @@ import React from 'react';
 import { Building2, Users, ChevronRight, AlertCircle } from 'lucide-react';
 import { useWizard } from '../../Wizard';
 import { WizardEmptyState } from '../shared/WizardEmptyState';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardProject.module.css';
 
 // ─── Types ────────────────────────────────────────────────
 

@@ -10,7 +10,7 @@
  */
 import React, { type ReactNode } from 'react';
 import { AlertCircle, type LucideIcon } from 'lucide-react';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardShared.module.css';
 
 export interface WizardEmptyAction {
   /** Button label */

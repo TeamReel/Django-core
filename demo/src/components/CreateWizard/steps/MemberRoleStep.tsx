@@ -8,7 +8,7 @@
 import React from 'react';
 import { Shield, Hash, ChevronRight } from 'lucide-react';
 import { useWizard } from '../../Wizard';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardMember.module.css';
 
 // ─── Types ────────────────────────────────────────────────
 

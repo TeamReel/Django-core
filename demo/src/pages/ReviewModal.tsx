@@ -3,7 +3,7 @@
  */
 import { useState, useEffect } from 'react';
 import { type GenerationJob } from '../hooks/useGenerationJobs';
-import s from './ApprovalsPage.module.css';
+import s from './ApprovalsModals.module.css';
 import styles from './ReviewModals.module.css';
 
 interface ReviewModalProps {

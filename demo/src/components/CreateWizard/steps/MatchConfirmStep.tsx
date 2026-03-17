@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Zap, Eye, Plus, Loader } from 'lucide-react';
 import { useCreateWizard } from '../CreateWizardContext';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardMatch.module.css';
 
 export interface MatchConfirmData {
   // Summary fields

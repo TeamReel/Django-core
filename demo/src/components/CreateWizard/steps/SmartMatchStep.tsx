@@ -16,7 +16,7 @@ import { useSmartMatch } from '@/hooks/useSmartMatch';
 import { formatRelativeTime, getDateUrgency } from '@/utils/relativeTime';
 import { WizardEmptyState, WizardErrorState } from '../shared/WizardEmptyState';
 import type { Activity } from '@/hooks/useActivities';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardChooseFlow.module.css';
 
 export interface SmartMatchStepProps {
   /** Called with the full Activity when a match is selected (bridge to MatchWizardContext) */

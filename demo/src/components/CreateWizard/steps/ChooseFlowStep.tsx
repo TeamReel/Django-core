@@ -14,7 +14,7 @@ import React from 'react';
 import { Sparkles, Calendar, UserPlus, Users, CalendarDays, type LucideIcon } from 'lucide-react';
 import { useCreateWizard, type CreateFlowType, type CreatePrefill } from '../CreateWizardContext';
 import { useWizard } from '../../Wizard';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardChooseFlow.module.css';
 
 // ─── Flow option definitions ──────────────────────────────
 

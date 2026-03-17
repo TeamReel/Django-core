@@ -8,7 +8,7 @@
 import React, { useState, useCallback } from 'react';
 import { User, Mail, Lock, ChevronRight } from 'lucide-react';
 import { useWizard } from '../../Wizard';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardMember.module.css';
 
 // ─── Types ────────────────────────────────────────────────
 

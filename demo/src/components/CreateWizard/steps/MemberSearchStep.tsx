@@ -9,7 +9,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, UserPlus, Loader, User as UserIcon } from 'lucide-react';
 import { useWizard } from '../../Wizard';
 import { api } from '@/api';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardMember.module.css';
 
 // ─── Types ────────────────────────────────────────────────
 

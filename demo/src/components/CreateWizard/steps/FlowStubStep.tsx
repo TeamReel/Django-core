@@ -8,7 +8,7 @@ import React from 'react';
 import { Construction, type LucideIcon } from 'lucide-react';
 import { useCreateWizard } from '../CreateWizardContext';
 import { useWizard } from '../../Wizard';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardChooseFlow.module.css';
 
 const FLOW_LABELS: Record<string, { label: string; icon?: LucideIcon }> = {
   match: { label: 'Wedstrijd plannen' },

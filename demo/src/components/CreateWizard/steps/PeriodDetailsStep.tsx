@@ -8,7 +8,7 @@
 import React from 'react';
 import { Type, Calendar, ChevronRight } from 'lucide-react';
 import { useWizard } from '../../Wizard';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardPeriod.module.css';
 
 // ─── Types ────────────────────────────────────────────────
 

@@ -7,7 +7,7 @@ import {
   getJobStatusDisplay,
   getJobTypeDisplay,
 } from '../hooks/useVideoJobs';
-import s from './ApprovalsPage.module.css';
+import s from './ApprovalsModals.module.css';
 import styles from './ReviewModals.module.css';
 import { getErrorMessage } from '../utils/errorHelpers';
 import { logger } from '@/utils/logger';

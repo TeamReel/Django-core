@@ -9,7 +9,7 @@
 import React, { useState } from 'react';
 import { CheckCircle, UserPlus, CalendarDays, Plus, Loader } from 'lucide-react';
 import { useCreateWizard } from '../CreateWizardContext';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardProject.module.css';
 
 // ─── Types ────────────────────────────────────────────────
 

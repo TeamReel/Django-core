@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { api } from '@/api';
-import s from './TopNavbar.module.css';
+import s from './TopNavbarModals.module.css';
 import styles from './NavbarModals.module.css';
 import type { PhotoCompositeFollowUpInfo } from './topNavbarHelpers';
 import { logger } from '@/utils/logger';

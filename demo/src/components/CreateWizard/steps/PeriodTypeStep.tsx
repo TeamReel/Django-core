@@ -10,7 +10,7 @@ import { Calendar, Trophy, ChevronRight, Loader } from 'lucide-react';
 import { useWizard } from '../../Wizard';
 import { useCreateWizard } from '../CreateWizardContext';
 import { WizardEmptyState } from '../shared/WizardEmptyState';
-import styles from '../CreateWizard.module.css';
+import styles from '../CreateWizardPeriod.module.css';
 
 // ─── Types ────────────────────────────────────────────────
 

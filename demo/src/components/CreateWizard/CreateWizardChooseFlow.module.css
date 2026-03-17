@@ -1,0 +1,334 @@
+/* CreateWizard – Module CSS
+ * Styles for the universal create wizard (ChooseFlowStep, sub-flow shells).
+ */
+
+/* ── Choose Flow step ───────────────────────────────── */
+.chooseFlow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4) var(--space-4);
+}
+
+.contextHint {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  background: var(--app-surface-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  margin: 0;
+  text-align: center;
+}
+
+.flowGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* ── Flow card (option button) ──────────────────────── */
+.flowCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-4);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+}
+
+@media (hover: hover) {
+  .flowCard:hover {
+  background: var(--app-surface-2);
+  border-color: var(--app-primary);
+  box-shadow: var(--shadow-sm);
+  transform: scale(1.02);
+  }
+}
+
+.flowCard:active {
+  transform: scale(0.97);
+  background: var(--app-surface-2);
+  box-shadow: var(--shadow-xs);
+}
+
+.flowCard:focus-visible {
+  outline: 2px solid var(--app-primary);
+  outline-offset: 2px;
+  border-color: var(--app-primary);
+}
+
+/* Icon circle */
+.flowIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: var(--radius-lg);
+  background: var(--app-primary-light);
+  color: var(--app-primary);
+}
+
+/* Text content */
+.flowContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.flowLabel {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--app-text-primary);
+}
+
+.flowDescription {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  line-height: var(--leading-normal);
+}
+
+/* ── Stub step (placeholder for unbuilt flows) ──────── */
+.stubStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+}
+
+.stubIcon {
+  color: var(--app-muted-text);
+  opacity: 0.5;
+}
+
+.stubTitle {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--app-text-primary);
+  margin: 0;
+}
+
+.stubDescription {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  margin: 0;
+  max-width: 280px;
+}
+
+.stubButton {
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text-primary);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+/* ── SmartMatchStep ─────────────────────────────────── */
+.smartMatchWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-1) var(--space-4) var(--space-4);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.smartMatchSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.smartMatchSectionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--app-muted-text);
+  margin: 0;
+  padding: 0 var(--space-1);
+}
+
+.smartMatchAccentIcon {
+  color: var(--app-warning);
+}
+
+.smartMatchList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* ── Match card ──────────────────────────────────────── */
+.smartMatchCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast), box-shadow var(--duration-fast);
+  -webkit-tap-highlight-color: transparent;
+  min-height: 56px;
+  width: 100%;
+}
+
+@media (hover: hover) {
+  .smartMatchCard:hover {
+  background: var(--app-surface-2);
+  border-color: var(--app-primary);
+  }
+}
+
+.smartMatchCard:active {
+  transform: scale(0.98);
+}
+
+/* ── Highlighted card variant ────────────────────────── */
+.smartMatchCardHighlighted {
+  border-color: var(--app-warning);
+  background: var(--app-warning-subtle);
+  box-shadow: 0 0 0 1px var(--app-warning-ring);
+}
+
+@media (hover: hover) {
+  .smartMatchCardHighlighted:hover {
+  border-color: var(--app-warning);
+  background: var(--app-warning-bg);
+  }
+}
+
+.smartMatchCard[data-auto='true'] {
+  border-color: var(--app-primary);
+  box-shadow: 0 0 0 2px var(--app-primary-ring);
+  background: var(--app-primary-subtle);
+}
+
+/* ── Date badge ──────────────────────────────────────── */
+.smartMatchBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-bold);
+  font-size: var(--text-base);
+  background: var(--app-surface-2);
+  color: var(--app-text-primary);
+}
+
+.smartMatchBadge[data-urgency='urgent'] {
+  background: var(--app-error-bg);
+  color: var(--app-error);
+}
+
+.smartMatchBadge[data-urgency='soon'] {
+  background: var(--app-warning-bg);
+  color: var(--app-warning-text);
+}
+
+.smartMatchBadge[data-urgency='upcoming'] {
+  background: var(--app-primary-light);
+  color: var(--app-primary);
+}
+
+/* ── Match info ──────────────────────────────────────── */
+.smartMatchInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  flex: 1;
+}
+
+.smartMatchTitle {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--app-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smartMatchMeta {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  line-height: var(--leading-normal);
+}
+
+.smartMatchChevron {
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+/* ── Loading / Empty states ──────────────────────────── */
+.smartMatchLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-12) var(--space-6);
+  color: var(--app-muted-text);
+  font-size: var(--text-sm);
+}
+
+.smartMatchLoadingIcon {
+  opacity: 0.5;
+  animation: smartPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes smartPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.smartMatchEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+}
+
+.smartMatchEmptyIcon {
+  color: var(--app-muted-text);
+  opacity: 0.4;
+}
+
+.smartMatchEmptyTitle {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--app-text-primary);
+  margin: 0;
+}
+
+.smartMatchEmptyHint {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  margin: 0;
+  max-width: 256px;
+}

@@ -1,0 +1,285 @@
+/* ══════════════════════════════════════════════════════
+   Project Create Flow (M3)
+   ══════════════════════════════════════════════════════ */
+
+.projectStepWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-1) var(--space-4) var(--space-4);
+}
+
+.projectStepHint {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  margin: 0;
+}
+
+.projectContextBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  background: var(--app-surface-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+}
+
+/* ── Type toggle ─────────────────────────────────────── */
+.projectTypeToggle {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.projectTypeBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  border: 2px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  background: var(--app-surface);
+  color: var(--app-text-primary);
+  cursor: pointer;
+  transition: border-color var(--duration-fast), background var(--duration-fast);
+}
+
+.projectTypeBtn[data-active='true'] {
+  border-color: var(--app-primary);
+  background: var(--app-primary-light);
+  font-weight: var(--font-semibold);
+  color: var(--app-primary);
+}
+
+.projectTypeHint {
+  font-size: var(--text-xs);
+  color: var(--app-muted-text);
+  margin: 0;
+  padding: 0 var(--space-1);
+}
+
+/* ── Form fields ─────────────────────────────────────── */
+.projectFieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.projectFieldLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--app-text-primary);
+}
+
+.projectInput,
+.projectSelect {
+  width: 100%;
+  padding: var(--space-3) var(--space-3);
+  font-size: var(--text-base);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  background: var(--app-surface);
+  color: var(--app-text-primary);
+  transition: border-color var(--duration-fast);
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 44px;
+}
+
+.projectInput:focus,
+.projectSelect:focus {
+  outline: none;
+  border-color: var(--app-primary);
+  box-shadow: 0 0 0 2px var(--app-primary-ring);
+}
+
+.projectSelect {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 4 3.5-4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: var(--space-8);
+}
+
+.projectSelect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.projectTextarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-3);
+  font-size: var(--text-base);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  background: var(--app-surface);
+  color: var(--app-text-primary);
+  transition: border-color var(--duration-fast);
+  resize: vertical;
+  min-height: 72px;
+  font-family: inherit;
+}
+
+.projectTextarea:focus {
+  outline: none;
+  border-color: var(--app-primary);
+  box-shadow: 0 0 0 2px var(--app-primary-ring);
+}
+
+/* ── Next / Submit button ────────────────────────────── */
+.projectNextBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-4);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--app-primary);
+  color: var(--color-white);
+  cursor: pointer;
+  transition: opacity var(--duration-fast), transform var(--duration-fast);
+  margin-top: var(--space-1);
+  min-height: 48px;
+}
+
+.projectNextBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.projectNextBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Summary card ────────────────────────────────────── */
+.projectSummaryCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.projectSummaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.projectSummaryRow:last-child {
+  border-bottom: none;
+}
+
+.projectSummaryLabel {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+.projectSummaryValue {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--app-text-primary);
+  text-align: right;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Error ───────────────────────────────────────────── */
+.projectError {
+  font-size: var(--text-sm);
+  color: var(--app-error);
+  background: var(--app-error-bg);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+}
+
+.projectSpinner {
+  animation: projectSpin 0.8s linear infinite;
+}
+
+@keyframes projectSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Post-create success ─────────────────────────────── */
+.projectConfirmSuccess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-6);
+  text-align: center;
+}
+
+.projectConfirmSuccessIcon {
+  color: var(--app-success);
+}
+
+.projectConfirmSuccessTitle {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--app-text-primary);
+  margin: 0;
+}
+
+.projectConfirmSuccessSubtitle {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  margin: 0;
+}
+
+.projectConfirmActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+.projectConfirmActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  border: none;
+  transition: opacity var(--duration-fast), transform var(--duration-fast);
+  min-height: 48px;
+}
+
+.projectConfirmActionBtn:active {
+  transform: scale(0.98);
+}
+
+.projectConfirmActionBtn[data-variant='primary'] {
+  background: var(--app-primary);
+  color: var(--color-white);
+}
+
+.projectConfirmActionBtn[data-variant='secondary'] {
+  background: var(--app-surface-2);
+  color: var(--app-text-primary);
+}

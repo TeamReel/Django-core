@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { type VideoFollowUpInfo, type PhotoCompositeFollowUpInfo } from './approvalsTypes';
 import { logger } from '@/utils/logger';
 import { clickableProps } from '@/utils/a11y';
-import s from './ApprovalsPage.module.css';
+import s from './ApprovalsModals.module.css';
 import fm from './FollowUpModals.module.css';
 
 // ─── Video Follow-Up Modal ──────────────────────────────────────────
