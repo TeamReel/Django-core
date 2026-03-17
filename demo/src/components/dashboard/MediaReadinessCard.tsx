@@ -13,7 +13,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   Package, Building2, Shield, Users,
-  CheckCircle2, Circle, ChevronRight, AlertTriangle,
+  CheckCircle2, Circle, ChevronRight, ChevronDown, AlertTriangle,
   ImageIcon, Sparkles, Upload,
 } from 'lucide-react';
 import { NavigationSheet } from '../ui/NavigationSheet';
@@ -65,6 +65,15 @@ export const MediaReadinessCard: React.FC = () => {
   const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
   const [view, setView] = useState<SheetView>({ level: 'overview' });
   const [history, setHistory] = useState<SheetView[]>([]);
+  const [expandedMembers, setExpandedMembers] = useState<Set<string>>(new Set());
+
+  const toggleMember = useCallback((id: string) => {
+    setExpandedMembers(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
 
   const pushView = useCallback((next: SheetView) => {
     setHistory(prev => [...prev, view]);
@@ -237,9 +246,12 @@ export const MediaReadinessCard: React.FC = () => {
     );
   };
 
-  // ── Members list sheet ────────────────────
+  // ── Members list sheet (accordion) ─────
 
-  const renderMembersList = () => (
+  const renderMembersList = () => {
+    const incompleteCount = data.members.list.filter(m => !m.isComplete).length;
+
+    return (
     <div className={styles.sheetContent}>
       <div className={styles.summaryBar}>
         <div className={styles.summaryLabel}>
@@ -257,40 +269,141 @@ export const MediaReadinessCard: React.FC = () => {
       </div>
 
       <div className={styles.typeGrid}>
-        {data.members.list.map(member => (
-          <div
-            key={member.id}
-            className={styles.memberRow}
-            onClick={() => pushView({ level: 'member', member })}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pushView({ level: 'member', member }); } }}
-            role="button"
-            tabIndex={0}
-          >
-            <div className={styles.memberAvatar}>
-              {member.avatarUrl ? (
-                <img src={member.avatarUrl} alt="" className={styles.avatarImg} loading="lazy" />
-              ) : (
-                <span className={styles.avatarInitial}>{member.name.charAt(0).toUpperCase()}</span>
+        {data.members.list.map(member => {
+          const isExpanded = expandedMembers.has(member.id);
+          return (
+            <div key={member.id} className={styles.memberAccordion}>
+              {/* Accordion header */}
+              <div
+                className={`${styles.memberRow} ${isExpanded ? styles.memberRowExpanded : ''}`}
+                onClick={() => toggleMember(member.id)}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMember(member.id); } }}
+                role="button"
+                tabIndex={0}
+                aria-expanded={isExpanded}
+              >
+                <div className={styles.memberAvatar}>
+                  {member.avatarUrl ? (
+                    <img src={member.avatarUrl} alt="" className={styles.avatarImg} loading="lazy" />
+                  ) : (
+                    <span className={styles.avatarInitial}>{member.name.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <div className={styles.memberInfo}>
+                  <span className={styles.memberName}>{member.name}</span>
+                  <div className={styles.memberProgressTrack}>
+                    <div
+                      className={`${styles.memberProgressFill} ${member.isComplete ? styles.memberProgressComplete : ''}`}
+                      style={{ width: `${Math.max(4, member.percent)}%` }}
+                    />
+                  </div>
+                </div>
+                <span className={`${styles.memberMeta} ${member.isComplete ? styles.memberMetaComplete : ''}`}>
+                  {member.isComplete ? <CheckCircle2 size={13} /> : `${member.completedCount}/${MEMBER_MEDIA_TYPES.length}`}
+                </span>
+                <span className={`${styles.accordionChevron} ${isExpanded ? styles.accordionChevronOpen : ''}`}>
+                  <ChevronDown size={14} />
+                </span>
+              </div>
+
+              {/* Expanded content */}
+              {isExpanded && (
+                <div className={styles.accordionBody}>
+                  {MEMBER_MEDIA_TYPES.map(type => {
+                    const done = member.completedTypes.has(type.key);
+                    const handleGenerateType = () => {
+                      closeSheet();
+                      window.dispatchEvent(
+                        new CustomEvent('teamreel:open-quick-create', {
+                          detail: { flow: 'content', subtype: type.key },
+                        }),
+                      );
+                    };
+                    return (
+                      <div key={type.key} className={styles.accordionAssetRow} data-present={done}>
+                        <span className={`${styles.accordionDot} ${done ? styles.accordionDotDone : styles.accordionDotMissing}`}>
+                          {done ? <CheckCircle2 size={14} /> : <Circle size={14} />}
+                        </span>
+                        <span className={`${styles.accordionLabel} ${done ? '' : styles.accordionLabelMissing}`}>
+                          {type.label}
+                        </span>
+                        {!done && (
+                          <button
+                            className={styles.assetActionBtn}
+                            onClick={handleGenerateType}
+                            aria-label={`Genereer ${type.label} voor ${member.name}`}
+                          >
+                            <Sparkles size={14} />
+                            <span>Genereer</span>
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {!member.isComplete && (
+                    <button
+                      className={styles.accordionGenerateAll}
+                      onClick={() => {
+                        closeSheet();
+                        const firstMissing = MEMBER_MEDIA_TYPES.find(t => !member.completedTypes.has(t.key));
+                        if (firstMissing) {
+                          window.dispatchEvent(
+                            new CustomEvent('teamreel:open-quick-create', {
+                              detail: { flow: 'content', subtype: firstMissing.key },
+                            }),
+                          );
+                        }
+                      }}
+                    >
+                      <Sparkles size={14} />
+                      Alle ontbrekende genereren
+                    </button>
+                  )}
+                </div>
               )}
             </div>
-            <div className={styles.memberInfo}>
-              <span className={styles.memberName}>{member.name}</span>
-              <div className={styles.memberProgressTrack}>
-                <div
-                  className={`${styles.memberProgressFill} ${member.isComplete ? styles.memberProgressComplete : ''}`}
-                  style={{ width: `${Math.max(4, member.percent)}%` }}
-                />
-              </div>
-            </div>
-            <span className={`${styles.memberMeta} ${member.isComplete ? styles.memberMetaComplete : ''}`}>
-              {member.isComplete ? <CheckCircle2 size={13} /> : `${member.completedCount}/${MEMBER_MEDIA_TYPES.length}`}
-            </span>
-            <span className={styles.tierChevron}><ChevronRight size={14} /></span>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      {incompleteCount > 0 && (
+        <div
+          className={`${styles.callout} ${styles.calloutAction}`}
+          onClick={() => {
+            closeSheet();
+            window.dispatchEvent(
+              new CustomEvent('teamreel:open-quick-create', {
+                detail: { flow: 'content', subtype: 'profile_photo' },
+              }),
+            );
+          }}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              closeSheet();
+              window.dispatchEvent(
+                new CustomEvent('teamreel:open-quick-create', {
+                  detail: { flow: 'content', subtype: 'profile_photo' },
+                }),
+              );
+            }
+          }}
+          role="button"
+          tabIndex={0}
+        >
+          <span className={`${styles.calloutIcon} ${styles.calloutIconAction}`}>
+            <Sparkles size={14} />
+          </span>
+          <span className={styles.calloutText}>
+            {incompleteCount} speler{incompleteCount > 1 ? 's' : ''} hebben ontbrekende media
+          </span>
+          <span className={styles.calloutArrow}><ChevronRight size={14} /></span>
+        </div>
+      )}
     </div>
-  );
+    );
+  };
 
   // ── Member detail sheet ───────────────────
 
