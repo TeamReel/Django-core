@@ -220,9 +220,10 @@ interface MatchesCardProps {
   loading: boolean;
   showLink?: boolean;
   onNavigate?: () => void;
+  onMatchClick?: (match: MatchRecord) => void;
 }
 
-export function MatchesCard({ title, matches, loading, showLink, onNavigate }: MatchesCardProps) {
+export function MatchesCard({ title, matches, loading, showLink, onNavigate, onMatchClick }: MatchesCardProps) {
   if (matches.length === 0 && !loading) return null;
 
   return (
@@ -238,14 +239,19 @@ export function MatchesCard({ title, matches, loading, showLink, onNavigate }: M
       ) : (
         <div className={ov.matchList}>
           {matches.map((m) => (
-            <div key={m.id} className={ov.matchRow}>
+            <button
+              key={String(m.id)}
+              type="button"
+              className={ov.matchRow}
+              onClick={() => onMatchClick?.(m)}
+            >
               <div className={ov.matchDate}>
                 <span className={ov.matchDay}>{fmtDate(m)}</span>
                 <span className={ov.matchTime}>{fmtTime(m)}</span>
               </div>
               <span className={ov.matchTitle}>{matchDisplayTitle(m)}</span>
               <span className={ov.matchArrow}>›</span>
-            </div>
+            </button>
           ))}
         </div>
       )}

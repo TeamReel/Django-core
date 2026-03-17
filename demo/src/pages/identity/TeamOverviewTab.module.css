@@ -390,8 +390,30 @@
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   min-height: 48px;
+  border: none;
   border-bottom: 1px solid var(--app-border, var(--app-text));
-  cursor: default;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background-color 0.15s ease;
+}
+
+.matchRow:hover {
+  background: var(--app-surface-hover, rgba(0, 0, 0, 0.04));
+}
+
+.matchRow:active {
+  background: var(--app-surface-active, rgba(0, 0, 0, 0.08));
+}
+
+.matchRow:focus-visible {
+  outline: 2px solid var(--app-focus-ring, var(--brand-primary));
+  outline-offset: -2px;
+  z-index: 1;
 }
 
 .matchRow:last-child {

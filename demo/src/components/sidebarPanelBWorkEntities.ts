@@ -21,15 +21,10 @@ export function buildTeamDetailSection(baseUrl: string, isPlayer: boolean): Pane
         items: [
             ...(!isPlayer ? [{ label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard }] : []),
             { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
-            ...(!isPlayer ? [{ label: 'Seasons', path: makeTabUrl(baseUrl, 'seasons'), icon: CalendarDays }] : []),
-            ...(!isPlayer ? [{ label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy }] : []),
-            { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
-            ...(!isPlayer ? [{ label: 'Members', path: makeTabUrl(baseUrl, 'members'), icon: Users }] : []),
+            { label: 'Selectie', path: makeTabUrl(baseUrl, 'members'), icon: Users },
             ...(!isPlayer ? [{ label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star }] : []),
-            ...(!isPlayer ? [{ label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart }] : []),
-            ...(!isPlayer ? [{ label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll }] : []),
-            ...(!isPlayer ? [{ label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder }] : []),
-            ...(!isPlayer ? [{ label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors }] : []),
+            ...(!isPlayer ? [{ label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Folder }] : []),
+            ...(!isPlayer ? [{ label: 'Credits', path: makeTabUrl(baseUrl, 'credits'), icon: LineChart }] : []),
         ],
         isActive: true,
     };

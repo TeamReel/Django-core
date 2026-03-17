@@ -1,7 +1,7 @@
 /**
  * TeamOverviewTab - Team overview dashboard with multiple cards
  */
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '@django-core/design-system';
 import {
@@ -56,6 +56,45 @@ export function TeamOverviewTab({
 
   const { brandAssets, assetStats, fullMembersLoading, contentCount, contentCountLoading } = brand;
   const { matches: teamMatches, loading: teamMatchesLoading } = matchData;
+
+  // ── Build match detail path from hierarchy data ──
+  const buildMatchPath = useCallback(
+    (m: MatchRecord): string => {
+      const { orgKey, clubKey, teamKey } = routeKeys;
+      const matchSlug = String(m?.slug || m?.id || '').trim();
+      if (!orgKey || !clubKey || !teamKey || !matchSlug) return '';
+
+      const periodId = String(
+        (m as Record<string, unknown>)?.period_id ??
+          (typeof (m as Record<string, unknown>)?.period === 'object'
+            ? ((m as Record<string, unknown>)?.period as Record<string, unknown>)?.id
+            : (m as Record<string, unknown>)?.period) ??
+          '',
+      ).trim();
+      if (!periodId) return '';
+
+      for (const season of hierarchySeasons) {
+        const sid = String(season?.id ?? '').trim();
+        const comps = hierarchyCompetitionsBySeasonId[sid] || [];
+        const comp = comps.find((c) => String(c?.id ?? '') === periodId);
+        if (comp) {
+          const seasonKey = encodeURIComponent(String(season?.slug || sid));
+          const compKey = encodeURIComponent(String(comp?.slug || comp?.id || periodId));
+          return `/${encodeURIComponent(orgKey)}/${encodeURIComponent(clubKey)}/${encodeURIComponent(teamKey)}/${seasonKey}/${compKey}/${encodeURIComponent(matchSlug)}`;
+        }
+      }
+      return '';
+    },
+    [routeKeys, hierarchySeasons, hierarchyCompetitionsBySeasonId],
+  );
+
+  const handleMatchClick = useCallback(
+    (m: MatchRecord) => {
+      const path = buildMatchPath(m);
+      if (path) navigate(path);
+    },
+    [buildMatchPath, navigate],
+  );
 
   const totalCompetitions = Object.values(hierarchyCompetitionsBySeasonId || {}).reduce(
     (sum, list) => sum + (list?.length || 0),
@@ -153,6 +192,7 @@ export function TeamOverviewTab({
           loading={teamMatchesLoading}
           showLink
           onNavigate={() => navigate(makeTabHref('hierarchy'))}
+          onMatchClick={handleMatchClick}
         />
       )}
 
@@ -161,6 +201,7 @@ export function TeamOverviewTab({
           title="Recente wedstrijden"
           matches={recentMatches}
           loading={false}
+          onMatchClick={handleMatchClick}
         />
       )}
 
