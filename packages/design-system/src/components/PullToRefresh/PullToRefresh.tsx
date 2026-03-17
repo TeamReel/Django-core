@@ -69,20 +69,43 @@ export function PullToRefresh({
   const directionLocked = useRef<'vertical' | 'horizontal' | null>(null);
 
   /**
+   * Find the nearest scrollable ancestor (the element that actually scrolls).
+   * Walks up from our container until it finds an element with
+   * overflow-y: auto|scroll that has scrollable content.
+   */
+  const getScrollParent = useCallback((el: HTMLElement | null): HTMLElement | null => {
+    let node = el?.parentElement ?? null;
+    while (node && node !== document.documentElement) {
+      const style = window.getComputedStyle(node);
+      const overflowY = style.overflowY;
+      if (overflowY === 'auto' || overflowY === 'scroll') {
+        return node;
+      }
+      node = node.parentElement;
+    }
+    return null;
+  }, []);
+
+  /**
    * Check if page is scrolled to top (within 2px tolerance).
-   * Checks both window scroll and the container's scroll position.
+   * Checks the nearest scrollable ancestor, the container itself,
+   * AND the window scroll — whichever is the actual scroll source.
    */
   const isAtTop = useCallback((): boolean => {
     // Check window/document scroll
     const windowScrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
     if (windowScrollY > 2) return false;
 
-    // Also check container scroll
+    // Check nearest scrollable ancestor (e.g. <main> with overflow-y: auto)
+    const scrollParent = getScrollParent(containerRef.current);
+    if (scrollParent && scrollParent.scrollTop > 2) return false;
+
+    // Also check container scroll (in case it's the scroll container itself)
     const container = containerRef.current;
     if (container && container.scrollTop > 2) return false;
 
     return true;
-  }, []);
+  }, [getScrollParent]);
 
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
@@ -205,6 +228,16 @@ export function PullToRefresh({
     startX.current = 0;
   }, [disabled, state, threshold, onRefresh]);
 
+  // Handle touch cancel (browser gesture takeover, system interruption)
+  const handleTouchCancel = useCallback(() => {
+    isTracking.current = false;
+    directionLocked.current = null;
+    setState('idle');
+    setPullDistance(0);
+    startY.current = 0;
+    startX.current = 0;
+  }, []);
+
   // Reset on unmount
   useEffect(() => {
     return () => {
@@ -243,6 +276,7 @@ export function PullToRefresh({
       className={`${pullToRefreshContainer} ${className ?? ''}`}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
     >
       {/* Pull indicator */}
       <div
