@@ -168,7 +168,7 @@
 }
 
 .jobCard[data-status='completed'] {
-  border-color: var(--color-green-400);
+  border-color: var(--app-border);
 }
 
 .jobCard[data-status='failed'] {

@@ -148,13 +148,17 @@ export default function AIStudioPage() {
         {viewMode === 'type' && !data.loading && !data.error && phases.map((phase) => {
           const meta = PHASE_META[phase] || PHASE_META.other;
           const groups = groupsByPhase[phase];
+          // Skip redundant phase header when only 1 group with same label
+          const skipPhaseHeader = groups.length === 1 && groups[0].label === meta.label;
           return (
             <div key={phase} className={styles.phaseBlock}>
-              <div className={styles.phaseHeader} style={{ '--phase-accent': meta.accent } as React.CSSProperties}>
-                <span className={styles.phaseIcon}>{meta.icon}</span>
-                <span className={styles.phaseLabel}>{meta.label}</span>
-                <span className={styles.phaseLine} />
-              </div>
+              {!skipPhaseHeader && (
+                <div className={styles.phaseHeader} style={{ '--phase-accent': meta.accent } as React.CSSProperties}>
+                  <span className={styles.phaseIcon}>{meta.icon}</span>
+                  <span className={styles.phaseLabel}>{meta.label}</span>
+                  <span className={styles.phaseLine} />
+                </div>
+              )}
 
               {groups.map((group) => (
                 <StudioSection

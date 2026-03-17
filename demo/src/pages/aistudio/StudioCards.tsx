@@ -40,7 +40,7 @@ export function StudioContentCard({
   } else {
     const opponent = (item.extraction_metadata?.opponent as string) || '';
     const activityTitle = (item.extraction_metadata?.activity_title as string) || '';
-    label = opponent ? `vs ${opponent}` : activityTitle || '';
+    label = opponent ? `vs ${opponent}` : activityTitle || item.title || '';
   }
 
   return (
