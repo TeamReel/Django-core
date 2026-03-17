@@ -235,7 +235,7 @@ export const MemberContentProgressCard: React.FC = () => {
       {/* Navigate to squad */}
       <button
         onClick={() => { setSheetOpen(false); navigate(`/teams/${project.slug || project.id}/squad`); }}
-        style={{ marginTop: 16, width: '100%', padding: '10px 16px', borderRadius: 8, border: '1px solid var(--border-primary)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+        className={styles.sheetNavButton}
       >
         Ga naar squad <ChevronRight size={14} />
       </button>

@@ -149,16 +149,16 @@ export const ContentBreakdownCard: React.FC = () => {
 
       {/* Summary */}
       {totalCount > 0 && (
-        <div style={{ marginTop: 16, padding: '12px', borderRadius: 8, background: 'var(--bg-secondary)', textAlign: 'center' }}>
-          <span style={{ fontSize: 24, fontWeight: 700 }}>{totalCount}</span>
-          <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>totaal gegenereerde content</div>
+        <div className={styles.summaryBox}>
+          <span className={styles.summaryValue}>{totalCount}</span>
+          <div className={styles.summaryLabel}>totaal gegenereerde content</div>
         </div>
       )}
 
       {/* Navigate to full content page */}
       <button
         onClick={() => { setSheetOpen(false); navigate('/content'); }}
-        style={{ marginTop: 16, width: '100%', padding: '10px 16px', borderRadius: 8, border: '1px solid var(--border-primary)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+        className={styles.sheetNavButton}
       >
         Bekijk alle content <ChevronRight size={14} />
       </button>

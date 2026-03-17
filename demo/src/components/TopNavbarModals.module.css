@@ -435,3 +435,76 @@
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);
 }
+
+/* ─── Quick Review: extracted inline styles ───────────────────────────────── */
+
+.reviewThumb {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.jobIconBlue {
+  background-color: var(--color-blue-600);
+}
+
+.btnRejectXs {
+  color: var(--color-red-500);
+  border-color: var(--color-red-500);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.btnRejectXs[data-busy='true'] {
+  opacity: 0.6;
+}
+
+.btnApproveXs {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  background-color: var(--color-green-500);
+}
+
+.btnApproveXs[data-busy='true'] {
+  opacity: 0.6;
+}
+
+.expandedPreview {
+  border-top: 1px solid var(--app-border);
+}
+
+.previewMedia {
+  width: 100%;
+  max-height: 40vh;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+}
+
+.variantThumb {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid var(--app-border);
+}
+
+.variantThumb[data-selected='true'] {
+  border-color: var(--color-green-500);
+}
+
+.variantThumb[data-dimmed='true'] {
+  opacity: 0.5;
+}
+
+.btnLinkXs {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  text-decoration: none;
+}
+
+.progressPercent {
+  color: var(--color-blue-600);
+}

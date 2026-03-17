@@ -171,3 +171,26 @@
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ─── Sheet navigation button ─────────────────────────────────────────────── */
+
+.sheetNavButton {
+  margin-top: var(--space-4);
+  width: 100%;
+  padding: 10px var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--app-border);
+  background: transparent;
+  color: var(--app-muted-text);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+.sheetNavButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}

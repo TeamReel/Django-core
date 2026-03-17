@@ -123,10 +123,10 @@ export function NavbarQuickReviewModal({
                   <img
                     src={thumb}
                     alt=""
-                    style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', objectFit: 'cover', flexShrink: 0 }}
+                    className={s.reviewThumb}
                   />
                 ) : (
-                  <div className={`${s.jobIcon} ${styles.jobIconStatus}`} style={{ backgroundColor: 'var(--color-blue-600)' }}>
+                  <div className={`${s.jobIcon} ${styles.jobIconStatus} ${s.jobIconBlue}`}>
                     {isVideo ? '\ud83c\udfa5' : '\ud83d\uddbc\ufe0f'}
                   </div>
                 )}
@@ -140,8 +140,7 @@ export function NavbarQuickReviewModal({
                   <button
                     onClick={() => { setQuickReviewIdx(idx); handleQuickReview('reject'); }}
                     disabled={quickReviewBusy}
-                    className={s.btnSecondary}
-                    style={{ color: 'var(--color-red-500)', borderColor: 'var(--color-red-500)', padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-xs)' }}
+                    className={`${s.btnSecondary} ${s.btnRejectXs}`}
                     title="Afwijzen"
                   >
                     {'\u2715'}
@@ -149,8 +148,7 @@ export function NavbarQuickReviewModal({
                   <button
                     onClick={() => { setQuickReviewIdx(idx); setSelectedVariantIdxs(new Set()); handleQuickReview('approve'); }}
                     disabled={quickReviewBusy}
-                    className={s.btnPrimary}
-                    style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-xs)', backgroundColor: 'var(--color-green-500)' }}
+                    className={`${s.btnPrimary} ${s.btnApproveXs}`}
                     title="Goedkeuren"
                   >
                     {'\u2713'}
@@ -160,7 +158,7 @@ export function NavbarQuickReviewModal({
 
               {/* Expanded preview */}
               {isExpanded && thumb && (
-                <div className="p-12" style={{ borderTop: '1px solid var(--app-border)' }}>
+                <div className={`p-12 ${s.expandedPreview}`}>
                   {isVideo ? (
                     <video
                       src={thumb}
@@ -169,13 +167,13 @@ export function NavbarQuickReviewModal({
                       playsInline
                       autoPlay
                       loop
-                      style={{ width: '100%', maxHeight: '40vh', objectFit: 'contain', borderRadius: 'var(--radius-md)' }}
+                      className={s.previewMedia}
                     />
                   ) : (
                     <img
                       src={thumb}
                       alt={j.label || 'Preview'}
-                      style={{ width: '100%', maxHeight: '40vh', objectFit: 'contain', borderRadius: 'var(--radius-md)' }}
+                      className={s.previewMedia}
                     />
                   )}
                   {/* Multi-variant selector */}
@@ -191,17 +189,9 @@ export function NavbarQuickReviewModal({
                             if (next.has(v.variant_index)) next.delete(v.variant_index); else next.add(v.variant_index);
                             return next;
                           })}
-                          style={{
-                            width: 56,
-                            height: 56,
-                            borderRadius: 'var(--radius-sm)',
-                            objectFit: 'cover',
-                            cursor: 'pointer',
-                            border: selectedVariantIdxs.has(v.variant_index)
-                              ? '2px solid var(--color-green-500)'
-                              : '2px solid var(--app-border)',
-                            opacity: selectedVariantIdxs.size > 0 && !selectedVariantIdxs.has(v.variant_index) ? 0.5 : 1,
-                          }}
+                          className={s.variantThumb}
+                          data-selected={selectedVariantIdxs.has(v.variant_index)}
+                          data-dimmed={selectedVariantIdxs.size > 0 && !selectedVariantIdxs.has(v.variant_index)}
                         />
                       ))}
                     </div>
@@ -217,7 +207,7 @@ export function NavbarQuickReviewModal({
           const busy = videoReviewBusy === j.id;
           return (
             <div key={j.id} className={`flex-row gap-12 p-12 rounded-8 mb-8 ${styles.jobRow}`}>
-              <div className={s.jobIcon} style={{ backgroundColor: 'var(--color-blue-600)' }}>
+              <div className={`${s.jobIcon} ${s.jobIconBlue}`}>
                 {'\ud83c\udfa5'}
               </div>
               <div className="flex-1">
@@ -233,8 +223,7 @@ export function NavbarQuickReviewModal({
                   href={j.output_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={s.btnSecondary}
-                  style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-xs)', textDecoration: 'none' }}
+                  className={`${s.btnSecondary} ${s.btnLinkXs}`}
                   title="Bekijk video"
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -245,8 +234,8 @@ export function NavbarQuickReviewModal({
                 <button
                   onClick={() => handleVideoReview(j.id, 'reject')}
                   disabled={busy}
-                  className={s.btnSecondary}
-                  style={{ color: 'var(--color-red-500)', borderColor: 'var(--color-red-500)', padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-xs)', opacity: busy ? 0.6 : 1 }}
+                  className={`${s.btnSecondary} ${s.btnRejectXs}`}
+                  data-busy={busy}
                   title="Afwijzen"
                 >
                   {'\u2715'}
@@ -254,8 +243,8 @@ export function NavbarQuickReviewModal({
                 <button
                   onClick={() => handleVideoReview(j.id, 'approve')}
                   disabled={busy}
-                  className={s.btnPrimary}
-                  style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-xs)', backgroundColor: 'var(--color-green-500)', opacity: busy ? 0.6 : 1 }}
+                  className={`${s.btnPrimary} ${s.btnApproveXs}`}
+                  data-busy={busy}
                   title="Goedkeuren"
                 >
                   {'\u2713'}
@@ -312,7 +301,7 @@ export function NavbarQuickReviewModal({
               </div>
             </div>
             {j.status === 'processing' && j.progress_percent > 0 && (
-              <div className="fs-12 fw-700" style={{ color: 'var(--color-blue-600)' }}>
+              <div className={`fs-12 fw-700 ${s.progressPercent}`}>
                 {j.progress_percent}%
               </div>
             )}

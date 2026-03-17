@@ -172,7 +172,7 @@ export const MediaReadinessCard: React.FC = () => {
         </div>
       </div>
 
-      <div className={styles.typeGrid} style={{ marginTop: 'var(--space-4)' }}>
+      <div className={styles.typeGrid}>
         {assets.map(asset => (
           <div key={asset.key} className={styles.assetRow} data-present={asset.present}>
             <div className={styles.assetThumb}>
@@ -237,7 +237,7 @@ export const MediaReadinessCard: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ marginTop: 'var(--space-4)' }}>
+      <div className={styles.typeGrid}>
         {data.members.list.map(member => (
           <div
             key={member.id}
@@ -431,7 +431,7 @@ function TierRowCompact({
   percent: number;
 }) {
   return (
-    <div className={styles.tierRow} style={{ cursor: 'default' }}>
+    <div className={`${styles.tierRow} ${styles.tierRowCompact}`}>
       <div className={`${styles.tierIcon} ${iconClass}`}>{icon}</div>
       <div className={styles.tierInfo}>
         <span className={styles.tierLabel}>{label}</span>
