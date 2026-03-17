@@ -1,7 +1,7 @@
 /**
  * useProjectMembers — Shared React Query hook for project members.
  *
- * Fetches all members for a given organisation + project combination.
+ * Fetches all members for a given project by ID.
  * Uses TanStack Query for caching & automatic deduplication across
  * dashboard cards (SquadReadiness, MemberContentProgress, Assets, SmartActions).
  *
@@ -14,20 +14,19 @@ import type { ProjectMembership } from '@/types/api/project';
 import { queryKeys } from '../utils/queryKeys';
 
 async function fetchProjectMembers(
-  orgSlug: string,
-  projectSlug: string,
+  projectId: string,
 ): Promise<ListResult<ProjectMembership>> {
   return api.list<ProjectMembership>(
-    `/organisations/${orgSlug}/projects/${projectSlug}/members/`,
+    `/projects/${encodeURIComponent(projectId)}/members/`,
     { pageSize: 200 },
   );
 }
 
-export function useProjectMembers(orgSlug?: string, projectSlug?: string) {
+export function useProjectMembers(projectId?: string) {
   return useQuery({
-    queryKey: queryKeys.members.byProject(orgSlug ?? '', projectSlug ?? ''),
-    queryFn: () => fetchProjectMembers(orgSlug!, projectSlug!),
-    enabled: !!orgSlug && !!projectSlug,
+    queryKey: queryKeys.members.byProject(projectId ?? ''),
+    queryFn: () => fetchProjectMembers(projectId!),
+    enabled: !!projectId,
     staleTime: 10 * 60 * 1000, // 10 min — semi-static
   });
 }

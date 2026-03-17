@@ -40,7 +40,7 @@ export const SquadReadinessCard: React.FC = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   // Shared members query — deduped across cards (D5)
-  const { data: membersData } = useProjectMembers(org?.slug, project?.slug);
+  const { data: membersData } = useProjectMembers(project?.id);
   const members = membersData?.results ?? [];
   const memberCount = project
     ? (membersData?.count ?? members.length ?? 0)

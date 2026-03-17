@@ -89,8 +89,7 @@ export const AssetsOverviewCard: React.FC = () => {
   });
 
   const { data: membersData, isLoading: membersLoading } = useProjectMembers(
-    org?.slug,
-    project?.slug,
+    project?.id,
   );
 
   const genFilters = useMemo(() => {

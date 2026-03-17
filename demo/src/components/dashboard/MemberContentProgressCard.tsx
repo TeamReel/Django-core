@@ -48,8 +48,7 @@ export const MemberContentProgressCard: React.FC = () => {
 
   // Parallel queries — no waterfall (D5/D6)
   const { data: membersData, isLoading: membersLoading } = useProjectMembers(
-    org?.slug,
-    project?.slug,
+    project?.id,
   );
 
   const genFilters = useMemo(() => {

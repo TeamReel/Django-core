@@ -79,8 +79,7 @@ export const SmartActionsCard: React.FC = () => {
 
   // Parallel queries — deduped via shared hooks (D5)
   const { data: membersData, isLoading: membersLoading } = useProjectMembers(
-    org?.slug,
-    project?.slug,
+    project?.id,
   );
 
   const genFilters = useMemo(() => {

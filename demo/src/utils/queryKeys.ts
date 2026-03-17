@@ -24,8 +24,8 @@ export const queryKeys = {
   // Members
   members: {
     all: ['members'] as const,
-    byProject: (orgSlug: string, projectSlug: string) =>
-      ['members', 'project', orgSlug, projectSlug] as const,
+    byProject: (projectId: string) =>
+      ['members', 'project', projectId] as const,
   },
 
   // Generative requests

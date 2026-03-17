@@ -114,8 +114,7 @@ export function useMediaReadiness(): MediaReadiness {
 
   // 2. Project members
   const { data: membersData, isLoading: membersLoading } = useProjectMembers(
-    org?.slug,
-    project?.slug,
+    project?.id,
   );
 
   // 3. Completed generative requests for member content
