@@ -126,7 +126,7 @@
 }
 
 .summaryValue {
-  font-size: 24px;
+  font-size: var(--text-2xl);
   font-weight: var(--font-bold);
 }
 

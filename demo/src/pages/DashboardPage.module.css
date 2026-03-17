@@ -132,13 +132,13 @@
 
 @media (hover: hover) {
   .lowBannerBtn:hover {
-  background: var(--color-amber-500, var(--color-amber-400));
+    background: var(--color-amber-500, var(--color-amber-400));
   }
+}
 
 .lowBannerBtn:focus-visible {
   outline: 2px solid var(--app-focus-ring);
   outline-offset: 2px;
-}
 }
 
 .lowBannerBtn:active {

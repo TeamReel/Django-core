@@ -158,8 +158,8 @@
 .expandButton {
   top: 64px;
   right: -16px;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   color: var(--sidebar-a-text);
   transition: all var(--duration-fast) var(--ease-default);
   z-index: 25;
@@ -167,13 +167,13 @@
 
 @media (hover: hover) {
   .expandButton:hover {
-  background-color: var(--alpha-white-10);
+    background-color: var(--alpha-white-10);
   }
+}
 
 .expandButton:focus-visible {
   outline: 2px solid var(--app-focus-ring);
   outline-offset: 2px;
-}
 }
 
 /* ── Panel B: Secondary sidebar ── */

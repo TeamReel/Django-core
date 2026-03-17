@@ -362,7 +362,7 @@ export const ContentProgressCard: React.FC = () => {
           <div className={styles.headerIcon}>
             <BarChart3 size={16} />
           </div>
-          <span className={styles.title}>Content voortgang</span>
+          <h2 className={styles.title}>Content voortgang</h2>
           {totalCount > 0 && <span className={styles.totalBadge}>{totalCount}</span>}
         </div>
 

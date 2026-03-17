@@ -539,7 +539,7 @@ export const MediaReadinessCard: React.FC = () => {
           <div className={styles.headerIcon}>
             <Package size={16} />
           </div>
-          <span className={styles.title}>Media gereedheid</span>
+          <h2 className={styles.title}>Media gereedheid</h2>
           {!data.loading && (
             <span className={styles.totalBadge}>{data.overallPercent}%</span>
           )}

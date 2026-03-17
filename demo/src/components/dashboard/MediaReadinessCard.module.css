@@ -45,6 +45,7 @@
 }
 
 .title {
+  margin: 0;
   flex: 1;
   font-size: var(--text-base);
   font-weight: var(--font-bold);

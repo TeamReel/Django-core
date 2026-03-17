@@ -90,7 +90,7 @@ export const SeasonProgressCard: React.FC = () => {
     <div className={styles.card}>
       <div className={styles.header}>
         <BarChart3 size={14} className={styles.headerIcon} />
-        <span className={styles.title}>Seizoensoverzicht</span>
+        <h2 className={styles.title}>Seizoensoverzicht</h2>
       </div>
 
       {/* Progress bar */}

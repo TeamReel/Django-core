@@ -211,7 +211,7 @@ export const SmartActionsCard: React.FC = () => {
       <div className={styles.card}>
         <div className={styles.header}>
           <Zap size={16} />
-          <span className={styles.title}>Aanbevolen acties</span>
+          <h2 className={styles.title}>Aanbevolen acties</h2>
         </div>
         <div className={styles.actionList}>
           {[1, 2, 3].map(i => (
@@ -229,7 +229,7 @@ export const SmartActionsCard: React.FC = () => {
       <div className={styles.card}>
         <div className={styles.header}>
           <Zap size={16} />
-          <span className={styles.title}>Aanbevolen acties</span>
+          <h2 className={styles.title}>Aanbevolen acties</h2>
         </div>
         <div className={styles.actionList}>
           {actions.map(action => (

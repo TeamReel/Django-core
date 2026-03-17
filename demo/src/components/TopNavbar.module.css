@@ -293,6 +293,7 @@
 
 .createMainBtn {
   padding: var(--space-2) var(--space-3);
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -303,6 +304,8 @@
 
 .createChevronBtn {
   padding: var(--space-2) var(--space-3);
+  min-height: 44px;
+  min-width: 44px;
   display: inline-flex;
   align-items: center;
   border-radius: var(--radius-lg);
@@ -345,19 +348,21 @@
 
 @media (hover: hover) {
   .createMenuItem:hover {
-  background-color: var(--app-surface-2);
+    background-color: var(--app-surface-2);
   }
+}
 
 .createMenuItem:focus-visible {
   outline: 2px solid var(--app-focus-ring);
   outline-offset: 2px;
-}
 }
 
 /* ─── Theme / Language ────────────────────────────────────────────────────── */
 
 .themeBtn {
   padding: var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
   position: relative;
   z-index: 1000;
   pointer-events: auto;
@@ -365,6 +370,7 @@
 
 .langBtn {
   padding: var(--space-2) var(--space-3);
+  min-height: 44px;
   background-color: transparent;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -413,13 +419,13 @@
 
 @media (hover: hover) {
   .langItem:not([data-selected="true"]):hover {
-  background-color: var(--app-surface-secondary);
+    background-color: var(--app-surface-secondary);
   }
+}
 
 .langItem:not([data-selected="true"]):focus-visible {
   outline: 2px solid var(--app-focus-ring);
   outline-offset: 2px;
-}
 }
 
 /* ─── Nav Icon Buttons (Queue / Notification / Credits) ───────────────────── */
@@ -427,6 +433,8 @@
 .navIconBtn {
   position: relative;
   padding: var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
   background-color: transparent;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -437,6 +445,8 @@
 .creditsBtn {
   position: relative;
   padding: var(--space-2);
+  min-width: 44px;
+  min-height: 44px;
   background-color: transparent;
   border-radius: var(--radius-md);
   cursor: pointer;

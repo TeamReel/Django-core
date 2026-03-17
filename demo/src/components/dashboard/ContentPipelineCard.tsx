@@ -70,7 +70,7 @@ export const ContentPipelineCard: React.FC = () => {
     <div className={styles.card}>
       <div className={styles.header}>
         <Clock size={14} className={styles.headerIcon} />
-        <span className={styles.title}>Content pipeline</span>
+        <h2 className={styles.title}>Content pipeline</h2>
         <button
           className={styles.seeAll}
           onClick={() => navigate('/content')}

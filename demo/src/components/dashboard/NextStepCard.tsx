@@ -101,7 +101,7 @@ export const NextStepCard: React.FC = () => {
           <CheckCircle2 size={20} />
         </div>
         <div className={styles.content}>
-          <span className={styles.title}>Alles staat klaar!</span>
+          <h2 className={styles.title}>Alles staat klaar!</h2>
           <span className={styles.subtitle}>Je bent helemaal bij. Lekker bezig!</span>
         </div>
       </div>
@@ -114,7 +114,7 @@ export const NextStepCard: React.FC = () => {
         {suggestion.icon}
       </div>
       <div className={styles.content}>
-        <span className={styles.title}>{suggestion.title}</span>
+        <h2 className={styles.title}>{suggestion.title}</h2>
         <span className={styles.subtitle}>{suggestion.subtitle}</span>
       </div>
       <button
