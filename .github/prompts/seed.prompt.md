@@ -38,8 +38,16 @@ railway run python manage.py shell -c "from branding.models import AppBackground
 
 ### 3. Run the Seed Command
 
+> **⚠️ `railway run` does NOT work for DB-writing commands from local** — it injects the internal `postgres.railway.internal` URL which is unreachable from your machine. Use **local execution with public DB URL** instead. See `.github/skills/railway-ops/SKILL.md` → Method A.
+
 ```powershell
-railway run python manage.py <seed_command> [--force]
+# RECOMMENDED: Local execution with public DB URL
+$env:DATABASE_URL = "<DATABASE_PUBLIC_URL>"
+$env:DJANGO_SETTINGS_MODULE = "config.settings.seeding"
+python manage.py <seed_command> [--force]
+
+# Only for read-only / non-DB commands:
+railway run python manage.py check
 ```
 
 ### 4. Verify Success
@@ -50,18 +58,19 @@ Check the command output for ✅ success messages or ❌ error messages.
 
 ### Fresh database setup:
 ```powershell
-railway run python manage.py seed_sports
-railway run python manage.py seed_demo_data
-railway run python manage.py seed_default_roles
-railway run python manage.py seed_branding
-railway run python manage.py seed_app_backgrounds
+# Set env vars first (see Method A in railway-ops SKILL)
+python manage.py seed_sports
+python manage.py seed_demo_data
+python manage.py seed_default_roles
+python manage.py seed_branding
+python manage.py seed_app_backgrounds
 ```
 
 ### Just backgrounds:
 ```powershell
-railway run python manage.py seed_app_backgrounds
+python manage.py seed_app_backgrounds
 # or force-recreate:
-railway run python manage.py seed_app_backgrounds --force
+python manage.py seed_app_backgrounds --force
 ```
 
 ## Dependency Order

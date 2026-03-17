@@ -1,5 +1,5 @@
 {
-  "description": "Auto-format files after Copilot edits them (Prettier for frontend, black for Python)",
+  "description": "Auto-format frontend files after Copilot edits (Prettier for .ts/.tsx/.css/.json)",
   "PostToolUse": [
     {
       "type": "command",

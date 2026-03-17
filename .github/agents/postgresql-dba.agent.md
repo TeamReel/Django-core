@@ -51,12 +51,12 @@ railway run python manage.py dbshell
 - Review migration history for safe practices
 
 ### Performance Monitoring
-```bash
-# Check slow queries via Railway logs
-railway logs --tail 100 | grep -i "slow\|query\|duration"
+```powershell
+# Check slow queries via Railway logs (PowerShell — no --tail flag!)
+railway logs 2>&1 | Select-String -Pattern "slow|query|duration"
 
-# Django debug toolbar query count (dev)
-# Check query count in response headers
+# Get last N lines of logs
+railway logs 2>&1 | Select-Object -Last 100
 
 # Database size
 railway run python manage.py dbshell -c "SELECT pg_size_pretty(pg_database_size(current_database()));"

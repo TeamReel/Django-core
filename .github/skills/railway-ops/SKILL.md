@@ -206,9 +206,9 @@ After running a command:
 Commands that upload files (e.g. `seed_app_backgrounds`) need these env vars on the `backend` service:
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
-- `AWS_STORAGE_BUCKET_NAME`
+- `AWS_S3_BUCKET_NAME`
 
-These are already configured on the Railway `backend` service. Running via `railway run` automatically uses them.
+These are already configured on the Railway `backend` service.
 
 ## Troubleshooting
 

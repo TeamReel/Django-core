@@ -28,8 +28,8 @@ You are the operations specialist for TeamReel. You manage Railway deployments, 
 
 | Service | Platform | URL |
 |---------|----------|-----|
-| Backend API | Railway | `https://api.teamreel.io` |
-| Frontend | Vercel | `https://app.teamreel.io` |
+| Backend API | Railway | `https://api.teamreel.app` |
+| Frontend | Vercel | `https://demo.teamreel.app` |
 | Database | Railway PostgreSQL | internal connection |
 | Storage | AWS S3 | `src/files/` → FileAsset |
 | Video processing | Railway workers | `src/video/` |
@@ -77,10 +77,10 @@ railway logs 2>&1 | Select-String "api/v1/endpoint-name"
 ### Health Checks
 ```bash
 # API health (if health endpoint exists)
-Invoke-RestMethod -Uri https://api.teamreel.io/health/
+Invoke-RestMethod -Uri https://api.teamreel.app/health/
 
 # Check if the service is responding
-(Invoke-WebRequest -Uri https://api.teamreel.io/api/v1/ -Method Head).StatusCode
+(Invoke-WebRequest -Uri https://api.teamreel.app/api/v1/ -Method Head).StatusCode
 
 # Database connectivity (link to backend first!)
 railway run python manage.py check --database default
@@ -90,19 +90,25 @@ railway run python manage.py showmigrations --list
 ```
 
 ### Seeding Data
-```bash
-# Link to backend service first!
-railway link  # → teamreel-backend → backend
 
-# Full demo data (orgs, users, projects, audit events)
-railway run python manage.py seed_demo_data
+> **⚠️ `railway run` does NOT work for DB-writing commands from local** — it injects the internal `postgres.railway.internal` URL which is unreachable from your machine. Use **local execution with public DB URL** instead. See `.github/skills/railway-ops/SKILL.md` → Method A.
 
-# App backgrounds (sport-linked video backgrounds)
-railway run python manage.py seed_app_backgrounds
-railway run python manage.py seed_app_backgrounds --force  # Recreate existing
+```powershell
+# RECOMMENDED: Local execution with public DB URL
+$env:DATABASE_URL = "<DATABASE_PUBLIC_URL>"
+$env:DJANGO_SETTINGS_MODULE = "config.settings.seeding"
+$env:AWS_ACCESS_KEY_ID = "<from backend service>"
+$env:AWS_SECRET_ACCESS_KEY = "<from backend service>"
+$env:AWS_S3_BUCKET_NAME = "<from backend service>"
+
+python manage.py seed_demo_data
+python manage.py seed_app_backgrounds --force
+
+# Clean up env vars after
+$env:DATABASE_URL = ""; $env:DJANGO_SETTINGS_MODULE = ""
 ```
 
-> **S3 note**: File uploads require AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_STORAGE_BUCKET_NAME env vars on the `backend` service.
+> **S3 note**: File uploads require `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME` env vars.
 
 ### Database Access
 ```bash

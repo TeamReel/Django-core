@@ -5,14 +5,15 @@ tools:
   - semantic_search
   - grep_search
   - read_file
+  - file_search
   - replace_string_in_file
   - multi_replace_string_in_file
   - create_file
-  - file_search
   - run_in_terminal
   - get_errors
-  - manage_todo_list
   - list_dir
+  - manage_todo_list
+  - playwright
 agents:
   - reviewer
   - planner
