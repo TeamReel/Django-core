@@ -111,7 +111,12 @@
 .viewToggleBtnActive {
   background: var(--app-primary);
   color: var(--color-white);
-  box-shadow: 0 1px 4px var(--color-indigo-500);
+  box-shadow: var(--shadow-sm);
+}
+
+.viewToggleBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
 }
 
 /* ── Active Jobs Strip ── */
@@ -202,7 +207,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
 }
 
 .jobType {
@@ -330,6 +335,11 @@
   opacity: 0.7;
 }
 
+.sectionViewAll:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
 /* ── Horizontal Scroll Row ── */
 
 .sectionScroll {
@@ -367,14 +377,14 @@
 
 @media (hover: hover) {
   .contentCard:hover {
-  transform: scale(1.02);
-  box-shadow: var(--shadow-lg);
+    transform: scale(1.02);
+    box-shadow: var(--shadow-lg);
   }
+}
 
 .contentCard:focus-visible {
   outline: 2px solid var(--app-focus-ring);
   outline-offset: 2px;
-}
 }
 
 .contentCard:active {
@@ -409,7 +419,7 @@
 }
 
 .contentCardFallback {
-  font-size: 28px;
+  font-size: var(--text-2xl);
   opacity: 0.4;
 }
 
@@ -449,7 +459,7 @@
 .matchTitleBlock {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
   min-width: 0;
   flex: 1;
 }
@@ -531,16 +541,21 @@
   opacity: 0.7;
 }
 
+.retryBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
 .emptyState {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 80px var(--space-6) var(--space-10);
+  padding: var(--space-16) var(--space-6) var(--space-10);
   text-align: center;
 }
 
 .emptyIcon {
-  font-size: 48px;
+  font-size: var(--text-3xl);
   margin-bottom: var(--space-4);
 }
 
@@ -591,11 +606,11 @@
 
 .previewClose {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: var(--space-4);
+  right: var(--space-4);
   z-index: 10;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -611,11 +626,16 @@
   opacity: 0.7;
 }
 
+.previewClose:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
 .previewMedia {
   width: 100%;
   aspect-ratio: 9 / 16;
   max-height: 60vh;
-  background: black;
+  background: var(--color-black, #000);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -680,6 +700,11 @@
 
 .previewAction:active {
   background: var(--app-surface-glass-hover);
+}
+
+.previewAction:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
 }
 
 /* ── Bottom spacer (mobile nav) ── */

@@ -119,9 +119,9 @@ export function StudioPreviewModal({
 
   return (
     <div className={styles.previewOverlay} onClick={onClose} role="presentation">
-      <div className={styles.previewContent} onClick={(e) => e.stopPropagation()} role="dialog">
+      <div className={styles.previewContent} onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Content preview">
         {/* Close button */}
-        <button className={styles.previewClose} onClick={onClose} type="button">
+        <button className={styles.previewClose} onClick={onClose} type="button" aria-label="Sluiten">
           <X size={20} />
         </button>
 
