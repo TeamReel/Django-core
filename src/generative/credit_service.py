@@ -66,12 +66,12 @@ class GenerationCreditService:
             InsufficientCreditsException: If user lacks sufficient credits
             DuplicateIdempotencyKeyError: If idempotency_key already used
         """
-        from src.transactions.exceptions import (
+        from transactions.exceptions import (
             DuplicateIdempotencyKeyError,
             InsufficientBalanceError,
         )
-        from src.transactions.models import SourceTypeChoices
-        from src.transactions.services import create_transaction
+        from transactions.models import SourceTypeChoices
+        from transactions.services import create_transaction
 
         if amount <= 0:
             raise ValueError("Amount must be positive")
@@ -134,9 +134,9 @@ class GenerationCreditService:
         Raises:
             ValueError: If transaction not found or invalid
         """
-        from src.transactions.exceptions import DuplicateIdempotencyKeyError
-        from src.transactions.models import SourceTypeChoices, Transaction
-        from src.transactions.services import create_transaction
+        from transactions.exceptions import DuplicateIdempotencyKeyError
+        from transactions.models import SourceTypeChoices, Transaction
+        from transactions.services import create_transaction
 
         if actual_amount < 0:
             raise ValueError("Actual amount must be non-negative")
@@ -238,9 +238,9 @@ class GenerationCreditService:
             ValueError: If transaction not found
             DuplicateIdempotencyKeyError: If refund already processed (idempotent)
         """
-        from src.transactions.exceptions import DuplicateIdempotencyKeyError
-        from src.transactions.models import SourceTypeChoices, Transaction
-        from src.transactions.services import create_transaction
+        from transactions.exceptions import DuplicateIdempotencyKeyError
+        from transactions.models import SourceTypeChoices, Transaction
+        from transactions.services import create_transaction
 
         try:
             reserve_txn = Transaction.objects.get(id=transaction_id)

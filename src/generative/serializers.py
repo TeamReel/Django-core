@@ -236,7 +236,7 @@ class GenerationRequestSerializer(serializers.ModelSerializer):
         if project:
             request = self.context.get("request")
             if request and request.user:
-                from src.projects.models import ProjectMembership
+                from projects.models import ProjectMembership
 
                 if not ProjectMembership.objects.filter(
                     project=project, user=request.user

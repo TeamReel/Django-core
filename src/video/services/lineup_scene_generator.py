@@ -70,7 +70,7 @@ def _upload_and_get_url(img: Image.Image, prefix: str = "lineup_scene") -> str:
     Falls back to local file path if storage upload fails.
     """
     try:
-        from src.files.utils import get_storage_backend
+        from files.utils import get_storage_backend
 
         img_bytes = io.BytesIO()
         img.save(img_bytes, "PNG")

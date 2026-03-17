@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from src.accounts.permissions import IsSuperadmin
+from accounts.permissions import IsSuperadmin
 
 from .models import AppBackground, BrandAsset, BrandProfile, DesignToken
 from .permissions import (
@@ -488,15 +488,15 @@ class BrandAssetViewSet(viewsets.ModelViewSet):
 
         Sport auto-detection filters AppBackgrounds by the user's org sport.
         """
-        from src.branding.models import AppBackground
-        from src.branding.serializers import AppBackgroundSerializer
+        from branding.models import AppBackground
+        from branding.serializers import AppBackgroundSerializer
 
         sport_id = request.query_params.get("sport")
 
         # Auto-detect sport from user's organisation if not explicit
         if not sport_id and hasattr(request, "user") and request.user.is_authenticated:
             try:
-                from src.organisations.models import Membership
+                from organisations.models import Membership
 
                 membership = (
                     Membership.objects.filter(user=request.user, is_active=True)

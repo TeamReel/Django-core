@@ -324,7 +324,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         try:
             Activity = apps.get_model("activities", "Activity")
             MediaItem = apps.get_model("medialib", "MediaItem")
-            from src.medialib.models import MediaItemState
+            from medialib.models import MediaItemState
 
             # Prevent duplicate MediaItems (auto-created on job completion)
             existing = MediaItem.objects.filter(file_id=job.output_file_id).first()

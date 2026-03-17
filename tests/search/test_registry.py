@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import Mock
-from src.search.registry import SearchRegistry, SearchIndex, search_registry
+from search.registry import SearchRegistry, SearchIndex, search_registry
 
 
 # Create a mock for the model class

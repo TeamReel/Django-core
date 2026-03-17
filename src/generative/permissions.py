@@ -33,7 +33,7 @@ class IsProjectMember(BasePermission):
             return True
 
         # Check project membership
-        from src.projects.models import ProjectMembership
+        from projects.models import ProjectMembership
 
         return ProjectMembership.objects.filter(project_id=project_id, user=request.user).exists()
 
@@ -44,7 +44,7 @@ class IsProjectMember(BasePermission):
             return True
 
         # Check membership
-        from src.projects.models import ProjectMembership
+        from projects.models import ProjectMembership
 
         return ProjectMembership.objects.filter(project=obj.project, user=request.user).exists()
 

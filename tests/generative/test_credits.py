@@ -27,7 +27,7 @@ from src.generative.models import (
 
 # Import from credit_service.py
 from src.generative.credit_service import GenerationCreditService, InsufficientCreditsException
-from src.transactions.exceptions import (
+from transactions.exceptions import (
     InsufficientBalanceError,
     DuplicateIdempotencyKeyError,
 )

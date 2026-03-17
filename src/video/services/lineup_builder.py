@@ -1860,7 +1860,7 @@ class LineupSegmentBuilder:
             return storage_path
 
         try:
-            from src.files.utils import get_storage_backend
+            from files.utils import get_storage_backend
 
             backend = get_storage_backend()
             # S3StorageBackend uses get_url(path, signed=True, expiry_seconds=3600)
@@ -1988,7 +1988,7 @@ class LineupSegmentBuilder:
                 return None
 
             # 4. Upload to S3
-            from src.files.utils import get_storage_backend
+            from files.utils import get_storage_backend
 
             storage_path = f"generated/lineup/{prefix}/{uuid_module.uuid4().hex}.mp4"
             backend = get_storage_backend()
@@ -2027,7 +2027,7 @@ class LineupSegmentBuilder:
         import uuid
         from pathlib import Path
         import requests as req
-        from src.files.utils import get_storage_backend
+        from files.utils import get_storage_backend
 
         tmp_dir = Path(tempfile.mkdtemp(prefix="lineup_line_"))
 

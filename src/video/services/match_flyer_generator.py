@@ -94,7 +94,7 @@ def _download_image(url: str) -> Image.Image | None:
 def _upload_flyer(img: Image.Image, activity_id: str) -> dict:
     """Upload flyer PNG to S3 and return info dict."""
     try:
-        from src.files.utils import get_storage_backend
+        from files.utils import get_storage_backend
 
         img_bytes = io.BytesIO()
         img.convert("RGB").save(img_bytes, "PNG", optimize=True)
@@ -1322,7 +1322,7 @@ def build_match_flyer(
 
     def _get_presigned_url(storage_path: str) -> str | None:
         try:
-            from src.files.utils import get_storage_backend
+            from files.utils import get_storage_backend
 
             backend = get_storage_backend()
             return backend.get_url(storage_path, signed=True, expiry_seconds=3600)

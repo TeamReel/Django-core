@@ -744,7 +744,7 @@ def _adaptive_fontsize(text: str) -> int:
 def _upload_flyer(file_path: Path, activity_id: str) -> str:
     """Upload generated flyer to S3 and return presigned URL."""
     try:
-        from src.files.utils import get_storage_backend
+        from files.utils import get_storage_backend
 
         storage_path = f"generated/lineup/flyers/{activity_id}/{uuid_module.uuid4().hex}.png"
         backend = get_storage_backend()

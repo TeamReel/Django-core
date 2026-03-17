@@ -140,7 +140,7 @@ def _generate_team_photo(
 def _upload_poster(image_bytes: bytes, activity_id: str) -> str:
     """Upload generated poster to S3 and return presigned URL."""
     try:
-        from src.files.utils import get_storage_backend
+        from files.utils import get_storage_backend
 
         storage_path = f"generated/posters/{activity_id}/{uuid_module.uuid4().hex}.png"
         backend = get_storage_backend()

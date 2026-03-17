@@ -78,7 +78,7 @@ def generate_content_task(self, content_item_id: int):
         )
 
         # Store output file via B22
-        from src.files.models import FileAsset
+        from files.models import FileAsset
 
         output_file = FileAsset.objects.create(
             file=ai_output["file_path"],
@@ -322,7 +322,7 @@ def get_retention_days(status: str, organisation) -> Optional[int]:
 
     # Try to get org-specific setting from B10 Feature Flags
     try:
-        from src.settings.models import ScopeType, Setting
+        from settings.models import ScopeType, Setting
 
         # Check for org-scoped setting
         setting_key = f"content_retention_{status}_days"
@@ -359,7 +359,7 @@ def cleanup_expired_content():
             },
         }
     """
-    from src.organisations.models import Organisation
+    from organisations.models import Organisation
 
     now = timezone.now()
     total_deleted = 0
