@@ -1,6 +1,7 @@
 export { ActiveMatchCard } from './ActiveMatchCard';
 export { UpcomingMatchesCard } from './UpcomingMatchesCard';
 export { PastMatchesCard } from './PastMatchesCard';
+export { MatchesCard } from './MatchesCard';
 export {
   SquadReadinessCard,
   ContentStatsCard,

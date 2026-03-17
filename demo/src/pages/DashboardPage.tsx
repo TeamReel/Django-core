@@ -6,8 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, Zap } from 'lucide-react';
 import {
   ActiveMatchCard,
-  UpcomingMatchesCard,
-  PastMatchesCard,
+  MatchesCard,
   SquadReadinessCard,
   AIQueueCard,
   CreditsTrendCard,
@@ -127,20 +126,17 @@ export default function DashboardPage() {
         {/* ── Main layout ────────────────────────────────────────── */}
         <div className={styles.mainCol}>
 
-          {/* 0. Next step suggestion — context-aware guidance */}
-          <NextStepCard />
-
-          {/* 1. Active Match — the match closest to now */}
+          {/* 0. Active Match — always at the top */}
           {matchDay.isMatchDay && <div className={styles.matchDayActiveMatch}><ActiveMatchCard /></div>}
           {!matchDay.isMatchDay && <ActiveMatchCard />}
 
-          {/* 1b. Upcoming Matches — next 5 matches with readiness */}
-          <UpcomingMatchesCard />
+          {/* 1. Next step suggestion — context-aware guidance */}
+          <NextStepCard />
 
-          {/* 1c. Past Matches — recent results with scores */}
-          <PastMatchesCard />
+          {/* 2. Matches — upcoming/past with tab switcher */}
+          <MatchesCard />
 
-          {/* 1d. Content Pipeline — processing → review → approved */}
+          {/* 3. Content Pipeline — processing → review → approved */}
           <ContentPipelineCard />
 
           {/* 2. Compact status row — only unique-value cards */}
