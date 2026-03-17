@@ -33,7 +33,7 @@ export const CONTENT_TYPES = {
     label: 'Tijdens de wedstrijd',
     sportRequired: true,
     items: [
-      { id: 'goal', label: 'Doelpunt Viering', icon: 'GC', subtype: 'goal', enabled: false },
+      { id: 'goal', label: 'Doelpunt Viering', icon: 'GC', subtype: 'goal', enabled: true },
       { id: 'score_update', label: 'Stand Update', icon: 'SU', subtype: 'score_update', enabled: true },
     ],
   },

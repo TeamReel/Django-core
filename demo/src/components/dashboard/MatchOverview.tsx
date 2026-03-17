@@ -81,25 +81,29 @@ export const MatchOverview: React.FC<MatchOverviewProps> = ({
     (match.metadata?.away_score as number | undefined),
   );
 
-  /** Subtypes that should NOT count towards readiness (disabled or conditionally excluded) */
-  const excludedSubtypes = new Set(
+  /** Subtypes that are visually disabled (not yet available) */
+  const disabledSubtypes = new Set(
     (['pre_match', 'during_match', 'post_match'] as const).flatMap(key => {
       const phase = CONTENT_TYPES[key];
       if (!phase) return [];
-      return phase.items
-        .filter(i => !i.enabled || (i.subtype === 'goal' && !hasGoals))
-        .map(i => i.subtype);
+      return phase.items.filter(i => !i.enabled).map(i => i.subtype);
     }),
   );
+
+  /** Subtypes excluded from readiness % (disabled + goal when no goals scored) */
+  const excludedFromReadiness = new Set([
+    ...disabledSubtypes,
+    ...(!hasGoals ? ['goal'] : []),
+  ]);
 
   // Overall readiness — only count enabled (and non-excluded) items
   const totalContentItems =
     (['pre_match', 'during_match', 'post_match'] as const).reduce((sum, key) => {
       const phase = CONTENT_TYPES[key];
       if (!phase) return sum;
-      return sum + phase.items.filter(i => !excludedSubtypes.has(i.subtype)).length;
+      return sum + phase.items.filter(i => !excludedFromReadiness.has(i.subtype)).length;
     }, 0);
-  const doneEnabledCount = sheet.contentDoneSubtypes.filter(s => !excludedSubtypes.has(s)).length;
+  const doneEnabledCount = sheet.contentDoneSubtypes.filter(s => !excludedFromReadiness.has(s)).length;
   const readinessPercent = totalContentItems > 0
     ? Math.round((doneEnabledCount / totalContentItems) * 100)
     : 0;
@@ -212,7 +216,7 @@ export const MatchOverview: React.FC<MatchOverviewProps> = ({
           { key: 'post_match' as const, phase: CONTENT_TYPES.post_match },
         ]).map(({ key, phase }) => {
           if (!phase) return null;
-          const enabledItems = phase.items.filter(i => !excludedSubtypes.has(i.subtype));
+          const enabledItems = phase.items.filter(i => !excludedFromReadiness.has(i.subtype));
           const total = enabledItems.length;
           const doneCount = enabledItems.filter(i =>
             sheet.contentDoneSubtypes.includes(i.subtype),
@@ -256,7 +260,7 @@ export const MatchOverview: React.FC<MatchOverviewProps> = ({
 
               <div className={`${styles.phaseItems} ${isExpanded ? styles.phaseItemsOpen : ''}`}>
                 {phase.items.map((item) => {
-                  const isDisabled = excludedSubtypes.has(item.subtype);
+                  const isDisabled = disabledSubtypes.has(item.subtype);
                   const isDone = !isDisabled && sheet.contentDoneSubtypes.includes(item.subtype);
                   const ItemIcon = SUBTYPE_ICONS[item.subtype] ?? FileImage;
                   return (

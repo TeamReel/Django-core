@@ -52,7 +52,7 @@ export const MatchSheet: React.FC<MatchSheetProps> = ({ match, sheet, onNavigate
     (match.metadata?.home_score as number | undefined) ||
     (match.metadata?.away_score as number | undefined),
   );
-  const excludedSubtypes = new Set(
+  const excludedFromReadiness = new Set(
     (['pre_match', 'during_match', 'post_match'] as const).flatMap(key => {
       const phase = CONTENT_TYPES[key];
       if (!phase) return [];
@@ -65,9 +65,9 @@ export const MatchSheet: React.FC<MatchSheetProps> = ({ match, sheet, onNavigate
     (['pre_match', 'during_match', 'post_match'] as const).reduce((sum, key) => {
       const phase = CONTENT_TYPES[key];
       if (!phase) return sum;
-      return sum + phase.items.filter(i => !excludedSubtypes.has(i.subtype)).length;
+      return sum + phase.items.filter(i => !excludedFromReadiness.has(i.subtype)).length;
     }, 0);
-  const doneEnabledCount = sheet.contentDoneSubtypes.filter(s => !excludedSubtypes.has(s)).length;
+  const doneEnabledCount = sheet.contentDoneSubtypes.filter(s => !excludedFromReadiness.has(s)).length;
   const readinessPercent = totalContentItems > 0
     ? Math.round((doneEnabledCount / totalContentItems) * 100)
     : 0;
