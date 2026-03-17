@@ -14,9 +14,10 @@ import React, { useState, useCallback } from 'react';
 import {
   Package, Building2, Shield, Users,
   CheckCircle2, Circle, ChevronRight, AlertTriangle,
-  ImageIcon, Sparkles,
+  ImageIcon, Sparkles, Upload,
 } from 'lucide-react';
 import { NavigationSheet } from '../ui/NavigationSheet';
+import { UploadSheet } from './UploadSheet';
 import {
   useMediaReadiness,
   MEMBER_MEDIA_TYPES,
@@ -61,6 +62,7 @@ function percentClass(pct: number): string {
 export const MediaReadinessCard: React.FC = () => {
   const data = useMediaReadiness();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
   const [view, setView] = useState<SheetView>({ level: 'overview' });
   const [history, setHistory] = useState<SheetView[]>([]);
 
@@ -193,9 +195,20 @@ export const MediaReadinessCard: React.FC = () => {
                 <span className={styles.assetVariant}>Niet aanwezig</span>
               )}
             </div>
-            <span className={`${styles.assetCheck} ${asset.present ? styles.assetCheckOk : styles.assetCheckMissing}`}>
-              {asset.present ? <CheckCircle2 size={16} /> : <Circle size={16} />}
-            </span>
+            {!asset.present ? (
+              <button
+                className={styles.assetActionBtn}
+                onClick={() => setUploadSheetOpen(true)}
+                aria-label={`Upload ${asset.label}`}
+              >
+                <Upload size={14} />
+                <span>Upload</span>
+              </button>
+            ) : (
+              <span className={`${styles.assetCheck} ${styles.assetCheckOk}`}>
+                <CheckCircle2 size={16} />
+              </span>
+            )}
           </div>
         ))}
       </div>
@@ -203,12 +216,18 @@ export const MediaReadinessCard: React.FC = () => {
       {presentCount < assets.length && (() => {
         const missing = assets.length - presentCount;
         return (
-          <div className={`${styles.callout} ${styles.calloutWarn}`}>
-            <span className={`${styles.calloutIcon} ${styles.calloutIconWarn}`}>
-              <AlertTriangle size={14} />
+          <div
+            className={`${styles.callout} ${styles.calloutAction}`}
+            onClick={() => setUploadSheetOpen(true)}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setUploadSheetOpen(true); } }}
+            role="button"
+            tabIndex={0}
+          >
+            <span className={`${styles.calloutIcon} ${styles.calloutIconAction}`}>
+              <Upload size={14} />
             </span>
             <span className={styles.calloutText}>
-              {missing} asset{missing > 1 ? 's' : ''} ontbre{missing > 1 ? 'ken' : 'ekt'}
+              {missing} asset{missing > 1 ? 's' : ''} uploaden
             </span>
             <span className={styles.calloutArrow}><ChevronRight size={14} /></span>
           </div>
@@ -296,6 +315,14 @@ export const MediaReadinessCard: React.FC = () => {
       <div className={styles.typeGrid}>
         {MEMBER_MEDIA_TYPES.map(type => {
           const done = member.completedTypes.has(type.key);
+          const handleGenerateType = () => {
+            closeSheet();
+            window.dispatchEvent(
+              new CustomEvent('teamreel:open-quick-create', {
+                detail: { flow: 'content', subtype: type.key },
+              }),
+            );
+          };
           return (
             <div key={type.key} className={styles.assetRow} data-present={done}>
               <div className={styles.assetThumb}>
@@ -309,9 +336,20 @@ export const MediaReadinessCard: React.FC = () => {
                   {done ? 'Gegenereerd' : 'Niet aanwezig'}
                 </span>
               </div>
-              <span className={`${styles.assetCheck} ${done ? styles.assetCheckOk : styles.assetCheckMissing}`}>
-                {done ? <CheckCircle2 size={16} /> : <Circle size={16} />}
-              </span>
+              {!done ? (
+                <button
+                  className={styles.assetActionBtn}
+                  onClick={handleGenerateType}
+                  aria-label={`Genereer ${type.label}`}
+                >
+                  <Sparkles size={14} />
+                  <span>Genereer</span>
+                </button>
+              ) : (
+                <span className={`${styles.assetCheck} ${styles.assetCheckOk}`}>
+                  <CheckCircle2 size={16} />
+                </span>
+              )}
             </div>
           );
         })}
@@ -414,6 +452,12 @@ export const MediaReadinessCard: React.FC = () => {
       >
         {sheetContent}
       </NavigationSheet>
+
+      {/* Inline upload sheet for club/team assets */}
+      <UploadSheet
+        isOpen={uploadSheetOpen}
+        onClose={() => setUploadSheetOpen(false)}
+      />
     </>
   );
 };

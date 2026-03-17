@@ -27,6 +27,10 @@ export interface UseMatchSheetReturn {
   openContentSheet: () => void;
   closeContentSheet: () => void;
 
+  // Pending auto-lineup (consumed by MatchSheetShell)
+  pendingAutoLineup: boolean;
+  clearPendingAutoLineup: () => void;
+
   // Data
   contentCount: number;
   contentDoneSubtypes: string[];
@@ -58,6 +62,7 @@ export function useMatchSheet(
   const [sheetOpen, setSheetOpen] = useState(false);
   const [lineupSheetOpen, setLineupSheetOpen] = useState(false);
   const [contentSheetOpen, setContentSheetOpen] = useState(false);
+  const [pendingAutoLineup, setPendingAutoLineup] = useState(false);
 
   const [contentCount, setContentCount] = useState(0);
   const [contentDoneSubtypes, setContentDoneSubtypes] = useState<string[]>([]);
@@ -74,11 +79,8 @@ export function useMatchSheet(
       if (detail?.matchId === match?.id) {
         setSheetOpen(true);
         if (detail.autoOpenLineup) {
-          // Small delay to let sheet animate, then open lineup sub-sheet
-          setTimeout(() => {
-            setSheetOpen(false);
-            setLineupSheetOpen(true);
-          }, 300);
+          // Set flag — consumed by MatchSheetShell to goTo('matchLineup')
+          setPendingAutoLineup(true);
         }
       }
     };
@@ -174,6 +176,9 @@ export function useMatchSheet(
     contentSheetOpen,
     openContentSheet: useCallback(() => { setSheetOpen(false); setContentSheetOpen(true); }, []),
     closeContentSheet: useCallback(() => setContentSheetOpen(false), []),
+
+    pendingAutoLineup,
+    clearPendingAutoLineup: useCallback(() => setPendingAutoLineup(false), []),
 
     contentCount,
     contentDoneSubtypes,

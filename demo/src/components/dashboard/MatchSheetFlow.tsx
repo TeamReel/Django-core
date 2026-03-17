@@ -138,6 +138,15 @@ function MatchSheetShell({ isOpen, onClose, match, sheet, onNavigateToMatch }: M
   // ── Lineup editing state (for matchLineup view) ───────
   const lineup = useLineupSheet(match, sheet.handleLineupSaved);
 
+  // ── Auto-open lineup when triggered via SmartActionsCard ──
+  useEffect(() => {
+    if (isOpen && sheet.pendingAutoLineup) {
+      sheet.clearPendingAutoLineup();
+      // Small delay to let sheet animate open, then navigate to lineup
+      requestAnimationFrame(() => goTo('matchLineup'));
+    }
+  }, [isOpen, sheet.pendingAutoLineup, sheet.clearPendingAutoLineup, goTo]);
+
   // ── Active match state ────────────────────────────────
   const [isActiveMatch, setIsActiveMatch] = useState(false);
 
