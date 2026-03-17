@@ -231,6 +231,13 @@
   outline-offset: 2px;
 }
 
+/* Disabled / coming-soon content cards */
+.contentCardDisabled {
+  opacity: 0.45;
+  cursor: default;
+  pointer-events: none;
+}
+
 .contentCardBody {
   flex: 1;
   min-width: 0;

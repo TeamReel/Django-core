@@ -75,13 +75,33 @@ export const MatchOverview: React.FC<MatchOverviewProps> = ({
   // Fetch media for "Bekijk" preview URLs
   const content = useContentSheet(match);
 
-  // Overall readiness
+  // Goal conditional: only count goal subtype when goals were actually scored
+  const hasGoals = Boolean(
+    (match.metadata?.home_score as number | undefined) ||
+    (match.metadata?.away_score as number | undefined),
+  );
+
+  /** Subtypes that should NOT count towards readiness (disabled or conditionally excluded) */
+  const excludedSubtypes = new Set(
+    (['pre_match', 'during_match', 'post_match'] as const).flatMap(key => {
+      const phase = CONTENT_TYPES[key];
+      if (!phase) return [];
+      return phase.items
+        .filter(i => !i.enabled || (i.subtype === 'goal' && !hasGoals))
+        .map(i => i.subtype);
+    }),
+  );
+
+  // Overall readiness — only count enabled (and non-excluded) items
   const totalContentItems =
-    (CONTENT_TYPES.pre_match?.items.length ?? 0) +
-    (CONTENT_TYPES.during_match?.items.length ?? 0) +
-    (CONTENT_TYPES.post_match?.items.length ?? 0);
+    (['pre_match', 'during_match', 'post_match'] as const).reduce((sum, key) => {
+      const phase = CONTENT_TYPES[key];
+      if (!phase) return sum;
+      return sum + phase.items.filter(i => !excludedSubtypes.has(i.subtype)).length;
+    }, 0);
+  const doneEnabledCount = sheet.contentDoneSubtypes.filter(s => !excludedSubtypes.has(s)).length;
   const readinessPercent = totalContentItems > 0
-    ? Math.round((sheet.contentDoneSubtypes.length / totalContentItems) * 100)
+    ? Math.round((doneEnabledCount / totalContentItems) * 100)
     : 0;
 
   // Handle "Bekijk" click — find media URL and show in preview modal
@@ -156,7 +176,7 @@ export const MatchOverview: React.FC<MatchOverviewProps> = ({
           />
         </div>
         <span className={styles.readinessBarSub}>
-          {sheet.contentDoneSubtypes.length} van {totalContentItems} items{hasLineup ? ' · Opstelling klaar' : ''}
+          {doneEnabledCount} van {totalContentItems} items{hasLineup ? ' · Opstelling klaar' : ''}
         </span>
       </div>
 
@@ -192,12 +212,13 @@ export const MatchOverview: React.FC<MatchOverviewProps> = ({
           { key: 'post_match' as const, phase: CONTENT_TYPES.post_match },
         ]).map(({ key, phase }) => {
           if (!phase) return null;
-          const total = phase.items.length;
-          const doneCount = phase.items.filter(i =>
+          const enabledItems = phase.items.filter(i => !excludedSubtypes.has(i.subtype));
+          const total = enabledItems.length;
+          const doneCount = enabledItems.filter(i =>
             sheet.contentDoneSubtypes.includes(i.subtype),
           ).length;
           const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
-          const allDone = doneCount === total;
+          const allDone = total > 0 && doneCount === total;
           const isExpanded = sheet.expandedPhases.has(key);
           const contentPhase = PHASE_MAP[key];
 
@@ -235,20 +256,23 @@ export const MatchOverview: React.FC<MatchOverviewProps> = ({
 
               <div className={`${styles.phaseItems} ${isExpanded ? styles.phaseItemsOpen : ''}`}>
                 {phase.items.map((item) => {
-                  const isDone = sheet.contentDoneSubtypes.includes(item.subtype);
+                  const isDisabled = excludedSubtypes.has(item.subtype);
+                  const isDone = !isDisabled && sheet.contentDoneSubtypes.includes(item.subtype);
                   const ItemIcon = SUBTYPE_ICONS[item.subtype] ?? FileImage;
                   return (
                     <button
                       key={item.id}
-                      className={styles.phaseItem}
+                      className={`${styles.phaseItem} ${isDisabled ? styles.phaseItemDisabled : ''}`}
                       onClick={() => {
+                        if (isDisabled) return;
                         if (isDone) {
                           handlePreview(item.subtype, item.label);
                         } else {
                           onStartContent(item.subtype, contentPhase);
                         }
                       }}
-                      aria-label={`${item.label}: ${isDone ? 'bekijk' : 'maak aan'}`}
+                      disabled={isDisabled}
+                      aria-label={`${item.label}: ${isDisabled ? 'binnenkort beschikbaar' : isDone ? 'bekijk' : 'maak aan'}`}
                     >
                       <span className={`${styles.phaseItemIcon} ${isDone ? styles.phaseItemIconDone : ''}`}>
                         {isDone ? (
@@ -260,7 +284,9 @@ export const MatchOverview: React.FC<MatchOverviewProps> = ({
                       <span className={`${styles.phaseItemLabel} ${isDone ? styles.phaseItemDone : ''}`}>
                         {item.label}
                       </span>
-                      {isDone ? (
+                      {isDisabled ? (
+                        <span className={styles.phaseItemAction} data-variant="disabled">Binnenkort</span>
+                      ) : isDone ? (
                         <span className={styles.phaseItemAction} data-variant="done">Bekijk</span>
                       ) : (
                         <span className={styles.phaseItemAction} data-variant="create">Maak →</span>

@@ -98,7 +98,7 @@ export function ContentTypeStep() {
         {phases.map(({ key, label, icon: Icon }) => {
           const isActive = selectedContentPhase === key;
           const isRecommended = matchPhase.confidence === 'auto' && matchPhase.phase === key;
-          const count = CONTENT_TYPES[key].length;
+          const count = CONTENT_TYPES[key].filter(c => c.enabled).length;
           return (
             <button
               key={key}
@@ -144,20 +144,23 @@ export function ContentTypeStep() {
             <header className={styles.contentGroupHeader}>
               <GroupIcon size={14} className={styles.contentGroupIcon} data-output={type} />
               <span className={styles.contentGroupLabel}>{groupLabel}</span>
-              <span className={styles.contentGroupCount}>{items.length}</span>
+              <span className={styles.contentGroupCount}>{items.filter(c => c.enabled).length}</span>
             </header>
 
             <div className={styles.contentGroupGrid} data-output={type}>
               {items.map((content) => {
                 const Icon = content.icon;
                 const needsLineup = LINEUP_REQUIRED_SUBTYPES.has(content.subtype);
+                const isDisabled = !content.enabled;
 
                 return (
                   <button
                     key={content.key}
-                    onClick={() => handleContentSelect(content)}
-                    className={styles.contentCard}
+                    onClick={() => !isDisabled && handleContentSelect(content)}
+                    className={`${styles.contentCard} ${isDisabled ? styles.contentCardDisabled : ''}`}
                     data-output={content.outputType}
+                    disabled={isDisabled}
+                    aria-disabled={isDisabled}
                   >
                     <div className={styles.thumbArea} data-output={content.outputType}>
                       {content.thumbnail ? (
@@ -169,10 +172,13 @@ export function ContentTypeStep() {
                     <div className={styles.contentCardBody}>
                       <div className={styles.contentCardTitle}>{content.label}</div>
                       <div className={styles.contentCardDesc}>
-                        {content.description}{needsLineup && ' · Opstelling nodig'}
+                        {isDisabled
+                          ? 'Binnenkort beschikbaar'
+                          : <>{content.description}{needsLineup && ' · Opstelling nodig'}</>
+                        }
                       </div>
                     </div>
-                    <ChevronRight size={18} className={styles.contentCardChevron} />
+                    {!isDisabled && <ChevronRight size={18} className={styles.contentCardChevron} />}
                   </button>
                 );
               })}

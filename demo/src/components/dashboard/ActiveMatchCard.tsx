@@ -120,13 +120,29 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const relTime = formatRelativeTime(date, 'nl');
   const urgency = getDateUrgency(date);
 
-  // Readiness calculation (H4)
+  // Readiness calculation (H4) — only count enabled items
+  const hasGoals = Boolean(
+    (match.metadata?.home_score as number | undefined) ||
+    (match.metadata?.away_score as number | undefined),
+  );
+  const excludedSubtypes = new Set(
+    (['pre_match', 'during_match', 'post_match'] as const).flatMap(key => {
+      const phase = CONTENT_TYPES[key];
+      if (!phase) return [];
+      return phase.items
+        .filter(i => !i.enabled || (i.subtype === 'goal' && !hasGoals))
+        .map(i => i.subtype);
+    }),
+  );
   const totalContentItems =
-    (CONTENT_TYPES.pre_match?.items.length ?? 0) +
-    (CONTENT_TYPES.during_match?.items.length ?? 0) +
-    (CONTENT_TYPES.post_match?.items.length ?? 0);
+    (['pre_match', 'during_match', 'post_match'] as const).reduce((sum, key) => {
+      const phase = CONTENT_TYPES[key];
+      if (!phase) return sum;
+      return sum + phase.items.filter(i => !excludedSubtypes.has(i.subtype)).length;
+    }, 0);
+  const doneEnabledCount = sheet.contentDoneSubtypes.filter(s => !excludedSubtypes.has(s)).length;
   const readinessPercent = totalContentItems > 0
-    ? Math.round((sheet.contentDoneSubtypes.length / totalContentItems) * 100)
+    ? Math.round((doneEnabledCount / totalContentItems) * 100)
     : 0;
 
   return (
