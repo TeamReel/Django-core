@@ -36,9 +36,11 @@ export function TeamBeheerTab({
 
   return (
     <div>
-      <div className={s.identityToggle}>
+      <div className={s.identityToggle} role="tablist" aria-label="Beheer secties">
         <button
           type="button"
+          role="tab"
+          aria-selected={subtab === 'assets'}
           className={`${s.identityToggleBtn} ${subtab === 'assets' ? s.identityToggleBtnActive : ''}`}
           onClick={() => setSubtab('assets')}
         >
@@ -46,6 +48,8 @@ export function TeamBeheerTab({
         </button>
         <button
           type="button"
+          role="tab"
+          aria-selected={subtab === 'kits'}
           className={`${s.identityToggleBtn} ${subtab === 'kits' ? s.identityToggleBtnActive : ''}`}
           onClick={() => setSubtab('kits')}
         >
@@ -53,6 +57,8 @@ export function TeamBeheerTab({
         </button>
         <button
           type="button"
+          role="tab"
+          aria-selected={subtab === 'credits'}
           className={`${s.identityToggleBtn} ${subtab === 'credits' ? s.identityToggleBtnActive : ''}`}
           onClick={() => setSubtab('credits')}
         >

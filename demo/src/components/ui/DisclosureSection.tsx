@@ -40,6 +40,7 @@ export function DisclosureSection({
   className,
 }: DisclosureSectionProps) {
   const autoId = useId();
+  const triggerId = `ds-trigger-${autoId}`;
   const panelId = `ds-panel-${autoId}`;
 
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
@@ -60,6 +61,7 @@ export function DisclosureSection({
     <div className={`${ds.root}${className ? ` ${className}` : ''}`}>
       <button
         type="button"
+        id={triggerId}
         className={ds.trigger}
         aria-expanded={isOpen}
         aria-controls={panelId}
@@ -80,7 +82,7 @@ export function DisclosureSection({
       <div
         id={panelId}
         role="region"
-        aria-labelledby={undefined}
+        aria-labelledby={triggerId}
         className={ds.panel}
         hidden={!isOpen}
       >

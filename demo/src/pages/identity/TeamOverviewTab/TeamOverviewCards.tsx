@@ -297,6 +297,8 @@ export function SeasonsCard({
 }: SeasonsCardProps) {
   const { orgKey, clubKey, teamKey } = routeKeys;
 
+  // Unique id prefix for comp aria-controls
+  const compIdPrefix = React.useId();
   // Expand/collapse per-competition
   const [expandedComps, setExpandedComps] = useState<Set<string>>(new Set());
   const toggleComp = (id: string) =>
@@ -365,6 +367,7 @@ export function SeasonsCard({
                           className={ov.compHeader}
                           onClick={() => toggleComp(cid)}
                           aria-expanded={isCompOpen}
+                          aria-controls={`comp-body-${compIdPrefix}-${cid}`}
                         >
                           <span className={ov.compName}>{String(comp?.name || 'Competitie')}</span>
                           <span className={ov.compRight}>
@@ -376,7 +379,7 @@ export function SeasonsCard({
                         </button>
 
                         {isCompOpen && (
-                          <div className={ov.compBody}>
+                          <div id={`comp-body-${compIdPrefix}-${cid}`} className={ov.compBody}>
                             {compPath && (
                               <button
                                 type="button"
