@@ -58,9 +58,13 @@ The project is divided into **18 Development Phases**. Click a phase to see its 
 *   15 — [Frontend UX Debt](done/15_frontend-ux-debt/index.md) (15/15 ✅)
 *   16 — [Frontend Technical Debt](done/16_frontend-technical-debt/index.md) (15/15 ✅)
 
-### 🚧 Active Roadmap
+### 🚧 Active Roadmaps
 
 *   17 — [Frontend Performance & Accessibility](17_frontend-performance-a11y/index.md) (0/9 🚧)
+
+### ✅ Recently Completed
+
+*   23 — [Dashboard Match Status & Past Matches](done/23_dashboard-match-status/index.md) (4/4 ✅)
 
 ### Planned Phases
 *   **[Phase 11: Frontend & Visual Development](phases/planned/phase-11-frontend-and-visual-development.md)** (Modules 045-047) 📋

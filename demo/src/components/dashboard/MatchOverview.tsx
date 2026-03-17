@@ -11,7 +11,7 @@ import {
   ChevronRight, ChevronDown, MapPin, Calendar,
   CheckCircle2, ExternalLink, Users, FileImage,
   Image, Video, Play, Camera, Music, Target, Hash,
-  Flag, BarChart3, Film,
+  Flag, BarChart3, Film, Star,
 } from 'lucide-react';
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
@@ -47,6 +47,8 @@ const PHASE_MAP: Record<string, ContentPhase> = {
 interface MatchOverviewProps {
   match: Match;
   sheet: UseMatchSheetReturn;
+  isActiveMatch: boolean;
+  onToggleActive: () => void;
   onNavigateToMatch: (tab?: string) => void;
   onStartContent: (subtype: string, phase: ContentPhase) => void;
   onBrowseContent: (phase?: ContentPhase) => void;
@@ -57,6 +59,8 @@ interface MatchOverviewProps {
 export const MatchOverview: React.FC<MatchOverviewProps> = ({
   match,
   sheet,
+  isActiveMatch,
+  onToggleActive,
   onNavigateToMatch,
   onStartContent,
   onBrowseContent,
@@ -97,6 +101,15 @@ export const MatchOverview: React.FC<MatchOverviewProps> = ({
         <span className={`${styles.badge} ${styles[`badge_${sheet.matchState}`]}`}>
           {sheet.matchState === 'live' ? 'LIVE' : sheet.matchState === 'upcoming' ? 'Aankomend' : 'Gespeeld'}
         </span>
+        <button
+          type="button"
+          className={`${styles.activeBadge} ${isActiveMatch ? styles.activeBadgeOn : ''}`}
+          onClick={onToggleActive}
+          title={isActiveMatch ? 'Niet meer actief' : 'Markeer als actief'}
+          aria-pressed={isActiveMatch}
+        >
+          <Star size={14} /> {isActiveMatch ? 'Actief' : 'Activeer'}
+        </button>
         <span className={`${styles.timeLabel} ${styles[`time_${urgency}`]}`}>
           {relTime}
         </span>

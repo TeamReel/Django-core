@@ -17,6 +17,8 @@ export const queryKeys = {
     closest: (projectId: string) => ['activities', 'closest', projectId] as const,
     upcoming: (filters?: Record<string, string>) =>
       ['activities', 'upcoming', filters] as const,
+    past: (filters?: Record<string, string>) =>
+      ['activities', 'past', filters] as const,
   },
 
   // Members

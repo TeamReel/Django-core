@@ -82,11 +82,9 @@ Before implementing any **large change** (new page, new feature, multi-file refa
 > **Scope:** `{files/folders affected}`
 
 ## Doel
-
 {1-2 sentences: what this achieves for the user}
 
 ## Huidige staat
-
 ### Wat werkt ✅
 {existing functionality}
 
@@ -94,24 +92,37 @@ Before implementing any **large change** (new page, new feature, multi-file refa
 {problems to solve}
 
 ## Design beslissingen
-
 | Vraag | Besluit |
-|-------|---------|
+|-------|--------|
 | {decision 1} | {choice + reasoning} |
 
 ## Fasering
 
 ### H0 — {Foundation}
-- {task 1}
-- {task 2}
+> **Effort:** {estimate} | **Impact:** {what it unlocks}
 
-### H1 — {Core features} (if needed)
-- {task 1}
+**To do:**
+- [ ] {task 1}
+- [ ] {task 2}
 
-## Acceptatiecriteria
-
+**Done criteria:**
 - [ ] {criterion 1}
 - [ ] {criterion 2}
+
+### H1 — {Core features}
+> **Effort:** {estimate} | **Impact:** {what it unlocks}
+
+**To do:**
+- [ ] {task 1}
+
+**Done criteria:**
+- [ ] {criterion 1}
+
+## Acceptatiecriteria (geheel)
+- [ ] {overall criterion 1}
+- [ ] Build passes (`npx tsc --noEmit` + `npx vite build`)
+- [ ] No new `any` types
+- [ ] All interactive elements accessible
 ```
 
 3. **Show the spec to the user** and ask for confirmation before implementing

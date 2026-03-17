@@ -12,12 +12,16 @@ Execute a roadmap phase from spec to production-ready code.
 
 ### Step 1: Read the Spec
 
-Roadmap specs live in: `documents/02-roadmap/`
+Roadmap specs live in: `documents/02-roadmap/{number}_{name}/index.md`
+
+Each phase has two sections:
+- **To do:** — checklist of tasks to implement
+- **Done criteria:** — checklist of conditions that prove the phase is complete
 
 Extract:
 - **Phase name** and scope
-- **Files to create/modify**
-- **Acceptance criteria**
+- **To do items** — your implementation tasks
+- **Done criteria** — what to verify after implementing
 - **Dependencies** on previous phases
 
 ### Step 2: Research Current State
@@ -80,11 +84,18 @@ Roadmap #XX Phase HY"
 git push origin main
 ```
 
-### Step 7: Move Spec to Done
+### Step 7: Update Spec & Move to Done
 
+After each phase, update the spec:
+1. Check off completed "To do" items (`- [x]`)
+2. Check off satisfied "Done criteria" (`- [x]`)
+
+After ALL phases of a roadmap are complete:
 ```bash
-# If all phases of a roadmap are complete
-git mv documents/02-roadmap/<roadmap-file>.md documents/02-roadmap/done/
+# Update spec status to ✅ Afgerond
+# Move folder to done/
+git mv documents/02-roadmap/{number}_{name}/ documents/02-roadmap/done/
+# Update index.md: move entry from Active to Done
 git commit -m "docs: move roadmap #XX to done"
 git push
 ```

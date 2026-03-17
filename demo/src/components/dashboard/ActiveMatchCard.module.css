@@ -254,6 +254,51 @@
   background: var(--app-success-bg);
 }
 
+/* ── Active match badge (sheet header toggle) ──────── */
+.activeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  padding: var(--space-1) var(--space-2);
+  min-height: 44px;
+  min-width: 44px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--app-border);
+  background: var(--app-bg);
+  color: var(--app-muted-text);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-default),
+              color var(--duration-fast) var(--ease-default),
+              border-color var(--duration-fast) var(--ease-default);
+}
+
+.activeBadge:focus-visible {
+  outline: 2px solid var(--app-primary, var(--color-indigo-500));
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .activeBadge:hover {
+    background: var(--app-success-bg, var(--color-green-50));
+    color: var(--app-success, var(--color-green-700));
+    border-color: var(--app-success-ring, var(--color-green-200));
+  }
+}
+
+.activeBadgeOn {
+  background: var(--app-success-bg, var(--color-green-50));
+  color: var(--app-success, var(--color-green-700));
+  border-color: var(--app-success-ring, var(--color-green-200));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .activeBadge {
+    transition: none;
+  }
+}
+
 /* ── Badge bump animation (after save/generate) ───── */
 .badgeBump {
   animation: badge-bump 350ms var(--ease-default, cubic-bezier(0.4, 0, 0.2, 1));

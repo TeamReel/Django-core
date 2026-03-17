@@ -7,6 +7,7 @@ import { AlertTriangle, Zap } from 'lucide-react';
 import {
   ActiveMatchCard,
   UpcomingMatchesCard,
+  PastMatchesCard,
   SquadReadinessCard,
   AIQueueCard,
   CreditsTrendCard,
@@ -136,7 +137,10 @@ export default function DashboardPage() {
           {/* 1b. Upcoming Matches — next 5 matches with readiness */}
           <UpcomingMatchesCard />
 
-          {/* 1c. Content Pipeline — processing → review → approved */}
+          {/* 1c. Past Matches — recent results with scores */}
+          <PastMatchesCard />
+
+          {/* 1d. Content Pipeline — processing → review → approved */}
           <ContentPipelineCard />
 
           {/* 2. Compact status row — only unique-value cards */}

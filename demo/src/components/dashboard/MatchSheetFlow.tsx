@@ -16,10 +16,11 @@
  * All content creation steps are embedded inline so the user never leaves
  * the match panel. Back navigation returns to the overview at any point.
  */
-import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Trophy, Users, FileImage } from 'lucide-react';
 import { Spinner } from '@django-core/design-system';
+import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 
 import { NavigationSheet } from '../ui/NavigationSheet';
 import { WizardProvider, WizardStep, useWizard, type WizardStepConfig } from '../Wizard';
@@ -136,6 +137,33 @@ function MatchSheetShell({ isOpen, onClose, match, sheet, onNavigateToMatch }: M
 
   // ── Lineup editing state (for matchLineup view) ───────
   const lineup = useLineupSheet(match, sheet.handleLineupSaved);
+
+  // ── Active match state ────────────────────────────────
+  const [isActiveMatch, setIsActiveMatch] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || !match?.id) return;
+    let cancelled = false;
+    getActiveContext().then(ctx => {
+      if (!cancelled) setIsActiveMatch(ctx?.match?.id === match.id);
+    }).catch(() => { /* ignore */ });
+    return () => { cancelled = true; };
+  }, [isOpen, match?.id]);
+
+  const handleToggleActive = useCallback(async () => {
+    if (!match?.id) return;
+    const next = !isActiveMatch;
+    setIsActiveMatch(next);
+    try {
+      if (next) {
+        await setActiveContext('match', match.id);
+      } else {
+        await setActiveContext('match');
+      }
+    } catch {
+      setIsActiveMatch(!next); // rollback on error
+    }
+  }, [match?.id, isActiveMatch]);
 
   // ── Template resolution (for content creation) ────────
   const { fetchTemplates, selectTemplateForSubtype } = useTemplatesData();
@@ -284,6 +312,8 @@ function MatchSheetShell({ isOpen, onClose, match, sheet, onNavigateToMatch }: M
           <MatchOverview
             match={match}
             sheet={sheet}
+            isActiveMatch={isActiveMatch}
+            onToggleActive={handleToggleActive}
             onNavigateToMatch={onNavigateToMatch}
             onStartContent={handleStartContent}
             onBrowseContent={handleBrowseContent}
