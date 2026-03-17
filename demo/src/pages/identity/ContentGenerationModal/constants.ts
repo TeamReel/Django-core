@@ -34,7 +34,7 @@ export const CONTENT_TYPES = {
     sportRequired: true,
     items: [
       { id: 'goal', label: 'Doelpunt Viering', icon: 'GC', subtype: 'goal', enabled: true },
-      { id: 'score_update', label: 'Stand Update', icon: 'SU', subtype: 'score_update', enabled: true },
+      { id: 'score_update', label: 'Stand Update', icon: 'SU', subtype: 'score_update', enabled: false },
     ],
   },
   post_match: {

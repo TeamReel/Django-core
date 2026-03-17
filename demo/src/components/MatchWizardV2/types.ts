@@ -74,7 +74,7 @@ export const CONTENT_TYPES: Record<ContentPhase, ContentType[]> = {
   ],
   during: [
     { key: 'goal', subtype: 'goal', label: 'Goal Celebration', icon: Zap, description: 'Doelpunt vieren', templateType: 'during_match', outputType: 'video', enabled: true },
-    { key: 'score_update', subtype: 'score_update', label: 'Score Update', icon: FileText, description: 'Tussenstand delen', templateType: 'during_match', outputType: 'image', enabled: true },
+    { key: 'score_update', subtype: 'score_update', label: 'Score Update', icon: FileText, description: 'Tussenstand delen', templateType: 'during_match', outputType: 'image', enabled: false },
   ],
   post: [
     { key: 'end_score', subtype: 'end_score', label: 'Eindstand', icon: FileText, description: 'Uitslag delen', templateType: 'post_match', outputType: 'image', enabled: false },
