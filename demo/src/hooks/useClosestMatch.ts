@@ -17,6 +17,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/api';
 import type { Match } from '../components/dashboard/ActiveMatchCard';
+import { getActiveContext } from '../utils/activeContext';
 import { queryKeys } from '../utils/queryKeys';
 
 export interface ClosestMatchData {
@@ -48,13 +49,34 @@ async function fetchClosestMatch(projectId?: string): Promise<ClosestMatchData> 
   const all = [...pastData.results, ...futureData.results];
   if (all.length === 0) return { match: null, contentCount: 0, lineupCount: 0, contentDoneSubtypes: [] };
 
-  // Pick match closest to now
-  const nowMs = Date.now();
-  const closest = all.reduce((best, m) => {
-    const diff = Math.abs(new Date(m.start_time).getTime() - nowMs);
-    const bestDiff = Math.abs(new Date(best.start_time).getTime() - nowMs);
-    return diff < bestDiff ? m : best;
-  });
+  // ── Match selection priority ──────────────────────────
+  // 1. Explicitly active match (set via setActiveContext)
+  // 2. Next upcoming match (forward-looking dashboard)
+  // 3. Most recent past match (fallback)
+  let closest: Match;
+
+  // Check if user has an explicitly active match
+  let activeMatchId: string | undefined;
+  try {
+    const ctx = await getActiveContext();
+    activeMatchId = ctx?.match?.id ?? undefined;
+  } catch {
+    // ignore — active context may not be available
+  }
+
+  const activeFromContext = activeMatchId
+    ? all.find(m => m.id === activeMatchId)
+    : undefined;
+
+  if (activeFromContext) {
+    closest = activeFromContext;
+  } else if (futureData.results.length > 0) {
+    // Prefer next upcoming match
+    closest = futureData.results[0];
+  } else {
+    // Fallback: most recent past match
+    closest = pastData.results[0];
+  }
 
   let lineupCount = 0;
   let lineupFormation: string | undefined;
