@@ -85,6 +85,11 @@
   .clickableRowHover:hover {
   background-color: var(--app-surface-2, #2a2a3e);
   }
+
+.clickableRowHover:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ─── Background Selector Button ─────────────────────────────── */

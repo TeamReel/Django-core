@@ -71,6 +71,11 @@
   .collapseButton:hover {
   background-color: rgba(255, 255, 255, 0.2);
   }
+
+.collapseButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ── Nav item (NavLink) ── */
@@ -164,6 +169,11 @@
   .expandButton:hover {
   background-color: rgba(255, 255, 255, 0.1);
   }
+
+.expandButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ── Panel B: Secondary sidebar ── */

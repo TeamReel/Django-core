@@ -74,6 +74,11 @@
   .actionButton:not([data-executing]):hover {
   background-color: var(--action-hover-bg);
   }
+
+.actionButton:not([data-executing]):focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .commentDialog {
@@ -126,6 +131,11 @@
   .confirmButton:hover {
   background-color: var(--color-red-600);
   }
+
+.confirmButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .confirmButton:active {
@@ -148,6 +158,11 @@
   .cancelButton:hover {
   background-color: var(--app-surface-2, var(--app-surface-2));
   }
+
+.cancelButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .cancelButton:active {

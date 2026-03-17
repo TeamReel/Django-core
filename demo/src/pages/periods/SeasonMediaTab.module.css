@@ -186,6 +186,11 @@
   .smartBatchChip:hover {
   background: rgba(34, 197, 94, 0.20);
   }
+
+.smartBatchChip:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .mobileLegendItem {
@@ -315,6 +320,11 @@
   .mediaCardName:hover {
   text-decoration: underline;
   }
+
+.mediaCardName:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ── Score (plain text, replaces Badge) ── */

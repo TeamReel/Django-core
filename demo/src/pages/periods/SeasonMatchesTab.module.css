@@ -476,6 +476,11 @@
   .actionBtn:hover {
   background: var(--app-surface-2, rgba(255, 255, 255, 0.06));
   }
+
+.actionBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .actionBtnPrimary {
@@ -500,6 +505,11 @@
   .actionBtnPrimary:hover {
   background: var(--color-blue-500-alpha-25, rgba(59, 130, 246, 0.25));
   }
+
+.actionBtnPrimary:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ── Empty state ── */

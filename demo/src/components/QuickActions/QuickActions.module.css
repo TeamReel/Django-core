@@ -32,6 +32,11 @@
   background: var(--app-bg);
   border-color: var(--app-primary);
   }
+
+.action:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .action:active {

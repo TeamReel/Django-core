@@ -147,6 +147,11 @@
   background: var(--app-surface-2, rgba(255, 255, 255, 0.06));
   color: var(--app-text);
   }
+
+.closeBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ── Tab bar ── */
@@ -180,6 +185,11 @@
   .tabBtn:hover {
   background: var(--app-surface-2, rgba(255, 255, 255, 0.06));
   }
+
+.tabBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .tabBtn[data-active='true'] {

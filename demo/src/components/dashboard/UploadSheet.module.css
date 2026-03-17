@@ -127,6 +127,11 @@
   opacity: 0.9;
 }
 
+.doneButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
 .doneButton:disabled {
   opacity: 0.5;
   cursor: default;

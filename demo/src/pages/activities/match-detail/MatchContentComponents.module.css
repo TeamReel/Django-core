@@ -67,6 +67,11 @@
   .contentRow[data-clickable='true']:hover {
   background: var(--app-surface-hover, #2a2a2a);
   }
+
+.contentRow[data-clickable='true']:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .subtitle {

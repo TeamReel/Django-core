@@ -122,6 +122,11 @@
   .closeBtn:hover {
   background: var(--app-surface-2);
   }
+
+.closeBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .closeBtn:active {
@@ -187,6 +192,11 @@
   .btnPrimary:hover {
   background: var(--color-blue-700);
   }
+
+.btnPrimary:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .btnPrimary:active {
@@ -220,6 +230,11 @@
   .btnApprove:hover {
   background: var(--color-green-500);
   }
+
+.btnApprove:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .btnApprove:active {
@@ -242,6 +257,11 @@
   .btnReject:hover {
   background: var(--color-red-50);
   }
+
+.btnReject:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .btnReject:active {
@@ -264,6 +284,11 @@
   .btnRetry:hover {
   background: var(--color-blue-700);
   }
+
+.btnRetry:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .btnRetry:active {
@@ -286,6 +311,11 @@
   .btnCancel:hover {
   background: var(--color-red-50);
   }
+
+.btnCancel:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .btnCancel:active {
@@ -308,6 +338,11 @@
   .btnBeginReview:hover {
   background: var(--color-amber-100);
   }
+
+.btnBeginReview:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .btnBeginReview:active {
@@ -330,6 +365,11 @@
   .btnRefresh:hover {
   background: var(--app-surface-2);
   }
+
+.btnRefresh:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .btnRefresh:active {

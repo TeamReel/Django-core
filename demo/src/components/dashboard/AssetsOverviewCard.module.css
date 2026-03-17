@@ -291,6 +291,11 @@
   .missingCallout:hover {
   background: color-mix(in srgb, var(--color-amber-400) 14%, var(--app-surface));
   }
+
+.missingCallout:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .missingIcon {

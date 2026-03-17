@@ -100,6 +100,11 @@
   .backBtn:hover {
   background: var(--app-hover);
   }
+
+.backBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .backBtn:active {
@@ -196,6 +201,11 @@
   .megaItem:not([data-active="true"]):hover {
   background-color: var(--app-surface-2);
   }
+
+.megaItem:not([data-active="true"]):focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .megaItemIcon {
@@ -337,6 +347,11 @@
   .createMenuItem:hover {
   background-color: var(--app-surface-2);
   }
+
+.createMenuItem:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ─── Theme / Language ────────────────────────────────────────────────────── */
@@ -400,6 +415,11 @@
   .langItem:not([data-selected="true"]):hover {
   background-color: var(--app-surface-secondary);
   }
+
+.langItem:not([data-selected="true"]):focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ─── Nav Icon Buttons (Queue / Notification / Credits) ───────────────────── */

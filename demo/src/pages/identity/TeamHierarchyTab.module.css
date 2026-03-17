@@ -74,6 +74,11 @@
   .seasonLink:hover {
   text-decoration: underline;
   }
+
+.seasonLink:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .seasonRight {
@@ -165,6 +170,11 @@
   .compLink:hover {
   text-decoration: underline;
   }
+
+.compLink:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ── Matches list inside competition ── */

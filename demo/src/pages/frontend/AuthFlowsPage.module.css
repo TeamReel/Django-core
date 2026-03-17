@@ -56,6 +56,11 @@
   .flowButton:hover {
   background-color: var(--app-surface-2);
   }
+
+.flowButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .flowButton[data-active="true"] {
@@ -68,6 +73,11 @@
   .flowButton[data-active="true"]:hover {
   background-color: var(--app-primary);
   }
+
+.flowButton[data-active="true"]:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .successAlert {

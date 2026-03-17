@@ -28,6 +28,11 @@
   .backLink:hover {
   background-color: var(--app-surface-2, rgba(0, 0, 0, 0.04));
   }
+
+.backLink:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .backLink:active {

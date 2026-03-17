@@ -45,6 +45,11 @@
   .aiCard[data-clickable="true"]:hover {
   box-shadow: var(--shadow-sm);
   }
+
+.aiCard[data-clickable="true"]:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .aiCard[data-clickable="true"]:active {
@@ -176,6 +181,11 @@
   .videoCard[data-clickable="true"]:hover {
   box-shadow: var(--shadow-sm);
   }
+
+.videoCard[data-clickable="true"]:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .videoCard[data-clickable="true"]:active {

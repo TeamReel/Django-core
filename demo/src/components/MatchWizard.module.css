@@ -86,6 +86,11 @@
   .matchCard:hover {
   box-shadow: var(--shadow-sm);
   }
+
+.matchCard:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .matchCard:active {
@@ -168,6 +173,11 @@
   .contentCard:hover {
   box-shadow: var(--shadow-sm);
   }
+
+.contentCard:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .contentCard:active {
@@ -277,6 +287,11 @@
   .primaryBtn:hover {
   filter: brightness(1.08);
   }
+
+.primaryBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .primaryBtn:active:not([data-saving='true']) {

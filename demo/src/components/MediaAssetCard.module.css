@@ -39,6 +39,11 @@
   box-shadow: var(--shadow-sm);
   transform: translateY(-2px);
   }
+
+.card[data-clickable]:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* --------------------------------------------------------------------------

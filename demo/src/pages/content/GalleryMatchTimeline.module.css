@@ -104,6 +104,11 @@
   .matchGroup:hover {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   }
+
+.matchGroup:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ── Match header ── */
@@ -124,6 +129,11 @@
   .matchHeader:hover {
   background: var(--app-surface-2, rgba(255, 255, 255, 0.03));
   }
+
+.matchHeader:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .matchHeader:active {
@@ -293,6 +303,11 @@
   transform: scale(1.02);
   border-color: var(--app-primary, #2563eb);
   }
+
+.thumbCard:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .thumbCard:active {
@@ -389,6 +404,11 @@
   background: var(--app-surface-2, rgba(255, 255, 255, 0.06));
   color: var(--app-text);
   }
+
+.matchActionBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .matchActionBtn:active {
@@ -481,6 +501,11 @@
   .emptyBtn:hover {
   opacity: 0.9;
   }
+
+.emptyBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ── Todaybanner — match today highlight ── */

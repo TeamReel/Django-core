@@ -31,6 +31,11 @@
   color: var(--color-text-primary, #1e293b);
 }
 
+.qrButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
 .shareButton:active,
 .qrButton:active {
   transform: scale(0.98);
@@ -100,6 +105,11 @@
 
 .closeButton:hover {
   background: var(--color-surface-hover, #f1f5f9);
+}
+
+.closeButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
 }
 
 .qrContainer {

@@ -134,6 +134,11 @@
   .lowBannerBtn:hover {
   background: var(--color-amber-500, #f59e0b);
   }
+
+.lowBannerBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .lowBannerBtn:active {

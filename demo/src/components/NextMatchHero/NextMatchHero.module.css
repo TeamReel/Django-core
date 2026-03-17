@@ -222,6 +222,11 @@
   .ctaPrimary:hover {
   opacity: 0.9;
   }
+
+.ctaPrimary:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .ctaPrimary:active {
@@ -249,6 +254,11 @@
   .ctaSecondary:hover {
   background: var(--app-bg);
   }
+
+.ctaSecondary:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ── Empty state ─────────────────────────────────────────────────── */

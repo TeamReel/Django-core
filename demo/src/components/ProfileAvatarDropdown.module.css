@@ -27,6 +27,11 @@
   background-color: var(--app-surface-hover);
   border-color: var(--app-primary);
   }
+
+.avatarButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* Avatar image inside the button */
@@ -90,6 +95,11 @@
   .menuItem:hover {
   background-color: var(--app-surface-secondary);
   }
+
+.menuItem:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* Divider between sections */
@@ -119,6 +129,11 @@
   .signOutItem:hover {
   background-color: rgba(220, 53, 69, 0.1);
   }
+
+.signOutItem:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .signOutItem[data-loading="true"] {
@@ -130,4 +145,9 @@
   .signOutItem[data-loading="true"]:hover {
   background-color: transparent;
   }
+
+.signOutItem[data-loading="true"]:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }

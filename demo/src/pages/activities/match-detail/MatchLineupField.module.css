@@ -246,6 +246,11 @@
   border-color: var(--color-green-400, #4ade80);
   color: var(--color-green-400, #4ade80);
   }
+
+.addGuestBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .guestForm {
@@ -341,4 +346,9 @@
   .guestTagRemove:hover {
   opacity: 1;
   }
+
+.guestTagRemove:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }

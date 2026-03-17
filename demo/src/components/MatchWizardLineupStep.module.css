@@ -204,6 +204,11 @@
   background-color: color-mix(in srgb, var(--app-primary) 5%, transparent);
   border-color: var(--app-primary);
   }
+
+.addGuestBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .addGuestBtn:active {
@@ -317,6 +322,11 @@
   color: var(--color-error, #ef4444);
   background: color-mix(in srgb, var(--color-error, #ef4444) 10%, transparent);
   }
+
+.guestTagRemove:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .guestBadge {

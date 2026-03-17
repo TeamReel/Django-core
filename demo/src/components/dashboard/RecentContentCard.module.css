@@ -37,6 +37,11 @@
 
 @media (hover: hover) {
   .seeAll:hover { opacity: 0.8; }
+
+.seeAll:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ── Thumbnail grid ──────────────────────────────────── */
@@ -57,6 +62,11 @@
   .thumbItem:hover {
   transform: scale(1.02);
   }
+
+.thumbItem:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .thumbItem:active {

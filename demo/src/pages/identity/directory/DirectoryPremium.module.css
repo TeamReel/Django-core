@@ -62,6 +62,11 @@
   .filterBtn:hover {
   background: var(--app-hover-bg, rgba(255, 255, 255, 0.06));
   }
+
+.filterBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .filterBtnPrimary {
@@ -75,6 +80,11 @@
   .filterBtnPrimary:hover {
   background: rgba(129, 140, 248, 0.25);
   }
+
+.filterBtnPrimary:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ── Table wrapper (premium card) ── */
@@ -126,6 +136,11 @@
   .batchBtn:hover {
   background: var(--color-indigo-500);
   }
+
+.batchBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .deselectBtn {

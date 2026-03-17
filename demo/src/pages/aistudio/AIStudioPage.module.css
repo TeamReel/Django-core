@@ -370,6 +370,11 @@
   transform: scale(1.02);
   box-shadow: var(--shadow-lg);
   }
+
+.contentCard:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .contentCard:active {

@@ -269,6 +269,11 @@
   .videoPlayBtn:hover {
   opacity: 1;
   }
+
+.videoPlayBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .videoPlayBtn:active {

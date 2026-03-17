@@ -33,6 +33,11 @@
 
 @media (hover: hover) {
   .avatar:hover { opacity: 0.85; }
+
+.avatar:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .avatarImg {
@@ -125,6 +130,11 @@
   button.row:hover {
   background: var(--app-hover-bg, rgba(0, 0, 0, 0.03));
   }
+
+button.row:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 button.row:active {

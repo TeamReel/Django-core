@@ -11,6 +11,11 @@
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   }
+
+.matchCard:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .relativeTime {

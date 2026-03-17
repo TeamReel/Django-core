@@ -145,6 +145,11 @@
   .backButton:hover {
     opacity: 0.7;
   }
+
+.backButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 .closeButton {
@@ -166,6 +171,11 @@
   .closeButton:hover {
     background: var(--app-surface-2);
   }
+
+.closeButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
 }
 
 /* ── Scrollable body ── */
