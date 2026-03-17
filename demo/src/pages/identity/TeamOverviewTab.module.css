@@ -89,12 +89,17 @@
   border: none;
   cursor: pointer;
   padding: var(--space-2) var(--space-3);
-  margin: -8px -12px;
+  margin: calc(-1 * var(--space-2)) calc(-1 * var(--space-3));
   border-radius: var(--radius-md);
   min-height: 44px;
   display: inline-flex;
   align-items: center;
   -webkit-tap-highlight-color: transparent;
+}
+
+.sectionLink:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
 }
 
 .sectionLink:active {
@@ -252,6 +257,11 @@
 
 .breakdownRow:active {
   background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
+}
+
+.breakdownRow:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: -2px;
 }
 
 .breakdownColName {
