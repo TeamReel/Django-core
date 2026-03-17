@@ -194,7 +194,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
             <MatchDetailModal
               opened={d.isMatchDetailModalOpen}
               onClose={() => { d.setIsMatchDetailModalOpen(false); d.setSelectedDetailMatch(null); }}
-              match={d.selectedDetailMatch}
+              match={d.selectedDetailMatch as unknown as Parameters<typeof MatchDetailModal>[0]['match']}
             />
             <MatchCreateModal
               opened={d.isMatchCreateModalOpen}

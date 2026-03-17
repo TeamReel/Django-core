@@ -10,7 +10,7 @@ export interface User {
   is_active: boolean;
   role?: string;
   avatar_url?: string;
-  organisations?: Array<{ id: string | number; slug?: string; name?: string; membership_id?: string | number }>;
+  organisations?: Array<{ id: string | number; slug?: string; name?: string; membership_id?: string | number; role?: string }>;
   projects?: Array<{ id?: string | number; slug?: string | null; name?: string; membership_id?: string | number | null }>;
   project_memberships?: Array<Record<string, unknown>>;
 }

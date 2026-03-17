@@ -20,6 +20,25 @@ import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import MatchCard from './MatchCard';
 import styles from './SeasonMatchesTab.module.css';
 
+/** Metadata nested on a match — lineup, score, etc. */
+export interface MatchMetadata {
+  lineup?: {
+    goalkeeper?: (string | null)[];
+    player?: (string | null)[];
+    formation?: string;
+    [key: string]: unknown;
+  };
+  formation?: string;
+  score_home?: number | string;
+  score_away?: number | string;
+  status?: string;
+  venue?: string;
+  is_home?: boolean;
+  date?: string;
+  teamreel?: { match_context?: Record<string, unknown>; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
 /** Minimal shape for a match/activity record from the API. */
 export interface MatchRecord {
   id: string;
@@ -27,9 +46,11 @@ export interface MatchRecord {
   title?: string;
   start_time?: string;
   end_time?: string;
+  date?: string;
   period_id?: string;
   period?: { id?: string; name?: string } | null;
-  metadata?: Record<string, any>; // deeply nested match metadata
+  metadata?: MatchMetadata;
+  [key: string]: unknown;
 }
 
 // ── Types ────────────────────────────────────────────────────────────────────────

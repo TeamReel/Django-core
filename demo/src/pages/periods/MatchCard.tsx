@@ -16,7 +16,8 @@ interface MatchCardMatch {
   start_time?: string;
   location?: string;
   period?: { id?: string; name?: string } | null;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 // ── Helper re-exports used by the card ──

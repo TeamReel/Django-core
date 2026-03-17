@@ -96,7 +96,7 @@ export default function LegacyMatchRedirectPage() {
 
         const competitionData = await api.get<PeriodResponse>(`/periods/${encodeURIComponent(competitionId)}/`);
         const competition = getEnvelopeData<PeriodResponse>(competitionData);
-        const competitionKeyOrId = String(periodPathKey(competition as any) || competitionId).trim();
+        const competitionKeyOrId = String(periodPathKey(competition as Record<string, unknown>) || competitionId).trim();
 
         const seasonUuid = String(competition?.parent_period?.id || competition?.parent_period_id || '').trim();
         if (!seasonUuid) {
@@ -106,7 +106,7 @@ export default function LegacyMatchRedirectPage() {
 
         const seasonData = await api.get<PeriodResponse>(`/periods/${encodeURIComponent(seasonUuid)}/`).catch(() => null);
         const season = seasonData ? getEnvelopeData<PeriodResponse>(seasonData) : null;
-        const seasonKeyOrId = (season && periodPathKey(season as any)) || seasonUuid;
+        const seasonKeyOrId = (season && periodPathKey(season as Record<string, unknown>)) || seasonUuid;
 
         // 3) Determine org
         const orgCandidates = [
@@ -151,7 +151,7 @@ export default function LegacyMatchRedirectPage() {
         // Best case: parent project is already embedded on the match payload.
         const embeddedParent = match?.project?.parent_project || match?.project?.parent;
         if (embeddedParent) {
-          clubSlugOrId = String((embeddedParent as any).slug || (embeddedParent as any).id || '').trim() || null;
+          clubSlugOrId = String((embeddedParent as Record<string, unknown>).slug || (embeddedParent as Record<string, unknown>).id || '').trim() || null;
         }
 
         // If we only have an ID for the parent, try to resolve a slug.
@@ -189,12 +189,12 @@ export default function LegacyMatchRedirectPage() {
           // First try org-scoped project endpoint, then fall back to global project endpoint.
           let project: Record<string, unknown> | null = null;
           try {
-            project = await api.get<any>(
+            project = await api.get<Record<string, unknown>>(
               `/organisations/${encodeURIComponent(orgKeyOrId)}/projects/${encodeURIComponent(teamSlugOrId)}/`,
             );
           } catch {
             try {
-              project = await api.get<any>(`/projects/${encodeURIComponent(teamSlugOrId)}/`);
+              project = await api.get<Record<string, unknown>>(`/projects/${encodeURIComponent(teamSlugOrId)}/`);
             } catch {
               // ignore
             }
@@ -208,7 +208,7 @@ export default function LegacyMatchRedirectPage() {
               clubSlugOrId = String(parent.slug || parent.id || '').trim() || null;
             } else if (parentId) {
               try {
-                const club = await api.get<any>(`/projects/${encodeURIComponent(parentId)}/`);
+                const club = await api.get<Record<string, unknown>>(`/projects/${encodeURIComponent(parentId)}/`);
                 clubSlugOrId = String(club?.slug || club?.id || parentId).trim() || null;
               } catch {
                 clubSlugOrId = parentId;
@@ -223,14 +223,14 @@ export default function LegacyMatchRedirectPage() {
         if (clubSlugOrId && looksLikeIdentifier(clubSlugOrId)) {
           try {
             try {
-              const club = await api.get<any>(
+              const club = await api.get<Record<string, unknown>>(
                 `/organisations/${encodeURIComponent(orgKeyOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
               );
               const resolved = String(club?.slug || '').trim();
               if (resolved) clubSlugOrId = resolved;
             } catch {
               try {
-                const club = await api.get<any>(`/projects/${encodeURIComponent(clubSlugOrId)}/`);
+                const club = await api.get<Record<string, unknown>>(`/projects/${encodeURIComponent(clubSlugOrId)}/`);
                 const resolved = String(club?.slug || '').trim();
                 if (resolved) clubSlugOrId = resolved;
               } catch {

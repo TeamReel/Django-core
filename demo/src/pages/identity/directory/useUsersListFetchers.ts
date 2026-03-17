@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { api } from '@/api/client';
 import { organisationsApi } from '@/api';
 import { logger } from '@/utils/logger';
-import type { Organisation, OrgMembershipListItem } from '@/types/api/organisation';
+import type { Organisation } from '@/types/api/organisation';
 import type { OrganisationOption, ProjectOption } from './usersListTypes';
 import { normalizeRoleName, getUserTeamreelRoleNames } from './usersListHelpers';
 
@@ -230,7 +230,7 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                     });
 
                     // Dedup by user id — prefer entry with period / richer metadata
-                    const byUserId = new Map<string, any>();
+                    const byUserId = new Map<string, UserRecord>();
                     for (const entry of allEntries) {
                         const key = entry.id;
                         if (!key) continue;
@@ -286,7 +286,7 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                 }
 
                 const url = `/organisations/${orgSlug}/members/`;
-                const { results: rawList } = await api.list<OrgMembershipListItem>(url, {
+                const { results: rawList } = await api.list<RawMemberItem>(url, {
                     params: {
                         include_project_memberships: 'true',
                         include_project_membership_details: 'true',
@@ -295,42 +295,42 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                     pageSize: 250,
                 });
 
-                const byKey = new Map<string, any>();
+                const byKey = new Map<string, UserRecord>();
                 for (const item of Array.isArray(rawList) ? rawList : []) {
                     const nestedUser = item?.user;
-                    const u: any = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
+                    const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
                     const key = String(u?.id ?? u?.email ?? item?.id ?? '');
                     if (!key) continue;
 
-                    const normalized = {
+                    const normalized: UserRecord = {
                         id: String(u?.id ?? item?.id ?? key),
                         email: String(u?.email ?? ''),
                         first_name: String(u?.first_name ?? ''),
                         last_name: String(u?.last_name ?? ''),
-                        organisations: u?.organisations,
+                        organisations: u?.organisations as UserRecord['organisations'],
                         is_superuser: Boolean(u?.is_superuser),
-                        is_active: u?.is_active ?? item?.is_active ?? true,
-                        role: u?.role ?? 'User',
-                        role_label: u?.role_label ?? (item as any)?.role_label,
+                        is_active: Boolean(u?.is_active ?? item?.is_active ?? true),
+                        role: String(u?.role ?? 'User'),
+                        role_label: (u?.role_label ?? item?.role_label) as string | undefined,
                         role_assignments:
-                            u?.role_assignments ||
-                            (item as any)?.role_assignments ||
+                            (u?.role_assignments ||
+                            item?.role_assignments ||
                             u?.rbac_role_assignments ||
-                            (item as any)?.rbac_role_assignments ||
-                            [],
+                            item?.rbac_role_assignments ||
+                            []) as unknown[],
                         membership: {
                             id: item?.id,
                             organisation: item?.organisation,
                             role: item?.role,
-                            source: (item as any)?.source,
+                            source: item?.source,
                             joined_at: item?.joined_at,
                             invited_by: item?.invited_by,
                         },
                         organisation: item?.organisation,
-                        source: (item as any)?.source,
+                        source: item?.source,
                         joined_at: item?.joined_at,
                         invited_by: item?.invited_by,
-                        project_memberships: (item as any)?.project_memberships || u?.project_memberships || [],
+                        project_memberships: (item?.project_memberships || u?.project_memberships || []) as UserRecord['project_memberships'],
                     };
 
                     const existing = byKey.get(key);

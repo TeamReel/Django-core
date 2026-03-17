@@ -2,12 +2,13 @@ import styles from './MatchDetailModal.module.css';
 
 interface MatchActivity {
   id: string;
-  title: string;
+  title?: string;
   start_time?: string;
   end_time?: string | null;
   location?: string;
   description?: string;
   activity_type?: string;
+  [key: string]: unknown;
 }
 
 interface MatchDetailModalProps {

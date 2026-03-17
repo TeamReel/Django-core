@@ -7,19 +7,11 @@ import type { Period as ApiPeriod, Activity } from '../../types/api/activity';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import type { MatchRecord } from './SeasonMatchesTab';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Setter<T> = React.Dispatch<React.SetStateAction<T>>;
-
-/** Minimal match record shape — structurally matches useSeasonDataFetching's MatchRecord */
-interface MatchRecord {
-  id: string;
-  slug?: string;
-  title?: string;
-  start_time?: string;
-  metadata?: Record<string, any>;
-}
 
 interface UseSeasonCrudActionsParams {
   apiBaseUrl: string;

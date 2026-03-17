@@ -86,11 +86,11 @@ export function useSeasonSquadData({
       if (member) {
         const mediaKey = ASSET_TYPE_TO_MEDIA_KEY[assetType] || assetType;
         const meta = member.metadata || {};
-        const tr = ((meta as Record<string, unknown>)?.teamreel_assets || {}) as Record<string, any>;
-        const media = tr?.media || {};
-        const videos = tr?.videos || {};
-        const images = tr?.images || {};
-        const legacyKit = tr?.kit || {};
+        const tr = ((meta as Record<string, unknown>)?.teamreel_assets || {}) as Record<string, unknown>;
+        const media = (tr?.media ?? {}) as Record<string, { url?: string }>;
+        const videos = (tr?.videos ?? {}) as Record<string, Record<string, { processed?: string; raw?: string } | string>>;
+        const images = (tr?.images ?? {}) as Record<string, Record<string, { url?: string | null }>>;
+        const legacyKit = (tr?.kit ?? {}) as { profile_photo_url?: string; full_body_url?: string; goal_celebration_url?: string };
 
         const effectiveRole = memberRole || role;
         let roleKey = 'home';
@@ -100,8 +100,8 @@ export function useSeasonSquadData({
         const imageStructureKey = mediaKey === 'kit' ? 'fullbody' : mediaKey;
 
         // 1. Check images structure
-        if (images[imageStructureKey]?.[roleKey]?.url) return images[imageStructureKey][roleKey].url;
-        if (roleKey !== 'home' && images[imageStructureKey]?.home?.url) return images[imageStructureKey].home.url;
+        if (images[imageStructureKey]?.[roleKey]?.url) return images[imageStructureKey][roleKey].url ?? null;
+        if (roleKey !== 'home' && images[imageStructureKey]?.home?.url) return images[imageStructureKey].home.url ?? null;
 
         // 2. Check videos structure
         if (['intro', 'closeup', 'celebration'].includes(mediaKey) && videos[mediaKey]) {
@@ -110,18 +110,18 @@ export function useSeasonSquadData({
             k.toLowerCase().includes(roleKey) || k.toLowerCase().startsWith(roleKey),
           );
           for (const [, val] of roleVariantEntries) {
-            if (val && typeof val === 'object' && (val as Record<string, any>).processed) return (val as Record<string, any>).processed;
+            if (val && typeof val === 'object' && val.processed) return val.processed;
           }
           for (const [, val] of roleVariantEntries) {
-            if (val && typeof val === 'object' && (val as Record<string, any>).raw) return (val as Record<string, any>).raw;
-            if (val && typeof val === 'string' && val.trim()) return val;
+            if (val && typeof val === 'object' && val.raw) return val.raw;
+            if (typeof val === 'string' && val.trim()) return val;
           }
           for (const [, val] of Object.entries(variants)) {
-            if (val && typeof val === 'object' && (val as Record<string, any>).processed) return (val as Record<string, any>).processed;
+            if (val && typeof val === 'object' && val.processed) return val.processed;
           }
           for (const [, val] of Object.entries(variants)) {
-            if (val && typeof val === 'object' && (val as Record<string, any>).raw) return (val as Record<string, any>).raw;
-            if (val && typeof val === 'string' && val.trim()) return val;
+            if (val && typeof val === 'object' && val.raw) return val.raw;
+            if (typeof val === 'string' && val.trim()) return val;
           }
         }
 

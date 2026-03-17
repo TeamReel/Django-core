@@ -64,6 +64,23 @@ function inferMediaItemSubtype(title: string, mimeType: string): string {
 
 /* ── Types ──────────────────────────────────── */
 
+/** Generation request with potential template expansion from the API. */
+interface GenRequestItem {
+  template?: number | { template_type?: string; template_subtype?: string };
+  template_type?: string;
+  input_data?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+  result?: { media_item_id?: string };
+}
+
+/** Media item with extra relationship fields the API may include. */
+interface MediaItemExt extends MediaItem {
+  activity?: string;
+  activity_date?: string;
+  member_id?: string;
+  member?: string | number;
+}
+
 interface CategoryCount {
   label: string;
   icon: React.ReactNode;
@@ -145,7 +162,9 @@ export const ContentProgressCard: React.FC = () => {
 
     const counts: Record<string, number> = {};
     for (const item of items) {
-      const tplType = (item as any).template?.template_type || (item as any).template_type || 'custom';
+      const gen = item as unknown as GenRequestItem;
+      const tpl = typeof gen.template === 'object' ? gen.template : null;
+      const tplType = tpl?.template_type || gen.template_type || 'custom';
       counts[tplType] = (counts[tplType] || 0) + 1;
     }
 
@@ -181,37 +200,38 @@ export const ContentProgressCard: React.FC = () => {
     const seasonSubtypes: Record<string, number> = {};
     const memberSubtypes: Record<string, number> = {};
 
-    for (const req of genItems as any[]) {
+    for (const req of genItems as unknown as GenRequestItem[]) {
       if (req.result?.media_item_id) seenMediaIds.add(req.result.media_item_id);
-      const tplType = req.template?.template_type || '';
-      const subtype = req.template?.template_subtype || req.input_data?.template_subtype || 'other';
+      const tpl = typeof req.template === 'object' ? req.template : null;
+      const tplType = tpl?.template_type || '';
+      const subtype = tpl?.template_subtype || String(req.input_data?.template_subtype || 'other');
 
       if (tplType === 'member') {
         memberSubtypes[subtype] = (memberSubtypes[subtype] || 0) + 1;
       } else if (tplType === 'season') {
         seasonSubtypes[subtype] = (seasonSubtypes[subtype] || 0) + 1;
       } else if (['pre_match', 'during_match', 'post_match'].includes(tplType)) {
-        const actId = req.input_data?.activity_id || req.metadata?.activity_id || 'unknown';
-        const matchTitle = req.input_data?.match_title || req.metadata?.match_title || req.input_data?.title || 'Wedstrijd';
-        const matchDate = req.input_data?.match_date || req.metadata?.match_date;
+        const actId = String(req.input_data?.activity_id || req.metadata?.activity_id || 'unknown');
+        const matchTitle = String(req.input_data?.match_title || req.metadata?.match_title || req.input_data?.title || 'Wedstrijd');
+        const matchDate = String(req.input_data?.match_date || req.metadata?.match_date || '');
         if (!matchMap.has(actId)) matchMap.set(actId, { title: matchTitle, date: matchDate, subtypes: {} });
         matchMap.get(actId)!.subtypes[subtype] = (matchMap.get(actId)!.subtypes[subtype] || 0) + 1;
       }
     }
 
-    for (const item of mediaItems) {
+    for (const item of mediaItems as unknown as MediaItemExt[]) {
       if (seenMediaIds.has(item.id)) continue;
-      const actId = item.activity_id || (item as any).activity;
+      const actId = item.activity_id || item.activity;
       const mimeType = item.mime_type || '';
       const title = item.title || '';
       const subtype = inferMediaItemSubtype(title, mimeType);
 
       if (actId) {
         const matchTitle = item.activity_title || item.title || 'Wedstrijd';
-        const matchDate = (item as any).activity_date;
+        const matchDate = item.activity_date;
         if (!matchMap.has(actId)) matchMap.set(actId, { title: matchTitle, date: matchDate, subtypes: {} });
         matchMap.get(actId)!.subtypes[subtype] = (matchMap.get(actId)!.subtypes[subtype] || 0) + 1;
-      } else if ((item as any).member_id || (item as any).member) {
+      } else if (item.member_id || item.member) {
         memberSubtypes[subtype] = (memberSubtypes[subtype] || 0) + 1;
       }
     }

@@ -13,11 +13,14 @@ import type { SeasonSquadAddMemberPayload } from '../identity/SeasonSquadAddMemb
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 
 /** Minimal match shape for modal props. */
-interface MatchLike {
+export interface MatchLike {
   id: string;
-  title: string;
+  title?: string;
   start_time?: string;
   end_time?: string;
+  location?: string;
+  description?: string;
+  activity_type?: string;
   metadata?: Record<string, unknown>;
   [key: string]: unknown;
 }

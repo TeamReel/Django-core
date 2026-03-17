@@ -2,7 +2,7 @@ import MatchCreateModal, { MatchCreatePayload } from './MatchCreateModal';
 
 interface MatchActivity {
   id: string;
-  title: string;
+  title?: string;
   start_time?: string;
   end_time?: string | null;
   location?: string;
@@ -20,6 +20,7 @@ interface MatchActivity {
   organisation_id?: string | number;
 
   metadata?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 interface MatchEditModalProps {

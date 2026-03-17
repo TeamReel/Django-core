@@ -1,8 +1,9 @@
 # H0 — Token Migratie: Top 5 CSS-bestanden
 
-> **Status:** 📋 Todo
+> **Status:** ✅ Done
 > **Effort:** 4-6 uur
 > **Impact:** ~450 hardcoded kleuren → design tokens
+> **Resultaat:** 270 hex fallbacks + 17 rgba fallbacks + 53 bare rgba's → tokens
 
 ---
 

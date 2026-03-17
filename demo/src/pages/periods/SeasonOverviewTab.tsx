@@ -6,19 +6,24 @@ import { MEDIA_SLOTS } from '../../constants/mediaSlots';
 import { getMediaProcessingState } from '../../utils/mediaHelpers';
 import { periodPathKey } from '../../utils/periodPath';
 import type { Period } from '../../types/season';
+import type { MatchRecord } from './SeasonMatchesTab';
 import ov from './SeasonOverviewTab.module.css';
+
+/** Helper to extract date from a match record (handles metadata nesting) */
+const getMatchDate = (m: MatchRecord): string | undefined =>
+  m.start_time || m.date || m.metadata?.date;
 
 export interface SeasonOverviewTabProps {
   season: Period | null;
   competitions: Period[];
   members: Record<string, unknown>[];
-  matches: Record<string, unknown>[];
+  matches: MatchRecord[];
   matchesLoading: boolean;
   navigateToTab: (tabId: string) => void;
   isTeamRoute: boolean;
   seasonsBasePath: string;
   seasonPathKey: string;
-  matchDisplayTitle: (m: Record<string, unknown>) => string;
+  matchDisplayTitle: (m: MatchRecord) => string;
   teamRosterCount?: number;
   brandLogoUrl?: string | null;
   brandSponsorUrl?: string | null;
@@ -71,13 +76,13 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
     now.setHours(0, 0, 0, 0);
     return matches
       .filter((m) => {
-        const d = m.start_time || m.date || (m as any).metadata?.date;
+        const d = getMatchDate(m);
         if (!d) return false;
-        return new Date(d as string) >= now;
+        return new Date(d) >= now;
       })
       .sort((a, b) => {
-        const da = new Date(a.start_time || a.date || (a as any).metadata?.date).getTime();
-        const db = new Date(b.start_time || b.date || (b as any).metadata?.date).getTime();
+        const da = new Date(getMatchDate(a) ?? 0).getTime();
+        const db = new Date(getMatchDate(b) ?? 0).getTime();
         return da - db;
       })
       .slice(0, 3);
@@ -89,20 +94,20 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
     now.setHours(0, 0, 0, 0);
     return matches
       .filter((m) => {
-        const d = m.start_time || m.date || (m as any).metadata?.date;
+        const d = getMatchDate(m);
         if (!d) return false;
-        return new Date(d as string) < now;
+        return new Date(d) < now;
       })
       .sort((a, b) => {
-        const da = new Date(a.start_time || a.date || (a as any).metadata?.date).getTime();
-        const db = new Date(b.start_time || b.date || (b as any).metadata?.date).getTime();
+        const da = new Date(getMatchDate(a) ?? 0).getTime();
+        const db = new Date(getMatchDate(b) ?? 0).getTime();
         return db - da;
       })
       .slice(0, 2);
   }, [matches]);
 
   /** Build a match URL */
-  const matchUrl = (m: Record<string, any>) => {
+  const matchUrl = (m: MatchRecord) => {
     const compId = String(m.period_id || m.period?.id || m.period || '').trim();
     const compKey = periodPathKey(m.period || null) || compId;
     const matchKey = m.slug || m.id;
@@ -112,14 +117,14 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
   };
 
   /** Format a match date nicely */
-  const fmtDate = (m: Record<string, any>) => {
+  const fmtDate = (m: MatchRecord) => {
     const raw = m.start_time || m.date || m.metadata?.date;
     if (!raw) return '—';
     const d = new Date(raw);
     return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
   };
 
-  const fmtTime = (m: Record<string, any>) => {
+  const fmtTime = (m: MatchRecord) => {
     const raw = m.start_time || m.date || m.metadata?.date;
     if (!raw) return '';
     const d = new Date(raw);

@@ -9,7 +9,8 @@
 import type { OrgModalsProps } from './OrgModals';
 import { invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import { api } from '@/api';
-import type { Project, Period } from './clubOrgDetailHelpers';
+import type { Period } from './clubOrgDetailHelpers';
+import type { Project } from '../../types/entities';
 
 /** Payload for project creation (club or team). */
 interface CreateProjectPayload {
@@ -46,7 +47,7 @@ interface CreateMatchPayload {
 
 /** Activity record returned by the API. */
 interface ActivityRecord {
-  id?: string;
+  id: string;
   title?: string;
   activity_type?: string;
   slug?: string;
@@ -97,13 +98,13 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
       const createdKey = String(created?.slug || created?.id || '');
       if (createdKey) {
         setClubsPage(1);
-        setClubs((prev: any) => {
-          if (prev.some((p: any) => String(p?.slug || p?.id || '') === createdKey)) return prev;
+        setClubs((prev) => {
+          if (prev.some((p) => String(p?.slug || p?.id || '') === createdKey)) return prev;
           return [created, ...prev];
         });
         setClubsCount((prev) => (typeof prev === 'number' ? prev + 1 : prev));
-        setAllClubsForTeams((prev: any) => {
-          if (prev.some((p: any) => String(p?.slug || p?.id || '') === createdKey)) return prev;
+        setAllClubsForTeams((prev) => {
+          if (prev.some((p) => String(p?.slug || p?.id || '') === createdKey)) return prev;
           return [created, ...prev];
         });
       }
@@ -129,9 +130,9 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
     if (created && typeof created === 'object') {
       const createdKey = String(created?.slug || created?.id || '').trim();
       if (createdKey) {
-        setTeams((prev: any) => {
+        setTeams((prev) => {
           const list = Array.isArray(prev) ? prev : [];
-          if (list.some((p: any) => String(p?.slug || p?.id || '').trim() === createdKey)) return list;
+          if (list.some((p) => String(p?.slug || p?.id || '').trim() === createdKey)) return list;
           return [created, ...list];
         });
         setTeamsCount((prev) => (typeof prev === 'number' ? prev + 1 : prev));
@@ -242,7 +243,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
     if (created && typeof created === 'object') {
       const createdId = String(created?.id || '').trim();
       if (createdId) {
-        setFederationMatches((prev: any) => {
+        setFederationMatches((prev) => {
           const list = Array.isArray(prev) ? prev : [];
           if (list.some((m: Record<string, unknown>) => String(m?.id || '').trim() === createdId)) return list;
           return [created, ...list];

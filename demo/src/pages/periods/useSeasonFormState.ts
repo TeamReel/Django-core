@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useReducer, useCallback } from 'react';
 import type { Period } from '../../types/season';
+import type { PeriodLike } from '../identity/PeriodEditModal';
+import type { MatchLike } from './SeasonDetailModals';
 import type { WalletOption } from '../../components/transactions/CreateTransactionModal';
 import { formReducer, makeSetter } from '@/utils/formReducer';
 
@@ -33,13 +35,13 @@ export function useSeasonFormState(params: UseSeasonFormStateParams) {
     competitionsLoading: boolean;
     season: Period | null;
     isPeriodEditModalOpen: boolean;
-    selectedEditPeriod: Record<string, unknown> | null;
+    selectedEditPeriod: PeriodLike | null;
     isPeriodDetailModalOpen: boolean;
-    selectedDetailPeriod: Record<string, unknown> | null;
+    selectedDetailPeriod: PeriodLike | null;
     isMatchDetailModalOpen: boolean;
-    selectedDetailMatch: Record<string, unknown> | null;
+    selectedDetailMatch: MatchLike | null;
     isMatchEditModalOpen: boolean;
-    selectedEditMatch: Record<string, unknown> | null;
+    selectedEditMatch: MatchLike | null;
     isCreateCompetitionModalOpen: boolean;
     isCreateMatchModalOpen: boolean;
     isCreateTxnModalOpen: boolean;

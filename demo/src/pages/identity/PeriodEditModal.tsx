@@ -12,7 +12,7 @@ export interface PeriodLike {
   title?: string;
   label?: string;
   type?: string;
-  sport_id?: string;
+  sport_id?: string | number | null;
   sport?: { id: string | number; name?: string } | null;
   data?: Record<string, unknown>;
   metadata?: Record<string, unknown>;

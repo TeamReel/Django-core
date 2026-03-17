@@ -72,7 +72,7 @@ interface MatchCreateFormState {
   loadingOrganisations: boolean;
   loadingClubs: boolean;
   loadingTeams: boolean;
-  projectDetailsById: Record<string, Record<string, unknown>>;
+  projectDetailsById: Record<string, ProjectOption>;
 }
 
 const initialFormState: MatchCreateFormState = {

@@ -279,9 +279,9 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
   // ── Derived filter data ──
 
   const displayFlags = s.flags
-    .filter((flag: any) => !isThemeFlagKey(flag.key))
-    .filter((flag: any) => String(flag.key || '').startsWith('content__'))
-    .filter((flag: any) => {
+    .filter((flag: FeatureFlag | ApiFeatureFlag) => !isThemeFlagKey(flag.key))
+    .filter((flag: FeatureFlag | ApiFeatureFlag) => String(flag.key || '').startsWith('content__'))
+    .filter((flag: FeatureFlag | ApiFeatureFlag) => {
       const parts = String(flag.key || '').split('__');
       const type = parts[1] || '';
       const subtype = parts[2] || '';
@@ -295,22 +295,22 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
 
   const uniqueTypes: string[] = Array.from(new Set<string>(
     s.flags
-      .filter((flag: any) => String(flag.key || '').startsWith('content__'))
-      .map((flag: any) => String(flag.key || '').split('__')[1])
+      .filter((flag: FeatureFlag | ApiFeatureFlag) => String(flag.key || '').startsWith('content__'))
+      .map((flag: FeatureFlag | ApiFeatureFlag) => String(flag.key || '').split('__')[1])
       .filter(Boolean) as string[]
   )).sort();
 
   const uniqueSubtypes: string[] = Array.from(new Set<string>(
     s.flags
-      .filter((flag: any) => String(flag.key || '').startsWith('content__'))
-      .map((flag: any) => String(flag.key || '').split('__')[2])
+      .filter((flag: FeatureFlag | ApiFeatureFlag) => String(flag.key || '').startsWith('content__'))
+      .map((flag: FeatureFlag | ApiFeatureFlag) => String(flag.key || '').split('__')[2])
       .filter(Boolean) as string[]
   )).sort();
 
   const uniqueStyles: string[] = Array.from(new Set<string>(
     s.flags
-      .filter((flag: any) => String(flag.key || '').startsWith('content__'))
-      .map((flag: any) => {
+      .filter((flag: FeatureFlag | ApiFeatureFlag) => String(flag.key || '').startsWith('content__'))
+      .map((flag: FeatureFlag | ApiFeatureFlag) => {
         const parts = String(flag.key || '').split('__');
         const styleIndex = parts.findIndex((p) => p === 'style');
         return styleIndex >= 0 ? parts[styleIndex + 1] || '' : '';
@@ -320,14 +320,14 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
 
   // ── Selection helpers ──
 
-  const allSelected = displayFlags.length > 0 && displayFlags.every((f: any) => s.selectedIds.has(f.id));
+  const allSelected = displayFlags.length > 0 && displayFlags.every((f: FeatureFlag | ApiFeatureFlag) => s.selectedIds.has(f.id));
   const someSelected = s.selectedIds.size > 0;
 
   const handleSelectAll = () => {
     if (allSelected) {
       setSelectedIds(new Set<string>());
     } else {
-      setSelectedIds(new Set<string>(displayFlags.map((f: any) => f.id)));
+      setSelectedIds(new Set<string>(displayFlags.map((f: FeatureFlag | ApiFeatureFlag) => f.id)));
     }
   };
 
@@ -347,7 +347,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
     if (s.selectedIds.size === 0) return;
     setBulkUpdating(true);
     try {
-      const toUpdate = displayFlags.filter((f: any) => s.selectedIds.has(f.id));
+      const toUpdate = displayFlags.filter((f: FeatureFlag | ApiFeatureFlag) => s.selectedIds.has(f.id));
       for (const flag of toUpdate) {
         await updateGlobalFlag(flag.id, enabled);
       }

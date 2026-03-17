@@ -8,14 +8,7 @@ import { formReducer, makeSetter } from '../../utils/formReducer';
 interface ProjectParam { id?: string; name?: string; slug?: string }
 /** Minimal organisation shape for the hook params. */
 interface OrgParam { id?: string; slug?: string; name?: string }
-/** Minimal match record shape. */
-interface MatchRecord {
-  id: string;
-  slug?: string;
-  title?: string;
-  start_time?: string;
-  metadata?: Record<string, any>;
-}
+import type { MatchRecord } from './SeasonMatchesTab';
 /** Minimal membership record shape. */
 interface MemberRecord {
   id?: string;

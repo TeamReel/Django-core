@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { projectsApi } from '@/api';
 import type { ProjectOption } from './matchCreateTypes';
-import { getParentProjectId, getProjectIdentity } from './matchCreateHelpers';
+import { getParentProjectId, getProjectIdentity, getProjectOrganisationId } from './matchCreateHelpers';
 import type { useMatchFormState } from './useMatchFormState';
 
 // ─── Props ───────────────────────────────────────────────────────────────────
@@ -51,8 +51,9 @@ export function useMatchDerived({ opened, apiBaseUrl, form }: UseMatchDerivedPro
       if (!key) return;
       if (projectDetailsById[key]) return;
       try {
-        const raw = await projectsApi.get(key) as Record<string, any>;
-        const data = raw?.data?.data || raw?.data || raw;
+        const raw: unknown = await projectsApi.get(key);
+        const envelope = raw as { data?: { data?: ProjectOption } };
+        const data = (envelope?.data?.data ?? envelope?.data ?? raw) as ProjectOption;
         if (!cancelled && data && typeof data === 'object') {
           setProjectDetailsById((prev) => ({ ...prev, [key]: data }));
         }
@@ -100,25 +101,22 @@ export function useMatchDerived({ opened, apiBaseUrl, form }: UseMatchDerivedPro
       !String(selectedClubId || '').trim()
         ? ((): string | null => {
             const fromList = (teamsOptions || []).find((t) => String(t?.id) === String(selectedTeamId));
-            return getParentProjectId((fromList || selectedTeamDetail) as any);
+            const item = fromList || selectedTeamDetail;
+            return item ? getParentProjectId(item) : null;
           })()
         : null;
     if (resolvedClubIdLocal && String(resolvedClubIdLocal) !== String(selectedClubId || '')) {
       setSelectedClubId(String(resolvedClubIdLocal));
     }
 
-    const resolvedOppClubId = !String(selectedOpponentClubId || '').trim() ? getParentProjectId(selectedOpponentDetail as any) : null;
+    const resolvedOppClubId = !String(selectedOpponentClubId || '').trim() && selectedOpponentDetail ? getParentProjectId(selectedOpponentDetail) : null;
     if (resolvedOppClubId && String(resolvedOppClubId) !== String(selectedOpponentClubId || '')) {
       setSelectedOpponentClubId(String(resolvedOppClubId));
     }
 
     const resolvedOrgId =
       !String(selectedOrganisationId || '').trim() && selectedTeamDetail
-        ? String(
-            typeof selectedTeamDetail?.organisation === 'string'
-              ? selectedTeamDetail.organisation
-              : (selectedTeamDetail as any)?.organisation?.id || ''
-          ).trim()
+        ? String(getProjectOrganisationId(selectedTeamDetail) || '').trim()
         : '';
 
     if (resolvedOrgId) {
@@ -137,7 +135,7 @@ export function useMatchDerived({ opened, apiBaseUrl, form }: UseMatchDerivedPro
     if (explicit) return explicit;
     const fromList = (teamsOptions || []).find((t) => String(t?.id) === String(selectedTeamId));
     const from = fromList || selectedTeamDetail;
-    return from ? String(getParentProjectId(from as any) || '').trim() : '';
+    return from ? String(getParentProjectId(from) || '').trim() : '';
   }, [selectedClubId, teamsOptions, selectedTeamId, selectedTeamDetail]);
 
   const resolvedOpponentClubId = useMemo(() => {
@@ -159,10 +157,11 @@ export function useMatchDerived({ opened, apiBaseUrl, form }: UseMatchDerivedPro
 
   // ── Derived metadata ──
   const derived = useMemo(() => {
-    const our = getProjectIdentity(selectedTeamDetail as any);
-    const opp = getProjectIdentity(selectedOpponentDetail as any);
-    const ourClub = getProjectIdentity(selectedClubDetail as any);
-    const oppClub = getProjectIdentity(selectedOpponentClubDetail as any);
+    const fallback = { name: '', logoUrl: '', defaultLocation: '' };
+    const our = selectedTeamDetail ? getProjectIdentity(selectedTeamDetail) : fallback;
+    const opp = selectedOpponentDetail ? getProjectIdentity(selectedOpponentDetail) : fallback;
+    const ourClub = selectedClubDetail ? getProjectIdentity(selectedClubDetail) : fallback;
+    const oppClub = selectedOpponentClubDetail ? getProjectIdentity(selectedOpponentClubDetail) : fallback;
 
     const home = venue === 'Home' ? our : opp;
     const away = venue === 'Home' ? opp : our;
