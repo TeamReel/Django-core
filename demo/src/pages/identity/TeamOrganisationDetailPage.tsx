@@ -4,7 +4,6 @@ import { useAuth } from '@django-core/auth-ui';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { useUserRole } from '../../components/PermissionGuards';
 
-import TeamCreditsTab from './detail/TeamCreditsTab';
 import MobileTabBar from '../../components/MobileTabBar';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
@@ -12,11 +11,9 @@ import { useTeamDetailData } from './useTeamDetailData';
 import type { Project } from './teamDetailTypes';
 import { useTeamTabData } from './useTeamTabData';
 import { TeamOverviewTab } from './TeamOverviewTab';
-import { TeamHierarchyTab } from './TeamHierarchyTab';
 import { TeamSelectieTab } from './TeamSelectieTab';
-import { TeamMediaTab } from './TeamMediaTab';
+import { TeamBeheerTab } from './TeamBeheerTab';
 import { TeamPageHeader } from './TeamPageHeader';
-import { IdentitySubtab } from './IdentitySubtab';
 import s from './TeamOrganisationDetailPage.module.css';
 import { routes } from '../../routes';
 
@@ -48,18 +45,16 @@ export default function TeamOrganisationDetailPage() {
   // ── Tab logic ──
   const activeTabFromUrl = useMemo(() => {
     const params = new URLSearchParams(location.search || '');
-    const tab = String(params.get('tab') || (isPlayer ? 'hierarchy' : 'overview')).trim().toLowerCase();
+    const tab = String(params.get('tab') || (isPlayer ? 'overview' : 'overview')).trim().toLowerCase();
     const normalized = tab === 'people' || tab === 'users' ? 'members'
-      : (tab === 'balance' || tab === 'transactions') ? 'credits'
-      : (tab === 'seasons' || tab === 'competitions' || tab === 'matches') ? 'hierarchy'
-      : (tab === 'assets' || tab === 'kits') ? 'identity'
+      : (tab === 'balance' || tab === 'transactions' || tab === 'credits') ? 'beheer'
+      : (tab === 'seasons' || tab === 'competitions' || tab === 'matches' || tab === 'hierarchy') ? 'overview'
+      : (tab === 'assets' || tab === 'kits' || tab === 'identity') ? 'beheer'
+      : (tab === 'media') ? 'overview'
       : tab;
     const allowed = isPlayer
-      ? new Set(['overview', 'hierarchy', 'members'])
-      : new Set([
-          'overview', 'hierarchy',
-          'members', 'media', 'identity', 'credits',
-        ]);
+      ? new Set(['overview', 'members'])
+      : new Set(['overview', 'members', 'beheer']);
     return allowed.has(normalized) ? normalized : 'overview';
   }, [location.search, isPlayer]);
 
@@ -159,11 +154,8 @@ export default function TeamOrganisationDetailPage() {
         <MobileTabBar
           tabs={[
             { id: 'overview', label: 'Overview' },
-            { id: 'hierarchy', label: 'Hierarchy' },
             { id: 'members', label: 'Selectie' },
-            ...(!isPlayer ? [{ id: 'media', label: 'Media' }] : []),
-            ...(!isPlayer ? [{ id: 'identity', label: 'Identity' }] : []),
-            ...(!isPlayer ? [{ id: 'credits', label: 'Credits' }] : []),
+            ...(!isPlayer ? [{ id: 'beheer', label: 'Beheer' }] : []),
           ]}
           activeTab={activeTabFromUrl}
         />
@@ -176,6 +168,7 @@ export default function TeamOrganisationDetailPage() {
                 seasons: tabData.hierarchySeasons,
                 competitionsBySeasonId: tabData.hierarchyCompetitionsBySeasonId,
                 matchesCountBySeasonId: tabData.hierarchyMatchesCountBySeasonId,
+                matchesCountByCompetitionId: tabData.hierarchyMatchesCountByCompetitionId,
                 loading: tabData.hierarchyLoading,
                 error: tabData.hierarchyError,
               }}
@@ -205,24 +198,10 @@ export default function TeamOrganisationDetailPage() {
                 matches: tabData.teamMatches,
                 loading: tabData.teamMatchesLoading,
               }}
-            />
-          )}
-
-          {activeTabFromUrl === 'hierarchy' && teamIdForDirectoryLists && (
-            <TeamHierarchyTab
-              hierarchySeasons={tabData.hierarchySeasons}
-              hierarchyCompetitionsBySeasonId={tabData.hierarchyCompetitionsBySeasonId}
-              hierarchyMatchesCountBySeasonId={tabData.hierarchyMatchesCountBySeasonId}
-              hierarchyMatchesCountByCompetitionId={tabData.hierarchyMatchesCountByCompetitionId}
-              hierarchyLoading={tabData.hierarchyLoading}
-              hierarchyError={tabData.hierarchyError}
-              hierarchySearch={tabData.hierarchySearch}
-              setHierarchySearch={tabData.setHierarchySearch}
-              teamMatchesByPeriodId={tabData.teamMatchesByPeriodId}
+              teamMatchesByPeriodId={tabData.teamMatchesByPeriodId as Record<string, import('./TeamOverviewTab/types').MatchRecord[]>}
               teamMatchesLoading={tabData.teamMatchesLoading}
-              orgKeyForRoutes={orgKeyForRoutes}
-              clubKeyForRoutes={clubKeyForRoutes}
-              teamKeyForRoutes={teamKeyForRoutes}
+              fullMembers={tabData.fullMembers as unknown as Array<Record<string, unknown>>}
+              fullMembersLoading={tabData.fullMembersLoading}
             />
           )}
 
@@ -246,24 +225,15 @@ export default function TeamOrganisationDetailPage() {
             />
           )}
 
-          {activeTabFromUrl === 'credits' && orgIdForDirectoryLists && teamIdForDirectoryLists && (
-            <TeamCreditsTab view="balance" projectId={teamIdForDirectoryLists} projectName={team.name} organisationId={orgIdForDirectoryLists} />
-          )}
-
-          {activeTabFromUrl === 'media' && team && org && (
-            <TeamMediaTab
-              members={tabData.fullMembers}
-              membersLoading={tabData.fullMembersLoading}
-            />
-          )}
-
-          {activeTabFromUrl === 'identity' && team && org && (
-            <IdentitySubtab
+          {activeTabFromUrl === 'beheer' && !isPlayer && orgIdForDirectoryLists && teamIdForDirectoryLists && (
+            <TeamBeheerTab
               org={org}
               team={team}
               setTeam={setTeam}
               brandProfileId={brandProfileId ?? undefined}
               club={club}
+              organisationId={orgIdForDirectoryLists}
+              teamId={teamIdForDirectoryLists}
             />
           )}
         </div>

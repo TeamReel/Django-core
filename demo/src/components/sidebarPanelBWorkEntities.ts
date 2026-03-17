@@ -19,12 +19,9 @@ export function buildTeamDetailSection(baseUrl: string, isPlayer: boolean): Pane
     return {
         title: 'Team',
         items: [
-            ...(!isPlayer ? [{ label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard }] : []),
-            { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
+            { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
             { label: 'Selectie', path: makeTabUrl(baseUrl, 'members'), icon: Users },
-            ...(!isPlayer ? [{ label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star }] : []),
-            ...(!isPlayer ? [{ label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Folder }] : []),
-            ...(!isPlayer ? [{ label: 'Credits', path: makeTabUrl(baseUrl, 'credits'), icon: LineChart }] : []),
+            ...(!isPlayer ? [{ label: 'Beheer', path: makeTabUrl(baseUrl, 'beheer'), icon: Settings }] : []),
         ],
         isActive: true,
     };

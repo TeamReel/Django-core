@@ -1,0 +1,105 @@
+/* ============================================================================
+   DisclosureSection — Expandable section primitive
+   ============================================================================ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Trigger button ── */
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: -2px;
+}
+
+.trigger:active {
+  background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
+}
+
+/* ── Trigger layout ── */
+.triggerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.triggerTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.triggerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* ── Badge (optional count/status) ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--app-border);
+  background: var(--app-surface, var(--color-neutral-900));
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--app-muted-text);
+  white-space: nowrap;
+}
+
+/* ── Chevron icon ── */
+.chevron {
+  display: flex;
+  align-items: center;
+  color: var(--app-muted-text);
+  transition: transform var(--duration-normal) var(--ease-default);
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
+
+  .panel {
+    transition: none;
+  }
+}
+
+/* ── Content panel ── */
+.panel {
+  overflow: hidden;
+}
+
+.panelInner {
+  border-top: 1px solid var(--app-border, var(--color-neutral-600));
+}

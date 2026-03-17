@@ -35,6 +35,7 @@ export interface HierarchyData {
   }>;
   competitionsBySeasonId: Record<string, Record<string, unknown>[]>;
   matchesCountBySeasonId: Record<string, number>;
+  matchesCountByCompetitionId: Record<string, number>;
   loading: boolean;
   error: string | null;
 }
@@ -96,6 +97,12 @@ export interface TeamOverviewTabProps {
   makeTabHref: (tab: string) => string;
   brand: BrandContentData;
   matchData: TeamMatchData;
+  /** Match records grouped by competition period id (for hierarchy drill-down) */
+  teamMatchesByPeriodId: Record<string, MatchRecord[]>;
+  teamMatchesLoading: boolean;
+  /** Full member records for inline media matrix */
+  fullMembers: Array<Record<string, unknown>>;
+  fullMembersLoading: boolean;
 }
 
 // Helper functions

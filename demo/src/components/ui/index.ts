@@ -71,3 +71,7 @@ export type { ConfirmOptions } from './ConfirmDialog';
 // ProgressBar — progress indication bar
 export { ProgressBar } from './ProgressBar';
 export type { ProgressBarProps } from './ProgressBar';
+
+// DisclosureSection — accessible expandable section primitive
+export { DisclosureSection } from './DisclosureSection';
+export type { DisclosureSectionProps } from './DisclosureSection';

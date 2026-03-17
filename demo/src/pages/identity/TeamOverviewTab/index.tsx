@@ -36,6 +36,10 @@ export function TeamOverviewTab({
   makeTabHref,
   brand,
   matchData,
+  teamMatchesByPeriodId,
+  teamMatchesLoading: matchesByPeriodLoading,
+  fullMembers,
+  fullMembersLoading: fullMembersLoadingProp,
 }: TeamOverviewTabProps) {
   const navigate = useNavigate();
 
@@ -43,6 +47,7 @@ export function TeamOverviewTab({
     seasons: hierarchySeasons,
     competitionsBySeasonId: hierarchyCompetitionsBySeasonId,
     matchesCountBySeasonId: hierarchyMatchesCountBySeasonId,
+    matchesCountByCompetitionId: hierarchyMatchesCountByCompetitionId,
     loading: hierarchyLoading,
     error: hierarchyError,
   } = hierarchy;
@@ -166,23 +171,27 @@ export function TeamOverviewTab({
 
       <BrandAssetsCard
         brandAssets={brandAssets}
-        onNavigate={() => navigate(makeTabHref('identity'))}
+        onNavigate={() => navigate(makeTabHref('beheer'))}
       />
 
       <MediaAssetsCard
         assetStats={assetStats}
         loading={fullMembersLoading}
-        onNavigate={() => navigate(makeTabHref('media'))}
+        fullMembers={fullMembers as Array<Record<string, unknown>>}
+        fullMembersLoading={fullMembersLoadingProp}
       />
 
       <SeasonsCard
         seasons={hierarchySeasons}
         competitionsBySeasonId={hierarchyCompetitionsBySeasonId}
         matchesCountBySeasonId={hierarchyMatchesCountBySeasonId}
+        matchesCountByCompetitionId={hierarchyMatchesCountByCompetitionId}
+        teamMatchesByPeriodId={teamMatchesByPeriodId as Record<string, import('./types').MatchRecord[]>}
+        teamMatchesLoading={matchesByPeriodLoading}
         loading={hierarchyLoading}
         routeKeys={routeKeys}
-        onNavigate={() => navigate(makeTabHref('hierarchy'))}
         onSeasonClick={(path) => navigate(path)}
+        onMatchClick={handleMatchClick}
       />
 
       {(upcomingMatches.length > 0 || teamMatchesLoading) && (
@@ -190,8 +199,6 @@ export function TeamOverviewTab({
           title="Aankomend"
           matches={upcomingMatches}
           loading={teamMatchesLoading}
-          showLink
-          onNavigate={() => navigate(makeTabHref('hierarchy'))}
           onMatchClick={handleMatchClick}
         />
       )}

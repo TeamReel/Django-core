@@ -473,3 +473,257 @@
     gap: var(--space-8);
   }
 }
+
+/* ============================================================================
+   Hierarchy drill-down (inside SeasonsCard)
+   ============================================================================ */
+
+.seasonDrillDown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+
+.drillDownLink {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-indigo-400);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2) 0;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.drillDownLink:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.compCard {
+  border: 1px solid var(--app-border, var(--color-neutral-600));
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--app-surface, var(--color-neutral-900));
+}
+
+.compHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  min-height: 48px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  background: none;
+  border: none;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+}
+
+.compHeader:active {
+  background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
+}
+
+.compHeader:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: -2px;
+}
+
+.compName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.compRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.compPill {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--app-border);
+  background: var(--app-surface, var(--color-neutral-900));
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--app-muted-text);
+  white-space: nowrap;
+}
+
+.compChevron {
+  display: flex;
+  align-items: center;
+  color: var(--app-muted-text);
+  transition: transform var(--duration-normal) var(--ease-default);
+}
+
+.compChevronOpen {
+  transform: rotate(90deg);
+}
+
+.compBody {
+  border-top: 1px solid var(--app-border, var(--color-neutral-600));
+  padding: var(--space-2) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* ============================================================================
+   Per-player media section (inside MediaAssetsCard)
+   ============================================================================ */
+
+.playerSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.playerSearchRow {
+  display: flex;
+  align-items: center;
+}
+
+.playerSearchRow input {
+  flex: 1;
+}
+
+.playerCard {
+  border: 1px solid var(--app-border, var(--color-neutral-600));
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--app-surface, var(--color-neutral-900));
+}
+
+.playerHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.playerAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--app-surface-2, var(--color-neutral-800));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.playerAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-full);
+}
+
+.playerInitials {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--app-muted-text);
+}
+
+.playerMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0);
+  min-width: 0;
+}
+
+.playerName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playerScore {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--app-muted-text);
+}
+
+.playerSlots {
+  border-top: 1px solid var(--app-border, var(--color-neutral-600));
+  display: flex;
+  flex-direction: column;
+}
+
+.playerSlotRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--app-border, var(--color-neutral-600));
+}
+
+.playerSlotRow:last-child {
+  border-bottom: none;
+}
+
+.playerSlotIcon {
+  display: flex;
+  align-items: center;
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+.playerSlotLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--app-text);
+  flex: 1;
+}
+
+.playerSlotStatus {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  white-space: nowrap;
+}
+
+.playerSlotStatus[data-state='processed'] {
+  color: var(--color-green-400);
+}
+
+.playerSlotStatus[data-state='raw'] {
+  color: var(--color-amber-400);
+}
+
+.playerSlotStatus[data-state='processing'] {
+  color: var(--color-blue-400);
+}
+
+.playerSlotStatus[data-state='empty'] {
+  color: var(--app-muted-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .compChevron {
+    transition: none;
+  }
+}
