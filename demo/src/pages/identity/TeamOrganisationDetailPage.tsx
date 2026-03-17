@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
@@ -8,7 +8,6 @@ import MobileTabBar from '../../components/MobileTabBar';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import { useTeamDetailData } from './useTeamDetailData';
-import type { Project } from './teamDetailTypes';
 import { useTeamTabData } from './useTeamTabData';
 import { TeamOverviewTab } from './TeamOverviewTab';
 import { TeamSelectieTab } from './TeamSelectieTab';
@@ -57,6 +56,21 @@ export default function TeamOrganisationDetailPage() {
       : new Set(['overview', 'members', 'beheer']);
     return allowed.has(normalized) ? normalized : 'overview';
   }, [location.search, isPlayer]);
+
+  // ── Redirect stale tab URLs to their normalized equivalents ──
+  useEffect(() => {
+    const params = new URLSearchParams(location.search || '');
+    const raw = params.get('tab');
+    if (!raw) return;
+    const tabTarget = activeTabFromUrl === 'overview' ? undefined : activeTabFromUrl;
+    if (raw !== tabTarget) {
+      const next = new URLSearchParams(location.search);
+      if (!tabTarget) next.delete('tab');
+      else next.set('tab', tabTarget);
+      const qs = next.toString();
+      navigate(qs ? `${location.pathname}?${qs}` : location.pathname, { replace: true });
+    }
+  }, [activeTabFromUrl, location.search, location.pathname, navigate]);
 
   const makeTabHref = (tabId: string): string => {
     const params = new URLSearchParams(location.search);
