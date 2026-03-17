@@ -189,10 +189,15 @@ export function useAppSelection(): AppSelection {
           const orgFromQuery = orgFromQueryRaw;
           const orgFromLast = String(last?.orgSlug || '').trim();
 
+        // Priority: URL path > query param > last-visited context > context-switcher org.
+        // orgFromLast (demo_app_last_context_v1) reflects the user's actual last
+        // navigation. ctxOrgSlugStr comes from django-core:currentOrgId which may
+        // be stale (pointing at a different org), causing a race where dashboard
+        // queries resolve to the wrong project.
         let orgSlug =
           (orgFromPathStr && !isNumericId(orgFromPathStr) && !isUuid(orgFromPathStr))
             ? orgFromPathStr
-            : (orgFromQuery || ctxOrgSlugStr || orgFromLast || '');
+            : (orgFromQuery || orgFromLast || ctxOrgSlugStr || '');
 
         if (!orgSlug) return;
 
@@ -386,6 +391,28 @@ export function useAppSelection(): AppSelection {
           competitionIdForApi: selectedCompetitionSlugOrId,
           matchId: selectedMatchId,
         });
+
+        // Keep django-core:currentOrgId in sync with the resolved org so the
+        // ContextSwitcherProvider loads the same org on next mount/reload.
+        // Without this, stale currentOrgId (e.g. DFB) can cause a second
+        // compute() with the wrong org after the context-switcher loads.
+        if (orgSlug && orgSlug !== ctxOrgSlugStr) {
+          try {
+            const orgs = await fetchAllPages<OrganisationRow>(
+              `${apiBaseUrl}/organisations/?page_size=250`,
+              { credentials: 'include' },
+              { ttlMs: 120_000 },
+            );
+            const matchedOrg = (orgs || []).find(
+              (o) => String(o.slug || '') === orgSlug,
+            );
+            if (matchedOrg) {
+              localStorage.setItem('django-core:currentOrgId', String(matchedOrg.id));
+            }
+          } catch {
+            // Non-critical — sync will happen on next navigation
+          }
+        }
 
     if (import.meta.env.DEV) {
         console.timeEnd(`[AppSelection] Computation ${auditId}`);
