@@ -103,11 +103,11 @@ export function useMediaReadiness(): MediaReadiness {
   const { teamIdForApi } = useAppSelection();
   const projectId = project?.id ?? teamIdForApi ?? undefined;
 
-  // 1. All brand assets for the organisation
+  // 1. All brand assets for the organisation (page_size=500 to avoid pagination cutoff)
   const { data: brandData, isLoading: brandLoading } = useQuery({
     queryKey: queryKeys.branding.assets(org?.slug || org?.id?.toString()),
     queryFn: () => api.list<BrandAsset>('/branding/assets/', {
-      params: { organisation_scope: org!.slug || org!.id },
+      params: { organisation_scope: org!.slug || org!.id, page_size: 500 },
     }),
     enabled: !!org,
     staleTime: 15 * 60 * 1000,
@@ -124,25 +124,47 @@ export function useMediaReadiness(): MediaReadiness {
 
   const { clubAssets, teamAssets } = useMemo(() => {
     const brandItems = brandData?.results ?? [];
+    const pid = projectId != null ? String(projectId) : undefined;
 
-    // Separate by project_type
-    const clubItems = brandItems.filter(a => a.project_type === 'club' || !a.project_type);
-    const teamItems = brandItems.filter(a => a.project_type === 'team');
+    // Determine club/team scoping from brand data
+    const currentAsset = pid
+      ? brandItems.find(a => a.project_id === pid)
+      : undefined;
+    const isTeam = currentAsset?.project_type === 'team';
+    const clubId = isTeam
+      ? (currentAsset?.parent_project_id ?? undefined)
+      : currentAsset?.project_type === 'club'
+        ? pid
+        : undefined;
+    const teamId = isTeam ? pid : undefined;
 
-    // Also include assets that belong to the current project specifically
-    const currentProjectItems = projectId
-      ? brandItems.filter(a => a.project_id === projectId)
-      : [];
+    // Club assets: scoped to parent club + org-level defaults (null project_id)
+    const clubItems = clubId
+      ? brandItems.filter(a =>
+          a.project_id === clubId || (!a.project_type && !a.project_id),
+        )
+      : brandItems.filter(a => a.project_type === 'club' || !a.project_type);
+
+    // Team assets: scoped to current team + inherited from parent club
+    const teamItems = teamId
+      ? brandItems.filter(a =>
+          a.project_id === teamId || (clubId != null && a.project_id === clubId),
+        )
+      : brandItems.filter(a => a.project_type === 'team');
 
     function resolveAssets(
       expected: ReadonlyArray<{ key: string; label: string; matchTypes: ReadonlyArray<string> }>,
       pool: BrandAsset[],
     ): AssetStatus[] {
       return expected.map(ea => {
-        // Find first active match
-        const found = pool.find(
-          a => ea.matchTypes.includes(a.asset_type) && a.is_active !== false,
-        );
+        // Prefer processed (non-upload) assets over raw uploads
+        const processedTypes = ea.matchTypes.filter(t => !t.endsWith('_upload'));
+        const uploadTypes = ea.matchTypes.filter(t => t.endsWith('_upload'));
+
+        const found =
+          pool.find(a => processedTypes.includes(a.asset_type) && a.is_active !== false) ??
+          pool.find(a => uploadTypes.includes(a.asset_type) && a.is_active !== false);
+
         return {
           key: ea.key,
           label: ea.label,
@@ -156,7 +178,7 @@ export function useMediaReadiness(): MediaReadiness {
 
     return {
       clubAssets: resolveAssets(CLUB_ASSETS, clubItems),
-      teamAssets: resolveAssets(TEAM_ASSETS, [...teamItems, ...currentProjectItems]),
+      teamAssets: resolveAssets(TEAM_ASSETS, teamItems),
     };
   }, [brandData, projectId]);
 
