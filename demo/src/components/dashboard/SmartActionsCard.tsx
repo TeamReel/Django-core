@@ -20,6 +20,7 @@ import { useProjectMembers } from '../../hooks/useProjectMembers';
 import { useGenerativeRequests } from '../../hooks/useGenerativeRequests';
 import { useClosestMatch } from '../../hooks/useClosestMatch';
 import { useMatchDayMode } from '../../hooks/useMatchDayMode';
+import { useAppSelection } from '../../hooks/useAppSelection';
 import { UploadSheet } from './UploadSheet';
 import styles from './SmartActionsCard.module.css';
 
@@ -47,6 +48,8 @@ export const SmartActionsCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const org = context.organisation;
   const project = context.project;
+  const { teamIdForApi } = useAppSelection();
+  const projectId = project?.id ?? teamIdForApi ?? undefined;
 
   // Upload sheet state
   const [uploadSheetOpen, setUploadSheetOpen] = useState(false);
@@ -79,18 +82,18 @@ export const SmartActionsCard: React.FC = () => {
 
   // Parallel queries — deduped via shared hooks (D5)
   const { data: membersData, isLoading: membersLoading } = useProjectMembers(
-    project?.id,
+    projectId,
   );
 
   const genFilters = useMemo(() => {
-    if (!project) return undefined;
-    return { status: 'completed', project: project.id } as Record<string, string>;
-  }, [project?.id]);
+    if (!projectId) return undefined;
+    return { status: 'completed', project: projectId } as Record<string, string>;
+  }, [projectId]);
 
   const { data: genData, isLoading: genLoading } = useGenerativeRequests(genFilters);
 
   // Closest match — for lineup action + match-day mode
-  const { data: matchData } = useClosestMatch(project?.id);
+  const { data: matchData } = useClosestMatch(projectId);
   const activeMatch = matchData?.match ?? null;
   const lineupCount = matchData?.lineupCount ?? 0;
 

@@ -20,6 +20,7 @@ import type { MediaItem } from '@/types/api/media';
 import { useCreditBalance } from '../../hooks/useCreditBalance';
 import { useQueueCounts } from '../../hooks/useQueueCounts';
 import { useProjectMembers } from '../../hooks/useProjectMembers';
+import { useAppSelection } from '../../hooks/useAppSelection';
 import { queryKeys } from '../../utils/queryKeys';
 import type { Organisation } from '../../types';
 import { routes } from '../../routes';
@@ -37,12 +38,14 @@ export const SquadReadinessCard: React.FC = () => {
   const navigate = useNavigate();
   const org = context.organisation as Organisation | null;
   const project = context.project;
+  const { teamIdForApi } = useAppSelection();
+  const projectId = project?.id ?? teamIdForApi ?? undefined;
   const [sheetOpen, setSheetOpen] = useState(false);
 
   // Shared members query — deduped across cards (D5)
-  const { data: membersData } = useProjectMembers(project?.id);
+  const { data: membersData } = useProjectMembers(projectId);
   const members = membersData?.results ?? [];
-  const memberCount = project
+  const memberCount = projectId
     ? (membersData?.count ?? members.length ?? 0)
     : (org?.member_count || 0);
 
@@ -120,13 +123,15 @@ export const ContentStatsCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
   const project = context.project;
+  const { teamIdForApi } = useAppSelection();
+  const projectId = project?.id ?? teamIdForApi ?? undefined;
 
   const mediaFilters = useMemo(() => {
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const p: Record<string, string> = { created_at__gte: weekAgo };
-    if (project) p.project = project.id;
+    if (projectId) p.project = projectId;
     return p;
-  }, [project?.id]);
+  }, [projectId]);
 
   const { data: mediaData } = useQuery({
     queryKey: queryKeys.media.items(mediaFilters),
@@ -171,6 +176,8 @@ export const UpcomingMatchesCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
   const project = context.project;
+  const { teamIdForApi } = useAppSelection();
+  const projectId = project?.id ?? teamIdForApi ?? undefined;
 
   const matchFilters = useMemo(() => {
     const now = new Date().toISOString();
@@ -179,9 +186,9 @@ export const UpcomingMatchesCard: React.FC = () => {
       start_time__gte: now,
       ordering: 'start_time',
     };
-    if (project) p.project = project.id;
+    if (projectId) p.project = projectId;
     return p;
-  }, [project?.id]);
+  }, [projectId]);
 
   const { data: matchData } = useQuery({
     queryKey: queryKeys.activities.upcoming(matchFilters),

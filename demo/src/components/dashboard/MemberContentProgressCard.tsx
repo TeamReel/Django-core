@@ -10,6 +10,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { Users, ChevronRight, CheckCircle2, Circle } from 'lucide-react';
 import { useProjectMembers } from '../../hooks/useProjectMembers';
 import { useGenerativeRequests } from '../../hooks/useGenerativeRequests';
+import { useAppSelection } from '../../hooks/useAppSelection';
 import { NavigationSheet } from '../ui/NavigationSheet';
 import styles from './MemberContentProgressCard.module.css';
 
@@ -45,16 +46,18 @@ export const MemberContentProgressCard: React.FC = () => {
   const navigate = useNavigate();
   const org = context.organisation;
   const project = context.project;
+  const { teamIdForApi } = useAppSelection();
+  const projectId = project?.id ?? teamIdForApi ?? undefined;
 
   // Parallel queries — no waterfall (D5/D6)
   const { data: membersData, isLoading: membersLoading } = useProjectMembers(
-    project?.id,
+    projectId,
   );
 
   const genFilters = useMemo(() => {
-    if (!project) return undefined;
-    return { status: 'completed', project: project.id } as Record<string, string>;
-  }, [project?.id]);
+    if (!projectId) return undefined;
+    return { status: 'completed', project: projectId } as Record<string, string>;
+  }, [projectId]);
 
   const { data: genData, isLoading: genLoading } = useGenerativeRequests(genFilters);
 

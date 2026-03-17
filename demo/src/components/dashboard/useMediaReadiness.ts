@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { api } from '@/api';
 import type { BrandAsset } from '@/types/api/branding';
+import { useAppSelection } from '../../hooks/useAppSelection';
 import { useProjectMembers } from '../../hooks/useProjectMembers';
 import { useGenerativeRequests } from '../../hooks/useGenerativeRequests';
 import { queryKeys } from '../../utils/queryKeys';
@@ -101,6 +102,8 @@ export function useMediaReadiness(): MediaReadiness {
   const { context } = useContextSwitcher();
   const org = context.organisation;
   const project = context.project;
+  const { teamIdForApi } = useAppSelection();
+  const projectId = project?.id ?? teamIdForApi ?? undefined;
 
   // 1. All brand assets for the organisation
   const { data: brandData, isLoading: brandLoading } = useQuery({
@@ -114,14 +117,14 @@ export function useMediaReadiness(): MediaReadiness {
 
   // 2. Project members
   const { data: membersData, isLoading: membersLoading } = useProjectMembers(
-    project?.id,
+    projectId,
   );
 
   // 3. Completed generative requests for member content
   const genFilters = useMemo(() => {
-    if (!project) return undefined;
-    return { status: 'completed', project: project.id } as Record<string, string>;
-  }, [project?.id]);
+    if (!projectId) return undefined;
+    return { status: 'completed', project: projectId } as Record<string, string>;
+  }, [projectId]);
 
   const { data: genData, isLoading: genLoading } = useGenerativeRequests(genFilters);
 
@@ -137,8 +140,8 @@ export function useMediaReadiness(): MediaReadiness {
     const teamItems = brandItems.filter(a => a.project_type === 'team');
 
     // Also include assets that belong to the current project specifically
-    const currentProjectItems = project
-      ? brandItems.filter(a => a.project_id === project.id)
+    const currentProjectItems = projectId
+      ? brandItems.filter(a => a.project_id === projectId)
       : [];
 
     function resolveAssets(
@@ -165,7 +168,7 @@ export function useMediaReadiness(): MediaReadiness {
       clubAssets: resolveAssets(CLUB_ASSETS, clubItems),
       teamAssets: resolveAssets(TEAM_ASSETS, [...teamItems, ...currentProjectItems]),
     };
-  }, [brandData, project?.id]);
+  }, [brandData, projectId]);
 
   // ── Compute member media progress ──
 

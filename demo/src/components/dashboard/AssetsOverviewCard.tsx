@@ -19,6 +19,7 @@ import { api } from '@/api';
 import type { BrandAsset } from '@/types/api/branding';
 import { useProjectMembers } from '../../hooks/useProjectMembers';
 import { useGenerativeRequests } from '../../hooks/useGenerativeRequests';
+import { useAppSelection } from '../../hooks/useAppSelection';
 import { queryKeys } from '../../utils/queryKeys';
 import { NavigationSheet } from '../ui/NavigationSheet';
 import styles from './AssetsOverviewCard.module.css';
@@ -75,6 +76,8 @@ export const AssetsOverviewCard: React.FC = () => {
   const navigate = useNavigate();
   const org = context.organisation;
   const project = context.project;
+  const { teamIdForApi } = useAppSelection();
+  const projectId = project?.id ?? teamIdForApi ?? undefined;
 
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -89,13 +92,13 @@ export const AssetsOverviewCard: React.FC = () => {
   });
 
   const { data: membersData, isLoading: membersLoading } = useProjectMembers(
-    project?.id,
+    projectId,
   );
 
   const genFilters = useMemo(() => {
-    if (!project) return undefined;
-    return { status: 'completed', project: project.id } as Record<string, string>;
-  }, [project?.id]);
+    if (!projectId) return undefined;
+    return { status: 'completed', project: projectId } as Record<string, string>;
+  }, [projectId]);
 
   const { data: genData, isLoading: genLoading } = useGenerativeRequests(genFilters);
 
