@@ -2,7 +2,7 @@
 
 .placeholder {
   padding: var(--space-4);
-  color: var(--app-text-secondary, #6b7280);
+  color: var(--app-text-secondary, var(--color-neutral-400));
   font-size: var(--text-sm);
 }
 
@@ -46,7 +46,7 @@
 .line {
   width: 4px;
   flex: 1;
-  background-color: var(--app-border, #e5e7eb);
+  background-color: var(--app-border, var(--app-border));
   margin-top: var(--space-1);
 }
 
@@ -75,27 +75,27 @@
 
 .stateTransition {
   font-size: var(--text-xs);
-  color: var(--app-text-secondary, #6b7280);
+  color: var(--app-text-secondary, var(--color-neutral-400));
 }
 
 .meta {
   font-size: var(--text-xs);
-  color: var(--app-text-secondary, #9ca3af);
+  color: var(--app-text-secondary, var(--color-neutral-300));
   margin-top: var(--space-1);
   display: flex;
   gap: var(--space-2);
 }
 
 .actorName {
-  color: var(--app-text, #6b7280);
+  color: var(--app-text, var(--color-neutral-400));
 }
 
 .comment {
   font-size: var(--text-xs);
-  color: var(--app-text, #374151);
+  color: var(--app-text, var(--color-neutral-600));
   margin-top: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  background-color: var(--app-surface-2, #f9fafb);
+  background-color: var(--app-surface-2, var(--color-neutral-50));
   border-radius: var(--radius-md);
   border-left: 3px solid var(--comment-accent);
   font-style: italic;

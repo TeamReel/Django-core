@@ -362,9 +362,9 @@
   backdrop-filter: blur(8px);
 }
 
-.reviewOutputBadge[data-output='video'] { background: rgba(99, 102, 241, 0.7); color: var(--color-white); }
-.reviewOutputBadge[data-output='image'] { background: rgba(13, 148, 136, 0.7); color: var(--color-white); }
-.reviewOutputBadge[data-output='text'] { background: rgba(217, 119, 6, 0.7); color: var(--color-white); }
+.reviewOutputBadge[data-output='video'] { background: var(--color-indigo-500); color: var(--color-white); }
+.reviewOutputBadge[data-output='image'] { background: var(--color-primary-400); color: var(--color-white); }
+.reviewOutputBadge[data-output='text'] { background: var(--color-amber-500); color: var(--color-white); }
 
 .reviewCard {
   display: flex;

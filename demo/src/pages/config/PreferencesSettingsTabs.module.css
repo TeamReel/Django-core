@@ -6,9 +6,9 @@
   --color-gray-100: var(--app-surface-2);
   --color-gray-200: var(--app-border);
   --color-gray-400: var(--color-neutral-400);
-  --color-gray-700: #374151;
-  --color-gray-800: #1f2937;
-  --color-gray-900: #111827;
+  --color-gray-700: var(--color-neutral-600);
+  --color-gray-800: var(--color-neutral-800);
+  --color-gray-900: var(--color-neutral-900);
   --color-blue-500: var(--color-blue-500);
 }
 

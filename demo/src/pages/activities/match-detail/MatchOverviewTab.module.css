@@ -1,11 +1,11 @@
 /* ── TeamLogo ─────────────────────────────────────────────────── */
 .teamLogoFallback {
-  background: var(--app-surface-secondary, #252526);
+  background: var(--app-surface-secondary, var(--color-neutral-900));
 }
 
 /* ── Hero Scoreboard ─────────────────────────────────────────── */
 .heroCard {
-  background: linear-gradient(135deg, var(--app-surface-2, #1a1a2e) 0%, var(--app-surface, #16213e) 100%);
+  background: linear-gradient(135deg, var(--app-surface-2, var(--color-neutral-900)) 0%, var(--app-surface, var(--color-neutral-900)) 100%);
   border-radius: var(--radius-lg);
   padding: var(--space-5) var(--space-3) var(--space-4);
   text-align: center;
@@ -62,7 +62,7 @@
 .heroMeta {
   margin-top: var(--space-4);
   padding-top: var(--space-3);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--app-surface-glass-hover);
   font-size: var(--text-xs);
   color: var(--app-muted-text);
   line-height: var(--leading-normal);
@@ -89,7 +89,7 @@
 
 /* Content count — color driven by data-attribute */
 .contentStatusValue {
-  color: var(--app-muted-text, #888);
+  color: var(--app-muted-text, var(--app-muted-text));
 }
 
 .contentStatusValue[data-has-content='true'] {
@@ -121,7 +121,7 @@
 
 .progressTrack {
   height: 4px;
-  background: var(--app-border, #333);
+  background: var(--app-border, var(--app-text));
   border-radius: var(--radius-sm);
   margin: var(--space-2) 0 var(--space-2);
   overflow: hidden;
@@ -129,14 +129,14 @@
 
 .progressFill {
   height: 100%;
-  background: var(--color-green-400, #4ade80);
+  background: var(--color-green-400, var(--color-green-300));
   border-radius: var(--radius-sm);
   transition: width var(--duration-slow) var(--ease-default);
 }
 
 /* ── Content checklist rows ──────────────────────────────────── */
 .contentRow {
-  border-bottom: 1px solid var(--app-border, #222);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
   cursor: default;
   min-height: 44px;
 }
@@ -155,12 +155,12 @@
 }
 
 .actionCreate {
-  color: var(--app-primary, #3b82f6);
+  color: var(--app-primary, var(--color-blue-500));
 }
 
 /* ── Match-event rows ────────────────────────────────────────── */
 .eventRow {
-  border-bottom: 1px solid var(--app-border, #222);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
   min-height: 40px;
 }
 

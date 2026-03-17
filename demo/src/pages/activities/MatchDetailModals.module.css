@@ -5,7 +5,7 @@
 /* ------------------------------------------------------------------ */
 
 .contentPreviewOverlay {
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--alpha-black-70);
 }
 
 .contentPreviewCard {
@@ -13,7 +13,7 @@
   max-width: 800px;
   width: 90%;
   max-height: 90vh;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px var(--alpha-black-30);
 }
 
 .contentPreviewMedia {
@@ -40,7 +40,7 @@
 
 .savedAssetOverlay {
   z-index: 1100;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--alpha-black-70);
   padding: var(--space-4) var(--space-2) 80px;
 }
 
@@ -49,7 +49,7 @@
   max-width: 900px;
   width: 92%;
   max-height: calc(90vh - 80px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px var(--alpha-black-30);
 }
 
 .savedAssetMedia {
@@ -91,7 +91,7 @@
 }
 
 .toastItem {
-  --color-toast-success: #166534;
+  --color-toast-success: var(--color-green-800);
   --color-toast-error: var(--color-red-700);
   --color-toast-warning: var(--color-amber-700);
   --color-toast-info: var(--color-blue-800);

@@ -8,11 +8,11 @@
 
 .actionBadge {
   padding: var(--space-1) var(--space-2);
-  background-color: var(--badge-bg, #e3f2fd);
-  color: var(--badge-color, #1565c0);
+  background-color: var(--badge-bg, var(--color-blue-50));
+  color: var(--badge-color, var(--color-blue-700));
 }
 
 .actionBadge[data-action="member_removed"] {
-  --badge-bg: #ffebee;
-  --badge-color: #c62828;
+  --badge-bg: var(--color-red-50);
+  --badge-color: var(--color-red-600);
 }

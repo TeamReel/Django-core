@@ -1,10 +1,10 @@
 /* IdentityTabComponents — extracted inline styles */
 
 .assetCard {
-  border: 1px solid var(--vscode-widget-border, #333);
+  border: 1px solid var(--vscode-widget-border, var(--app-text));
   border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--vscode-editor-background, #1e1e1e);
+  background: var(--vscode-editor-background, var(--color-neutral-900));
 }
 
 .assetCard[data-inherited] {
@@ -13,7 +13,7 @@
 
 .previewArea {
   aspect-ratio: var(--aspect-ratio, 3 / 4);
-  background: var(--preview-bg, repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px);
+  background: var(--preview-bg, repeating-conic-gradient(var(--color-neutral-800) 0% 25%, var(--color-neutral-900) 0% 50%) 50% / 20px 20px);
   position: relative;
   min-height: 120px;
 }
@@ -23,7 +23,7 @@
   top: 8px;
   right: 8px;
   background: var(--badge-color);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   font-size: var(--text-xs);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
@@ -48,7 +48,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--vscode-descriptionForeground, #888);
+  color: var(--vscode-descriptionForeground, var(--app-muted-text));
   font-size: var(--text-xs);
 }
 
@@ -61,7 +61,7 @@
   padding: var(--space-1) var(--space-2);
   font-size: var(--text-xs);
   cursor: pointer;
-  background: var(--vscode-button-background, #0078d4);
+  background: var(--vscode-button-background, var(--color-blue-600));
   color: var(--vscode-button-foreground, var(--app-surface));
   border: none;
   border-radius: var(--radius-sm);
@@ -69,7 +69,7 @@
 
 .dateText {
   font-size: var(--text-xs);
-  color: var(--vscode-descriptionForeground, #888);
+  color: var(--vscode-descriptionForeground, var(--app-muted-text));
   margin-top: var(--space-1);
 }
 

@@ -4,33 +4,33 @@
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  border: 1px solid var(--app-border, #333);
+  border: 1px solid var(--app-border, var(--app-text));
   margin-bottom: var(--space-2);
-  background: var(--app-surface-2, #252540);
+  background: var(--app-surface-2, var(--color-neutral-800));
 }
 
 .progressBarContainer {
   height: 8px;
   border-radius: var(--radius-sm);
-  background: var(--app-border, #333);
+  background: var(--app-border, var(--app-text));
   overflow: hidden;
   flex: 1;
   min-width: 80px;
 }
 
 .loadingState {
-  color: var(--app-muted-text, #888);
+  color: var(--app-muted-text, var(--app-muted-text));
   padding: var(--space-10);
 }
 
 .errorAlert {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--app-error-bg);
+  border: 1px solid var(--app-error-ring);
   color: var(--color-red-500);
 }
 
 .emptyState {
-  color: var(--app-muted-text, #888);
+  color: var(--app-muted-text, var(--app-muted-text));
   padding: var(--space-10);
 }
 
@@ -39,7 +39,7 @@
 }
 
 .jobSubtext {
-  color: var(--app-muted-text, #888);
+  color: var(--app-muted-text, var(--app-muted-text));
 }
 
 .progressArea {
@@ -56,7 +56,7 @@
 }
 
 .progressText {
-  color: var(--app-muted-text, #888);
+  color: var(--app-muted-text, var(--app-muted-text));
   min-width: 40px;
 }
 
@@ -66,7 +66,7 @@
 
 .infoNotice {
   --info-notice-color: var(--color-blue-400);
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: var(--app-info-bg);
+  border: 1px solid var(--app-info-ring);
   color: var(--info-notice-color);
 }

@@ -4,7 +4,7 @@
   width: 36px;
   height: 36px;
   background: var(--app-primary);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 .title {

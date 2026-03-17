@@ -12,7 +12,7 @@
 }
 
 .modal {
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   padding: var(--space-6);
   border-radius: var(--radius-md);
   width: 640px;
@@ -69,7 +69,7 @@
 
 .errorMessage {
   margin-top: var(--space-3);
-  color: var(--app-danger, #d32f2f);
+  color: var(--app-danger, var(--color-red-500));
 }
 
 .actions {
@@ -82,7 +82,7 @@
 .submitButton {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  border: 1px solid var(--submit-btn-border, #1e5aa5);
+  border: 1px solid var(--submit-btn-border, var(--color-blue-700));
   background-color: var(--color-blue-600);
   color: var(--color-white, var(--app-surface));
   cursor: pointer;

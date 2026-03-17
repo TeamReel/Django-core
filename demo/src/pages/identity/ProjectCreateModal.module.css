@@ -1,5 +1,5 @@
 .container {
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   width: 520px;
   max-width: 92%;
   color: var(--app-text);
@@ -36,7 +36,7 @@
 }
 
 .submitButton {
-  background-color: var(--submit-bg, #0066cc);
+  background-color: var(--submit-bg, var(--color-blue-600));
   cursor: pointer;
   opacity: 1;
 }

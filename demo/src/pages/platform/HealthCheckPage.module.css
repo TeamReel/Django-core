@@ -6,7 +6,7 @@
   opacity: 0.9;
   border: 1px solid var(--app-error);
   border-radius: var(--radius-sm);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 .autoFitGrid {

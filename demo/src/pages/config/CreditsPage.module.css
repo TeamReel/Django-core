@@ -11,7 +11,7 @@
   display: flex;
   gap: 0;
   margin-bottom: var(--space-6);
-  border-bottom: 1px solid var(--app-border, #e0e0e0);
+  border-bottom: 1px solid var(--app-border, var(--app-border));
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -44,9 +44,9 @@
 
 .tabButtonActive {
   composes: tabButton;
-  background: var(--primary-bg, #1976d2);
-  color: var(--color-white, #fff);
-  border-bottom-color: var(--primary-bg, #1976d2);
+  background: var(--primary-bg, var(--color-blue-700));
+  color: var(--color-white, var(--color-white));
+  border-bottom-color: var(--primary-bg, var(--color-blue-700));
   font-weight: var(--font-bold);
 }
 
@@ -56,10 +56,10 @@
   bottom: 24px;
   right: 24px;
   background-color: var(--color-neutral-900);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   padding: var(--space-4) var(--space-6);
   border-radius: var(--radius-md);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px var(--alpha-black-30);
   z-index: 9999;
   max-width: 400px;
   font-size: var(--text-sm);
@@ -69,7 +69,7 @@
 /* ── Scope label ───────────────────────────────────────────────────── */
 .scopeLabel {
   font-size: var(--text-sm);
-  color: var(--app-muted-text, #666);
+  color: var(--app-muted-text, var(--color-neutral-400));
   margin-bottom: var(--space-4);
 }
 
@@ -96,5 +96,5 @@
 
 .txnCard {
   padding: var(--space-3) var(--space-3);
-  border: 1px solid var(--border-color, #e0e0e0);
+  border: 1px solid var(--border-color, var(--app-border));
 }

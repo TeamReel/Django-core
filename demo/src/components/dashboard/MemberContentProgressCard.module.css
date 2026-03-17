@@ -25,7 +25,7 @@
   font-weight: var(--font-bold);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-lg);
-  background: rgba(99, 102, 241, 0.1);
+  background: var(--app-ai-bg);
   color: var(--app-primary);
 }
 

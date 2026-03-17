@@ -21,7 +21,7 @@
   height: 80px;
   border-radius: var(--radius-full);
   overflow: hidden;
-  background: var(--app-primary, #3B8EA5);
+  background: var(--app-primary, var(--color-primary-400));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,7 +49,7 @@
 .avatarInitials {
   font-size: 28px;
   font-weight: var(--font-extrabold);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   line-height: var(--leading-tight);
 }
 
@@ -300,7 +300,7 @@ button.row:active {
 
 /* ── Danger row (sign out) ───────────────────────────────────────────── */
 .danger {
-  color: var(--app-error, #dc2626);
+  color: var(--app-error, var(--color-red-500));
 }
 
 .danger:disabled {

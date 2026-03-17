@@ -3,12 +3,12 @@
 /* ── Variant picker button ── */
 
 .variantButton {
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   background: var(--app-surface, white);
 }
 
 .variantButton[data-selected='true'] {
-  border: 2px solid var(--app-primary, #3B8EA5);
+  border: 2px solid var(--app-primary, var(--color-primary-400));
   background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
 }
 
@@ -19,12 +19,12 @@
   height: 40px;
   flex-shrink: 0;
   background-color: var(--app-surface-2, var(--app-surface-2));
-  color: var(--app-primary, #3B8EA5);
+  color: var(--app-primary, var(--color-primary-400));
 }
 
 .variantIcon[data-selected='true'] {
-  background-color: var(--app-primary, #3B8EA5);
-  color: var(--color-white, #fff);
+  background-color: var(--app-primary, var(--color-primary-400));
+  color: var(--color-white, var(--color-white));
 }
 
 /* Variant option description */
@@ -49,15 +49,15 @@
 .layoutButton {
   line-height: var(--leading-normal);
   transition: all var(--duration-fast) var(--ease-default);
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   background: var(--app-surface-2, var(--app-surface-2));
-  color: var(--app-text, #111);
+  color: var(--app-text, var(--app-text));
 }
 
 .layoutButton[data-active='true'] {
-  border: 2px solid var(--app-primary, #3B8EA5);
+  border: 2px solid var(--app-primary, var(--color-primary-400));
   background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 .layoutIcon {
@@ -74,7 +74,7 @@
 
 .selectInput {
   padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
 }
 
 /* Warning text */
@@ -94,7 +94,7 @@
 .slotBadge {
   width: 24px;
   height: 24px;
-  background: var(--app-primary, #3B8EA5);
+  background: var(--app-primary, var(--color-primary-400));
   flex-shrink: 0;
 }
 
@@ -102,7 +102,7 @@
 
 .slotSelect {
   padding: var(--space-2) var(--space-2);
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   border-radius: var(--radius-sm);
 }
 

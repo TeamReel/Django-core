@@ -6,10 +6,10 @@
 
 .root {
   --vq-color-danger: var(--color-red-500);
-  --vq-color-danger-bg: #fef2f2;
+  --vq-color-danger-bg: var(--color-red-50);
   --vq-color-blue-primary: var(--color-blue-600);
   --vq-color-blue-100: var(--color-blue-100);
-  --vq-color-success: #059669;
+  --vq-color-success: var(--color-green-600);
 }
 
 /* ── Progress Bar ─────────────────────────────────────────────────────────── */
@@ -17,7 +17,7 @@
 .progressTrack {
   height: 8px;
   border-radius: var(--radius-sm);
-  background-color: var(--app-border, #e5e7eb);
+  background-color: var(--app-border, var(--app-border));
 }
 
 .progressFill {
@@ -48,9 +48,9 @@
 }
 
 .errorMessage {
-  color: var(--vq-color-danger, #dc2626);
-  background-color: var(--vq-color-danger-bg, #fef2f2);
-  border-left: 3px solid var(--vq-color-danger, #dc2626);
+  color: var(--vq-color-danger, var(--color-red-500));
+  background-color: var(--vq-color-danger-bg, var(--color-red-50));
+  border-left: 3px solid var(--vq-color-danger, var(--color-red-500));
 }
 
 .actionsRow {
@@ -59,13 +59,13 @@
 
 .cancelButton {
   padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--vq-color-danger, #dc2626);
-  color: var(--vq-color-danger, #dc2626);
+  border: 1px solid var(--vq-color-danger, var(--color-red-500));
+  color: var(--vq-color-danger, var(--color-red-500));
 }
 
 .retryButton {
   padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--vq-color-blue-primary, #2563eb);
+  border: 1px solid var(--vq-color-blue-primary, var(--color-blue-600));
   background-color: var(--color-blue-600);
 }
 
@@ -73,22 +73,22 @@
 
 .refreshButton {
   padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--app-border, #e5e7eb);
-  color: var(--app-text, #111);
+  border: 1px solid var(--app-border, var(--app-border));
+  color: var(--app-text, var(--app-text));
 }
 
 .filterButton {
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   background-color: transparent;
-  color: var(--app-text-secondary, #6b7280);
+  color: var(--app-text-secondary, var(--color-neutral-400));
   font-weight: var(--font-normal);
 }
 
 .filterButtonActive {
   border-color: var(--color-blue-600);
-  background-color: var(--vq-color-blue-100, #dbeafe);
+  background-color: var(--vq-color-blue-100, var(--color-blue-100));
   color: var(--color-blue-600);
   font-weight: var(--font-semibold);
 }
@@ -98,8 +98,8 @@
 }
 
 .errorAlert {
-  background-color: var(--vq-color-danger-bg, #fef2f2);
-  color: var(--vq-color-danger, #dc2626);
+  background-color: var(--vq-color-danger-bg, var(--color-red-50));
+  color: var(--vq-color-danger, var(--color-red-500));
 }
 
 .emptyState {

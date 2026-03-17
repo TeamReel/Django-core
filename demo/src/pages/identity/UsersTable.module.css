@@ -2,11 +2,11 @@
 
 /* ── Color tokens (scoped to component root) ───────────────────────── */
 .root {
-  --ut-color-link: #0066cc;
-  --ut-color-secondary: #6c757d;
-  --ut-color-danger: #dc3545;
-  --ut-color-primary: #007bff;
-  --ut-color-success: #1e7e34;
+  --ut-color-link: var(--color-blue-600);
+  --ut-color-secondary: var(--color-neutral-400);
+  --ut-color-danger: var(--color-red-500);
+  --ut-color-primary: var(--color-blue-500);
+  --ut-color-success: var(--color-green-700);
 }
 
 /* ── Table header columns ──────────────────────────────────────────── */

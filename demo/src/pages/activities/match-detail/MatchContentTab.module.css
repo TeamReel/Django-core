@@ -11,12 +11,12 @@
 .sectionHeader {
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--app-muted-text, #888);
+  color: var(--app-muted-text, var(--app-muted-text));
   padding-left: var(--space-1);
 }
 
 .contentRowsContainer {
   border-radius: var(--radius-lg);
-  border: 1px solid var(--app-border, #333);
-  background: var(--app-surface, #1e1e1e);
+  border: 1px solid var(--app-border, var(--app-text));
+  background: var(--app-surface, var(--color-neutral-900));
 }

@@ -14,18 +14,18 @@
 
 /* Level-based accent */
 .widget[data-level="1"] {
-  border-color: var(--color-warning, #f59e0b);
+  border-color: var(--color-warning, var(--color-amber-400));
 }
 
 .widget[data-level="2"] {
-  border-color: var(--color-error, #ef4444);
-  background: linear-gradient(135deg, var(--app-surface) 90%, rgba(239, 68, 68, 0.04) 100%);
+  border-color: var(--color-error, var(--app-error));
+  background: linear-gradient(135deg, var(--app-surface) 90%, var(--app-error-bg) 100%);
 }
 
 .widget[data-level="3"] {
-  border-color: var(--color-error, #ef4444);
-  background: linear-gradient(135deg, var(--app-surface) 85%, rgba(239, 68, 68, 0.08) 100%);
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.08);
+  border-color: var(--color-error, var(--app-error));
+  background: linear-gradient(135deg, var(--app-surface) 85%, var(--app-error-bg) 100%);
+  box-shadow: 0 0 12px var(--app-error-bg);
 }
 
 /* ── Flame icon ──────────────────────────────────────────────────── */
@@ -41,12 +41,12 @@
 }
 
 .flameIcon {
-  color: var(--color-warning, #f59e0b);
+  color: var(--color-warning, var(--color-amber-400));
 }
 
 .widget[data-level="2"] .flameIcon,
 .widget[data-level="3"] .flameIcon {
-  color: var(--color-error, #ef4444);
+  color: var(--color-error, var(--app-error));
   animation: flicker 1.5s ease-in-out infinite alternate;
 }
 
@@ -96,13 +96,13 @@
 }
 
 .dot[data-active="true"] {
-  background: var(--color-warning, #f59e0b);
+  background: var(--color-warning, var(--color-amber-400));
   transform: scale(1.15);
 }
 
 .widget[data-level="2"] .dot[data-active="true"],
 .widget[data-level="3"] .dot[data-active="true"] {
-  background: var(--color-error, #ef4444);
+  background: var(--color-error, var(--app-error));
 }
 
 .trophyIcon {

@@ -6,7 +6,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--app-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,12 +14,12 @@
 }
 
 .modal {
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   padding: var(--space-5);
   border-radius: var(--radius-md);
   width: 520px;
   max-width: 95%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px var(--alpha-black-15);
   color: var(--app-text);
   border: 1px solid var(--app-border);
 }
@@ -54,7 +54,7 @@
 }
 
 .errorText {
-  color: var(--app-danger, #d32f2f);
+  color: var(--app-danger, var(--color-red-500));
 }
 
 .footerActions {
@@ -80,8 +80,8 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
-  background-color: var(--app-primary, #1976d2);
-  color: var(--color-white, #fff);
+  background-color: var(--app-primary, var(--color-blue-700));
+  color: var(--color-white, var(--color-white));
 }
 
 .saveButton[data-saving="true"] {

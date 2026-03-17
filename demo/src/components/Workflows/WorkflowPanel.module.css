@@ -1,26 +1,26 @@
 /* WorkflowPanel — extracted inline styles */
 
 .loadingText {
-  color: var(--app-text-secondary, #6b7280);
+  color: var(--app-text-secondary, var(--color-neutral-400));
 }
 
 .errorText {
-  color: var(--color-error, #dc2626);
+  color: var(--color-error, var(--color-red-500));
 }
 
 .headerTitle {
   font-size: var(--text-base);
-  color: var(--app-text, #111);
+  color: var(--app-text, var(--app-text));
 }
 
 .workflowCount {
-  color: var(--app-text-secondary, #9ca3af);
+  color: var(--app-text-secondary, var(--color-neutral-300));
 }
 
 .emptyState {
-  color: var(--app-text-secondary, #9ca3af);
-  background-color: var(--app-surface-2, #f9fafb);
-  border: 1px dashed var(--app-border, #e5e7eb);
+  color: var(--app-text-secondary, var(--color-neutral-300));
+  background-color: var(--app-surface-2, var(--color-neutral-50));
+  border: 1px dashed var(--app-border, var(--app-border));
 }
 
 .instanceSelector {
@@ -29,38 +29,38 @@
 
 .instanceButton {
   padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   background-color: transparent;
-  color: var(--app-text, #111);
+  color: var(--app-text, var(--app-text));
   font-weight: var(--font-normal);
 }
 
 .instanceButton[data-active='true'] {
-  border-color: var(--app-primary, #2563eb);
-  background-color: var(--app-primary-light, #dbeafe);
+  border-color: var(--app-primary, var(--color-blue-600));
+  background-color: var(--app-primary-light, var(--color-blue-100));
   font-weight: var(--font-semibold);
 }
 
 .card {
-  background-color: var(--app-surface, #fff);
-  border: 1px solid var(--app-border, #e5e7eb);
+  background-color: var(--app-surface, var(--color-white));
+  border: 1px solid var(--app-border, var(--app-border));
 }
 
 .statusLabel {
-  color: var(--app-text-secondary, #9ca3af);
+  color: var(--app-text-secondary, var(--color-neutral-300));
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .secondaryText {
-  color: var(--app-text-secondary, #9ca3af);
+  color: var(--app-text-secondary, var(--color-neutral-300));
 }
 
 .actionError {
-  background-color: var(--color-error-light, #fee2e2);
-  color: var(--color-error, #dc2626);
+  background-color: var(--color-error-light, var(--color-red-50));
+  color: var(--color-error, var(--color-red-500));
 }
 
 .historyTitle {
-  color: var(--app-text, #111);
+  color: var(--app-text, var(--app-text));
 }

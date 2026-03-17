@@ -26,7 +26,7 @@
 .galleryHeader {
   padding: var(--space-5) var(--space-4) var(--space-4);
   border-bottom: 1px solid var(--app-border, rgba(255, 255, 255, 0.08));
-  background: var(--app-surface, #1a1a2e);
+  background: var(--app-surface, var(--color-neutral-900));
 }
 
 .galleryHeaderInner {
@@ -56,7 +56,7 @@
 .gallerySub {
   margin: 0;
   font-size: var(--text-sm);
-  color: var(--app-text-secondary, #999);
+  color: var(--app-text-secondary, var(--app-muted-text));
 }
 
 /* ── Category tab bar ── */

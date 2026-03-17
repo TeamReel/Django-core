@@ -16,8 +16,8 @@
 }
 
 .filterButton[data-active] {
-  background: var(--app-primary, #3b82f6);
-  color: var(--color-white, #fff);
+  background: var(--app-primary, var(--color-blue-500));
+  color: var(--color-white, var(--color-white));
 }
 
 .filterBadge {
@@ -27,21 +27,21 @@
   width: 20px;
   height: 20px;
   border-radius: var(--radius-full);
-  background: var(--app-primary, #3b82f6);
-  color: var(--color-white, #fff);
+  background: var(--app-primary, var(--color-blue-500));
+  color: var(--color-white, var(--color-white));
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
 }
 
 .filterBadge[data-active] {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--alpha-white-30);
 }
 
 .backdrop {
   position: fixed;
   inset: 0;
   z-index: 999;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--app-overlay);
 }
 
 .sheet {
@@ -53,7 +53,7 @@
   background: var(--app-surface);
   border-top-left-radius: var(--radius-lg);
   border-top-right-radius: var(--radius-lg);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 -4px 20px var(--alpha-black-15);
   max-height: 80vh;
   overflow-y: auto;
   transform: translateY(100%);
@@ -103,7 +103,7 @@
   border: none;
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
-  color: var(--app-primary, #3b82f6);
+  color: var(--app-primary, var(--color-blue-500));
   cursor: pointer;
   padding: var(--space-2) var(--space-3);
   min-height: 44px;

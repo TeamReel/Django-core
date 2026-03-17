@@ -7,7 +7,7 @@
    -------------------------------------------------------------------------- */
 
 .modalBackdrop {
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: var(--app-overlay-backdrop);
 }
 
 .modalDialog {
@@ -59,13 +59,13 @@
 .videoBadge {
   top: 8px;
   right: 8px;
-  background-color: var(--color-danger, #dc2626);
+  background-color: var(--color-danger, var(--color-red-500));
 }
 
 .memberBadge {
   top: 8px;
   left: 8px;
-  background-color: var(--color-success, #059669);
+  background-color: var(--color-success, var(--color-green-600));
 }
 
 /* --------------------------------------------------------------------------
@@ -101,9 +101,9 @@
 
 .filterChipActive {
   font-weight: var(--font-semibold);
-  border-color: var(--color-primary, #2563eb);
-  background-color: var(--color-primary-light, #dbeafe);
-  color: var(--color-primary, #2563eb);
+  border-color: var(--color-primary, var(--color-blue-600));
+  background-color: var(--color-primary-light, var(--color-blue-100));
+  color: var(--color-primary, var(--color-blue-600));
 }
 
 .filterChipCount {
@@ -114,7 +114,7 @@
 }
 
 .filterChipCountActive {
-  background-color: var(--color-primary, #2563eb);
+  background-color: var(--color-primary, var(--color-blue-600));
   color: var(--color-white, var(--app-surface));
 }
 

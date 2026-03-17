@@ -3,7 +3,7 @@
 }
 
 .backdrop {
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--alpha-black-35);
   backdrop-filter: blur(2px);
 }
 
@@ -63,7 +63,7 @@
 }
 
 .resultItem[data-selected='true'] {
-  background: rgba(59, 130, 246, 0.12);
+  background: var(--app-info-ring);
 }
 
 .resultLeft {

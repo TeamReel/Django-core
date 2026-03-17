@@ -110,7 +110,7 @@
 }
 
 .matchRow:focus-visible {
-  outline: 2px solid var(--app-primary, #6366f1);
+  outline: 2px solid var(--app-primary, var(--color-indigo-500));
   outline-offset: -2px;
 }
 
@@ -178,7 +178,7 @@
 }
 
 .readinessPercent[data-ready="true"] {
-  color: var(--color-success, #22c55e);
+  color: var(--color-success, var(--app-success));
 }
 
 .readinessBar {
@@ -197,7 +197,7 @@
 }
 
 .readinessFill[data-ready="true"] {
-  background: var(--color-success, #22c55e);
+  background: var(--color-success, var(--app-success));
 }
 
 .chevron {

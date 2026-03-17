@@ -51,7 +51,7 @@
   border: none;
   padding: 0;
   margin: 0;
-  color: var(--app-link, var(--color-blue-700, #0b5ed7));
+  color: var(--app-link, var(--color-blue-700, var(--color-blue-700)));
   cursor: pointer;
   text-align: left;
   font: inherit;

@@ -12,13 +12,13 @@
 }
 
 .cardSuccess {
-  background: color-mix(in srgb, var(--color-green-500, #22c55e) 8%, var(--app-surface));
-  border-color: color-mix(in srgb, var(--color-green-500, #22c55e) 20%, transparent);
+  background: color-mix(in srgb, var(--color-green-500, var(--app-success)) 8%, var(--app-surface));
+  border-color: color-mix(in srgb, var(--color-green-500, var(--app-success)) 20%, transparent);
 }
 
 .cardSuccess .iconWrap {
-  background: color-mix(in srgb, var(--color-green-500, #22c55e) 15%, transparent);
-  color: var(--color-green-500, #22c55e);
+  background: color-mix(in srgb, var(--color-green-500, var(--app-success)) 15%, transparent);
+  color: var(--color-green-500, var(--app-success));
 }
 
 .iconWrap {

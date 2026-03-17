@@ -4,14 +4,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--app-overlay);
   z-index: 1000;
 }
 
 .modal {
   width: 720px;
   max-width: 95%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px var(--alpha-black-15);
 }
 
 .heading {
@@ -38,12 +38,12 @@
 }
 
 .errorText {
-  color: var(--app-danger, #d32f2f);
+  color: var(--app-danger, var(--color-red-500));
 }
 
 .validationHint {
   margin-top: var(--space-3);
-  color: var(--app-text-muted, #6b7280);
+  color: var(--app-text-muted, var(--color-neutral-400));
 }
 
 .submitRow {
@@ -52,7 +52,7 @@
 }
 
 .submitButton {
-  --submit-border: #1e5aa5;
+  --submit-border: var(--color-blue-700);
   --submit-color: var(--color-white, var(--app-surface));
   border: 1px solid var(--submit-border);
   background-color: var(--color-blue-600);
@@ -85,7 +85,7 @@
     flex: 1 1 auto;
     min-height: 0;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 -4px 24px var(--alpha-black-15);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -98,7 +98,7 @@
     width: 36px;
     height: 4px;
     border-radius: var(--radius-sm);
-    background-color: var(--app-border, #d0d5dd);
+    background-color: var(--app-border, var(--app-input-border));
     margin: 0 auto var(--space-2);
     flex-shrink: 0;
   }

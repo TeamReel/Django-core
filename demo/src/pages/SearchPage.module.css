@@ -15,8 +15,8 @@
 }
 
 .hierarchyToggleActive {
-  background: var(--color-primary, #3b82f6);
-  color: var(--color-text-inverse, #fff);
+  background: var(--color-primary, var(--color-blue-500));
+  color: var(--color-text-inverse, var(--color-white));
   border: none;
 }
 

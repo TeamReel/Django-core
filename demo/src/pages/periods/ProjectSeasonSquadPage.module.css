@@ -18,16 +18,16 @@
 }
 
 .actionBtn[data-variant="edit"] {
-  --btn-accent: #fd7e14;
+  --btn-accent: var(--color-orange-400);
   border-color: var(--btn-accent);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   color: var(--btn-accent);
 }
 
 .actionBtn[data-variant="delete"] {
-  --btn-accent: #dc3545;
+  --btn-accent: var(--color-red-500);
   border-color: var(--btn-accent);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   color: var(--app-error);
 }
 
@@ -53,8 +53,8 @@
 }
 
 .tabBtn[data-active] {
-  border-bottom-color: var(--color-white, #fff);
-  background-color: var(--color-white, #fff);
+  border-bottom-color: var(--color-white, var(--color-white));
+  background-color: var(--color-white, var(--color-white));
   cursor: default;
   font-weight: var(--font-semibold);
   opacity: 1;

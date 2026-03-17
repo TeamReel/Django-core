@@ -2,7 +2,7 @@
 
 /* Hardcoded hex → CSS custom properties */
 :root {
-  --walking-bg-dark: var(--color-black, #000);
+  --walking-bg-dark: var(--color-black, var(--color-neutral-900));
 }
 
 /* ── Prerequisite cards ── */

@@ -3,5 +3,5 @@
 }
 
 .totalRow {
-  border-top: 2px solid #e5e7eb;
+  border-top: 2px solid var(--app-border);
 }

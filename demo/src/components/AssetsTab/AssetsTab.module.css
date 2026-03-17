@@ -4,10 +4,10 @@
 
 /* ── AssetCard ── */
 .assetCard {
-  border: 1px solid var(--vscode-widget-border, #333);
+  border: 1px solid var(--vscode-widget-border, var(--app-text));
   border-radius: var(--radius-md);
   overflow: hidden;
-  background: var(--vscode-editor-background, #1e1e1e);
+  background: var(--vscode-editor-background, var(--color-neutral-900));
 }
 
 .previewArea {
@@ -19,7 +19,7 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   font-size: var(--text-xs);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
@@ -29,8 +29,8 @@
 .historyBtn {
   position: absolute;
   top: 8px;
-  background: rgba(0, 0, 0, 0.6);
-  color: var(--color-white, #fff);
+  background: var(--app-overlay-backdrop);
+  color: var(--color-white, var(--color-white));
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--text-xs);
@@ -58,7 +58,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--alpha-black-70);
   z-index: 5;
   gap: var(--space-2);
 }
@@ -73,7 +73,7 @@
 }
 
 .spinnerText {
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   font-size: var(--text-xs);
 }
 
@@ -83,7 +83,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--vscode-descriptionForeground, #888);
+  color: var(--vscode-descriptionForeground, var(--app-muted-text));
   font-size: var(--text-xs);
 }
 
@@ -108,7 +108,7 @@
   min-height: 36px;
   font-size: var(--text-xs);
   cursor: pointer;
-  background: var(--vscode-button-background, #0078d4);
+  background: var(--vscode-button-background, var(--color-blue-600));
   color: var(--vscode-button-foreground, var(--app-surface));
   border: none;
   border-radius: var(--radius-md);
@@ -129,14 +129,14 @@
 
 .dateText {
   font-size: var(--text-xs);
-  color: var(--vscode-descriptionForeground, #888);
+  color: var(--vscode-descriptionForeground, var(--app-muted-text));
   margin-top: var(--space-1);
 }
 
 /* ── Section ── */
 .sectionDesc {
   font-size: var(--text-xs);
-  color: var(--vscode-descriptionForeground, #888);
+  color: var(--vscode-descriptionForeground, var(--app-muted-text));
   margin-bottom: var(--space-3);
 }
 
@@ -156,7 +156,7 @@
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   background: linear-gradient(135deg, var(--color-indigo-500), var(--color-violet-500));
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -170,8 +170,8 @@
   padding: var(--space-3) var(--space-4);
   font-size: var(--text-xs);
   background: transparent;
-  color: var(--vscode-foreground, #ccc);
-  border: 1px solid var(--vscode-widget-border, #444);
+  color: var(--vscode-foreground, var(--app-border));
+  border: 1px solid var(--vscode-widget-border, var(--color-neutral-500));
   border-radius: var(--radius-md);
   cursor: pointer;
 }
@@ -180,7 +180,7 @@
 .historyOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--app-overlay-backdrop);
   z-index: 1100;
   display: flex;
   align-items: center;
@@ -188,8 +188,8 @@
 }
 
 .historyPanel {
-  background: var(--app-surface-2, #1e1e1e);
-  border: 1px solid var(--app-border, #333);
+  background: var(--app-surface-2, var(--color-neutral-900));
+  border: 1px solid var(--app-border, var(--app-text));
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   width: min(480px, calc(100vw - 32px));
@@ -244,7 +244,7 @@
   padding: var(--space-2) var(--space-4);
   min-height: 36px;
   background: var(--color-blue-800);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--text-xs);
@@ -329,7 +329,7 @@
   padding: var(--space-3) var(--space-5);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   border: none;
   border-radius: var(--radius-md);
 }
@@ -347,8 +347,8 @@
 
 .warningBox {
   padding: var(--space-4);
-  background: var(--vscode-inputValidation-warningBackground, #5a4000);
-  border: 1px solid var(--vscode-inputValidation-warningBorder, #856d00);
+  background: var(--vscode-inputValidation-warningBackground, var(--color-amber-800));
+  border: 1px solid var(--vscode-inputValidation-warningBorder, var(--color-amber-700));
   border-radius: var(--radius-md);
   margin-top: var(--space-4);
   font-size: var(--text-xs);
@@ -358,7 +358,7 @@
 .clubBadge {
   font-size: var(--text-xs);
   background: var(--color-blue-700);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
 }
@@ -385,7 +385,7 @@
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs);
   background: linear-gradient(135deg, var(--color-indigo-500), var(--color-violet-500));
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -428,11 +428,11 @@
 }
 
 .loadingText {
-  color: var(--vscode-descriptionForeground, #888);
+  color: var(--vscode-descriptionForeground, var(--app-muted-text));
 }
 
 .errorText {
-  color: var(--vscode-errorForeground, #f44);
+  color: var(--vscode-errorForeground, var(--app-error));
 }
 
 .seasonLabel {

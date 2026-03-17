@@ -5,8 +5,8 @@
   max-height: calc(100vh - 340px);
   background: linear-gradient(
     to bottom,
-    var(--field-green-light, #16a34a),
-    var(--field-green-dark, #15803d)
+    var(--field-green-light, var(--color-green-400)),
+    var(--field-green-dark, var(--color-green-700))
   );
 }
 
@@ -87,7 +87,7 @@
   font-size: var(--text-xs);
   font-weight: var(--font-normal);
   background-color: var(--select-bg, rgba(0, 0, 0, 0.6));
-  color: var(--select-text, #fff);
+  color: var(--select-text, var(--color-white));
   border: 1px solid var(--select-border, rgba(255, 255, 255, 0.3));
   border-radius: var(--radius-md);
   outline: none;
@@ -95,7 +95,7 @@
   text-align: center;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='var(--alpha-white-60)'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 6px center;
   padding-right: var(--space-5);
@@ -104,29 +104,29 @@
 .positionSelect[data-selected="true"] {
   font-weight: var(--font-bold);
   background-color: var(--app-primary-light, rgba(59, 142, 165, 0.08));
-  border: 2px solid var(--app-primary, #3B8EA5);
+  border: 2px solid var(--app-primary, var(--color-primary-400));
 }
 
 /* ── Options ───────────────────────────────────────── */
 
 .option {
-  background: var(--option-bg, #1e1e1e);
-  color: var(--option-text, #ccc);
+  background: var(--option-bg, var(--color-neutral-900));
+  color: var(--option-text, var(--app-border));
 }
 
 .optionGuest {
-  background: var(--option-bg, #1e1e1e);
-  color: var(--guest-color, #a78bfa);
+  background: var(--option-bg, var(--color-neutral-900));
+  color: var(--guest-color, var(--color-indigo-300));
 }
 
 .optionUsed {
-  background: var(--option-bg, #1e1e1e);
-  color: var(--option-text-disabled, #666);
+  background: var(--option-bg, var(--color-neutral-900));
+  color: var(--option-text-disabled, var(--color-neutral-400));
 }
 
 .optionDisabled {
-  background: var(--option-bg, #1e1e1e);
-  color: var(--option-text-disabled, #666);
+  background: var(--option-bg, var(--color-neutral-900));
+  color: var(--option-text-disabled, var(--color-neutral-400));
 }
 
 /* ── Selected name below dropdown ──────────────────── */
@@ -134,8 +134,8 @@
 .selectedName {
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
-  color: var(--select-text, #fff);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  color: var(--select-text, var(--color-white));
+  text-shadow: 0 1px 3px var(--alpha-black-80);
   max-width: 112px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -144,13 +144,13 @@
 }
 
 .selectedName[data-guest="true"] {
-  color: var(--guest-color, #a78bfa);
+  color: var(--guest-color, var(--color-indigo-300));
 }
 
 /* ── Summary bar ───────────────────────────────────── */
 
 .summaryBar {
-  color: var(--app-text, #111);
+  color: var(--app-text, var(--app-text));
 }
 
 .allFilled {

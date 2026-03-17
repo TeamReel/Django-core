@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--app-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,14 +12,14 @@
 }
 
 .modal {
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   padding: var(--space-6);
   border-radius: var(--radius-md);
   width: 600px;
   max-width: 90%;
   max-height: 80vh;
   overflow: auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px var(--alpha-black-15);
   color: var(--app-text);
   border: 1px solid var(--app-border);
 }

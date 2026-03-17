@@ -2,8 +2,8 @@
 
 /* ── Card wrapper ── */
 .matrixCard {
-  background: var(--app-surface-2, #1e293b);
-  border: 1px solid var(--app-border, #334155);
+  background: var(--app-surface-2, var(--app-text));
+  border: 1px solid var(--app-border, var(--color-neutral-600));
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -14,7 +14,7 @@
 
 .matrixHeader {
   padding: var(--space-4) var(--space-4);
-  border-bottom: 1px solid var(--app-border, #334155);
+  border-bottom: 1px solid var(--app-border, var(--color-neutral-600));
 }
 
 .matrixHeaderRow {
@@ -41,12 +41,12 @@
 }
 
 .matrixBadge[data-state='complete'] {
-  background: rgba(34, 197, 94, 0.15);
+  background: var(--app-success-ring);
   color: var(--color-green-400);
 }
 
 .matrixBadge[data-state='partial'] {
-  background: rgba(245, 158, 11, 0.15);
+  background: var(--app-warning-ring);
   color: var(--color-amber-400);
 }
 
@@ -99,7 +99,7 @@
   background: var(--phase-color);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   border-radius: var(--radius-sm);
 }
 
@@ -169,7 +169,7 @@
 .progressTrack {
   height: 8px;
   border-radius: var(--radius-sm);
-  background: var(--app-border, #334155);
+  background: var(--app-border, var(--color-neutral-600));
   overflow: hidden;
 }
 

@@ -37,9 +37,9 @@
 }
 
 .variantPill[data-active="true"] {
-  border-color: var(--app-primary, #2563eb);
-  background-color: var(--app-primary, #2563eb);
-  color: var(--color-white, #fff);
+  border-color: var(--app-primary, var(--color-blue-600));
+  background-color: var(--app-primary, var(--color-blue-600));
+  color: var(--color-white, var(--color-white));
 }
 
 /* ─── Arrow Buttons ──────────────────────────────────────────── */
@@ -83,7 +83,7 @@
 
 @media (hover: hover) {
   .clickableRowHover:hover {
-  background-color: var(--app-surface-2, #2a2a3e);
+  background-color: var(--app-surface-2, var(--color-neutral-800));
   }
 
 .clickableRowHover:focus-visible {
@@ -105,8 +105,8 @@
 }
 
 .bgButton[data-active="true"] {
-  border: 2px solid var(--app-primary, #2563eb);
-  background: var(--app-surface-2, #2a2a3e);
+  border: 2px solid var(--app-primary, var(--color-blue-600));
+  background: var(--app-surface-2, var(--color-neutral-800));
 }
 
 /* ─── Background Emoji ───────────────────────────────────────── */
@@ -119,15 +119,15 @@
 
 .bgOptionLabel {
   color: var(--app-muted-text);
-  background: var(--app-surface-2, #2a2a3e);
+  background: var(--app-surface-2, var(--color-neutral-800));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .bgOptionLabel[data-active="true"] {
-  color: var(--color-white, #fff);
-  background: var(--app-primary, #2563eb);
+  color: var(--color-white, var(--color-white));
+  background: var(--app-primary, var(--color-blue-600));
 }
 
 /* ─── Background Preview Image ───────────────────────────────── */
@@ -143,7 +143,7 @@
 
 .submitBtn {
   cursor: pointer;
-  background: var(--tnm-accent, #6366f1);
+  background: var(--tnm-accent, var(--color-indigo-500));
   opacity: 1;
 }
 

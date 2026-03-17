@@ -11,7 +11,7 @@
 
 /* ── Hero card ── */
 .heroCard {
-  background: linear-gradient(135deg, var(--app-surface-2, #1e293b) 0%, var(--app-surface, #0f172a) 100%);
+  background: linear-gradient(135deg, var(--app-surface-2, var(--app-text)) 0%, var(--app-surface, var(--color-neutral-900)) 100%);
   border-radius: var(--radius-lg);
   padding: var(--space-6) var(--space-5);
   text-align: center;
@@ -61,8 +61,8 @@
 
 /* ── Section card (shared) ── */
 .sectionCard {
-  background: var(--app-surface-2, #1e293b);
-  border: 1px solid var(--app-border, #334155);
+  background: var(--app-surface-2, var(--app-text));
+  border: 1px solid var(--app-border, var(--color-neutral-600));
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -72,7 +72,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4) var(--space-4);
-  border-bottom: 1px solid var(--app-border, #334155);
+  border-bottom: 1px solid var(--app-border, var(--color-neutral-600));
 }
 
 .sectionTitle {
@@ -109,7 +109,7 @@
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
   min-height: 48px;
-  border-bottom: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
   transition: background var(--duration-fast);
@@ -171,7 +171,7 @@
   align-items: baseline;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
 }
 
 .infoRow:last-child {

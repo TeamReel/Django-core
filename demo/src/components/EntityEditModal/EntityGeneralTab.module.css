@@ -50,7 +50,7 @@
 
 .removeBtn {
   padding: var(--space-1) var(--space-2);
-  color: var(--app-error, #dc2626);
+  color: var(--app-error, var(--color-red-500));
   text-decoration: underline;
 }
 

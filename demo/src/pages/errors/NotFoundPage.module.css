@@ -13,18 +13,18 @@
 .errorCode {
   font-size: 48px;
   margin-bottom: var(--space-4);
-  color: var(--error-code-color, #6c757d);
+  color: var(--error-code-color, var(--color-neutral-400));
 }
 
 .title {
   font-size: var(--text-xl);
   margin-bottom: var(--space-6);
-  color: var(--title-color, #333);
+  color: var(--title-color, var(--app-text));
 }
 
 .message {
   font-size: var(--text-base);
-  color: var(--message-color, #666);
+  color: var(--message-color, var(--color-neutral-400));
   margin-bottom: var(--space-8);
 }
 
@@ -38,7 +38,7 @@
   display: inline-block;
   padding: var(--space-3) var(--space-6);
   background-color: var(--app-primary);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   text-decoration: none;
   border-radius: var(--radius-sm);
   font-size: var(--text-base);
@@ -46,8 +46,8 @@
 
 .backButton {
   padding: var(--space-3) var(--space-6);
-  background-color: var(--back-btn-bg, #6c757d);
-  color: var(--color-white, #fff);
+  background-color: var(--back-btn-bg, var(--color-neutral-400));
+  color: var(--color-white, var(--color-white));
   border: none;
   border-radius: var(--radius-sm);
   font-size: var(--text-base);
@@ -57,7 +57,7 @@
 .infoBox {
   margin-top: var(--space-12);
   padding: var(--space-5);
-  background-color: var(--info-box-bg, #f8f9fa);
+  background-color: var(--info-box-bg, var(--app-surface-secondary));
   border-radius: var(--radius-md);
   text-align: left;
 }
@@ -68,6 +68,6 @@
 }
 
 .infoList {
-  color: var(--info-list-color, #666);
+  color: var(--info-list-color, var(--color-neutral-400));
   line-height: var(--leading-relaxed);
 }

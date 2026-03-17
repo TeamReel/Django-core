@@ -14,10 +14,10 @@
   align-items: center;
   gap: var(--space-6, 6px);
   padding: var(--space-8, 8px) var(--space-12, 12px);
-  border: 1px solid var(--color-border, #e1e5e9);
+  border: 1px solid var(--color-border, var(--app-border));
   border-radius: var(--radius-6, 6px);
-  background: var(--color-surface, #fff);
-  color: var(--color-text-secondary, #64748b);
+  background: var(--color-surface, var(--color-white));
+  color: var(--color-text-secondary, var(--color-neutral-400));
   font-size: var(--font-size-14, 14px);
   font-weight: 500;
   cursor: pointer;
@@ -26,9 +26,9 @@
 
 .shareButton:hover,
 .qrButton:hover {
-  background: var(--color-surface-hover, #f8fafc);
-  border-color: var(--color-border-hover, #cbd5e1);
-  color: var(--color-text-primary, #1e293b);
+  background: var(--color-surface-hover, var(--app-surface-alt));
+  border-color: var(--color-border-hover, var(--color-neutral-200));
+  color: var(--color-text-primary, var(--app-text));
 }
 
 .qrButton:focus-visible {
@@ -57,7 +57,7 @@
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--app-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,13 +66,13 @@
 }
 
 .modal {
-  background: var(--color-surface, #fff);
+  background: var(--color-surface, var(--color-white));
   border-radius: var(--radius-12, 12px);
   padding: var(--space-24, 24px);
   max-width: 320px;
   width: 100%;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-              0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 25px -5px var(--alpha-black-10),
+              0 8px 10px -6px var(--alpha-black-10);
 }
 
 .modalHeader {
@@ -86,7 +86,7 @@
   margin: 0;
   font-size: var(--font-size-18, 18px);
   font-weight: 600;
-  color: var(--color-text-primary, #1e293b);
+  color: var(--color-text-primary, var(--app-text));
 }
 
 .closeButton {
@@ -98,13 +98,13 @@
   border: none;
   background: transparent;
   font-size: 24px;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary, var(--color-neutral-400));
   cursor: pointer;
   border-radius: var(--radius-6, 6px);
 }
 
 .closeButton:hover {
-  background: var(--color-surface-hover, #f1f5f9);
+  background: var(--color-surface-hover, var(--color-neutral-50));
 }
 
 .closeButton:focus-visible {
@@ -116,9 +116,9 @@
   display: flex;
   justify-content: center;
   padding: var(--space-16, 16px);
-  background: #fff;
+  background: var(--color-white);
   border-radius: var(--radius-8, 8px);
-  border: 1px solid var(--color-border, #e1e5e9);
+  border: 1px solid var(--color-border, var(--app-border));
 }
 
 .qrSvg {
@@ -129,14 +129,14 @@
   margin: var(--space-16, 16px) 0 var(--space-8, 8px);
   text-align: center;
   font-size: var(--font-size-14, 14px);
-  color: var(--color-text-secondary, #64748b);
+  color: var(--color-text-secondary, var(--color-neutral-400));
 }
 
 .qrUrl {
   margin: 0;
   text-align: center;
   font-size: var(--font-size-12, 12px);
-  color: var(--color-text-tertiary, #94a3b8);
+  color: var(--color-text-tertiary, var(--color-neutral-300));
   word-break: break-all;
 }
 

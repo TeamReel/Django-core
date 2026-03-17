@@ -12,9 +12,9 @@
 .actionButton {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--action-btn-border, #6c757d);
-  background-color: var(--color-white, #fff);
-  color: var(--action-btn-color, #6c757d);
+  border: 1px solid var(--action-btn-border, var(--color-neutral-400));
+  background-color: var(--color-white, var(--color-white));
+  color: var(--action-btn-color, var(--color-neutral-400));
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
@@ -47,8 +47,8 @@
   flex: 1;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--download-btn-border, #007bff);
-  background-color: var(--color-white, #fff);
+  border: 1px solid var(--download-btn-border, var(--color-blue-500));
+  background-color: var(--color-white, var(--color-white));
   color: var(--app-primary);
   cursor: pointer;
   font-size: var(--text-xs);
@@ -59,8 +59,8 @@
   flex: 1;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--delete-btn-border, #dc3545);
-  background-color: var(--color-white, #fff);
+  border: 1px solid var(--delete-btn-border, var(--color-red-500));
+  background-color: var(--color-white, var(--color-white));
   color: var(--app-error);
   cursor: pointer;
   font-size: var(--text-xs);

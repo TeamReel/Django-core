@@ -1,15 +1,15 @@
 .loadingText {
-  color: var(--vscode-descriptionForeground, #888);
+  color: var(--vscode-descriptionForeground, var(--app-muted-text));
 }
 
 .errorText {
-  color: var(--vscode-errorForeground, #f44);
+  color: var(--vscode-errorForeground, var(--app-error));
 }
 
 .warningBox {
   padding: var(--space-4);
-  background: var(--vscode-inputValidation-warningBackground, #5a4000);
-  border: 1px solid var(--vscode-inputValidation-warningBorder, #856d00);
+  background: var(--vscode-inputValidation-warningBackground, var(--color-amber-800));
+  border: 1px solid var(--vscode-inputValidation-warningBorder, var(--color-amber-700));
   border-radius: var(--radius-md);
   margin-top: var(--space-4);
   font-size: var(--text-xs);
@@ -25,15 +25,15 @@
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs);
   cursor: pointer;
-  border: 1px solid var(--vscode-widget-border, #333);
+  border: 1px solid var(--vscode-widget-border, var(--app-text));
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--vscode-foreground, #ccc);
+  color: var(--vscode-foreground, var(--app-border));
 }
 
 .sponsorModeBtn[data-active="true"] {
-  background: var(--vscode-button-background, #0078d4);
-  color: var(--vscode-button-foreground, #fff);
+  background: var(--vscode-button-background, var(--color-blue-600));
+  color: var(--vscode-button-foreground, var(--color-white));
 }
 
 .sectionLabel {

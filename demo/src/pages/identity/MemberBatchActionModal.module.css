@@ -6,24 +6,24 @@
 /* ── Overlay (root — hosts color tokens for children) ── */
 
 .overlay {
-    --batch-error-border: rgba(239, 68, 68, 0.27);
-    --batch-error-bg: rgba(239, 68, 68, 0.06);
-    --batch-info-border: rgba(59, 130, 246, 0.27);
-    --batch-selected-bg: rgba(59, 130, 246, 0.08);
-    --batch-chip-bg: rgba(59, 130, 246, 0.12);
-    --batch-chip-overflow-bg: rgba(255, 255, 255, 0.06);
+    --batch-error-border: var(--app-error-ring);
+    --batch-error-bg: var(--app-error-bg);
+    --batch-info-border: var(--app-info-ring);
+    --batch-selected-bg: var(--app-info-bg);
+    --batch-chip-bg: var(--app-info-ring);
+    --batch-chip-overflow-bg: var(--app-surface-glass);
 
     z-index: 9000;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--app-overlay-backdrop);
 }
 
 /* ── Modal ── */
 
 .modal {
-    background: var(--app-surface, #1a1a2e);
+    background: var(--app-surface, var(--color-neutral-900));
     max-width: 720px;
     max-height: 90vh;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 60px var(--app-overlay);
 }
 
 /* ── Close button ── */
@@ -41,7 +41,7 @@
     padding: var(--space-1) var(--space-3);
     border-radius: var(--radius-lg);
     background: var(--batch-chip-bg);
-    color: var(--app-text, #e0e0e0);
+    color: var(--app-text, var(--app-border));
     font-size: var(--text-xs);
     font-weight: var(--font-medium);
 }
@@ -90,7 +90,7 @@
     padding: var(--space-4) var(--space-4);
     border-radius: var(--radius-md);
     border: 1px solid var(--app-border, var(--app-text));
-    background: var(--app-surface-2, #252540);
+    background: var(--app-surface-2, var(--color-neutral-800));
 }
 
 .card[data-variant="error"] {

@@ -47,7 +47,7 @@
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-xs);
-  color: var(--app-muted-text, #6b7280);
+  color: var(--app-muted-text, var(--color-neutral-400));
   cursor: pointer;
   user-select: none;
   padding: var(--space-1) 0;
@@ -69,18 +69,18 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   border-radius: var(--radius-md);
   background: var(--app-surface, var(--app-surface));
-  color: var(--app-text, #1a1a1a);
+  color: var(--app-text, var(--color-neutral-900));
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
 }
 
 .memberCard[data-selected='true'] {
-  background: rgba(59, 130, 246, 0.06);
-  border-color: rgba(59, 130, 246, 0.25);
+  background: var(--app-info-subtle);
+  border-color: var(--app-info-ring);
 }
 
 .memberCardCheckbox {
@@ -131,7 +131,7 @@
 
 .memberCardEmail {
   font-size: var(--text-xs);
-  color: var(--app-muted-text, #6b7280);
+  color: var(--app-muted-text, var(--color-neutral-400));
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -140,7 +140,7 @@
 .memberCardDetails {
   margin-top: var(--space-2);
   padding-top: var(--space-2);
-  border-top: 1px solid var(--app-border, #e5e7eb);
+  border-top: 1px solid var(--app-border, var(--app-border));
 }
 
 .memberCardBadges {

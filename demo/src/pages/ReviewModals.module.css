@@ -2,14 +2,14 @@
 
 /* ─── Custom Properties ─────────────────────────────────────── */
 :root {
-  --rm-green-600: #16a34a;
-  --rm-green-700: #15803d;
-  --rm-green-50: #f0fdf4;
-  --rm-green-200: #c6f0d4;
+  --rm-green-600: var(--color-green-400);
+  --rm-green-700: var(--color-green-700);
+  --rm-green-50: var(--color-green-50);
+  --rm-green-200: var(--color-green-100);
   --rm-red-600: var(--color-red-500);
   --rm-red-100: var(--color-red-100);
-  --rm-red-50: #fff5f5;
-  --rm-red-300: #fca5a5;
+  --rm-red-50: var(--color-red-50);
+  --rm-red-300: var(--color-red-200);
   --rm-gray-200: var(--app-border);
   --rm-slate-900: var(--color-neutral-900);
   --rm-slate-800: var(--color-neutral-800);
@@ -130,7 +130,7 @@
 .variantApproveBtn[data-selected="true"] {
   border-color: var(--rm-green-600);
   background: var(--rm-green-600);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 .variantRejectBtn {
@@ -153,7 +153,7 @@
 .variantRejectBtn[data-selected="true"] {
   border-color: var(--rm-red-600);
   background: var(--rm-red-600);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 /* ─── Footer Action Buttons ──────────────────────────────────── */

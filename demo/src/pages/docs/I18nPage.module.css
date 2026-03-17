@@ -5,7 +5,7 @@
   --i18n-border: var(--app-border);
   --i18n-primary: var(--color-blue-500);
   --i18n-primary-bg: var(--color-blue-50);
-  --i18n-white: var(--color-white, #fff);
+  --i18n-white: var(--color-white, var(--color-white));
 }
 
 .welcomeHeading {

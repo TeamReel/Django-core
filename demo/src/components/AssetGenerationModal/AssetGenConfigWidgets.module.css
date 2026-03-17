@@ -4,7 +4,7 @@
 
 .sectionLabel {
   margin-bottom: var(--space-2);
-  color: var(--vscode-foreground, #ccc);
+  color: var(--vscode-foreground, var(--app-border));
 }
 
 .mutedHint {
@@ -16,9 +16,9 @@
 .sourceButton {
   flex: 1;
   padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--vscode-widget-border, #333);
+  border: 1px solid var(--vscode-widget-border, var(--app-text));
   background: transparent;
-  color: var(--vscode-foreground, #ccc);
+  color: var(--vscode-foreground, var(--app-border));
   border-radius: var(--radius-md);
   cursor: pointer;
   font-size: var(--text-sm);
@@ -26,8 +26,8 @@
 }
 
 .sourceButton[data-selected='true'] {
-  border: 2px solid var(--vscode-focusBorder, #007fd4);
-  background: var(--vscode-list-activeSelectionBackground, #094771);
+  border: 2px solid var(--vscode-focusBorder, var(--color-blue-600));
+  background: var(--vscode-list-activeSelectionBackground, var(--color-primary-700));
 }
 
 /* ── Background Selector ─────────────────────────────────────────── */
@@ -37,7 +37,7 @@
 }
 
 .backgroundLabel {
-  color: var(--vscode-foreground, #ccc);
+  color: var(--vscode-foreground, var(--app-border));
 }
 
 .backgroundButton {
@@ -45,7 +45,7 @@
   width: 80px;
   height: 80px;
   padding: 0;
-  border: 2px solid var(--vscode-widget-border, #333);
+  border: 2px solid var(--vscode-widget-border, var(--app-text));
   border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
@@ -67,7 +67,7 @@
   bottom: 4px;
   right: 4px;
   background: var(--color-green-400);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   border-radius: var(--radius-full);
   width: 20px;
   height: 20px;
@@ -83,9 +83,9 @@
   flex: 1 1 auto;
   min-width: 80px;
   padding: var(--space-2) var(--space-2);
-  border: 1px solid var(--vscode-widget-border, #333);
+  border: 1px solid var(--vscode-widget-border, var(--app-text));
   background: transparent;
-  color: var(--vscode-foreground, #ccc);
+  color: var(--vscode-foreground, var(--app-border));
   border-radius: var(--radius-md);
   cursor: pointer;
   font-size: var(--text-xs);
@@ -93,25 +93,25 @@
 }
 
 .modelButton[data-selected='true'] {
-  border: 2px solid var(--vscode-focusBorder, #007fd4);
-  background: var(--vscode-list-activeSelectionBackground, #094771);
+  border: 2px solid var(--vscode-focusBorder, var(--color-blue-600));
+  background: var(--vscode-list-activeSelectionBackground, var(--color-primary-700));
 }
 
 .modelDesc {
   font-size: 9px;
-  color: var(--vscode-descriptionForeground, #888);
+  color: var(--vscode-descriptionForeground, var(--app-muted-text));
   margin-top: 1px;
 }
 
 .modelCostLabel {
   font-size: 9px;
-  color: var(--vscode-charts-green, #4ec);
+  color: var(--vscode-charts-green, var(--color-green-300));
   margin-top: 1px;
 }
 
 .costEstimate {
   font-size: var(--text-xs);
-  color: var(--vscode-charts-green, #4ec);
+  color: var(--vscode-charts-green, var(--color-green-300));
   margin-top: var(--space-1);
   font-weight: var(--font-semibold);
 }

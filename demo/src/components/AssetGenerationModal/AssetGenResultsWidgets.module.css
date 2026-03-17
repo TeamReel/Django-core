@@ -21,22 +21,22 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  background: var(--vscode-editorWidget-background, #252526);
-  border: 1px solid var(--vscode-widget-border, #333);
+  background: var(--vscode-editorWidget-background, var(--color-neutral-900));
+  border: 1px solid var(--vscode-widget-border, var(--app-text));
   border-radius: var(--radius-md);
   font-size: var(--text-xs);
-  color: var(--vscode-descriptionForeground, #888);
+  color: var(--vscode-descriptionForeground, var(--app-muted-text));
 }
 
 .queuedLink {
-  color: var(--vscode-textLink-foreground, #60a5fa);
+  color: var(--vscode-textLink-foreground, var(--color-blue-400));
   text-decoration: none;
   font-weight: var(--font-semibold);
 }
 
 .errorSection {
   padding: var(--space-10) 0;
-  color: var(--vscode-errorForeground, #f44);
+  color: var(--vscode-errorForeground, var(--app-error));
 }
 
 .variantGrid {
@@ -54,7 +54,7 @@
 }
 
 .viewFullLink {
-  color: var(--vscode-textLink-foreground, #60a5fa);
+  color: var(--vscode-textLink-foreground, var(--color-blue-400));
   opacity: 0.8;
 }
 
@@ -62,9 +62,9 @@
   width: 100%;
   padding: var(--space-2) var(--space-2);
   font-size: var(--text-xs);
-  background: var(--vscode-input-background, #3c3c3c);
-  color: var(--vscode-input-foreground, #ccc);
-  border: 1px solid var(--vscode-input-border, #3c3c3c);
+  background: var(--vscode-input-background, var(--color-neutral-700));
+  color: var(--vscode-input-foreground, var(--app-border));
+  border: 1px solid var(--vscode-input-border, var(--color-neutral-700));
   border-radius: var(--radius-sm);
   outline: none;
 }
@@ -74,5 +74,5 @@
 }
 
 .retryWarning {
-  color: var(--app-warning, #F59E0B);
+  color: var(--app-warning, var(--color-amber-400));
 }

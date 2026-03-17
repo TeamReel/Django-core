@@ -1,5 +1,5 @@
 .errorBanner {
-  background-color: rgba(220, 53, 69, 0.1);
+  background-color: var(--app-error-bg);
   color: var(--app-error);
-  border: 1px solid rgba(220, 53, 69, 0.3);
+  border: 1px solid var(--app-error-ring);
 }

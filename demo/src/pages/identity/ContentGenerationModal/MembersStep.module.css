@@ -1,11 +1,11 @@
 /* ── Closeup style option buttons ── */
 .closeupButton {
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   background: var(--app-surface, white);
 }
 
 .closeupButton[data-selected="true"] {
-  border: 2px solid var(--app-primary, #3B8EA5);
+  border: 2px solid var(--app-primary, var(--color-primary-400));
   background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
 }
 
@@ -15,11 +15,11 @@
   height: 36px;
   flex-shrink: 0;
   background-color: var(--app-surface-2, var(--app-surface-2));
-  color: var(--app-primary, #3B8EA5);
+  color: var(--app-primary, var(--color-primary-400));
 }
 
 .optionIcon[data-selected="true"] {
-  background-color: var(--app-primary, #3B8EA5);
+  background-color: var(--app-primary, var(--color-primary-400));
   color: var(--color-white, var(--app-surface));
 }
 
@@ -68,12 +68,12 @@
   align-items: center;
   padding: var(--space-3) var(--space-2);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   background: var(--app-surface, var(--app-surface));
 }
 
 .animationButton[data-selected="true"] {
-  border: 2px solid var(--app-primary, #3B8EA5);
+  border: 2px solid var(--app-primary, var(--color-primary-400));
   background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
 }
 
@@ -82,12 +82,12 @@
   align-items: center;
   padding: var(--space-3) var(--space-2);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   background: var(--app-surface, var(--app-surface));
 }
 
 .introButton[data-selected="true"] {
-  border: 2px solid var(--app-primary, #3B8EA5);
+  border: 2px solid var(--app-primary, var(--color-primary-400));
   background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
 }
 
@@ -103,12 +103,12 @@
 
 /* ── Background option buttons ── */
 .bgButton {
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   background: var(--app-surface, var(--app-surface));
 }
 
 .bgButton[data-selected="true"] {
-  border: 2px solid var(--app-primary, #3B8EA5);
+  border: 2px solid var(--app-primary, var(--color-primary-400));
   background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
 }
 
@@ -117,8 +117,8 @@
   aspect-ratio: 9/16;
   background: linear-gradient(
     to bottom,
-    var(--color-green-600, #16a34a),
-    var(--color-green-900, #14532d)
+    var(--color-green-600, var(--color-green-400)),
+    var(--color-green-900, var(--color-green-800))
   );
 }
 
@@ -133,13 +133,13 @@
 .bgLabel {
   padding: var(--space-1) 0;
   font-size: var(--text-xs);
-  color: var(--app-text, #111);
-  background: var(--app-surface-2, #f3f4f6);
+  color: var(--app-text, var(--app-text));
+  background: var(--app-surface-2, var(--app-surface-2));
 }
 
 .bgLabel[data-selected="true"] {
-  color: var(--color-white, #fff);
-  background: var(--app-primary, #3B8EA5);
+  color: var(--color-white, var(--color-white));
+  background: var(--app-primary, var(--color-primary-400));
 }
 
 /* ── Role section card ── */

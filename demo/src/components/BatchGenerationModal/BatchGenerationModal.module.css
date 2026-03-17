@@ -21,7 +21,7 @@
   width: 36px;
   height: 4px;
   border-radius: var(--radius-sm);
-  background: var(--app-muted-text, #6b7280);
+  background: var(--app-muted-text, var(--color-neutral-400));
   opacity: 0.4;
 }
 

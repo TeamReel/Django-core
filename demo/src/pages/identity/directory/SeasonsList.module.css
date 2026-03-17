@@ -19,7 +19,7 @@
 }
 
 .seasonNameBtn {
-  color: var(--app-link, #2563eb);
+  color: var(--app-link, var(--color-blue-600));
   text-decoration: underline;
   font: inherit;
 }

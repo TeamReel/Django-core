@@ -5,8 +5,8 @@
 }
 
 .previewDynamic {
-  --checker-dark: #2a2a2a;
-  --checker-light: #1e1e1e;
+  --checker-dark: var(--color-neutral-800);
+  --checker-light: var(--color-neutral-900);
   aspect-ratio: var(--aspect-ratio, 3 / 4);
   background: repeating-conic-gradient(var(--checker-dark) 0% 25%, var(--checker-light) 0% 50%) 50% / 20px 20px;
 }
@@ -37,7 +37,7 @@
 
 .editBtn {
   --edit-btn-bg: var(--color-violet-500);
-  --edit-btn-bg-disabled: #555555;
+  --edit-btn-bg-disabled: var(--color-neutral-500);
   cursor: pointer;
   background: var(--edit-btn-bg);
   opacity: 1;

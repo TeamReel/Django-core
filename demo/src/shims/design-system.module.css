@@ -33,11 +33,11 @@
 }
 
 .headerRow {
-  border-bottom: 1px solid var(--row-border, #eee);
+  border-bottom: 1px solid var(--row-border, var(--app-border));
 }
 
 .dataRow {
-  border-bottom: 1px solid var(--row-border, #eee);
+  border-bottom: 1px solid var(--row-border, var(--app-border));
 }
 
 .tableHeaderCell {

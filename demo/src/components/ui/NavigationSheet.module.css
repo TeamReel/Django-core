@@ -9,7 +9,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--app-overlay);
   z-index: var(--z-sheet);
   animation: fadeIn 0.2s ease-out;
 }
@@ -62,7 +62,7 @@
     right: 0;
     width: var(--sheet-desktop-width, min(560px, 100vw - 60px));
     border-left: 1px solid var(--app-border);
-    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+    box-shadow: -4px 0 24px var(--alpha-black-15);
     animation: slideInRight 0.25s ease-out;
   }
 

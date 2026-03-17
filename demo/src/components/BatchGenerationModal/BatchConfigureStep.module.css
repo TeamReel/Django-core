@@ -8,9 +8,9 @@
   width: 100%;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  border: 1px solid var(--app-border, #555);
-  background: var(--app-surface-2, #252540);
-  color: var(--app-text, #e0e0e0);
+  border: 1px solid var(--app-border, var(--color-neutral-500));
+  background: var(--app-surface-2, var(--color-neutral-800));
+  color: var(--app-text, var(--app-border));
   font-size: var(--text-sm);
   appearance: auto;
   cursor: pointer;
@@ -45,9 +45,9 @@
 .select {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  border: 1px solid var(--app-border, #555);
-  background: var(--app-surface-2, #252540);
-  color: var(--app-text, #e0e0e0);
+  border: 1px solid var(--app-border, var(--color-neutral-500));
+  background: var(--app-surface-2, var(--color-neutral-800));
+  color: var(--app-text, var(--app-border));
   font-size: var(--text-sm);
   min-width: 0;
   width: 100%;

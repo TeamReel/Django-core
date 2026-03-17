@@ -3,8 +3,8 @@
 .backgroundNotice {
   padding: var(--space-3) var(--space-3);
   margin-bottom: var(--space-3);
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: var(--app-info-bg);
+  border: 1px solid var(--app-info-ring);
   border-radius: var(--radius-md);
   font-size: var(--text-xs);
   color: var(--color-blue-400);
@@ -13,7 +13,7 @@
 .progressBarTrack {
   height: 4px;
   border-radius: var(--radius-sm);
-  background: var(--app-border, #333);
+  background: var(--app-border, var(--app-text));
   overflow: hidden;
 }
 

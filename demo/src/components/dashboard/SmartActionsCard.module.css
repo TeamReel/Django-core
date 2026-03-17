@@ -1,8 +1,8 @@
 .card {
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--color-white));
   border-radius: var(--radius-lg);
   padding: var(--space-4);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px var(--alpha-black-6);
   border: 1px solid var(--app-border, rgba(0, 0, 0, 0.06));
 }
 
@@ -11,7 +11,7 @@
   align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-3);
-  color: var(--text-secondary, #6b7280);
+  color: var(--text-secondary, var(--color-neutral-400));
 }
 
 .title {
@@ -37,7 +37,7 @@
   padding: var(--space-3) var(--space-3);
   border: 1px solid var(--app-border, rgba(0, 0, 0, 0.06));
   border-radius: var(--radius-lg);
-  background: var(--app-surface-alt, #f9fafb);
+  background: var(--app-surface-alt, var(--color-neutral-50));
   cursor: pointer;
   transition: background var(--duration-fast), transform var(--duration-fast);
   text-align: left;
@@ -56,7 +56,7 @@
 }
 
 .actionItem:focus-visible {
-  outline: 2px solid var(--app-primary, #6366f1);
+  outline: 2px solid var(--app-primary, var(--color-indigo-500));
   outline-offset: 2px;
 }
 
@@ -72,12 +72,12 @@
 /* ── Themed color variants ── */
 /* Each variant sets --_accent used by .actionIcon */
 
-.colorIndigo { --_accent: var(--color-indigo, #6366f1); }
-.colorPink   { --_accent: var(--color-pink, #ec4899); }
-.colorAmber  { --_accent: var(--color-amber, #f59e0b); }
-.colorGreen  { --_accent: var(--color-green, #22c55e); }
-.colorViolet { --_accent: var(--color-violet, #8b5cf6); }
-.colorBlue   { --_accent: var(--color-blue, #3b82f6); }
+.colorIndigo { --_accent: var(--color-indigo, var(--color-indigo-500)); }
+.colorPink   { --_accent: var(--color-pink, var(--color-violet-400)); }
+.colorAmber  { --_accent: var(--color-amber, var(--color-amber-400)); }
+.colorGreen  { --_accent: var(--color-green, var(--app-success)); }
+.colorViolet { --_accent: var(--color-violet, var(--color-violet-500)); }
+.colorBlue   { --_accent: var(--color-blue, var(--color-blue-500)); }
 
 .actionIcon {
   display: flex;
@@ -102,7 +102,7 @@
 .actionLabel {
   font-size: 0.88rem;
   font-weight: var(--font-semibold);
-  color: var(--text-primary, #111827);
+  color: var(--text-primary, var(--color-neutral-900));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -110,7 +110,7 @@
 
 .actionSubtitle {
   font-size: 0.76rem;
-  color: var(--text-secondary, #6b7280);
+  color: var(--text-secondary, var(--color-neutral-400));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -118,7 +118,7 @@
 
 .actionArrow {
   flex-shrink: 0;
-  color: var(--text-tertiary, #9ca3af);
+  color: var(--text-tertiary, var(--color-neutral-300));
 }
 
 /* ── Loading shimmer ── */
@@ -128,9 +128,9 @@
   border-radius: var(--radius-lg);
   background: linear-gradient(
     90deg,
-    var(--app-surface-alt, #f3f4f6) 25%,
-    var(--app-surface-hover, #e5e7eb) 50%,
-    var(--app-surface-alt, #f3f4f6) 75%
+    var(--app-surface-alt, var(--app-surface-2)) 25%,
+    var(--app-surface-hover, var(--app-border)) 50%,
+    var(--app-surface-alt, var(--app-surface-2)) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
@@ -143,7 +143,7 @@
 
 /* ── Dark mode overrides (app uses [data-theme="dark"]) ── */
 :global([data-theme="dark"]) .card {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 3px var(--alpha-black-30);
 }
 
 :global([data-theme="dark"]) .actionIcon {

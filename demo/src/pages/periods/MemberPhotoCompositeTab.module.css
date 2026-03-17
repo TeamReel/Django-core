@@ -29,7 +29,7 @@
 
 /* Preview area dark background + pointer */
 .previewDynamic[data-dark="true"] {
-  background: var(--color-black, #000);
+  background: var(--color-black, var(--color-neutral-900));
 }
 
 .previewDynamic[data-clickable="true"] {

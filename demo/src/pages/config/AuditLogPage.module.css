@@ -26,12 +26,12 @@
 }
 
 .clearButton {
-  --clear-btn-border: #6c757d;
-  --clear-btn-color: #6c757d;
+  --clear-btn-border: var(--color-neutral-400);
+  --clear-btn-color: var(--color-neutral-400);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
   border: 1px solid var(--clear-btn-border);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   color: var(--clear-btn-color);
   cursor: pointer;
   font-size: var(--text-sm);

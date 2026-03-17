@@ -1,8 +1,8 @@
 /* ── CSS Variables for hex/rgba literals ──────────────────────── */
 :root {
-  --ds-success-bg: #f0fdf4;
-  --ds-error-bg: #fef2f2;
-  --ds-overlay-bg: rgba(0, 0, 0, 0.5);
+  --ds-success-bg: var(--color-green-50);
+  --ds-error-bg: var(--color-red-50);
+  --ds-overlay-bg: var(--app-overlay);
 }
 
 /* ── Form Validation States ──────────────────────────────────── */
@@ -37,7 +37,7 @@
   width: 32px;
   height: 32px;
   background-color: var(--color-blue-500);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 .heading1 {

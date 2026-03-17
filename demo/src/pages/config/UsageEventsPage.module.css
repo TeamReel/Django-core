@@ -2,7 +2,7 @@
 
 .roleBadge {
   padding: var(--space-1) var(--space-3);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   letter-spacing: 0.5px;
 }
 
@@ -31,12 +31,12 @@
 
 .scopeButton[data-active="true"][data-mode="global"] {
   background-color: var(--color-blue-500);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 .scopeButton[data-active="true"][data-mode="org"] {
   background-color: var(--color-violet-400);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 .scopeButton[data-active="false"] {

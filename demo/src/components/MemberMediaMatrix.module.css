@@ -54,7 +54,7 @@
 
 .memberLink {
   text-decoration: none;
-  color: var(--member-link-color, #60a5fa);
+  color: var(--member-link-color, var(--color-blue-400));
 }
 
 .slotLink {

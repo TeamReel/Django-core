@@ -4,18 +4,18 @@
 
 /* --- Color tokens (replaces hardcoded hex) --- */
 .root {
-  --ajl-green-600: #16a34a;
+  --ajl-green-600: var(--color-green-400);
   --ajl-red-600: var(--color-red-500);
   --ajl-amber-600: var(--color-amber-500);
   --ajl-gray-400: var(--color-neutral-400);
-  --ajl-red-300: #fca5a5;
+  --ajl-red-300: var(--color-red-200);
   --ajl-amber-200: var(--color-amber-200);
   --ajl-blue-300: var(--color-blue-300);
   --ajl-violet-500: var(--color-violet-500);
-  --ajl-fuchsia-500: #d946ef;
+  --ajl-fuchsia-500: var(--color-violet-400);
   --ajl-indigo-500: var(--color-indigo-500);
-  --ajl-cyan-600: #0891b2;
-  --ajl-emerald-600: #059669;
+  --ajl-cyan-600: var(--color-primary-400);
+  --ajl-emerald-600: var(--color-green-600);
 }
 
 /* --- Root container --- */
@@ -29,7 +29,7 @@
 .aiCard {
   padding: var(--space-4) var(--space-4);
   background-color: var(--app-surface, var(--app-surface));
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   cursor: default;
   display: flex;
   align-items: center;
@@ -121,8 +121,8 @@
 }
 
 .aiStatusBadge[data-status="retrying"] {
-  color: var(--app-warning, #F59E0B);
-  background-color: color-mix(in srgb, var(--app-warning, #F59E0B) 12%, transparent);
+  color: var(--app-warning, var(--color-amber-400));
+  background-color: color-mix(in srgb, var(--app-warning, var(--color-amber-400)) 12%, transparent);
 }
 
 .aiStatusBadge[data-status="completed"] {
@@ -167,7 +167,7 @@
 .videoCard {
   padding: var(--space-4) var(--space-4);
   background-color: var(--app-surface, var(--app-surface));
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   gap: var(--space-3);
   cursor: default;
   transition: box-shadow var(--duration-fast), transform var(--duration-fast);
@@ -293,13 +293,13 @@
 
 .swipeRevealApprove {
   background-color: var(--ajl-green-600);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   justify-content: flex-start;
 }
 
 .swipeRevealReject {
   background-color: var(--ajl-red-600);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   justify-content: flex-end;
 }
 
@@ -316,5 +316,5 @@
 }
 
 .warningText {
-  color: var(--app-warning, #F59E0B);
+  color: var(--app-warning, var(--color-amber-400));
 }

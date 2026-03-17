@@ -17,7 +17,7 @@
 
 .deleteButton {
   background: none;
-  color: var(--app-error, #dc2626);
+  color: var(--app-error, var(--color-red-500));
 }
 
 .iconFaded {

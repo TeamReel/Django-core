@@ -20,16 +20,16 @@
 .filterBtn {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--filter-btn-border, #6c757d);
-  background-color: var(--color-white, #fff);
-  color: var(--filter-btn-color, #6c757d);
+  border: 1px solid var(--filter-btn-border, var(--color-neutral-400));
+  background-color: var(--color-white, var(--color-white));
+  color: var(--filter-btn-color, var(--color-neutral-400));
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
 
 .filterBtn[data-active="true"] {
-  --filter-btn-border: #007bff;
+  --filter-btn-border: var(--color-blue-500);
   --filter-btn-color: var(--app-primary);
 }
 
@@ -53,7 +53,7 @@
 }
 
 .notifCard[data-read="true"] {
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
 }
 
 .notifRow {
@@ -78,7 +78,7 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-neutral-400);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   color: var(--color-neutral-400);
   cursor: pointer;
   font-size: var(--text-xs);

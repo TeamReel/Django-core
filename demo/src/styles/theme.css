@@ -49,10 +49,17 @@
   --app-surface-hover: var(--app-surface-2);    /* Surface hover state */
   --app-hover: rgba(0, 0, 0, 0.04);             /* Generic hover background */
   --app-error-bg: rgba(239, 68, 68, 0.08);      /* Error background tint */
+  --app-error-ring: rgba(239, 68, 68, 0.15);    /* Error ring / border accent */
   --app-warning-bg: rgba(245, 158, 11, 0.08);   /* Warning background tint */
   --app-warning-text: #b45309;                   /* Warning text — dark amber */
   --app-warning-subtle: rgba(245, 158, 11, 0.04); /* Warning tint — very light */
   --app-warning-ring: rgba(245, 158, 11, 0.12);  /* Warning focus ring color */
+  --app-success-bg: rgba(34, 197, 94, 0.10);    /* Success background tint */
+  --app-success-ring: rgba(34, 197, 94, 0.15);  /* Success ring / border accent */
+  --app-info-bg: rgba(59, 130, 246, 0.10);      /* Info / blue action tint */
+  --app-info-ring: rgba(59, 130, 246, 0.15);    /* Info ring / border accent */
+  --app-info-subtle: rgba(59, 130, 246, 0.06);  /* Info very light tint */
+  --app-ai-bg: rgba(99, 102, 241, 0.10);        /* AI / indigo background tint */
   --app-primary-subtle: rgba(59, 142, 165, 0.04); /* Primary tint — very light */
   --app-primary-ring: rgba(59, 142, 165, 0.15);  /* Primary focus ring / outline glow */
   --app-overlay: rgba(0, 0, 0, 0.5);             /* Modal overlay */
@@ -116,10 +123,17 @@
   --app-surface-hover: #2e4a6d;                 /* Surface hover state */
   --app-hover: rgba(255, 255, 255, 0.06);       /* Generic hover background — dark mode */
   --app-error-bg: rgba(239, 68, 68, 0.12);      /* Error background tint — dark mode */
+  --app-error-ring: rgba(239, 68, 68, 0.18);    /* Error ring — dark mode */
   --app-warning-bg: rgba(245, 158, 11, 0.12);   /* Warning background tint — dark mode */
   --app-warning-text: var(--color-amber-300);    /* Warning text — amber — dark mode */
   --app-warning-subtle: rgba(245, 158, 11, 0.06); /* Warning tint — very light */
   --app-warning-ring: rgba(245, 158, 11, 0.15);  /* Warning focus ring color */
+  --app-success-bg: rgba(34, 197, 94, 0.12);    /* Success tint — dark mode */
+  --app-success-ring: rgba(34, 197, 94, 0.18);  /* Success ring — dark mode */
+  --app-info-bg: rgba(59, 130, 246, 0.12);      /* Info tint — dark mode */
+  --app-info-ring: rgba(59, 130, 246, 0.18);    /* Info ring — dark mode */
+  --app-info-subtle: rgba(59, 130, 246, 0.08);  /* Info very light — dark mode */
+  --app-ai-bg: rgba(99, 102, 241, 0.12);        /* AI tint — dark mode */
   --app-primary-subtle: rgba(76, 161, 255, 0.04); /* Primary tint — very light */
   --app-primary-ring: rgba(76, 161, 255, 0.15);  /* Primary focus ring / outline glow */
   --app-overlay: rgba(0, 0, 0, 0.6);             /* Modal overlay */

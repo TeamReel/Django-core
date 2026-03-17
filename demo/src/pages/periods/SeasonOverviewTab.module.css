@@ -10,7 +10,7 @@
 
 /* ── Hero card ── */
 .heroCard {
-  background: linear-gradient(135deg, var(--app-surface-2, #1e293b) 0%, var(--app-surface, #0f172a) 100%);
+  background: linear-gradient(135deg, var(--app-surface-2, var(--app-text)) 0%, var(--app-surface, var(--color-neutral-900)) 100%);
   border-radius: var(--radius-lg);
   padding: var(--space-6) var(--space-5);
   text-align: center;
@@ -63,8 +63,8 @@
 
 /* ── Section card (shared) ── */
 .sectionCard {
-  background: var(--app-surface-2, #1e293b);
-  border: 1px solid var(--app-border, #334155);
+  background: var(--app-surface-2, var(--app-text));
+  border: 1px solid var(--app-border, var(--color-neutral-600));
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -74,7 +74,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4) var(--space-4);
-  border-bottom: 1px solid var(--app-border, #334155);
+  border-bottom: 1px solid var(--app-border, var(--color-neutral-600));
 }
 
 .sectionTitle {
@@ -107,7 +107,7 @@
   grid-template-columns: 1fr auto;
   gap: var(--space-1) var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
 }
 
 .assetRow:last-child {
@@ -147,7 +147,7 @@
 .progressTrack {
   grid-column: 1 / -1;
   height: 4px;
-  background: var(--app-border, #334155);
+  background: var(--app-border, var(--color-neutral-600));
   border-radius: var(--radius-sm);
   overflow: hidden;
   margin-top: var(--space-1);
@@ -175,7 +175,7 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
   text-decoration: none;
   color: var(--app-text);
   -webkit-tap-highlight-color: transparent;
@@ -245,7 +245,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
 }
 
 .compRow:last-child {
@@ -281,8 +281,8 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--app-border, #1e293b);
-  border-right: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
+  border-right: 1px solid var(--app-border, var(--app-text));
 }
 
 .brandItem:nth-child(3n) {

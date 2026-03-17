@@ -19,12 +19,12 @@
 
 .filterButton[data-active="false"] {
   border-color: var(--app-border);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   color: var(--app-text);
 }
 
 .orgSelect {
-  --org-select-border: #ccc;
+  --org-select-border: var(--app-border);
   border: 1px solid var(--org-select-border);
 }
 

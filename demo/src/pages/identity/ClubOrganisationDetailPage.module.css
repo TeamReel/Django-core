@@ -126,10 +126,10 @@
   right: 0;
   margin-top: var(--space-1);
   min-width: 168px;
-  background: var(--app-surface, #1e293b);
-  border: 1px solid var(--app-border, #334155);
+  background: var(--app-surface, var(--app-text));
+  border: 1px solid var(--app-border, var(--color-neutral-600));
   border-radius: var(--radius-lg);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 24px var(--alpha-black-25);
   z-index: 200;
   overflow: hidden;
 }
@@ -177,7 +177,7 @@
 
 /* ── Error state ── */
 .errorBox { padding: 24px 16px; text-align: center; }
-.errorMsg { font-size: 15px; color: var(--color-red-500, #ef4444); margin-bottom: 16px; }
+.errorMsg { font-size: 15px; color: var(--color-red-500, var(--app-error)); margin-bottom: 16px; }
 .backBtn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 12px 20px; font-size: 16px; font-weight: var(--font-semibold);
@@ -190,8 +190,8 @@
   display: flex;
   gap: 0;
   margin-bottom: var(--space-4);
-  background: var(--app-surface-2, #1e293b);
-  border: 1px solid var(--app-border, #334155);
+  background: var(--app-surface-2, var(--app-text));
+  border: 1px solid var(--app-border, var(--color-neutral-600));
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -211,11 +211,11 @@
 }
 
 .identityToggleBtn:not(:last-child) {
-  border-right: 1px solid var(--app-border, #334155);
+  border-right: 1px solid var(--app-border, var(--color-neutral-600));
 }
 
 .identityToggleBtnActive {
-  background: var(--app-surface, #0f172a);
+  background: var(--app-surface, var(--color-neutral-900));
   color: var(--app-text);
   font-weight: var(--font-bold);
 }

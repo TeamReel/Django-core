@@ -3,7 +3,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--alpha-black-45);
   z-index: 60;
   display: flex;
   align-items: center;
@@ -14,15 +14,15 @@
 .modal {
   width: min(560px, 96vw);
   background: var(--color-neutral-900);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   border-radius: var(--radius-lg);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 60px var(--alpha-black-35);
+  border: 1px solid var(--alpha-white-12);
 }
 
 .header {
   padding: var(--space-4) var(--space-4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  border-bottom: 1px solid var(--alpha-white-10);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -44,8 +44,8 @@
 }
 
 .closeButton {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--app-surface-glass-hover);
+  border: 1px solid var(--alpha-white-14);
 }
 
 .body {
@@ -68,9 +68,9 @@
   width: 100%;
   padding: var(--space-3);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--color-white, #fff);
+  border: 1px solid var(--alpha-white-18);
+  background: var(--app-surface-glass);
+  color: var(--color-white, var(--color-white));
 }
 
 .noSeasonsText {
@@ -80,19 +80,19 @@
 
 .footer {
   padding: var(--space-4);
-  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  border-top: 1px solid var(--alpha-white-10);
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
 }
 
 .cancelButton {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--app-surface-glass-hover);
+  border: 1px solid var(--alpha-white-14);
 }
 
 .submitButton {
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--alpha-white-12);
 }
 
 .submitButton[data-mode="assign"] {

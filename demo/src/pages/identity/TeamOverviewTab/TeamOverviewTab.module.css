@@ -10,7 +10,7 @@
 
 /* ── Hero card ── */
 .heroCard {
-  background: linear-gradient(135deg, var(--app-surface-2, #1e293b) 0%, var(--app-surface, #0f172a) 100%);
+  background: linear-gradient(135deg, var(--app-surface-2, var(--app-text)) 0%, var(--app-surface, var(--color-neutral-900)) 100%);
   border-radius: var(--radius-lg);
   padding: var(--space-6) var(--space-5);
   text-align: center;
@@ -60,8 +60,8 @@
 
 /* ── Section card (shared) ── */
 .sectionCard {
-  background: var(--app-surface-2, #1e293b);
-  border: 1px solid var(--app-border, #334155);
+  background: var(--app-surface-2, var(--app-text));
+  border: 1px solid var(--app-border, var(--color-neutral-600));
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -71,7 +71,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4) var(--space-4);
-  border-bottom: 1px solid var(--app-border, #334155);
+  border-bottom: 1px solid var(--app-border, var(--color-neutral-600));
 }
 
 .sectionTitle {
@@ -113,7 +113,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
 }
 
 .brandItem:nth-last-child(-n+2) {
@@ -148,7 +148,7 @@
   grid-template-rows: auto auto;
   gap: var(--space-1) var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
   align-items: center;
 }
 
@@ -191,7 +191,7 @@
   grid-column: 1 / -1;
   grid-row: 2;
   height: 4px;
-  background: var(--app-surface, #0f172a);
+  background: var(--app-surface, var(--color-neutral-900));
   border-radius: var(--radius-sm);
   overflow: hidden;
 }
@@ -217,7 +217,7 @@
   display: grid;
   grid-template-columns: 1fr 56px 56px 20px;
   padding: var(--space-2) var(--space-4);
-  border-bottom: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
 }
 
 .breakdownHeader .breakdownColName,
@@ -236,7 +236,7 @@
   padding: var(--space-3) var(--space-4);
   min-height: 48px;
   border: none;
-  border-bottom: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
   background: none;
   font: inherit;
   text-align: left;
@@ -288,7 +288,7 @@
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   min-height: 48px;
-  border-bottom: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
 }
 
 .memberRow:last-child {
@@ -299,7 +299,7 @@
   width: 32px;
   height: 32px;
   border-radius: var(--radius-full);
-  background: var(--app-surface, #0f172a);
+  background: var(--app-surface, var(--color-neutral-900));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -329,7 +329,7 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
 }
 
 .detailRow:last-child {
@@ -380,7 +380,7 @@
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   min-height: 48px;
-  border-bottom: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
   cursor: default;
 }
 

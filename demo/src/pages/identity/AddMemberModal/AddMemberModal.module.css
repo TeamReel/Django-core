@@ -8,7 +8,7 @@
 .panel {
   width: 700px;
   max-width: 100%;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 25px var(--alpha-black-20);
   max-height: calc(100vh - 32px);
   margin: auto;
 }
@@ -18,7 +18,7 @@
 }
 
 .tabBar {
-  border-bottom: 2px solid var(--app-border, #e0e0e0);
+  border-bottom: 2px solid var(--app-border, var(--app-border));
   margin-bottom: var(--space-5);
 }
 
@@ -35,8 +35,8 @@
 }
 
 .tab[data-active="true"] {
-  background: var(--app-primary, #0b5ed7);
-  color: var(--color-white, #fff);
+  background: var(--app-primary, var(--color-blue-700));
+  color: var(--color-white, var(--color-white));
   font-weight: var(--font-semibold);
 }
 

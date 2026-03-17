@@ -66,26 +66,26 @@
 /* ── Progress bar ───────────────────────────────────── */
 .progressContainer {
   height: 4px;
-  background-color: var(--app-border, #e5e7eb);
+  background-color: var(--app-border, var(--app-border));
   flex-shrink: 0;
 }
 
 .progressBar {
   height: 100%;
-  background-color: var(--app-primary, #3B8EA5);
+  background-color: var(--app-primary, var(--color-primary-400));
   transition: width var(--duration-slow) var(--ease-default);
 }
 
 /* ── Primary action button ──────────────────────────── */
 .primaryBtn {
   height: 52px;
-  background-color: var(--app-primary, #3B8EA5);
+  background-color: var(--app-primary, var(--color-primary-400));
   transition: background-color var(--duration-fast), transform var(--duration-fast);
 }
 
 @media (hover: hover) {
   .primaryBtn:hover:not(:disabled) {
-  background-color: var(--app-primary-hover, #327d91);
+  background-color: var(--app-primary-hover, var(--color-primary-500));
   }
 }
 
@@ -102,13 +102,13 @@
 .secondaryBtn {
   height: 48px;
   background-color: var(--app-surface-2, var(--app-surface-2));
-  color: var(--app-text-primary, #1f2937);
+  color: var(--app-text-primary, var(--color-neutral-800));
   transition: background-color var(--duration-fast), transform var(--duration-fast);
 }
 
 @media (hover: hover) {
   .secondaryBtn:hover:not(:disabled) {
-  background-color: var(--app-surface-3, #e5e7eb);
+  background-color: var(--app-surface-3, var(--app-border));
   }
 }
 
@@ -124,7 +124,7 @@
   padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -153,12 +153,12 @@
   gap: var(--space-3);
   padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-lg);
-  background-color: var(--color-red-50, #fef2f2);
-  border: 1px solid var(--color-red-200, #fecaca);
+  background-color: var(--color-red-50, var(--color-red-50));
+  border: 1px solid var(--color-red-200, var(--color-red-100));
 }
 
 .errorIcon {
-  color: var(--color-red-500, #ef4444);
+  color: var(--color-red-500, var(--app-error));
   flex-shrink: 0;
   margin-top: var(--space-1);
 }
@@ -170,7 +170,7 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   cursor: pointer;
@@ -187,14 +187,14 @@
 .loading {
   text-align: center;
   padding: var(--space-8);
-  color: var(--app-text-muted, #6b7280);
+  color: var(--app-text-muted, var(--color-neutral-400));
 }
 
 /* ── Empty state ────────────────────────────────────── */
 .empty {
   text-align: center;
   padding: var(--space-8);
-  color: var(--app-text-muted, #6b7280);
+  color: var(--app-text-muted, var(--color-neutral-400));
 }
 
 /* ══════════════════════════════════════════════════════
@@ -277,11 +277,11 @@
 
 /* Focus-visible ring for keyboard navigation */
 .headerBtn:focus-visible {
-  outline: 2px solid var(--app-primary, #3B8EA5);
+  outline: 2px solid var(--app-primary, var(--color-primary-400));
   outline-offset: 2px;
 }
 
 .card:focus-visible {
-  outline: 2px solid var(--app-primary, #3B8EA5);
+  outline: 2px solid var(--app-primary, var(--color-primary-400));
   outline-offset: 2px;
 }

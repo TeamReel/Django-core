@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--app-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,12 +12,12 @@
 }
 
 .modal {
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   padding: var(--space-6);
   border-radius: var(--radius-md);
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--alpha-black-10);
   color: var(--app-text);
   border: 1px solid var(--app-border);
 }
@@ -32,9 +32,9 @@
 
 .errorBox {
   padding: var(--space-2);
-  background-color: rgba(220, 53, 69, 0.1);
+  background-color: var(--app-error-bg);
   color: var(--app-error);
-  border: 1px solid rgba(220, 53, 69, 0.3);
+  border: 1px solid var(--app-error-ring);
   border-radius: var(--radius-sm);
   margin-bottom: var(--space-4);
   font-size: var(--text-sm);

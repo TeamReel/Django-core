@@ -4,7 +4,7 @@
   width: 100%;
   max-width: 480px;
   margin-top: var(--space-5);
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--app-surface, white);
@@ -12,20 +12,20 @@
 
 .header {
   padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--app-border, #e5e7eb);
-  background: var(--app-surface-2, #f3f4f6);
+  border-bottom: 1px solid var(--app-border, var(--app-border));
+  background: var(--app-surface-2, var(--app-surface-2));
 }
 
 .headerTitle {
   font-size: var(--text-base);
   font-weight: var(--font-bold);
   margin: 0;
-  color: var(--app-text, #111);
+  color: var(--app-text, var(--app-text));
 }
 
 .label {
   margin-bottom: var(--space-3);
-  color: var(--app-text-muted, #6b7280);
+  color: var(--app-text-muted, var(--color-neutral-400));
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -33,7 +33,7 @@
 .scoreSeparator {
   font-size: var(--text-xl);
   font-weight: var(--font-bold);
-  color: var(--app-text-muted, #6b7280);
+  color: var(--app-text-muted, var(--color-neutral-400));
   margin-top: var(--space-5);
 }
 
@@ -41,10 +41,10 @@
   width: 100%;
   padding: var(--space-3) var(--space-3);
   font-size: var(--text-sm);
-  border: 1px solid var(--app-border, #e5e7eb);
+  border: 1px solid var(--app-border, var(--app-border));
   border-radius: var(--radius-md);
   background: var(--app-surface, white);
-  color: var(--app-text, #111);
+  color: var(--app-text, var(--app-text));
   cursor: pointer;
 }
 
@@ -54,12 +54,12 @@
 }
 
 .option[data-available='false'] {
-  color: var(--color-text-disabled, #999);
+  color: var(--color-text-disabled, var(--app-muted-text));
   font-weight: var(--font-normal);
 }
 
 .errorHint {
-  color: var(--color-error, #e11d48);
+  color: var(--color-error, var(--color-red-400));
   margin-top: var(--space-2);
 }
 
@@ -80,7 +80,7 @@
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   margin-bottom: var(--space-2);
-  color: var(--app-text-muted, #6b7280);
+  color: var(--app-text-muted, var(--color-neutral-400));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -97,9 +97,9 @@
 .stepperBtn {
   width: 32px;
   height: 56px;
-  border: 2px solid var(--app-border, #e5e7eb);
+  border: 2px solid var(--app-border, var(--app-border));
   background: var(--app-surface, white);
-  color: var(--app-text-muted, #6b7280);
+  color: var(--app-text-muted, var(--color-neutral-400));
   font-size: var(--text-lg);
   font-weight: var(--font-bold);
   cursor: pointer;
@@ -126,10 +126,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-top: 2px solid var(--app-border, #e5e7eb);
-  border-bottom: 2px solid var(--app-border, #e5e7eb);
+  border-top: 2px solid var(--app-border, var(--app-border));
+  border-bottom: 2px solid var(--app-border, var(--app-border));
   border-left: none;
   border-right: none;
   background: var(--app-surface, white);
-  color: var(--app-text, #111);
+  color: var(--app-text, var(--app-text));
 }

@@ -4,7 +4,7 @@
   justify-content: space-between;
   padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--app-border);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   color: var(--app-text);
 }
 
@@ -61,7 +61,7 @@
   top: 100%;
   right: 0;
   margin-top: var(--space-1);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   border: 1px solid var(--app-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
@@ -95,14 +95,14 @@
 }
 
 .languageOption[data-active="true"] {
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: var(--app-info-bg);
   color: var(--color-blue-600);
   font-weight: var(--font-semibold);
 }
 
 @media (hover: hover) {
   .languageOption[data-active="true"]:hover {
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: var(--app-info-bg);
   }
 
 .languageOption[data-active="true"]:focus-visible {
@@ -126,7 +126,7 @@
   top: 4px;
   right: 4px;
   background-color: var(--app-error);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   border-radius: var(--radius-lg);
   padding: var(--space-1) var(--space-2);
   font-size: var(--text-xs);
@@ -142,7 +142,7 @@
 .signOutButton {
   padding: var(--space-2) var(--space-4);
   background-color: var(--app-error);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   border: none;
   border-radius: var(--radius-sm);
   font-size: var(--text-sm);
@@ -150,6 +150,6 @@
 }
 
 .signOutButton:disabled {
-  background-color: var(--color-gray-500, #6c757d);
+  background-color: var(--color-gray-500, var(--color-neutral-400));
   cursor: not-allowed;
 }

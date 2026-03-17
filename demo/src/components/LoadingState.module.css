@@ -13,8 +13,8 @@
   display: inline-block;
   width: 16px;
   height: 16px;
-  border: 2px solid var(--spinner-track, #f3f3f3);
-  border-top-color: var(--spinner-accent, #007bff);
+  border: 2px solid var(--spinner-track, var(--app-surface-2));
+  border-top-color: var(--spinner-accent, var(--color-blue-500));
   border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
   vertical-align: middle;
@@ -27,7 +27,7 @@
 
 .skeletonLine {
   height: 20px;
-  background-color: var(--skeleton-bg, #e0e0e0);
+  background-color: var(--skeleton-bg, var(--app-border));
   border-radius: var(--radius-sm);
   margin-bottom: var(--space-3);
   animation: pulse 1.5s ease-in-out infinite;
@@ -56,15 +56,15 @@
 .spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid var(--spinner-track, #f3f3f3);
-  border-top-color: var(--spinner-accent, #007bff);
+  border: 4px solid var(--spinner-track, var(--app-surface-2));
+  border-top-color: var(--spinner-accent, var(--color-blue-500));
   border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
 }
 
 .message {
   margin-top: var(--space-4);
-  color: var(--loading-text, #666);
+  color: var(--loading-text, var(--color-neutral-400));
   font-size: var(--text-base);
 }
 
@@ -75,7 +75,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: var(--alpha-white-90);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,8 +89,8 @@
 .overlaySpinner {
   width: 64px;
   height: 64px;
-  border: 6px solid var(--spinner-track, #f3f3f3);
-  border-top-color: var(--spinner-accent, #007bff);
+  border: 6px solid var(--spinner-track, var(--app-surface-2));
+  border-top-color: var(--spinner-accent, var(--color-blue-500));
   border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
   margin: 0 auto;

@@ -206,10 +206,10 @@
   right: 0;
   z-index: 200;
   min-width: 168px;
-  background: var(--app-surface, #1e1e1e);
+  background: var(--app-surface, var(--color-neutral-900));
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 8px 28px var(--alpha-black-35);
   overflow: hidden;
 }
 
@@ -237,7 +237,7 @@
 }
 
 .overflowDanger {
-  color: var(--color-red-500, #ef4444);
+  color: var(--color-red-500, var(--app-error));
 }
 
 /* ── Loading skeleton ────────────────────────────────────────────────── */
@@ -294,7 +294,7 @@
 
 .errorMsg {
   font-size: var(--text-base);
-  color: var(--color-red-500, #ef4444);
+  color: var(--color-red-500, var(--app-error));
   margin-bottom: var(--space-4);
 }
 

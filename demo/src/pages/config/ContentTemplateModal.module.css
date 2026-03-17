@@ -12,7 +12,7 @@
 
 .tabButton[data-active="true"] {
   background: var(--app-primary);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 .tabButton[data-active="false"] {

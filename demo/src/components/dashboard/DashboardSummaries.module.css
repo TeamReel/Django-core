@@ -17,7 +17,7 @@
 @media (hover: hover) {
   .summaryCard:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px var(--alpha-black-6);
   }
 }
 
@@ -26,7 +26,7 @@
 }
 
 .summaryCard:focus-visible {
-  outline: 2px solid var(--app-primary, #6366f1);
+  outline: 2px solid var(--app-primary, var(--color-indigo-500));
   outline-offset: 2px;
 }
 
@@ -40,7 +40,7 @@
 }
 
 .alertCard {
-  border-color: var(--color-error, #ef4444);
+  border-color: var(--color-error, var(--app-error));
 }
 
 /* ── Icon circle ─────────────────────────────────────────────────── */
@@ -87,12 +87,12 @@
   font-weight: var(--font-semibold);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
-  background: rgba(245, 158, 11, 0.12);
+  background: var(--app-warning-ring);
   color: var(--color-amber-400);
 }
 
 .warnIcon {
-  color: var(--color-error, #ef4444);
+  color: var(--color-error, var(--app-error));
 }
 
 /* ── Tall card (matches list, stats) ─────────────────────────────── */
@@ -248,22 +248,22 @@
 
 /* ── Icon variants ────────────────────────────────────────────────── */
 .iconPrimary {
-  background: rgba(99, 102, 241, 0.1);
+  background: var(--app-ai-bg);
   color: var(--app-primary);
 }
 
 .iconRed {
-  background: rgba(236, 72, 153, 0.1);
+  background: var(--app-ai-bg);
   color: var(--color-red-400);
 }
 
 .iconAmber {
-  background: rgba(245, 158, 11, 0.1);
+  background: var(--app-warning-bg);
   color: var(--color-amber-400);
 }
 
 .iconGreen {
-  background: rgba(34, 197, 94, 0.1);
+  background: var(--app-success-bg);
   color: var(--color-green-400);
 }
 
@@ -276,7 +276,7 @@
   font-weight: var(--font-bold);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-lg);
-  background: rgba(99, 102, 241, 0.1);
+  background: var(--app-ai-bg);
   color: var(--app-primary);
   margin-bottom: var(--space-4);
 }

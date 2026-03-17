@@ -17,7 +17,7 @@
 }
 
 .card:focus-visible {
-  outline: 2px solid var(--app-primary, #6366f1);
+  outline: 2px solid var(--app-primary, var(--color-indigo-500));
   outline-offset: 2px;
 }
 
@@ -255,17 +255,17 @@
 }
 
 .typeChip[data-type='image'] {
-  background: rgba(13, 148, 136, 0.1);
+  background: var(--app-primary-light);
   color: var(--color-primary-400);
 }
 
 .typeChip[data-type='video'] {
-  background: rgba(99, 102, 241, 0.1);
+  background: var(--app-ai-bg);
   color: var(--color-indigo-500);
 }
 
 .typeChip[data-type='text'] {
-  background: rgba(217, 119, 6, 0.1);
+  background: var(--app-warning-bg);
   color: var(--color-amber-500);
 }
 

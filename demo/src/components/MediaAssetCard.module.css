@@ -13,7 +13,7 @@
 
 .card {
   border: 1px solid var(--vscode-widget-border, var(--app-text));
-  background: var(--vscode-editor-background, #1e1e1e);
+  background: var(--vscode-editor-background, var(--color-neutral-900));
   transition: all var(--duration-normal) var(--ease-default);
   cursor: default;
 }
@@ -27,7 +27,7 @@
 }
 
 .card[data-status='saved'] {
-  border-color: var(--color-green-500, #22c55e);
+  border-color: var(--color-green-500, var(--app-success));
 }
 
 .card[data-clickable] {
@@ -62,7 +62,7 @@
   background:
     repeating-conic-gradient(
       var(--color-neutral-900) 0% 25%,
-      var(--vscode-editor-background, #1e1e1e) 0% 50%
+      var(--vscode-editor-background, var(--color-neutral-900)) 0% 50%
     )
     50% / 20px 20px;
 }
@@ -72,9 +72,9 @@
  * -------------------------------------------------------------------------- */
 
 .playOverlay {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--alpha-white-90);
   font-size: 28px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+  text-shadow: 0 2px 12px var(--alpha-black-70);
 }
 
 .generatingState {
@@ -120,7 +120,7 @@
 .historyButton {
   top: 8px;
   left: 8px;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--app-overlay-backdrop);
   padding: var(--space-1) var(--space-2);
 }
 
@@ -147,18 +147,18 @@
 
 .replaceButton {
   padding: var(--space-1) var(--space-2);
-  background: var(--vscode-button-background, #0078d4);
-  color: var(--vscode-button-foreground, #fff);
+  background: var(--vscode-button-background, var(--color-blue-600));
+  color: var(--vscode-button-foreground, var(--color-white));
 }
 
 .improveButton {
   padding: var(--space-1) var(--space-2);
-  background: var(--color-violet-500, #8b5cf6);
+  background: var(--color-violet-500, var(--color-violet-500));
 }
 
 .deleteButton {
   padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--color-red-500, #ef4444);
+  border: 1px solid var(--color-red-500, var(--app-error));
 }
 
 .updatedDate {
@@ -170,23 +170,23 @@
  * -------------------------------------------------------------------------- */
 
 .modalBackdrop {
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--app-overlay-backdrop);
   z-index: 1100;
 }
 
 .modalContent {
-  background: var(--vscode-editor-background, #1e1e1e);
-  border: 1px solid var(--vscode-widget-border, #333);
+  background: var(--vscode-editor-background, var(--color-neutral-900));
+  border: 1px solid var(--vscode-widget-border, var(--app-text));
   width: 480px;
   max-height: 80vh;
 }
 
 .modalCloseButton {
-  color: var(--color-gray-300, #ccc);
+  color: var(--color-gray-300, var(--app-border));
 }
 
 .historyRow {
-  background: var(--color-bg-secondary, #252526);
+  background: var(--color-bg-secondary, var(--color-neutral-900));
 }
 
 .historyThumbnail {
@@ -202,7 +202,7 @@
 
 .restoreButton {
   padding: var(--space-2) var(--space-3);
-  background: var(--color-blue-700, #094771);
+  background: var(--color-blue-700, var(--color-primary-700));
 }
 
 /* --------------------------------------------------------------------------

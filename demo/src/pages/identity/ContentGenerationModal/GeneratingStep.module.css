@@ -24,20 +24,20 @@
 .headline {
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
-  color: var(--app-text, #1C355E);
+  color: var(--app-text, var(--color-neutral-800));
   margin-bottom: var(--space-2);
 }
 
 .description {
   font-size: var(--text-sm);
-  color: var(--app-text-muted, #6b7280);
+  color: var(--app-text-muted, var(--color-neutral-400));
   margin-bottom: var(--space-6);
   min-height: 20px;
 }
 
 .progressTrack {
   width: 100%;
-  background: var(--app-border, #e5e5e5);
+  background: var(--app-border, var(--app-border));
   border-radius: var(--radius-full);
   height: 12px;
   margin-bottom: var(--space-2);
@@ -45,7 +45,7 @@
 }
 
 .progressFill {
-  background: var(--app-primary, #3B8EA5);
+  background: var(--app-primary, var(--color-primary-400));
   height: 100%;
   border-radius: var(--radius-full);
   transition: all var(--duration-fast) var(--ease-default);
@@ -53,7 +53,7 @@
 
 .progressLabel {
   font-size: var(--text-sm);
-  color: var(--app-text-secondary, #4b5563);
+  color: var(--app-text-secondary, var(--color-neutral-500));
   font-weight: var(--font-medium);
 }
 
@@ -63,6 +63,6 @@
 
 .closeHint {
   font-size: var(--text-xs);
-  color: var(--app-text-muted, #9ca3af);
+  color: var(--app-text-muted, var(--color-neutral-300));
   margin-bottom: var(--space-2);
 }

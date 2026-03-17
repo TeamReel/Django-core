@@ -11,9 +11,9 @@
 }
 
 .errorBox {
-  --error-bg: #ffeeee;
-  --error-border: #ffcccc;
-  --error-text: #cc0000;
+  --error-bg: var(--color-red-50);
+  --error-border: var(--color-red-100);
+  --error-text: var(--color-red-600);
   padding: var(--space-3);
   background-color: var(--error-bg);
   border: 1px solid var(--error-border);
@@ -25,7 +25,7 @@
 }
 
 .submitBtn {
-  --submit-bg-disabled: #cccccc;
+  --submit-bg-disabled: var(--app-border);
   padding: var(--space-3);
   background-color: var(--app-primary);
   border: none;

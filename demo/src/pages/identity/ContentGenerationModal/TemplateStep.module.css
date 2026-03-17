@@ -10,7 +10,7 @@
   height: 32px;
   border-width: 4px;
   border-style: solid;
-  border-color: var(--app-primary, #3B8EA5);
+  border-color: var(--app-primary, var(--color-primary-400));
   border-top-color: transparent;
   animation: spin 1s linear infinite;
 }
@@ -39,7 +39,7 @@
 }
 
 .templateLink {
-  color: var(--app-link, #3B8EA5);
+  color: var(--app-link, var(--color-primary-400));
 }
 
 .templateGrid {
@@ -47,13 +47,13 @@
 }
 
 .templatePreview {
-  background: linear-gradient(to bottom right, var(--app-surface-2, #f3f4f6), var(--app-border, #e5e5e5));
+  background: linear-gradient(to bottom right, var(--app-surface-2, var(--app-surface-2)), var(--app-border, var(--app-border)));
   aspect-ratio: 16 / 9;
-  color: var(--app-text-muted, #9ca3af);
+  color: var(--app-text-muted, var(--color-neutral-300));
 }
 
 .templateDescription {
-  color: var(--app-text-muted, #6b7280);
+  color: var(--app-text-muted, var(--color-neutral-400));
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -61,5 +61,5 @@
 
 .templateFooter {
   margin-top: auto;
-  color: var(--app-text-muted, #6b7280);
+  color: var(--app-text-muted, var(--color-neutral-400));
 }

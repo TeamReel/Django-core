@@ -21,13 +21,13 @@
 .confirmButton {
   padding: var(--space-2) var(--space-4);
   border: none;
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 .confirmButtonDanger {
-  background: var(--color-red-500, #dc2626);
+  background: var(--color-red-500, var(--color-red-500));
 }
 
 .confirmButtonPrimary {
-  background: var(--color-primary-400, #3B8EA5);
+  background: var(--color-primary-400, var(--color-primary-400));
 }

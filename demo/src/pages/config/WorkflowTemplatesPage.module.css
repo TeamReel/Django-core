@@ -12,7 +12,7 @@
 
 .emptyState {
   padding: var(--space-12);
-  border: 1px dashed var(--app-border, #e5e7eb);
+  border: 1px dashed var(--app-border, var(--app-border));
 }
 
 .emptyStateIcon {
@@ -20,7 +20,7 @@
 }
 
 .templateName {
-  color: var(--app-text, #111);
+  color: var(--app-text, var(--app-text));
 }
 
 .versionBadge {
@@ -30,8 +30,8 @@
 }
 
 .activeBadge {
-  --active-color: #059669;
-  --active-bg: #d1fae5;
+  --active-color: var(--color-green-600);
+  --active-bg: var(--color-green-100);
   color: var(--active-color);
   background-color: var(--active-bg);
   padding: var(--space-1) var(--space-2);

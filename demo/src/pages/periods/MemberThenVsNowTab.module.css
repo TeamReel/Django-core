@@ -60,7 +60,7 @@
 }
 
 .variantPreview[data-dark-bg="true"] {
-  background: var(--color-overlay-dark, #000);
+  background: var(--color-overlay-dark, var(--color-neutral-900));
 }
 
 .variantPreview[data-clickable="true"] {

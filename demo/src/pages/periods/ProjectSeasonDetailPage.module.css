@@ -124,10 +124,10 @@
   right: 0;
   margin-top: var(--space-1);
   min-width: 168px;
-  background: var(--app-surface, #1e293b);
-  border: 1px solid var(--app-border, #334155);
+  background: var(--app-surface, var(--app-text));
+  border: 1px solid var(--app-border, var(--color-neutral-600));
   border-radius: var(--radius-lg);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 24px var(--alpha-black-25);
   z-index: 200;
   overflow: hidden;
 }
@@ -172,7 +172,7 @@
 
 /* ── Error state ── */
 .errorBox { padding: 24px 16px; text-align: center; }
-.errorMsg { font-size: 15px; color: var(--color-red-500, #ef4444); margin-bottom: 16px; }
+.errorMsg { font-size: 15px; color: var(--color-red-500, var(--app-error)); margin-bottom: 16px; }
 .backBtn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 12px 20px; font-size: 16px; font-weight: var(--font-semibold);
@@ -237,16 +237,16 @@
 
 /* ── Video Preview Modal ── */
 .modalBackdrop {
-  position: fixed; inset: 0; z-index: 9999; background-color: rgba(0, 0, 0, 0.8);
+  position: fixed; inset: 0; z-index: 9999; background-color: var(--alpha-black-80);
   display: flex; align-items: center; justify-content: center; padding: 20px;
 }
 .previewModalContainer {
   background-color: var(--app-card-bg, var(--color-neutral-800)); border-radius: var(--radius-lg); max-width: 900px;
-  width: 100%; max-height: 90vh; overflow: hidden; border: 1px solid var(--app-border, #334155);
+  width: 100%; max-height: 90vh; overflow: hidden; border: 1px solid var(--app-border, var(--color-neutral-600));
 }
 .previewModalHeader {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px; border-bottom: 1px solid var(--app-border, #334155);
+  padding: 12px 16px; border-bottom: 1px solid var(--app-border, var(--color-neutral-600));
 }
 .previewTitle { font-size: 15px; font-weight: 700; color: var(--app-text); }
 .closeButton { background: none; border: none; color: var(--app-muted-text); cursor: pointer; font-size: 20px; }
@@ -261,14 +261,14 @@
 .competitionCard { border: 1px solid var(--app-border, var(--color-neutral-600)); border-radius: var(--radius-lg); background: var(--app-surface); overflow: hidden; }
 .competitionCardHeader {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 12px 12px; border-bottom: 1px solid var(--app-border, #334155);
+  padding: 12px 12px; border-bottom: 1px solid var(--app-border, var(--color-neutral-600));
   background: var(--app-surface-2); gap: 12px;
 }
 .competitionCardInfo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .sportInfo { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--app-muted-text); }
 .matchRow {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 8px 12px; border-bottom: 1px solid var(--app-border, #1e293b);
+  padding: 8px 12px; border-bottom: 1px solid var(--app-border, var(--app-text));
   border-radius: var(--radius-md);
 }
 .matchDate { font-size: 12px; color: var(--app-muted-text); }
@@ -284,7 +284,7 @@
   position: absolute; bottom: 4px; left: 50%;
 }
 .slotIcon { font-size: var(--text-base); }
-.guestRow { background: rgba(167, 139, 250, 0.06); }
+.guestRow { background: var(--app-ai-bg); }
 .guestLabel { color: var(--color-violet-400); font-weight: 600; }
 .guestIndicator { font-size: var(--text-sm); cursor: pointer; }
 .indicatorIcon { font-size: var(--text-sm); }
@@ -292,7 +292,7 @@
 .legendBox { margin-top: 16px; padding: 12px; background: var(--app-muted); border-radius: var(--radius-md); }
 .legendTitle { font-size: 12px; font-weight: var(--font-semibold); margin-bottom: 8px; }
 .legendRow { display: flex; flex-wrap: wrap; gap: 16px; font-size: var(--text-xs); margin-bottom: 12px; }
-.legendRowDivided { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; margin-bottom: 12px; border-top: 1px solid var(--app-border, #334155); padding-top: 8px; }
+.legendRowDivided { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; margin-bottom: 12px; border-top: 1px solid var(--app-border, var(--color-neutral-600)); padding-top: 8px; }
 .legendItem { display: flex; align-items: center; gap: 4px; }
 .legendLabel { opacity: 0.8; }
 .mediaHeaderBtn { font-size: var(--text-sm); padding: 8px 16px; }
@@ -300,7 +300,7 @@
 /* ── Edit Member Modal ── */
 .modalOverlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center;
+  background-color: var(--app-overlay); display: flex; align-items: center;
   justify-content: center; z-index: 9999;
 }
 .editMemberModal {
@@ -330,16 +330,16 @@
 }
 .btnSave {
   padding: 12px 20px; border-radius: var(--radius-md); border: none;
-  background-color: var(--color-blue-500); color: var(--color-white, #fff); cursor: pointer; font-weight: 500;
+  background-color: var(--color-blue-500); color: var(--color-white, var(--color-white)); cursor: pointer; font-weight: 500;
 }
 
 /* ── Then vs Now Modal ── */
 .thenNowBackdrop {
   position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center;
-  justify-content: center; background-color: rgba(0, 0, 0, 0.75); padding: 20px;
+  justify-content: center; background-color: var(--alpha-black-75); padding: 20px;
 }
 .thenNowModal {
-  background-color: var(--app-surface, #1a1a2e); border-radius: var(--radius-lg);
+  background-color: var(--app-surface, var(--color-neutral-900)); border-radius: var(--radius-lg);
   max-width: 640px; width: 100%; max-height: 90vh; overflow: hidden;
   border: 1px solid var(--app-border);
 }
@@ -367,7 +367,7 @@
 .variantRow { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
 .variantPill { padding: 4px 8px; border-radius: var(--radius-full); font-size: 10px; cursor: pointer; transition: all var(--duration-fast); }
 .arrowBtn { background: none; border: none; font-size: var(--text-base); padding: 4px; }
-.removeBtn { background: none; border: none; cursor: pointer; color: var(--app-danger, #ef4444); opacity: 0.5; }
+.removeBtn { background: none; border: none; cursor: pointer; color: var(--app-danger, var(--app-error)); opacity: 0.5; }
 .addIcon { font-size: 18px; color: var(--app-muted-text); }
 .unselectedHeader { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-muted-text); padding: 12px 20px 8px; }
 .unselectedList { max-height: 160px; overflow-y: auto; }
@@ -380,13 +380,13 @@
 .bgOptionLabel { font-size: 9px; margin-top: 4px; text-align: center; }
 .checkBadge {
   position: absolute; top: 4px; right: 4px; width: 20px; height: 20px;
-  border-radius: var(--radius-full); background: var(--color-green-400); color: var(--color-white, #fff); font-size: 12px;
+  border-radius: var(--radius-full); background: var(--color-green-400); color: var(--color-white, var(--color-white)); font-size: 12px;
   display: flex; align-items: center; justify-content: center;
 }
 .statusStep { padding: 40px 20px; text-align: center; }
 .statusEmoji { font-size: 48px; margin-bottom: 16px; }
 .statusTitle { font-weight: var(--font-bold); font-size: 16px; margin-bottom: 8px; }
-.statusTitleError { font-weight: 700; font-size: 16px; margin-bottom: 8px; color: var(--app-danger, #ef4444); }
+.statusTitleError { font-weight: 700; font-size: 16px; margin-bottom: 8px; color: var(--app-danger, var(--app-error)); }
 .statusDesc { font-size: 13px; color: var(--app-muted-text); }
 .modalSearchInput {
   width: 100%; padding: 8px 12px; border-radius: var(--radius-md);
@@ -399,7 +399,7 @@
 }
 .modalBtnPrimary {
   padding: 8px 20px; border-radius: var(--radius-md); border: none;
-  background: var(--color-indigo-500); color: var(--color-white, #fff); cursor: pointer; font-weight: 600; font-size: 13px;
+  background: var(--color-indigo-500); color: var(--color-white, var(--color-white)); cursor: pointer; font-weight: 600; font-size: 13px;
 }
 
 /* ── Toasts ── */
@@ -408,12 +408,12 @@
   display: flex; flex-direction: column; gap: 8px; max-width: 420px;
 }
 .toast {
-  border-radius: var(--radius-md); padding: 12px 16px; color: var(--color-white, #fff);
+  border-radius: var(--radius-md); padding: 12px 16px; color: var(--color-white, var(--color-white));
   display: flex; align-items: flex-start; gap: 12px; font-size: var(--text-sm);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); animation: slideInRight 0.3s ease-out;
+  box-shadow: 0 4px 12px var(--alpha-black-30); animation: slideInRight 0.3s ease-out;
 }
 .toastDismiss {
-  background: none; border: none; color: var(--color-white, #fff); cursor: pointer;
+  background: none; border: none; color: var(--color-white, var(--color-white)); cursor: pointer;
   font-size: var(--text-lg); opacity: 0.7; flex-shrink: 0; margin-left: auto;
 }
 

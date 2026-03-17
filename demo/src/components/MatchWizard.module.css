@@ -75,7 +75,7 @@
   padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -107,7 +107,7 @@
   width: 44px;
   height: 44px;
   flex-shrink: 0;
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   background-color: var(--app-primary);
 }
 
@@ -150,7 +150,7 @@
 
 .phaseTab[data-active='true'] {
   background-color: var(--app-primary);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   font-weight: var(--font-semibold);
 }
 
@@ -162,7 +162,7 @@
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -216,8 +216,8 @@
 }
 
 .thumbIcon {
-  color: rgba(255, 255, 255, 0.9);
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+  color: var(--alpha-white-90);
+  filter: drop-shadow(0 1px 2px var(--alpha-black-15));
 }
 
 /* ── Output type badge ──────────────────────────────── */
@@ -235,18 +235,18 @@
 }
 
 .outputBadge[data-output='video'] {
-  background: rgba(99, 102, 241, 0.85);
-  color: var(--color-white, #fff);
+  background: var(--color-indigo-500);
+  color: var(--color-white, var(--color-white));
 }
 
 .outputBadge[data-output='image'] {
-  background: rgba(13, 148, 136, 0.85);
-  color: var(--color-white, #fff);
+  background: var(--color-primary-400);
+  color: var(--color-white, var(--color-white));
 }
 
 .outputBadge[data-output='text'] {
-  background: rgba(217, 119, 6, 0.85);
-  color: var(--color-white, #fff);
+  background: var(--color-amber-500);
+  color: var(--color-white, var(--color-white));
 }
 
 /* ── Content icon wrapper (legacy, kept for compat) ─── */
@@ -350,8 +350,8 @@
 }
 
 .reviewPreviewIcon {
-  color: rgba(255, 255, 255, 0.85);
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+  color: var(--alpha-white-85);
+  filter: drop-shadow(0 2px 8px var(--alpha-black-20));
 }
 
 .reviewOutputBadge {
@@ -369,18 +369,18 @@
 }
 
 .reviewOutputBadge[data-output='video'] {
-  background: rgba(99, 102, 241, 0.7);
-  color: var(--color-white, #fff);
+  background: var(--color-indigo-500);
+  color: var(--color-white, var(--color-white));
 }
 
 .reviewOutputBadge[data-output='image'] {
-  background: rgba(13, 148, 136, 0.7);
-  color: var(--color-white, #fff);
+  background: var(--color-primary-400);
+  color: var(--color-white, var(--color-white));
 }
 
 .reviewOutputBadge[data-output='text'] {
-  background: rgba(217, 119, 6, 0.7);
-  color: var(--color-white, #fff);
+  background: var(--color-amber-500);
+  color: var(--color-white, var(--color-white));
 }
 
 /* ── Review summary card ────────────────────────────── */
@@ -391,7 +391,7 @@
   padding: var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
 }
 
 .reviewActionsInline {
@@ -471,8 +471,8 @@
   gap: var(--space-3);
   padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-error, #ef4444);
-  background-color: color-mix(in srgb, var(--color-error, #ef4444) 6%, var(--app-surface));
+  border: 1px solid var(--color-error, var(--app-error));
+  background-color: color-mix(in srgb, var(--color-error, var(--app-error)) 6%, var(--app-surface));
 }
 
 .errorBannerCompact {
@@ -482,12 +482,12 @@
   padding: var(--space-2) var(--space-3);
   margin-bottom: var(--space-3);
   border-radius: var(--radius-lg);
-  background-color: color-mix(in srgb, var(--color-error, #ef4444) 8%, var(--app-surface));
-  color: var(--color-error, #ef4444);
+  background-color: color-mix(in srgb, var(--color-error, var(--app-error)) 8%, var(--app-surface));
+  color: var(--color-error, var(--app-error));
 }
 
 .errorIcon {
-  color: var(--color-error, #ef4444);
+  color: var(--color-error, var(--app-error));
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -500,7 +500,7 @@
   min-height: 44px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   color: var(--app-primary);
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);

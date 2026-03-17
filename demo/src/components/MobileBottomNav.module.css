@@ -11,8 +11,8 @@
   align-items: center;
   justify-content: space-around;
   padding: 0 var(--space-1);
-  background-color: var(--app-surface, #fff);
-  border-top: 1px solid var(--app-border, #e5e7eb);
+  background-color: var(--app-surface, var(--color-white));
+  border-top: 1px solid var(--app-border, var(--app-border));
   z-index: 1100;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -92,9 +92,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   cursor: pointer;
-  background-color: var(--app-primary, #3B8EA5);
+  background-color: var(--app-primary, var(--color-primary-400));
   border: 3px solid var(--app-surface, var(--app-surface));
   box-shadow: var(--shadow-sm);
   transition: transform var(--duration-fast) var(--ease-default);

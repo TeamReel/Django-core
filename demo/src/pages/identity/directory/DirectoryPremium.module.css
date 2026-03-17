@@ -16,8 +16,8 @@
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
-  border: 1px solid var(--app-border, #334155);
-  background: var(--app-surface-2, #1e293b);
+  border: 1px solid var(--app-border, var(--color-neutral-600));
+  background: var(--app-surface-2, var(--app-text));
   color: var(--app-text);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -49,8 +49,8 @@
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   border-radius: var(--radius-md);
-  border: 1px solid var(--app-border, #334155);
-  background: var(--app-surface-2, #1e293b);
+  border: 1px solid var(--app-border, var(--color-neutral-600));
+  background: var(--app-surface-2, var(--app-text));
   color: var(--app-text);
   cursor: pointer;
   transition: background var(--duration-fast);
@@ -72,13 +72,13 @@
 .filterBtnPrimary {
   composes: filterBtn;
   border-color: var(--color-indigo-400);
-  background: rgba(129, 140, 248, 0.15);
+  background: var(--app-ai-bg);
   color: var(--color-indigo-400);
 }
 
 @media (hover: hover) {
   .filterBtnPrimary:hover {
-  background: rgba(129, 140, 248, 0.25);
+  background: var(--app-ai-bg);
   }
 
 .filterBtnPrimary:focus-visible {
@@ -89,8 +89,8 @@
 
 /* ── Table wrapper (premium card) ── */
 .tableCard {
-  background: var(--app-surface-2, #1e293b);
-  border: 1px solid var(--app-border, #334155);
+  background: var(--app-surface-2, var(--app-text));
+  border: 1px solid var(--app-border, var(--color-neutral-600));
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -107,8 +107,8 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  background: rgba(129, 140, 248, 0.08);
-  border-bottom: 1px solid var(--app-border, #334155);
+  background: var(--app-ai-bg);
+  border-bottom: 1px solid var(--app-border, var(--color-neutral-600));
 }
 
 .batchLabel {
@@ -127,7 +127,7 @@
   border-radius: var(--radius-md);
   border: none;
   background: var(--color-indigo-400);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   cursor: pointer;
   transition: background var(--duration-fast);
 }

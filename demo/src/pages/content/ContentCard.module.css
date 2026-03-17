@@ -27,13 +27,13 @@
 .videoBadge {
   top: 8px;
   right: 8px;
-  background-color: var(--color-red-600, #dc2626);
+  background-color: var(--color-red-600, var(--color-red-500));
 }
 
 .sportBadge {
   bottom: 8px;
   left: 8px;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--alpha-black-70);
 }
 
 .tagChip {
@@ -70,9 +70,9 @@
 
 .filterChipActive {
   font-weight: var(--font-semibold);
-  border-color: var(--color-primary, #2563eb);
-  background-color: var(--color-primary-light, #dbeafe);
-  color: var(--color-primary, #2563eb);
+  border-color: var(--color-primary, var(--color-blue-600));
+  background-color: var(--color-primary-light, var(--color-blue-100));
+  color: var(--color-primary, var(--color-blue-600));
 }
 
 .chipCount {
@@ -85,7 +85,7 @@
 }
 
 .chipCountActive {
-  background-color: var(--color-primary, #2563eb);
+  background-color: var(--color-primary, var(--color-blue-600));
   color: var(--color-white, var(--app-surface));
 }
 
@@ -108,7 +108,7 @@
 
 /* Legacy overlay/modal (kept for compat) */
 .overlay {
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: var(--alpha-black-80);
 }
 
 .modalContainer {
@@ -126,7 +126,7 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: var(--app-overlay-backdrop);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -151,7 +151,7 @@
   width: 100%;
   max-width: 480px;
   max-height: 92vh;
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   border-top-left-radius: var(--radius-lg);
   border-top-right-radius: var(--radius-lg);
   overflow: hidden;
@@ -166,7 +166,7 @@
     max-width: 560px;
     max-height: 85vh;
     border-radius: var(--radius-lg);
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 8px 40px var(--alpha-black-25);
   }
 }
 
@@ -254,8 +254,8 @@
   height: 64px;
   border-radius: var(--radius-full);
   border: none;
-  background: rgba(0, 0, 0, 0.5);
-  color: var(--color-white, #fff);
+  background: var(--app-overlay);
+  color: var(--color-white, var(--color-white));
   cursor: pointer;
   backdrop-filter: blur(4px);
   transition: opacity var(--duration-normal), transform var(--duration-fast);
@@ -292,12 +292,12 @@
   line-height: var(--leading-normal);
   text-transform: uppercase;
   backdrop-filter: blur(8px);
-  background: rgba(0, 0, 0, 0.5);
-  color: var(--color-white, #fff);
+  background: var(--app-overlay);
+  color: var(--color-white, var(--color-white));
 }
 
 .detailTypeBadge[data-video='true'] {
-  background: rgba(99, 102, 241, 0.8);
+  background: var(--color-indigo-500);
 }
 
 /* ── Metadata card ───────────────────────────────────── */
@@ -356,7 +356,7 @@
   flex: 1;
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   color: var(--app-text-primary);
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);
@@ -372,12 +372,12 @@
 .detailActionBtn[data-variant='primary'] {
   background-color: var(--app-primary);
   border-color: var(--app-primary);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 .detailActionBtn[data-variant='danger'] {
-  color: var(--color-error, #ef4444);
-  border-color: var(--color-error, #ef4444);
+  color: var(--color-error, var(--app-error));
+  border-color: var(--color-error, var(--app-error));
 }
 
 @media (max-width: 639px) {

@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--app-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,12 +12,12 @@
 }
 
 .modal {
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   padding: var(--space-6);
   border-radius: var(--radius-md);
   width: 480px;
   max-width: 90%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px var(--alpha-black-15);
   color: var(--app-text);
   border: 1px solid var(--app-border);
 }
@@ -36,9 +36,9 @@
 
 .errorAlert {
   padding: var(--space-3);
-  background-color: rgba(220, 53, 69, 0.1);
+  background-color: var(--app-error-bg);
   color: var(--app-error);
-  border: 1px solid rgba(220, 53, 69, 0.2);
+  border: 1px solid var(--app-error-ring);
   border-radius: var(--radius-sm);
   font-size: var(--text-sm);
 }
@@ -84,19 +84,19 @@
 }
 
 .submitBtn {
-  --submit-bg: #0066cc;
+  --submit-bg: var(--color-blue-600);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
   border: none;
   background-color: var(--submit-bg);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
 
 .submitBtn[data-disabled="true"] {
-  --submit-bg: #cccccc;
+  --submit-bg: var(--app-border);
   cursor: not-allowed;
   opacity: 0.6;
 }

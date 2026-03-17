@@ -6,7 +6,7 @@
 }
 
 .statusSelect {
-  border: 1px solid var(--status-select-border, #ccc);
+  border: 1px solid var(--status-select-border, var(--app-border));
 }
 
 .colWide {
@@ -25,7 +25,7 @@
 
 @media (hover: hover) {
   .orgNameLink:hover {
-  color: var(--org-link-hover, #1d4ed8);
+  color: var(--org-link-hover, var(--color-blue-700));
   }
 
 .orgNameLink:focus-visible {
@@ -52,14 +52,14 @@
 .editBtn {
   composes: actionBtn;
   border: 1px solid var(--app-warning);
-  background-color: var(--color-white, #fff);
+  background-color: var(--color-white, var(--color-white));
   color: var(--app-warning);
 }
 
 .deleteBtn {
   composes: actionBtn;
-  border: 1px solid var(--delete-border, #bd2130);
-  background-color: var(--color-white, #fff);
+  border: 1px solid var(--delete-border, var(--color-red-600));
+  background-color: var(--color-white, var(--color-white));
   color: var(--app-error);
 }
 

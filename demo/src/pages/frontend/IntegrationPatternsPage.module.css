@@ -2,8 +2,8 @@
 
 /* Custom properties for code block theming */
 :root {
-  --code-bg: #1e1e1e;
-  --code-text: #d4d4d4;
+  --code-bg: var(--color-neutral-900);
+  --code-text: var(--color-neutral-200);
   --code-font: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
 }
 

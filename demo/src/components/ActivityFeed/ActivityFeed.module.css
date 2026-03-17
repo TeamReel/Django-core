@@ -64,7 +64,7 @@
 
 .filterBtn[data-variant="all"][data-active="true"] {
   background-color: var(--app-primary);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 .filterBtn[data-variant="all"][data-active="false"] {
@@ -74,7 +74,7 @@
 
 .filterBtn[data-variant="league"][data-active="true"] {
   background-color: var(--color-blue-500);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 .filterBtn[data-variant="league"][data-active="false"] {
@@ -84,7 +84,7 @@
 
 .filterBtn[data-variant="cup"][data-active="true"] {
   background-color: var(--color-amber-400);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--color-white));
 }
 
 .filterBtn[data-variant="cup"][data-active="false"] {

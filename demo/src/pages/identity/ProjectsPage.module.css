@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--app-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,7 +38,7 @@
 
 .orgSelectButton:hover {
   background-color: var(--app-table-row-hover-bg);
-  border-color: #2196f3;
+  border-color: var(--color-blue-500);
 }
 
 .orgSelectButton:focus-visible {

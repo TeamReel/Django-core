@@ -1,8 +1,8 @@
 /* CreditsBalanceTab.module.css */
 
 .spinner {
-  border: 4px solid var(--spinner-track, #f3f3f3);
-  border-top: 4px solid var(--spinner-color, #3498db);
+  border: 4px solid var(--spinner-track, var(--app-surface-2));
+  border-top: 4px solid var(--spinner-color, var(--color-blue-500));
   border-radius: var(--radius-full);
   width: 32px;
   height: 32px;

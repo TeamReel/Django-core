@@ -17,7 +17,7 @@
   width: 80px;
   height: 80px;
   border-radius: var(--radius-full);
-  background-color: var(--app-surface-2, #f5f5f5);
+  background-color: var(--app-surface-2, var(--app-surface-2));
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1,20 +1,20 @@
 .container {
   /* Color tokens */
-  --color-success: #22c55e;
-  --color-success-bg: rgba(34, 197, 94, 0.15);
-  --color-success-bg-active: rgba(34, 197, 94, 0.3);
-  --color-success-border: rgba(34, 197, 94, 0.3);
-  --color-error: #f87171;
-  --color-error-bg: rgba(239, 68, 68, 0.15);
-  --color-error-bg-light: rgba(239, 68, 68, 0.1);
-  --color-error-bg-active: rgba(239, 68, 68, 0.3);
-  --color-error-border: rgba(239, 68, 68, 0.25);
+  --color-success: var(--app-success);
+  --color-success-bg: var(--app-success-ring);
+  --color-success-bg-active: var(--app-success-ring);
+  --color-success-border: var(--app-success-ring);
+  --color-error: var(--color-red-300);
+  --color-error-bg: var(--app-error-ring);
+  --color-error-bg-light: var(--app-error-bg);
+  --color-error-bg-active: var(--app-error-ring);
+  --color-error-border: var(--app-error-ring);
   --color-info: var(--color-blue-500);
   --color-info-light: var(--color-blue-400);
-  --color-info-bg: rgba(59, 130, 246, 0.12);
-  --color-info-ring: rgba(59, 130, 246, 0.25);
-  --color-video-bg: var(--color-black, #000);
-  --color-progress-track: rgba(255, 255, 255, 0.08);
+  --color-info-bg: var(--app-info-ring);
+  --color-info-ring: var(--app-info-ring);
+  --color-video-bg: var(--color-black, var(--color-neutral-900));
+  --color-progress-track: var(--app-surface-glass-hover);
 }
 
 .contentWrapper {

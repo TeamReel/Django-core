@@ -21,8 +21,8 @@
 
 /* ── Season card ── */
 .seasonCard {
-  background: var(--app-surface-2, #1e293b);
-  border: 1px solid var(--app-border, #334155);
+  background: var(--app-surface-2, var(--app-text));
+  border: 1px solid var(--app-border, var(--color-neutral-600));
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -95,7 +95,7 @@
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-full);
   border: 1px solid var(--app-border);
-  background: var(--app-surface, #0f172a);
+  background: var(--app-surface, var(--color-neutral-900));
   font-size: var(--text-xs);
   color: var(--app-muted-text);
   font-weight: var(--font-semibold);
@@ -115,7 +115,7 @@
 
 /* ── Season body (expanded) ── */
 .seasonBody {
-  border-top: 1px solid var(--app-border, #334155);
+  border-top: 1px solid var(--app-border, var(--color-neutral-600));
   padding: var(--space-3) var(--space-4);
   display: flex;
   flex-direction: column;
@@ -124,10 +124,10 @@
 
 /* ── Competition row ── */
 .compRow {
-  border: 1px solid var(--app-border, #334155);
+  border: 1px solid var(--app-border, var(--color-neutral-600));
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--app-surface, #0f172a);
+  background: var(--app-surface, var(--color-neutral-900));
 }
 
 .compHeader {
@@ -179,7 +179,7 @@
 
 /* ── Matches list inside competition ── */
 .matchesBody {
-  border-top: 1px solid var(--app-border, #1e293b);
+  border-top: 1px solid var(--app-border, var(--app-text));
   display: flex;
   flex-direction: column;
 }
@@ -190,7 +190,7 @@
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4) var(--space-3) var(--space-5);
   min-height: 48px;
-  border-bottom: 1px solid var(--app-border, #1e293b);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   text-decoration: none;

@@ -13,7 +13,7 @@
 .logoContainer {
   width: 80px;
   height: 80px;
-  background-color: var(--app-surface-alt, #f8f8f8);
+  background-color: var(--app-surface-alt, var(--app-surface-secondary));
 }
 
 .logoImage {

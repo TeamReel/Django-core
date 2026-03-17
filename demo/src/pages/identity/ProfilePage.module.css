@@ -4,9 +4,9 @@
   padding: var(--space-2) var(--space-4);
   min-height: 36px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--app-border, #ddd);
-  background: var(--app-surface-2, #f5f5f5);
-  color: var(--app-text-primary, #333);
+  border: 1px solid var(--app-border, var(--app-border));
+  background: var(--app-surface-2, var(--app-surface-2));
+  color: var(--app-text-primary, var(--app-text));
   cursor: pointer;
   font-size: var(--text-xs);
   font-weight: var(--font-medium);

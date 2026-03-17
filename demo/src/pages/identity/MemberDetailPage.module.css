@@ -3,9 +3,9 @@
 .breadcrumbSelect {
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--app-border, #ddd);
-  background: var(--app-surface, #fff);
-  color: var(--app-text-primary, #333);
+  border: 1px solid var(--app-border, var(--app-border));
+  background: var(--app-surface, var(--color-white));
+  color: var(--app-text-primary, var(--app-text));
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
@@ -29,7 +29,7 @@
   max-width: 200px;
   padding: var(--space-2);
   border-radius: var(--radius-md);
-  border: 1px solid var(--app-border, #d1d5db);
+  border: 1px solid var(--app-border, var(--app-input-border));
   min-height: 44px;
   box-sizing: border-box;
 }

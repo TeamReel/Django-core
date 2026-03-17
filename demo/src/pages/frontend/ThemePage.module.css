@@ -8,7 +8,7 @@
 }
 
 .lightCard {
-  background-color: var(--light-card-bg, #ffffff);
+  background-color: var(--light-card-bg, var(--color-white));
   border: 1px solid var(--app-border);
 }
 
@@ -17,20 +17,20 @@
 }
 
 .lightHeading {
-  color: var(--light-heading-color, #1f2937);
+  color: var(--light-heading-color, var(--color-neutral-800));
 }
 
 .lightPreview {
-  background-color: var(--light-preview-bg, #f9fafb);
+  background-color: var(--light-preview-bg, var(--color-neutral-50));
 }
 
 .lightPreviewText {
-  color: var(--light-text-color, #1f2937);
+  color: var(--light-text-color, var(--color-neutral-800));
 }
 
 .darkCard {
-  background-color: var(--dark-card-bg, #1a1a1a);
-  color: var(--dark-card-text, #e5e5e5);
+  background-color: var(--dark-card-bg, var(--color-neutral-900));
+  color: var(--dark-card-text, var(--app-border));
   border: 1px solid var(--app-border);
 }
 
@@ -39,17 +39,17 @@
 }
 
 .darkHeading {
-  color: var(--dark-heading-color, #e5e5e5);
+  color: var(--dark-heading-color, var(--app-border));
 }
 
 .darkPreview {
-  background-color: var(--dark-preview-bg, #0f0f0f);
+  background-color: var(--dark-preview-bg, var(--color-neutral-900));
 }
 
 .darkPreviewText {
-  color: var(--dark-text-color, #e5e5e5);
+  color: var(--dark-text-color, var(--app-border));
 }
 
 .darkPreviewMuted {
-  color: var(--dark-muted-color, #9ca3af);
+  color: var(--dark-muted-color, var(--color-neutral-300));
 }

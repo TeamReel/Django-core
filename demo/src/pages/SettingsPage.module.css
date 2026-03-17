@@ -1,10 +1,10 @@
 /* Custom properties scoped to settings page */
 .settingsContainer {
-  --settings-saving-color: #6c757d;
+  --settings-saving-color: var(--color-neutral-400);
   --settings-btn-bg: var(--app-surface);
   --settings-btn-text: var(--app-text);
-  --settings-danger-badge-bg: #dc354520;
-  --settings-success-badge-bg: #28a74520;
+  --settings-danger-badge-bg: var(--app-error-bg);
+  --settings-success-badge-bg: var(--app-success-bg);
 
   min-height: calc(100vh - 120px);
   min-height: calc(100dvh - 120px);

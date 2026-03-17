@@ -2,9 +2,9 @@
 
 /* Custom properties for hardcoded hex colors */
 .pageWrapper {
-  --color-warning-orange: #fd7e14;
-  --color-warning-yellow: #ffc107;
-  --color-purple: #6f42c1;
+  --color-warning-orange: var(--color-orange-400);
+  --color-warning-yellow: var(--color-amber-300);
+  --color-purple: var(--color-violet-500);
 }
 
 .pageWrapper {

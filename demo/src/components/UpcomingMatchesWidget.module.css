@@ -24,15 +24,15 @@
 }
 
 .relativeTime[data-urgency="urgent"] {
-  color: var(--color-error, #ef4444);
+  color: var(--color-error, var(--app-error));
 }
 
 .relativeTime[data-urgency="soon"] {
-  color: var(--color-warning, #f59e0b);
+  color: var(--color-warning, var(--color-amber-400));
 }
 
 .relativeTime[data-urgency="upcoming"] {
-  color: var(--color-success, #22c55e);
+  color: var(--color-success, var(--app-success));
 }
 
 .relativeTime[data-urgency="future"],
