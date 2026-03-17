@@ -3,8 +3,7 @@
  *
  * Fetches:
  * 1. Branding assets (organisation_scope) → separates club vs team assets
- * 2. Project members → member list
- * 3. Generative requests (completed, member type) → member media status
+ * 2. Project members → member list (with metadata.teamreel_assets.media)
  *
  * Returns a typed hierarchy: { club, team, members, overall }.
  * All queries use TanStack Query with shared keys for dedup.
@@ -16,7 +15,6 @@ import { api } from '@/api';
 import type { BrandAsset } from '@/types/api/branding';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import { useProjectMembers } from '../../hooks/useProjectMembers';
-import { useGenerativeRequests } from '../../hooks/useGenerativeRequests';
 import { queryKeys } from '../../utils/queryKeys';
 
 // ─── Expected assets per hierarchy level ──────────────────
@@ -34,10 +32,10 @@ export const TEAM_ASSETS = [
 ] as const;
 
 export const MEMBER_MEDIA_TYPES = [
-  { key: 'profile_photo', label: 'Profielfoto' },
-  { key: 'in_tenue', label: 'Tenue foto' },
-  { key: 'closeup', label: 'Close-up' },
-  { key: 'short_intro', label: 'Intro video' },
+  { key: 'profile_photo', label: 'Profielfoto', metadataKey: 'fullbody' },
+  { key: 'in_tenue', label: 'Tenue foto', metadataKey: 'kit' },
+  { key: 'closeup', label: 'Close-up', metadataKey: 'closeup' },
+  { key: 'short_intro', label: 'Intro video', metadataKey: 'intro' },
 ] as const;
 
 // ─── Types ────────────────────────────────────────────────
@@ -115,20 +113,12 @@ export function useMediaReadiness(): MediaReadiness {
     staleTime: 15 * 60 * 1000,
   });
 
-  // 2. Project members
+  // 2. Project members (includes metadata.teamreel_assets.media per member)
   const { data: membersData, isLoading: membersLoading } = useProjectMembers(
     projectId,
   );
 
-  // 3. Completed generative requests for member content
-  const genFilters = useMemo(() => {
-    if (!projectId) return undefined;
-    return { status: 'completed', project: projectId } as Record<string, string>;
-  }, [projectId]);
-
-  const { data: genData, isLoading: genLoading } = useGenerativeRequests(genFilters);
-
-  const loading = brandLoading || membersLoading || genLoading;
+  const loading = brandLoading || membersLoading;
 
   // ── Compute club & team asset status ──
 
@@ -173,37 +163,39 @@ export function useMediaReadiness(): MediaReadiness {
   // ── Compute member media progress ──
 
   const memberList = useMemo<MemberMediaStatus[]>(() => {
-    const members = membersData?.results ?? [];
-    const genItems = genData?.results ?? [];
-    if (members.length === 0) return [];
+    const rawMembers = membersData?.results ?? [];
+    if (rawMembers.length === 0) return [];
 
-    // Build member → completed subtypes map
-    // Note: The API returns `template` as an expanded object (with template_type,
-    // template_subtype) even though the TS type declares it as `number`.
-    // This is a known backend serializer expansion — see SmartActionsCard for same pattern.
-    const memberContentMap = new Map<string, Set<string>>();
-    for (const req of genItems) {
-      const tpl = req.template as unknown as { template_type?: string; template_subtype?: string } | undefined;
-      const tplType = tpl?.template_type ?? '';
-      if (tplType !== 'member') continue;
-      const subtype = tpl?.template_subtype ?? String((req.input_data as Record<string, unknown>)?.template_subtype ?? '');
-      const memberIds = ((req.input_data as Record<string, unknown>)?.member_ids ?? []) as string[];
-      const singleMemberId = (req.input_data as Record<string, unknown>)?.member_id as string | undefined;
-      const allIds = singleMemberId ? [singleMemberId, ...memberIds] : memberIds;
-      for (const mid of allIds) {
-        const key = String(mid);
-        if (!memberContentMap.has(key)) memberContentMap.set(key, new Set());
-        if (subtype) memberContentMap.get(key)!.add(subtype);
+    // Deduplicate members by user ID — prefer entries with a period set
+    const byUserId = new Map<number | string, typeof rawMembers[0]>();
+    for (const m of rawMembers) {
+      const uid = m.user?.id ?? m.id;
+      const existing = byUserId.get(uid);
+      if (!existing || (m.period && !existing.period)) {
+        byUserId.set(uid, m);
       }
     }
+    const members = Array.from(byUserId.values());
 
     const expected = MEMBER_MEDIA_TYPES.length;
 
     return members
       .map((m) => {
-        const userId = String(m.user?.id ?? m.id);
         const memberId = String(m.id);
-        const completed = memberContentMap.get(userId) ?? memberContentMap.get(memberId) ?? new Set<string>();
+
+        // Read media completeness from metadata.teamreel_assets.media
+        const meta = m.metadata as Record<string, unknown> | undefined;
+        const teamreelAssets = meta?.teamreel_assets as Record<string, unknown> | undefined;
+        const media = teamreelAssets?.media as Record<string, unknown> | undefined;
+
+        const completed = new Set<string>();
+        for (const mt of MEMBER_MEDIA_TYPES) {
+          const entry = media?.[mt.metadataKey] as Record<string, unknown> | undefined;
+          if (entry?.url) {
+            completed.add(mt.key);
+          }
+        }
+
         const count = Math.min(completed.size, expected);
         const name = m.user?.first_name
           ? `${m.user.first_name} ${m.user.last_name ?? ''}`.trim()
@@ -219,7 +211,7 @@ export function useMediaReadiness(): MediaReadiness {
         };
       })
       .sort((a, b) => a.completedCount - b.completedCount);
-  }, [membersData, genData]);
+  }, [membersData]);
 
   // ── Aggregate stats ──
 
