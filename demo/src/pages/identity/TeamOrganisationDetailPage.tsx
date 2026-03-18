@@ -44,16 +44,16 @@ export default function TeamOrganisationDetailPage() {
   // ── Tab logic ──
   const activeTabFromUrl = useMemo(() => {
     const params = new URLSearchParams(location.search || '');
-    const tab = String(params.get('tab') || (isPlayer ? 'overview' : 'overview')).trim().toLowerCase();
+    const tab = String(params.get('tab') || 'overview').trim().toLowerCase();
     const normalized = tab === 'people' || tab === 'users' ? 'members'
       : (tab === 'balance' || tab === 'transactions' || tab === 'credits') ? 'beheer'
-      : (tab === 'seasons' || tab === 'competitions' || tab === 'matches' || tab === 'hierarchy') ? 'overview'
+      : (tab === 'seasons' || tab === 'competitions' || tab === 'hierarchy') ? 'overview'
+      : (tab === 'matches') ? 'wedstrijden'
       : (tab === 'assets' || tab === 'kits' || tab === 'identity') ? 'beheer'
-      : (tab === 'media') ? 'overview'
       : tab;
     const allowed = isPlayer
-      ? new Set(['overview', 'members'])
-      : new Set(['overview', 'members', 'beheer']);
+      ? new Set(['overview', 'wedstrijden', 'members'])
+      : new Set(['overview', 'wedstrijden', 'media', 'members', 'beheer']);
     return allowed.has(normalized) ? normalized : 'overview';
   }, [location.search, isPlayer]);
 
@@ -168,6 +168,8 @@ export default function TeamOrganisationDetailPage() {
         <MobileTabBar
           tabs={[
             { id: 'overview', label: 'Overview' },
+            { id: 'wedstrijden', label: 'Wedstrijden' },
+            ...(!isPlayer ? [{ id: 'media', label: 'Media' }] : []),
             { id: 'members', label: 'Selectie' },
             ...(!isPlayer ? [{ id: 'beheer', label: 'Beheer' }] : []),
           ]}
@@ -217,6 +219,20 @@ export default function TeamOrganisationDetailPage() {
               fullMembers={tabData.fullMembers as unknown as Array<Record<string, unknown>>}
               fullMembersLoading={tabData.fullMembersLoading}
             />
+          )}
+
+          {activeTabFromUrl === 'wedstrijden' && (
+            <div className={s.emptyTab}>
+              <p className={s.emptyTabTitle}>Nog geen wedstrijden</p>
+              <p className={s.emptyTabHint}>Wanneer er een seizoen aan dit team wordt gekoppeld, verschijnen hier de wedstrijden.</p>
+            </div>
+          )}
+
+          {activeTabFromUrl === 'media' && !isPlayer && (
+            <div className={s.emptyTab}>
+              <p className={s.emptyTabTitle}>Nog geen media</p>
+              <p className={s.emptyTabHint}>Wanneer er een seizoen aan dit team wordt gekoppeld, verschijnt hier de media.</p>
+            </div>
           )}
 
           {activeTabFromUrl === 'members' && teamIdForDirectoryLists && (

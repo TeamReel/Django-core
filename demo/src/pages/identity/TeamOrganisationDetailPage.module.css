@@ -169,6 +169,26 @@
 /* ── Tab content area ── */
 .tabContent { padding: 0 var(--space-4) var(--space-16); }
 
+/* ── Empty tab state ── */
+.emptyTab {
+  text-align: center;
+  padding: var(--space-10) var(--space-4);
+}
+
+.emptyTabTitle {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--app-text);
+}
+
+.emptyTabHint {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  line-height: var(--leading-relaxed);
+}
+
 /* ── Loading skeleton ── */
 .skeleton { padding: var(--space-4); }
 

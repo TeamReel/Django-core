@@ -194,16 +194,8 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
   }, [fetchBalance, fetchUserBalance, reloadToken]);
 
   useEffect(() => {
-    if (view === 'transactions') {
-      fetchTransactionsList();
-    }
-  }, [view, fetchTransactionsList, reloadToken]);
-
-  useEffect(() => {
-    if (view === 'balance') {
-      fetchTransactionsList();
-    }
-  }, [view, fetchTransactionsList, reloadToken]);
+    fetchTransactionsList();
+  }, [fetchTransactionsList, reloadToken]);
 
   return {
     balance,

@@ -113,6 +113,8 @@ export function AssetCard({
                 onClick={() => onShowHistory(assetType)}
                 className={`${s.historyBtn} ${sc.historyBtnPos}`}
                 data-has-badge={badgeText ? '' : undefined}
+                title="Bewerkingsgeschiedenis"
+                aria-label="Bewerkingsgeschiedenis"
             >
              ⏱️
             </button>
