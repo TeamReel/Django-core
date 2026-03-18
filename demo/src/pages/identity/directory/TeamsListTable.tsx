@@ -42,7 +42,79 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
   navigate, onView, onEdit, onDelete,
 }) => (
   <div className={dp.tableCard}>
-    <div className={dp.tableScroll}>
+    {/* ── Mobile card layout (< 640px) ── */}
+    <div className={styles.mobileCards}>
+      {filteredTeams.map((team) => {
+        const resolved = resolveTeamRow(team, organisations, clubs, lockedOrgSlug, selectedOrgId, orgLocked);
+        return (
+          <div key={team.id} className={styles.card}>
+            <div className={styles.cardHeader}>
+              <div>
+                {resolved.orgSlugOrId && resolved.clubSlugOrId ? (
+                  <button
+                    className={styles.cardNameLink}
+                    onClick={() => navigate(routes.team({ orgId: String(resolved.orgSlugOrId), clubId: String(resolved.clubSlugOrId), projectId: String(resolved.teamSlugOrId) }))}
+                  >
+                    {team.name}
+                  </button>
+                ) : (
+                  <p className={styles.cardName}>{team.name}</p>
+                )}
+                <div className={styles.cardMeta}>
+                  {resolved.orgSport && (
+                    <span>{String(resolved.orgSport.sport_icon ?? '')} {String(resolved.orgSport.name ?? '')}</span>
+                  )}
+                </div>
+              </div>
+              <Badge variant={team.is_active === false ? 'warning' : 'success'}>
+                {team.is_active === false ? 'Inactive' : 'Active'}
+              </Badge>
+            </div>
+
+            <div className={styles.cardStats}>
+              <div className={styles.cardStat}>
+                <span className={styles.cardStatValue}>{team.sport_variants_count || 0}</span>
+                <span className={styles.cardStatLabel}>Variant</span>
+              </div>
+              <div className={styles.cardStat}>
+                <span className={styles.cardStatValue}>{team.seasons_count || 0}</span>
+                <span className={styles.cardStatLabel}>Season</span>
+              </div>
+              <div className={styles.cardStat}>
+                <span className={styles.cardStatValue}>{team.competitions_count || 0}</span>
+                <span className={styles.cardStatLabel}>Comp.</span>
+              </div>
+              <div className={styles.cardStat}>
+                <span className={styles.cardStatValue}>{team.matches_count || 0}</span>
+                <span className={styles.cardStatLabel}>Match</span>
+              </div>
+              <div className={styles.cardStat}>
+                <span className={styles.cardStatValue}>{team.member_count || 0}</span>
+                <span className={styles.cardStatLabel}>Users</span>
+              </div>
+            </div>
+
+            <div className={styles.cardActions}>
+              <button onClick={() => onView(team)} className="action-btn action-btn-primary">View</button>
+              {userCanEditProject && (
+                <button onClick={() => onEdit(team)} className="action-btn action-btn-warning">Edit</button>
+              )}
+              {userCanDeleteProject && (
+                <button
+                  onClick={() => onDelete(String(resolved.orgSlugOrId), String(team.id), String(team.name))}
+                  className="action-btn action-btn-danger"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    {/* ── Desktop table (≥ 640px) ── */}
+    <div className={`${dp.tableScroll} ${styles.desktopTable}`}>
       <Table className="dir-table">
         <thead>
           <tr>

@@ -16,8 +16,8 @@
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
-  border: 1px solid var(--app-border, var(--color-neutral-600));
-  background: var(--app-surface-2, var(--app-text));
+  border: 1px solid var(--app-border);
+  background: var(--app-surface-2);
   color: var(--app-text);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -49,8 +49,8 @@
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   border-radius: var(--radius-md);
-  border: 1px solid var(--app-border, var(--color-neutral-600));
-  background: var(--app-surface-2, var(--app-text));
+  border: 1px solid var(--app-border);
+  background: var(--app-surface-2);
   color: var(--app-text);
   cursor: pointer;
   transition: background var(--duration-fast);
@@ -89,8 +89,8 @@
 
 /* ── Table wrapper (premium card) ── */
 .tableCard {
-  background: var(--app-surface-2, var(--app-text));
-  border: 1px solid var(--app-border, var(--color-neutral-600));
+  background: var(--app-surface-2);
+  border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -108,7 +108,7 @@
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   background: var(--app-ai-bg);
-  border-bottom: 1px solid var(--app-border, var(--color-neutral-600));
+  border-bottom: 1px solid var(--app-border);
 }
 
 .batchLabel {
