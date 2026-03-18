@@ -45,7 +45,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
             if (props.view === 'transactions') fetchTransactionsList();
           }}
         >
-          Refresh
+          Vernieuwen
         </Button>
       </div>
 
@@ -64,15 +64,15 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
           )}
 
           {balanceLoading || userBalanceLoading ? (
-            <div className="p-16 text-center opacity-70">Loading balance…</div>
+            <div className="p-16 text-center opacity-70">Balans laden…</div>
           ) : (
             <>
               <div className="mb-12">
                 <GovernanceSummaryCard
                   organisationId={props.organisationId}
                   projectId={props.projectId}
-                  title="Governance (Org policies)"
-                  description="Balance policy applies to team credits and match transactions."
+                  title="Governance (organisatiebeleid)"
+                  description="Balansbeleid geldt voor teamtegoed en wedstrijdtransacties."
                 />
               </div>
 
@@ -81,7 +81,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                   className={`p-24 text-center ${styles.balanceCard}`}
                 >
                   <div className="fs-12 opacity-60 uppercase tracking-wide">
-                    Your Credits Balance
+                    Jouw tegoed
                   </div>
                   <div
                     className={`fw-800 ${styles.balanceAmount}`}
@@ -90,14 +90,14 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                     {formatCredits(userBalance?.current_balance)}
                   </div>
                   <div className="fs-16 opacity-70 mb-8">credits</div>
-                  <div className="fs-12 opacity-50">Charged to your account</div>
+                  <div className="fs-12 opacity-50">Afgeschreven van jouw account</div>
                 </Card>
 
                 <Card
                   className={`p-24 text-center ${styles.balanceCard}`}
                 >
                   <div className="fs-12 opacity-60 uppercase tracking-wide">
-                    {(walletLabel || 'Team')} Credits Balance
+                    {(walletLabel || 'Team')} tegoed
                   </div>
                   <div
                     className={`fw-800 ${styles.balanceAmount}`}
@@ -108,7 +108,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                   <div className="fs-16 opacity-70 mb-8">credits</div>
                   <div className="fs-12 opacity-50">
                     {projectName || balance?.project_name || 'Team'}
-                    {balance?.updated_at ? ` • Last updated ${formatDateTime(balance.updated_at)}` : ''}
+                    {balance?.updated_at ? ` • Laatst bijgewerkt ${formatDateTime(balance.updated_at)}` : ''}
                   </div>
                 </Card>
               </div>
@@ -116,11 +116,11 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
               {/* Transaction Timeline + Recent Activity */}
               <div className="mt-16">
                 <Card className="p-24 mb-12">
-                  <h3 className="m-0 mb-16 fs-18">Transaction Timeline</h3>
+                  <h3 className="m-0 mb-16 fs-18">Transactie-overzicht</h3>
                   {transactionsLoading ? (
-                    <div className="text-center p-20 opacity-60">Loading transactions…</div>
+                    <div className="text-center p-20 opacity-60">Transacties laden…</div>
                   ) : transactions.length === 0 ? (
-                    <div className="text-center p-20 opacity-60">No transactions recorded yet.</div>
+                    <div className="text-center p-20 opacity-60">Nog geen transacties.</div>
                   ) : (
                     <>
                       <div className="flex-col gap-8">
@@ -137,7 +137,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                           return (
                             <div key={txn.id} className="flex-row gap-12">
                               <div className={`fs-12 opacity-70 text-right ${styles.dateColumn}`}>
-                                {new Date(txn.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                {new Date(txn.timestamp).toLocaleDateString('nl-NL', { month: 'short', day: 'numeric' })}
                               </div>
 
                               <div className={`flex-row flex-1 relative ${styles.barContainer}`}>
@@ -167,7 +167,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
 
                       {transactions.length > 10 && (
                         <div className="mt-16 text-center fs-12 opacity-60">
-                          Showing 10 of {transactions.length} transactions
+                          10 van {transactions.length} transacties
                         </div>
                       )}
                     </>
@@ -176,13 +176,13 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
 
                 <Card className="p-24">
                   <div className="flex-between mb-16">
-                    <h3 className="m-0 fs-18">Recent Activity</h3>
+                    <h3 className="m-0 fs-18">Recente activiteit</h3>
                   </div>
 
                   {transactionsLoading ? (
-                    <div className="text-center p-20 opacity-60">Loading transactions…</div>
+                    <div className="text-center p-20 opacity-60">Transacties laden…</div>
                   ) : recentTransactions.length === 0 ? (
-                    <div className="text-center p-20 opacity-60">No recent activity.</div>
+                    <div className="text-center p-20 opacity-60">Geen recente activiteit.</div>
                   ) : (
                     <div className="flex-col gap-8">
                       {recentTransactions.map((txn) => {
@@ -232,28 +232,28 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
             <GovernanceSummaryCard
               organisationId={props.organisationId}
               projectId={props.projectId}
-              title="Governance (Org policies)"
-              description="Helps explain why some transactions may warn/block on low balance."
+              title="Governance (organisatiebeleid)"
+              description="Verklaart waarom sommige transacties kunnen waarschuwen of blokkeren bij laag saldo."
             />
           </div>
 
           {transactionsLoading ? (
-            <div className="p-16 text-center opacity-70">Loading transactions…</div>
+            <div className="p-16 text-center opacity-70">Transacties laden…</div>
           ) : transactions.length === 0 ? (
-            <Alert variant="info">No transactions found for this team.</Alert>
+            <Alert variant="info">Geen transacties gevonden voor dit team.</Alert>
           ) : (
             <>
               <div
                 className={`grid gap-12 mb-16 ${styles.summaryGrid}`}
               >
                 <Card className="p-16 text-center">
-                  <div className="fs-12 opacity-60 uppercase">➕ Total Added</div>
+                  <div className="fs-12 opacity-60 uppercase">➕ Totaal bijgeschreven</div>
                   <div className={`fw-800 text-success ${styles.summaryValue}`}>
                     +{formatCredits(totals.added)}
                   </div>
                 </Card>
                 <Card className="p-16 text-center">
-                  <div className="fs-12 opacity-60 uppercase">➖ Total Used</div>
+                  <div className="fs-12 opacity-60 uppercase">➖ Totaal gebruikt</div>
                   <div className={`fw-800 text-error ${styles.summaryValue}`}>
                     {formatCredits(totals.used)}
                   </div>
@@ -268,27 +268,27 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                     {formatCredits(totals.net)}
                   </div>
                   <div className="fs-11 opacity-50 mt-4">
-                    {totals.count} transactions loaded
+                    {totals.count} transacties geladen
                   </div>
                 </Card>
               </div>
 
               <Card className="p-0 overflow-hidden">
                 <div className="border-bottom py-12 px-16">
-                  <div className="fs-14 fw-700">Team Transactions</div>
+                  <div className="fs-14 fw-700">Team transacties</div>
                   <div className="fs-12 opacity-60">
-                    Showing {transactions.length} most recent entries
+                    {transactions.length} meest recente transacties
                   </div>
                 </div>
                 <div className="overflow-x-auto">
                   <Table className="detail-table">
                     <thead>
                       <tr>
-                        <th className="detail-th">Time</th>
+                        <th className="detail-th">Tijd</th>
                         <th className="detail-th">Type</th>
-                        <th className="detail-th">Amount</th>
-                        <th className="detail-th">Notes</th>
-                        <th className="detail-th">User</th>
+                        <th className="detail-th">Bedrag</th>
+                        <th className="detail-th">Notities</th>
+                        <th className="detail-th">Gebruiker</th>
                       </tr>
                     </thead>
                     <tbody>

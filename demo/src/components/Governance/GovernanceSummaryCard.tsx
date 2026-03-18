@@ -100,7 +100,7 @@ export default function GovernanceSummaryCard(props: {
         if (cancelled) return;
         setPolicy(null);
         setSource(null);
-        setError(getErrorMessage(e) || 'Failed to load governance policy');
+        setError(getErrorMessage(e) || 'Kan governance-beleid niet laden');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -121,22 +121,22 @@ export default function GovernanceSummaryCard(props: {
           <div>
             <div className="fs-14 fw-800 text-primary">{title || 'Governance'}</div>
             <div className={`fs-12 ${styles.description}`}>
-              {description || 'Policies that apply to credits, transactions, and notifications.'}
+              {description || 'Beleid voor credits, transacties en notificaties.'}
             </div>
           </div>
 
           <div className="flex-row gap-8 flex-wrap">
             {!!governanceHref && (
               <Button variant="secondary" size="sm" onClick={() => navigate(governanceHref)}>
-                Org governance
+                Organisatie governance
               </Button>
             )}
             <Button variant="secondary" size="sm" onClick={() => navigate('/preferences')}>
-              Preferences
+              Voorkeuren
             </Button>
             {!hideRoutingLogsLink && (
               <Button variant="secondary" size="sm" onClick={() => navigate('/routing-logs')}>
-                Routing logs
+                Routeringslogboek
               </Button>
             )}
           </div>
@@ -150,19 +150,19 @@ export default function GovernanceSummaryCard(props: {
 
         <div className="mt-12">
           {loading ? (
-            <div className={`fs-13 ${styles.mutedText}`}>Loading balance policy…</div>
+            <div className={`fs-13 ${styles.mutedText}`}>Balansbeleid laden…</div>
           ) : !policy ? (
             <div className={`fs-13 ${styles.mutedText}`}>
-              No explicit balance policy found for this organisation. The backend may fall back to a safe default.
+              Geen expliciet balansbeleid gevonden voor deze organisatie. De backend valt terug op een veilige standaard.
             </div>
           ) : (
             <div className="p-12 border rounded-8 bg-surface-2">
               <div className="flex-between gap-12">
                 <div className="fs-13 fw-800 text-primary">
-                  Balance policy
+                  Balansbeleid
                   {source ? (
                     <span className={`ml-8 fs-12 fw-700 ${styles.sourceLabel}`}>
-                      ({source === 'project' ? 'Project override' : source === 'organization' ? 'Organisation default' : 'Platform default'})
+                      ({source === 'project' ? 'Project-override' : source === 'organization' ? 'Organisatie-standaard' : 'Platform-standaard'})
                     </span>
                   ) : null}
                 </div>
@@ -182,13 +182,13 @@ export default function GovernanceSummaryCard(props: {
               </div>
 
               <div className={`fs-12 ${styles.policyMode}`}>
-                Mode:{' '}
+                Modus:{' '}
                 <strong className="text-primary">
-                  {policy.allow_negative ? 'Postpaid (can go negative)' : 'Prepaid (no negative balance)'}
+                  {policy.allow_negative ? 'Postpaid (kan negatief worden)' : 'Prepaid (geen negatief saldo)'}
                 </strong>
               </div>
               <div className={`fs-12 mt-4 ${styles.policyThreshold}`}>
-                Warn threshold:{' '}
+                Waarschuwingsdrempel:{' '}
                 <strong className="text-primary">{policy.warn_threshold ?? '—'}</strong>
               </div>
             </div>

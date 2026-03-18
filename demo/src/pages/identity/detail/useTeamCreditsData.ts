@@ -58,9 +58,9 @@ export function amountColor(amount: number): string {
 
 export function sourceTypeLabel(sourceType: string): string {
   const st = String(sourceType || '').toLowerCase();
-  if (st === 'adjustment') return 'Adjustment';
-  if (st === 'usage_event') return 'Usage';
-  if (st === 'external_billing') return 'External';
+  if (st === 'adjustment') return 'Correctie';
+  if (st === 'usage_event') return 'Gebruik';
+  if (st === 'external_billing') return 'Extern';
   return sourceType || '—';
 }
 
@@ -135,23 +135,24 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
     return (transactions || []).slice(0, 5);
   }, [transactions]);
 
-  const fetchBalance = useCallback(async () => {
+  const fetchBalance = useCallback(async (signal?: AbortSignal) => {
     setBalanceLoading(true);
     setBalanceError(null);
 
     try {
       const data = await creditsApi.getProjectBalance(projectId) as unknown as ProjectCreditsBalance;
-      setBalance(data);
+      if (!signal?.aborted) setBalance(data);
     } catch (e: unknown) {
+      if (signal?.aborted) return;
       logger.error('Failed to load team credits balance', e);
       setBalance(null);
       setBalanceError('Kan team-credits niet laden. Probeer het later opnieuw.');
     } finally {
-      setBalanceLoading(false);
+      if (!signal?.aborted) setBalanceLoading(false);
     }
   }, [projectId]);
 
-  const fetchUserBalance = useCallback(async () => {
+  const fetchUserBalance = useCallback(async (signal?: AbortSignal) => {
     if (!organisationId) {
       setUserBalance(null);
       return;
@@ -162,39 +163,45 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
 
     try {
       const data = await creditsApi.getUserWalletBalance(String(organisationId)) as unknown as UserWalletBalance;
-      setUserBalance(data);
+      if (!signal?.aborted) setUserBalance(data);
     } catch (e: unknown) {
+      if (signal?.aborted) return;
       logger.error('Failed to load user wallet balance', e);
       setUserBalance(null);
       setUserBalanceError('Kan je credits-saldo niet laden. Probeer het later opnieuw.');
     } finally {
-      setUserBalanceLoading(false);
+      if (!signal?.aborted) setUserBalanceLoading(false);
     }
   }, [organisationId]);
 
-  const fetchTransactionsList = useCallback(async () => {
+  const fetchTransactionsList = useCallback(async (signal?: AbortSignal) => {
     setTransactionsLoading(true);
     setTransactionsError(null);
 
     try {
       const results = await transactionsApi.listAll({ projectId: String(projectId) }, { pageSize: 100, maxItems: 500 }) as unknown as Transaction[];
-      setTransactions(Array.isArray(results) ? results : []);
+      if (!signal?.aborted) setTransactions(Array.isArray(results) ? results : []);
     } catch (e: unknown) {
+      if (signal?.aborted) return;
       logger.error('Failed to load team transactions', e);
       setTransactions([]);
       setTransactionsError('Kan transacties niet laden. Probeer het later opnieuw.');
     } finally {
-      setTransactionsLoading(false);
+      if (!signal?.aborted) setTransactionsLoading(false);
     }
   }, [projectId]);
 
   useEffect(() => {
-    fetchBalance();
-    fetchUserBalance();
+    const ac = new AbortController();
+    void fetchBalance(ac.signal);
+    void fetchUserBalance(ac.signal);
+    return () => ac.abort();
   }, [fetchBalance, fetchUserBalance, reloadToken]);
 
   useEffect(() => {
-    fetchTransactionsList();
+    const ac = new AbortController();
+    void fetchTransactionsList(ac.signal);
+    return () => ac.abort();
   }, [fetchTransactionsList, reloadToken]);
 
   return {

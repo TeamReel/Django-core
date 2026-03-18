@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
+import { Calendar, Layers } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
@@ -223,6 +224,7 @@ export default function TeamOrganisationDetailPage() {
 
           {activeTabFromUrl === 'wedstrijden' && (
             <div className={s.emptyTab}>
+              <Calendar size={40} className={s.emptyTabIcon} aria-hidden="true" />
               <p className={s.emptyTabTitle}>Nog geen wedstrijden</p>
               <p className={s.emptyTabHint}>Wanneer er een seizoen aan dit team wordt gekoppeld, verschijnen hier de wedstrijden.</p>
             </div>
@@ -230,6 +232,7 @@ export default function TeamOrganisationDetailPage() {
 
           {activeTabFromUrl === 'media' && !isPlayer && (
             <div className={s.emptyTab}>
+              <Layers size={40} className={s.emptyTabIcon} aria-hidden="true" />
               <p className={s.emptyTabTitle}>Nog geen media</p>
               <p className={s.emptyTabHint}>Wanneer er een seizoen aan dit team wordt gekoppeld, verschijnt hier de media.</p>
             </div>
