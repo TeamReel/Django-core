@@ -14,6 +14,7 @@ import {
 import { api } from '@/api';
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
+import { ReadinessRing } from '../dashboard/ReadinessRing';
 import { SkeletonCard } from '../Skeleton';
 import styles from './NextMatchHero.module.css';
 
@@ -68,55 +69,6 @@ function normalizeAssetType(raw: string): string {
   const key = raw.toLowerCase().replace(/[\s-]/g, '_');
   return map[key] || key;
 }
-
-/* ── Readiness Ring (SVG) ──────────────────────────────────────────── */
-
-const ReadinessRing: React.FC<{ percent: number; size?: number }> = ({
-  percent,
-  size = 72,
-}) => {
-  const stroke = 5;
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (percent / 100) * circumference;
-
-  const color =
-    percent >= 70
-      ? 'var(--color-success, #22c55e)'
-      : percent >= 30
-        ? 'var(--color-warning, #f59e0b)'
-        : 'var(--color-error, #ef4444)';
-
-  return (
-    <div className={styles.ringWrap} style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {/* Track */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="var(--app-border)"
-          strokeWidth={stroke}
-        />
-        {/* Progress */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          className={styles.ringProgress}
-        />
-      </svg>
-      <span className={styles.ringLabel}>{percent}%</span>
-    </div>
-  );
-};
 
 /* ── Content Checklist Row ─────────────────────────────────────────── */
 
@@ -275,7 +227,7 @@ export const NextMatchHero: React.FC = () => {
             </div>
           )}
         </div>
-        <ReadinessRing percent={percent} size={72} />
+        <ReadinessRing percent={percent} size={72} strokeWidth={5} />
       </div>
 
       {/* Content readiness summary */}

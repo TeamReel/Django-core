@@ -22,6 +22,7 @@ import { useAppSelection } from '../../hooks/useAppSelection';
 import { useClosestMatch } from '../../hooks/useClosestMatch';
 import { slugify } from '../../utils/periodPath';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
+import { calculateMatchReadiness } from '../../utils/matchReadiness';
 import { useMatchSheet } from './useMatchSheet';
 import { MatchSheetFlow } from './MatchSheetFlow';
 import { ReadinessRing } from './ReadinessRing';
@@ -120,30 +121,11 @@ export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const relTime = formatRelativeTime(date, 'nl');
   const urgency = getDateUrgency(date);
 
-  // Readiness calculation (H4) — only count enabled items
-  const hasGoals = Boolean(
-    (match.metadata?.home_score as number | undefined) ||
-    (match.metadata?.away_score as number | undefined),
+  // Readiness calculation — shared utility
+  const { percent: readinessPercent } = calculateMatchReadiness(
+    sheet.contentDoneSubtypes,
+    match,
   );
-  const excludedFromReadiness = new Set(
-    (['pre_match', 'during_match', 'post_match'] as const).flatMap(key => {
-      const phase = CONTENT_TYPES[key];
-      if (!phase) return [];
-      return phase.items
-        .filter(i => !i.enabled || (i.subtype === 'goal' && !hasGoals))
-        .map(i => i.subtype);
-    }),
-  );
-  const totalContentItems =
-    (['pre_match', 'during_match', 'post_match'] as const).reduce((sum, key) => {
-      const phase = CONTENT_TYPES[key];
-      if (!phase) return sum;
-      return sum + phase.items.filter(i => !excludedFromReadiness.has(i.subtype)).length;
-    }, 0);
-  const doneEnabledCount = sheet.contentDoneSubtypes.filter(s => !excludedFromReadiness.has(s)).length;
-  const readinessPercent = totalContentItems > 0
-    ? Math.round((doneEnabledCount / totalContentItems) * 100)
-    : 0;
 
   return (
     <>

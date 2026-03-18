@@ -12,19 +12,12 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { formatRelativeTime } from '../../utils/relativeTime';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import { useUpcomingMatches } from '../../hooks/useUpcomingMatches';
-import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
 import { useMatchSheet } from './useMatchSheet';
 import { MatchSheetFlow } from './MatchSheetFlow';
 import { ReadinessRing } from './ReadinessRing';
 import { buildMatchVanityUrl, buildMatchVanityUrlWithTab } from './ActiveMatchCard';
 import type { Match } from './ActiveMatchCard';
 import styles from './UpcomingMatchesCard.module.css';
-
-// Total match content items (pre + during + post)
-const TOTAL_MATCH_ITEMS =
-  (CONTENT_TYPES.pre_match?.items.length ?? 0) +
-  (CONTENT_TYPES.during_match?.items.length ?? 0) +
-  (CONTENT_TYPES.post_match?.items.length ?? 0);
 
 export const UpcomingMatchesCard = memo(function UpcomingMatchesCard() {
   const { context } = useContextSwitcher();
@@ -156,7 +149,7 @@ const MatchRow: React.FC<MatchRowProps> = memo(function MatchRow({ match, onSele
   const isHome = match.metadata?.is_home !== false;
 
   // Calculate readiness from metadata (basic: check if lineup exists)
-  const lineupData = match.metadata?.lineup as any;
+  const lineupData = match.metadata?.lineup as Record<string, unknown> | undefined;
   const hasLineup = lineupData && (
     (Array.isArray(lineupData.goalkeeper) && lineupData.goalkeeper.length > 0) ||
     (Array.isArray(lineupData.player) && lineupData.player.length > 0) ||

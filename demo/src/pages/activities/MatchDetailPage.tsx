@@ -1,9 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import {
   Eye, Pencil, Trash2, Check, ArrowLeft, MoreHorizontal,
 } from 'lucide-react';
 import { ShareButton } from '../../components/ShareButton';
+import { ReadinessRing } from '../../components/dashboard/ReadinessRing';
+import { calculateMatchReadiness } from '../../utils/matchReadiness';
 import { MatchOverviewTab, MatchContentTab, MatchLineupTab } from './match-detail';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import MatchEditModal from '../identity/MatchEditModal';
@@ -83,6 +85,12 @@ export default function HierarchyMatchDetailPage() {
 
   const { match } = d;
 
+  /* ---- readiness ring: derive done subtypes from media data ---- */
+  const readiness = useMemo(() => {
+    const doneSubtypes = Object.keys(d.mediaBySubtype ?? {});
+    return calculateMatchReadiness(doneSubtypes, match);
+  }, [d.mediaBySubtype, match]);
+
   /* ---- render ---- */
 
   return (
@@ -104,6 +112,16 @@ export default function HierarchyMatchDetailPage() {
           <div className={styles.titleBlock}>
             <h1>{match.title}</h1>
           </div>
+
+          {!d.matchMediaLoading && (
+            <div className={styles.readinessRing}>
+              <ReadinessRing
+                percent={readiness.percent}
+                size={56}
+                aria-label={`Wedstrijd gereedheid: ${readiness.percent}% (${readiness.done} van ${readiness.total} items)`}
+              />
+            </div>
+          )}
 
           <div className={styles.actions}>
             {/* Make active — always visible, primary action */}

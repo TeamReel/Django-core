@@ -12,6 +12,8 @@ export interface ReadinessRingProps {
   size?: number;        // px, default 40
   strokeWidth?: number; // default 3
   showLabel?: boolean;  // show percentage in center
+  /** Override the default aria-label (e.g. to include "X van Y items") */
+  'aria-label'?: string;
 }
 
 export const ReadinessRing: React.FC<ReadinessRingProps> = ({
@@ -19,6 +21,7 @@ export const ReadinessRing: React.FC<ReadinessRingProps> = ({
   size = 40,
   strokeWidth = 3,
   showLabel = true,
+  'aria-label': ariaLabel,
 }) => {
   const clamped = Math.max(0, Math.min(100, percent));
   const radius = (size - strokeWidth) / 2;
@@ -41,7 +44,7 @@ export const ReadinessRing: React.FC<ReadinessRingProps> = ({
       aria-valuenow={Math.round(clamped)}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-label={`Wedstrijd gereedheid: ${Math.round(clamped)}%`}
+      aria-label={ariaLabel || `Wedstrijd gereedheid: ${Math.round(clamped)}%`}
     >
       {/* Background ring */}
       <circle

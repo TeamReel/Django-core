@@ -15,7 +15,6 @@ import { formatRelativeTime } from '../../utils/relativeTime';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import { useUpcomingMatches } from '../../hooks/useUpcomingMatches';
 import { usePastMatches } from '../../hooks/usePastMatches';
-import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
 import { useMatchSheet } from './useMatchSheet';
 import { MatchSheetFlow } from './MatchSheetFlow';
 import { ReadinessRing } from './ReadinessRing';
