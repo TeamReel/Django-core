@@ -78,7 +78,7 @@ const MobileBottomNav = memo(function MobileBottomNav() {
       : '/directory?tab=clubs';
 
   // Stable label — always "My Team" regardless of depth
-  const hierarchyLabel = 'My Team';
+  const hierarchyLabel = 'Mijn Team';
 
   // ── Tab definitions (excluding center + button) ─────────────────────
   const tabs = [
@@ -86,7 +86,7 @@ const MobileBottomNav = memo(function MobileBottomNav() {
     { id: 'season', icon: CalendarDays, label: hierarchyLabel, path: seasonPath },
     // center + button is rendered separately
     { id: 'gallery', icon: Images, label: 'Studio', path: routes.studio() },
-    { id: 'profile', icon: UserCircle, label: 'Profile', path: routes.profile() },
+    { id: 'profile', icon: UserCircle, label: 'Profiel', path: routes.profile() },
   ];
 
   /** Reserved top-level paths that are NOT hierarchy (org/club/team/…) routes */

@@ -35,12 +35,12 @@ export default function RegisterPage() {
 
     // Client-side validation
     if (fields.password !== fields.confirmPassword) {
-      setField('validationError', 'Passwords do not match');
+      setField('validationError', 'Wachtwoorden komen niet overeen');
       return;
     }
 
     if (fields.password.length < 8) {
-      setField('validationError', 'Password must be at least 8 characters long');
+      setField('validationError', 'Wachtwoord moet minimaal 8 tekens bevatten');
       return;
     }
 
@@ -62,8 +62,8 @@ export default function RegisterPage() {
 
   return (
     <div className={`p-20 max-w-400 mx-auto ${styles.container}`}>
-      <h1>Create Account</h1>
-      <p>Sign up for a new Django Core-App account</p>
+      <h1>Account aanmaken</h1>
+      <p>Maak een TeamReel account aan</p>
 
         <form onSubmit={handleSubmit} className={`flex-col mt-32 ${styles.form}`}>
         {displayError && (
@@ -75,12 +75,12 @@ export default function RegisterPage() {
         <div className="flex-row gap-10">
           <div className="flex-1">
             <label htmlFor="firstName" className={`block fw-500 ${styles.label}`}>
-              First Name
+              Voornaam
             </label>
             <input
               id="firstName"
               type="text"
-              placeholder="First name"
+              placeholder="Voornaam"
               value={fields.firstName}
               onChange={(e) => setField('firstName', e.target.value)}
               className={`w-full p-10 rounded-4 fs-16 ${firstNameError ? styles.inputError : styles.input}`}
@@ -89,12 +89,12 @@ export default function RegisterPage() {
           </div>
           <div className="flex-1">
             <label htmlFor="lastName" className={`block fw-500 ${styles.label}`}>
-              Last Name
+              Achternaam
             </label>
             <input
               id="lastName"
               type="text"
-              placeholder="Last name"
+              placeholder="Achternaam"
               value={fields.lastName}
               onChange={(e) => setField('lastName', e.target.value)}
               className={`w-full p-10 rounded-4 fs-16 ${lastNameError ? styles.inputError : styles.input}`}
@@ -105,7 +105,7 @@ export default function RegisterPage() {
 
         <div>
           <label htmlFor="email" className={`block fw-500 ${styles.label}`}>
-            Email Address
+            E-mailadres
           </label>
           <input
             id="email"
@@ -122,12 +122,12 @@ export default function RegisterPage() {
 
         <div>
           <label htmlFor="password" className={`block fw-500 ${styles.label}`}>
-            Password
+            Wachtwoord
           </label>
           <input
             id="password"
             type="password"
-            placeholder="Password (min 8 characters)"
+            placeholder="Wachtwoord (min. 8 tekens)"
             value={fields.password}
             onChange={(e) => setField('password', e.target.value)}
             required
@@ -139,12 +139,12 @@ export default function RegisterPage() {
 
         <div>
           <label htmlFor="confirmPassword" className={`block fw-500 ${styles.label}`}>
-            Confirm Password
+            Wachtwoord bevestigen
           </label>
           <input
             id="confirmPassword"
             type="password"
-            placeholder="Confirm password"
+            placeholder="Bevestig wachtwoord"
             value={fields.confirmPassword}
             onChange={(e) => setField('confirmPassword', e.target.value)}
             required
@@ -158,12 +158,12 @@ export default function RegisterPage() {
           disabled={isLoading}
           className={`p-12 border-none rounded-4 fs-16 fw-500 text-white ${isLoading ? styles.submitButtonDisabled : styles.submitButton}`}
         >
-          {isLoading ? 'Creating Account...' : 'Create Account'}
+          {isLoading ? 'Account aanmaken...' : 'Account aanmaken'}
         </button>
       </form>
 
       <p className={`fs-14 text-center mt-20 ${styles.footerText}`}>
-        Already have an account? <Link to="/login" className={`text-decoration-none ${styles.footerLink}`}>Sign in here</Link>
+        Al een account? <Link to="/login" className={`text-decoration-none ${styles.footerLink}`}>Log hier in</Link>
       </p>
     </div>
   );

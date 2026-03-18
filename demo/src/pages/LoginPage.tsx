@@ -27,24 +27,24 @@ export default function LoginPage() {
 
   return (
     <div className={`mx-auto p-20 ${styles.container}`}>
-      <h1>Django Core-App Demo</h1>
-      <p>Log in to access the demo shell</p>
+      <h1>Welkom bij TeamReel</h1>
+      <p>Log in om verder te gaan</p>
 
         <form onSubmit={handleSubmit} className={`flex-col ${styles.form}`}>
         {error && (
           <div className={`rounded-4 ${styles.errorBox}`}>
-            {error.formErrors[0] || 'Login failed. Please try again.'}
+            {error.formErrors[0] || 'Inloggen mislukt. Probeer het opnieuw.'}
           </div>
         )}
 
         <div>
           <label htmlFor="email" className={`block fw-500 ${styles.label}`}>
-            Email
+            E-mailadres
           </label>
           <input
             id="email"
             type="email"
-            placeholder="Email"
+            placeholder="E-mailadres"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -55,12 +55,12 @@ export default function LoginPage() {
 
         <div>
           <label htmlFor="password" className={`block fw-500 ${styles.label}`}>
-            Password
+            Wachtwoord
           </label>
           <input
             id="password"
             type="password"
-            placeholder="Password"
+            placeholder="Wachtwoord"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -75,12 +75,12 @@ export default function LoginPage() {
           className={`text-white rounded-4 fs-16 fw-500 ${styles.submitBtn}`}
           data-loading={isLoading ? '' : undefined}
         >
-          {isLoading ? 'Logging in...' : 'Log In'}
+          {isLoading ? 'Bezig met inloggen...' : 'Inloggen'}
         </button>
       </form>
 
       <p className={`fs-14 text-muted text-center ${styles.registerPrompt}`}>
-        Don't have an account? <Link to="/register" className={`text-decoration-none ${styles.registerLink}`}>Create one here</Link>
+        Nog geen account? <Link to="/register" className={`text-decoration-none ${styles.registerLink}`}>Registreer hier</Link>
       </p>
     </div>
   );

@@ -69,16 +69,16 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
 
   const getCategoryLabel = (category: string): string => {
     const labels: Record<string, string> = {
-      organisations: 'Federations',
+      organisations: 'Federaties',
       clubs: 'Clubs',
       teams: 'Teams',
-      seasons: 'Seasons',
-      competitions: 'Competitions',
-      matches: 'Matches',
-      users: 'Users',
-      periods: 'Periods',
-      activities: 'Activities',
-      projects: 'Projects',
+      seasons: 'Seizoenen',
+      competitions: 'Competities',
+      matches: 'Wedstrijden',
+      users: 'Gebruikers',
+      periods: 'Periodes',
+      activities: 'Activiteiten',
+      projects: 'Projecten',
     };
     return labels[category] || category;
   };
@@ -143,13 +143,13 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
         >
           {isSearching && (
             <div className="p-16 text-center text-secondary">
-              Searching...
+              Zoeken...
             </div>
           )}
 
           {!isSearching && totalResults === 0 && (
             <div className="p-16 text-center text-secondary">
-              No results found for "{query}"
+              Geen resultaten voor "{query}"
             </div>
           )}
 
@@ -173,7 +173,7 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
                         onClick={() => handleViewAll(category)}
                         className={`fs-12 cursor-pointer ${styles.viewAllButton}`}
                       >
-                        View All →
+                        Bekijk alles →
                       </button>
                     </div>
                     {categoryResults.map((result) => (

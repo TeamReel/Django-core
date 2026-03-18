@@ -173,7 +173,7 @@ export const ProfilePage: React.FC = () => {
                 size="sm"
                 onClick={() => setIsEditing(true)}
               >
-                Edit Profile
+                Profiel bewerken
               </Button>
             ) : (
               <div className={styles.editActions}>
@@ -183,7 +183,7 @@ export const ProfilePage: React.FC = () => {
                   onClick={handleSave}
                   disabled={saving}
                 >
-                  {saving ? 'Saving...' : 'Save'}
+                  {saving ? 'Opslaan...' : 'Opslaan'}
                 </Button>
                 <Button
                   variant="secondary"
@@ -196,7 +196,7 @@ export const ProfilePage: React.FC = () => {
                   }}
                   disabled={saving}
                 >
-                  Cancel
+                  Annuleren
                 </Button>
               </div>
             )}

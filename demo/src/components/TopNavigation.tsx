@@ -104,7 +104,7 @@ export default function TopNavigation() {
   return (
     <header className={styles.header}>
       <div className={styles.leftSection}>
-        <h1 className={styles.title}>Django Core-App Demo</h1>
+        <h1 className={styles.title}>TeamReel</h1>
         {/* Context switcher removed from header - now embedded in breadcrumbs */}
       </div>
 

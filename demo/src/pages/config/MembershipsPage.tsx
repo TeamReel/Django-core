@@ -27,7 +27,7 @@ type Activity = {
 export const MembershipsPage: React.FC = () => {
   const { user } = useAuth();
   const { context } = useContextSwitcher();
-  useSetBackNavigation({ label: 'Profile', path: '/profile' });
+  useSetBackNavigation({ label: 'Profiel', path: '/profile' });
 
   const organisations: Record<string, unknown>[] = Array.isArray(user?.organisations) ? user.organisations : [];
   const projects: Record<string, unknown>[] = Array.isArray(user?.projects) ? user.projects : [];

@@ -28,15 +28,15 @@ export default function SettingsPage() {
           {/* Profile Section */}
           <Settings.Section sectionId="profile">
             <div className="max-w-600">
-              <h2 className="mb-8 mt-0">Profile Settings</h2>
+              <h2 className="mb-8 mt-0">Profielinstellingen</h2>
               <p className="text-muted mb-32">
-                Manage your personal information and public profile
+                Beheer je persoonlijke informatie en openbaar profiel
               </p>
 
               <div className="flex-col gap-20">
                 <div>
                   <label className="block mb-8 fw-600">
-                    Full Name
+                    Volledige naam
                   </label>
                   <input
                     type="text"
@@ -48,7 +48,7 @@ export default function SettingsPage() {
 
                 <div>
                   <label className="block mb-8 fw-600">
-                    Email Address
+                    E-mailadres
                   </label>
                   <input
                     type="email"
@@ -57,7 +57,7 @@ export default function SettingsPage() {
                     className={`w-full border rounded-4 fs-14 ${styles.formInput}`}
                   />
                   <small className="text-muted fs-12 mt-4 block">
-                    Your email is used for notifications and account recovery
+                    Je e-mailadres wordt gebruikt voor meldingen en accountherstel
                   </small>
                 </div>
 
@@ -80,10 +80,10 @@ export default function SettingsPage() {
                     className={`border-none rounded-4 fs-14 fw-600 text-white ${styles.saveButton}`}
                     data-status={profileSaveStatus}
                   >
-                    {profileSaveStatus === 'saving' ? 'Saving...' :
-                     profileSaveStatus === 'success' ? '✓ Saved!' :
-                     profileSaveStatus === 'error' ? '✗ Failed' :
-                     'Save Changes'}
+                    {profileSaveStatus === 'saving' ? 'Opslaan...' :
+                     profileSaveStatus === 'success' ? '✓ Opgeslagen!' :
+                     profileSaveStatus === 'error' ? '✗ Mislukt' :
+                     'Wijzigingen opslaan'}
                   </button>
                 </div>
               </div>
@@ -93,29 +93,29 @@ export default function SettingsPage() {
           {/* Security Section */}
           <Settings.Section sectionId="security">
             <div className="max-w-600">
-              <h2 className="mb-8 mt-0">Security Settings</h2>
+              <h2 className="mb-8 mt-0">Beveiligingsinstellingen</h2>
               <p className="text-muted mb-32">
-                Manage your password, two-factor authentication, and security preferences
+                Beheer je wachtwoord, tweefactorauthenticatie en beveiligingsvoorkeuren
               </p>
 
               <div className="flex-col gap-24">
                 <div className="border rounded-8 p-20 bg-surface">
-                  <h3 className="mb-8 fs-16 mt-0">Password</h3>
+                  <h3 className="mb-8 fs-16 mt-0">Wachtwoord</h3>
                   <p className="text-muted fs-14 mb-16">
-                    Last changed 3 months ago
+                    Laatst gewijzigd 3 maanden geleden
                   </p>
                   <button
                     onClick={handleChangePassword}
                     className={`py-8 px-16 border rounded-4 fs-14 cursor-pointer fw-600 ${styles.changePasswordButton}`}
                   >
-                    Change Password
+                    Wachtwoord wijzigen
                   </button>
                 </div>
 
                 <div className="border rounded-8 p-20 bg-surface">
-                  <h3 className="mb-8 fs-16 mt-0">Two-Factor Authentication</h3>
+                  <h3 className="mb-8 fs-16 mt-0">Tweefactorauthenticatie</h3>
                   <p className="text-muted fs-14 mb-16">
-                    Add an extra layer of security to your account
+                    Voeg extra beveiliging toe aan je account
                   </p>
                   <div className="flex-row gap-12">
                     <span
@@ -127,21 +127,21 @@ export default function SettingsPage() {
                       onClick={handleEnable2FA}
                       className={`py-8 px-16 border-none rounded-4 fs-14 cursor-pointer fw-600 text-white ${styles.enable2faButton}`}
                     >
-                      Enable 2FA
+                      2FA inschakelen
                     </button>
                   </div>
                 </div>
 
                 <div className="border rounded-8 p-20 bg-surface">
-                  <h3 className="mb-8 fs-16 mt-0">Active Sessions</h3>
+                  <h3 className="mb-8 fs-16 mt-0">Actieve sessies</h3>
                   <p className="text-muted fs-14 mb-16">
-                    Manage devices where you're currently logged in
+                    Beheer apparaten waarop je nu bent ingelogd
                   </p>
                   <div className="flex-col gap-12">
                     <div className="flex-between">
                       <div>
                         <div className="fw-600 fs-14">Windows PC</div>
-                        <div className="fs-12 text-muted">Last active: Just now</div>
+                        <div className="fs-12 text-muted">Laatst actief: Zojuist</div>
                       </div>
                       <span
                         className={`py-4 px-12 fs-12 fw-600 rounded-full text-success ${styles.badgeSuccess}`}
@@ -158,17 +158,17 @@ export default function SettingsPage() {
           {/* Notifications Section */}
           <Settings.Section sectionId="notifications">
             <div className="max-w-600">
-              <h2 className="mb-8 mt-0">Notification Preferences</h2>
+              <h2 className="mb-8 mt-0">Meldingsvoorkeuren</h2>
               <p className="text-muted mb-32">
-                Choose what notifications you want to receive
+                Kies welke meldingen je wilt ontvangen
               </p>
 
               <div className="flex-col gap-16">
                 {[
-                  { key: 'emailNotifications', label: 'Email Notifications', description: 'Receive important updates via email' },
-                  { key: 'projectUpdates', label: 'Project Updates', description: 'Get notified about project changes' },
-                  { key: 'securityAlerts', label: 'Security Alerts', description: 'Critical security notifications' },
-                  { key: 'marketingEmails', label: 'Marketing Emails', description: 'Product updates and tips' },
+                  { key: 'emailNotifications', label: 'E-mailmeldingen', description: 'Ontvang belangrijke updates per e-mail' },
+                  { key: 'projectUpdates', label: 'Projectupdates', description: 'Word op de hoogte gebracht van projectwijzigingen' },
+                  { key: 'securityAlerts', label: 'Beveiligingsmeldingen', description: 'Kritieke beveiligingsmeldingen' },
+                  { key: 'marketingEmails', label: 'Marketing e-mails', description: 'Productupdates en tips' },
                 ].map((item) => (
                   <div
                     key={item.key}
@@ -195,10 +195,10 @@ export default function SettingsPage() {
                   className={`border-none rounded-4 fs-14 fw-600 text-white ${styles.saveButton}`}
                   data-status={notificationsSaveStatus}
                 >
-                  {notificationsSaveStatus === 'saving' ? 'Saving...' :
-                   notificationsSaveStatus === 'success' ? '✓ Saved!' :
-                   notificationsSaveStatus === 'error' ? '✗ Failed' :
-                   'Save Notification Settings'}
+                  {notificationsSaveStatus === 'saving' ? 'Opslaan...' :
+                   notificationsSaveStatus === 'success' ? '✓ Opgeslagen!' :
+                   notificationsSaveStatus === 'error' ? '✗ Mislukt' :
+                   'Meldingen opslaan'}
                 </button>
               </div>
             </div>
@@ -207,30 +207,30 @@ export default function SettingsPage() {
           {/* Preferences Section */}
           <Settings.Section sectionId="preferences">
             <div className="max-w-600">
-              <h2 className="mb-8 mt-0">Application Preferences</h2>
+              <h2 className="mb-8 mt-0">Applicatievoorkeuren</h2>
               <p className="text-muted mb-32">
-                Customize your application experience
+                Pas je applicatie-ervaring aan
               </p>
 
               <div className="flex-col gap-20">
                 <div>
                   <label className="block mb-8 fw-600">
-                    Theme
+                    Thema
                   </label>
                   <select
                     value={preferences.theme}
                     onChange={(e) => handlePreferenceChange('theme', e.target.value)}
                     className={`w-full border rounded-4 fs-14 ${styles.formInput}`}
                   >
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                    <option value="auto">Auto (System)</option>
+                    <option value="light">Licht</option>
+                    <option value="dark">Donker</option>
+                    <option value="auto">Automatisch (Systeem)</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block mb-8 fw-600">
-                    Language
+                    Taal
                   </label>
                   <select
                     value={preferences.language}
@@ -248,7 +248,7 @@ export default function SettingsPage() {
 
                 <div>
                   <label className="block mb-8 fw-600">
-                    Timezone
+                    Tijdzone
                   </label>
                   <select
                     value={preferences.timezone}
@@ -269,10 +269,10 @@ export default function SettingsPage() {
                     className={`border-none rounded-4 fs-14 fw-600 text-white ${styles.saveButton}`}
                     data-status={saveStatus}
                   >
-                    {saveStatus === 'saving' ? 'Saving...' :
-                     saveStatus === 'success' ? '✓ Saved!' :
-                     saveStatus === 'error' ? '✗ Failed' :
-                     'Save Preferences'}
+                    {saveStatus === 'saving' ? 'Opslaan...' :
+                     saveStatus === 'success' ? '✓ Opgeslagen!' :
+                     saveStatus === 'error' ? '✗ Mislukt' :
+                     'Voorkeuren opslaan'}
                   </button>
                 </div>
               </div>

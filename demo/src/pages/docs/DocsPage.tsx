@@ -49,9 +49,9 @@ export function DocsPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'complete': return <Badge variant="success">Complete</Badge>;
-      case 'in-progress': return <Badge variant="warning">In Progress</Badge>;
-      case 'planned': return <Badge variant="info">Planned</Badge>;
+      case 'complete': return <Badge variant="success">Voltooid</Badge>;
+      case 'in-progress': return <Badge variant="warning">In behandeling</Badge>;
+      case 'planned': return <Badge variant="info">Gepland</Badge>;
       default: return <Badge>{status}</Badge>;
     }
   };

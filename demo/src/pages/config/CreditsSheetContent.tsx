@@ -18,8 +18,8 @@ export const CreditsSheetContent: React.FC = () => {
     <div>
       <div className={s.scopeLabel}>
         {data.scope === 'personal'
-          ? 'My Wallet'
-          : `Organisation Wallet${data.currentOrgName ? ` (${data.currentOrgName})` : ''}`}
+          ? 'Mijn Portemonnee'
+          : `Organisatie Portemonnee${data.currentOrgName ? ` (${data.currentOrgName})` : ''}`}
       </div>
 
       {data.scope === 'personal' ? (

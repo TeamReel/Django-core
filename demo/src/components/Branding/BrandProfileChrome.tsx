@@ -64,7 +64,7 @@ export function ProfileHeader({
               </Button>
             )}
             {onEdit && (
-              <Button variant="outline" size="sm" onClick={onEdit}><Edit size={14} />Edit Profile</Button>
+              <Button variant="outline" size="sm" onClick={onEdit}><Edit size={14} />Profiel bewerken</Button>
             )}
           </div>
         )}

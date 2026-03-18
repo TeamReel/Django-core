@@ -44,12 +44,12 @@ export function useSidebarRecents(resolvedAppContext: ResolvedAppContext | null)
 
         if (pathname.startsWith('/credits')) {
             const wallet = new URLSearchParams(search).get('wallet');
-            addRecent({ kind: 'page', label: wallet === 'personal' ? 'My Wallet' : 'Credits', path: fullPath });
+            addRecent({ kind: 'page', label: wallet === 'personal' ? 'Mijn Portemonnee' : 'Credits', path: fullPath });
             return;
         }
 
         if (pathname === '/profile' || pathname === '/preferences' || pathname.startsWith('/notifications')) {
-            const label = pathname === '/profile' ? 'My Profile' : (pathname === '/preferences' ? 'Preferences' : 'Notifications');
+            const label = pathname === '/profile' ? 'Mijn profiel' : (pathname === '/preferences' ? 'Voorkeuren' : 'Meldingen');
             addRecent({ kind: 'page', label, path: fullPath });
             return;
         }

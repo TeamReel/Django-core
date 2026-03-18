@@ -88,13 +88,13 @@ export function buildPanelBConfig(params: PanelBConfigParams): PanelBResult | nu
 
         case 'content':
             if (path === '/medialib' || path.startsWith('/medialib')) {
-                title = 'Media Library';
+                title = 'Mediabibliotheek';
                 items = [
-                    { label: 'Organisation', path: '/medialib?tab=organisation', icon: Globe },
+                    { label: 'Organisatie', path: '/medialib?tab=organisation', icon: Globe },
                     { label: 'Club', path: '/medialib?tab=club', icon: Shield },
                     { label: 'Team', path: '/medialib?tab=team', icon: Shirt },
-                    { label: 'Member', path: '/medialib?tab=member', icon: UserCircle },
-                    { label: 'Files', path: '/medialib?tab=files', icon: Folder },
+                    { label: 'Lid', path: '/medialib?tab=member', icon: UserCircle },
+                    { label: 'Bestanden', path: '/medialib?tab=files', icon: Folder },
                 ];
             } else if (path === '/contentlib' || path.startsWith('/contentlib?')) {
                 title = 'Gallery';
@@ -110,36 +110,36 @@ export function buildPanelBConfig(params: PanelBConfigParams): PanelBResult | nu
                     { label: 'Pre-Match', path: '/studio?category=pre_match', icon: Calendar },
                     { label: 'During Match', path: '/studio?category=during_match', icon: Activity },
                     { label: 'Post-Match', path: '/studio?category=post_match', icon: Trophy },
-                    { label: 'Season', path: '/studio?category=season', icon: Calendar },
-                    { label: 'Member', path: '/studio?category=member', icon: UserCircle },
+                    { label: 'Seizoen', path: '/studio?category=season', icon: Calendar },
+                    { label: 'Lid', path: '/studio?category=member', icon: UserCircle },
                 ];
             } else if (path === '/studio/videos' || path.startsWith('/studio/videos')) {
                 title = 'Queue';
                 items = [
-                    { label: 'All', path: '/approvals?tab=all', icon: ClipboardCheck },
-                    { label: 'Needs Review', path: '/approvals?tab=review', icon: Flag },
-                    { label: 'In Progress', path: '/approvals?tab=active', icon: Activity },
-                    { label: 'Approved', path: '/approvals?tab=completed', icon: ClipboardCheck },
-                    { label: 'Rejected', path: '/approvals?tab=rejected', icon: Shield },
+                    { label: 'Alle', path: '/approvals?tab=all', icon: ClipboardCheck },
+                    { label: 'Te beoordelen', path: '/approvals?tab=review', icon: Flag },
+                    { label: 'In behandeling', path: '/approvals?tab=active', icon: Activity },
+                    { label: 'Goedgekeurd', path: '/approvals?tab=completed', icon: ClipboardCheck },
+                    { label: 'Afgewezen', path: '/approvals?tab=rejected', icon: Shield },
                     { label: 'AI Queue', path: '/approvals?tab=ai_queue', icon: Sparkles },
-                    { label: 'Video Processing', path: '/approvals?tab=video', icon: Video },
+                    { label: 'Videoverwerking', path: '/approvals?tab=video', icon: Video },
                 ];
             } else if (path === '/approvals' || path.startsWith('/approvals')) {
                 title = 'Queue';
                 items = [
-                    { label: 'All', path: '/approvals?tab=all', icon: ClipboardCheck },
-                    { label: 'Needs Review', path: '/approvals?tab=review', icon: Flag },
-                    { label: 'In Progress', path: '/approvals?tab=active', icon: Activity },
-                    { label: 'Approved', path: '/approvals?tab=completed', icon: ClipboardCheck },
-                    { label: 'Rejected', path: '/approvals?tab=rejected', icon: Shield },
+                    { label: 'Alle', path: '/approvals?tab=all', icon: ClipboardCheck },
+                    { label: 'Te beoordelen', path: '/approvals?tab=review', icon: Flag },
+                    { label: 'In behandeling', path: '/approvals?tab=active', icon: Activity },
+                    { label: 'Goedgekeurd', path: '/approvals?tab=completed', icon: ClipboardCheck },
+                    { label: 'Afgewezen', path: '/approvals?tab=rejected', icon: Shield },
                     { label: 'AI Queue', path: '/approvals?tab=ai_queue', icon: Sparkles },
-                    { label: 'Video Processing', path: '/approvals?tab=video', icon: Video },
+                    { label: 'Videoverwerking', path: '/approvals?tab=video', icon: Video },
                 ];
             } else {
                 title = 'Content';
                 items = [
                     { label: 'Gallery', path: '/studio', icon: Sparkles },
-                    { label: 'Media Library', path: '/medialib', icon: Library },
+                    { label: 'Mediabibliotheek', path: '/medialib', icon: Library },
                     { label: 'Queue', path: '/approvals', icon: ClipboardCheck },
                 ];
             }
@@ -148,38 +148,38 @@ export function buildPanelBConfig(params: PanelBConfigParams): PanelBResult | nu
         case 'templates':
             title = 'Content Templates';
             items = [
-                { label: 'All Templates', path: '/content-templates?tab=all', icon: Library },
-                { label: 'Season', path: '/content-templates?tab=season', icon: Calendar },
+                { label: 'Alle templates', path: '/content-templates?tab=all', icon: Library },
+                { label: 'Seizoen', path: '/content-templates?tab=season', icon: Calendar },
                 { label: 'Pre-Match', path: '/content-templates?tab=pre_match', icon: Film },
                 { label: 'During Match', path: '/content-templates?tab=during_match', icon: Sparkles },
                 { label: 'Post-Match', path: '/content-templates?tab=post_match', icon: Trophy },
-                { label: 'Member', path: '/content-templates?tab=member', icon: UserCircle },
+                { label: 'Lid', path: '/content-templates?tab=member', icon: UserCircle },
                 { label: 'Workflows', path: '/workflow-templates', icon: GitBranch },
                 { label: 'Achtergronden', path: '/app-backgrounds', icon: Film },
             ];
             break;
 
         case 'preferences':
-            title = 'Personal Settings';
+            title = 'Persoonlijke instellingen';
             items = [
-                { label: 'Profile', path: '/preferences?tab=profile', icon: UserCircle },
-                { label: 'Personalisation', path: '/preferences?tab=personalisation', icon: Palette },
-                { label: 'Notification settings', path: '/preferences?tab=notifications', icon: Settings },
-                { label: 'My Wallet', path: '/credits?wallet=personal', icon: CreditCard },
-                { label: 'Memberships', path: '/memberships', icon: Users },
-                { label: 'My Audit', path: '/preferences?tab=audit', icon: Scroll },
-                { label: 'Billing & Licensing', path: '/billing', icon: CreditCard },
+                { label: 'Profiel', path: '/preferences?tab=profile', icon: UserCircle },
+                { label: 'Personalisatie', path: '/preferences?tab=personalisation', icon: Palette },
+                { label: 'Meldingen', path: '/preferences?tab=notifications', icon: Settings },
+                { label: 'Mijn Portemonnee', path: '/credits?wallet=personal', icon: CreditCard },
+                { label: 'Lidmaatschappen', path: '/memberships', icon: Users },
+                { label: 'Mijn Audit', path: '/preferences?tab=audit', icon: Scroll },
+                { label: 'Facturering & Licenties', path: '/billing', icon: CreditCard },
             ];
             break;
 
         case 'organisation':
             if (isOrgAdmin || isSystemAdmin) {
-                title = 'Organisation';
+                title = 'Organisatie';
                 items = [
-                    { label: 'Permissions', path: '/permissions', icon: Lock },
-                    { label: 'Users', path: '/users', icon: Users },
+                    { label: 'Rechten', path: '/permissions', icon: Lock },
+                    { label: 'Gebruikers', path: '/users', icon: Users },
                     { label: 'Audit', path: '/organisation/audit', icon: Scroll },
-                    { label: 'Organisation Wallet', path: '/credits?wallet=org', icon: CreditCard },
+                    { label: 'Organisatie Portemonnee', path: '/credits?wallet=org', icon: CreditCard },
                 ];
             }
             break;
@@ -202,9 +202,9 @@ export function buildPanelBConfig(params: PanelBConfigParams): PanelBResult | nu
             break;
 
         case 'help':
-            title = 'Help';
+            title: 'Hulp';
             items = [
-                { label: 'User Guide', path: '/docs', icon: BookOpen },
+                { label: 'Gebruikershandleiding', path: '/docs', icon: BookOpen },
             ];
             break;
     }

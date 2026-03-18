@@ -350,10 +350,10 @@ export default function Breadcrumbs() {
     else if (p === '/seasons') { items.push({ label: 'Directory', path: '/directory' }); items.push({ label: 'Seasons', path: '/seasons' }); }
     else if (p === '/competitions') { items.push({ label: 'Directory', path: '/directory' }); items.push({ label: 'Competitions', path: '/competitions' }); }
     else if (p === '/matches') { items.push({ label: 'Directory', path: '/directory' }); items.push({ label: 'Matches', path: '/matches' }); }
-    else if (p.startsWith('/profile')) items.push({ label: 'Preferences', path: '/preferences?tab=profile' });
-    else if (p.startsWith('/notifications')) items.push({ label: 'Notifications', path: '/notifications' });
-    else if (p.startsWith('/credits')) items.push({ label: 'My Wallet', path: '/credits' });
-    else if (p.startsWith('/settings')) items.push({ label: 'Settings', path: '/settings' });
+    else if (p.startsWith('/profile')) items.push({ label: 'Voorkeuren', path: '/preferences?tab=profile' });
+    else if (p.startsWith('/notifications')) items.push({ label: 'Meldingen', path: '/notifications' });
+    else if (p.startsWith('/credits')) items.push({ label: 'Mijn Portemonnee', path: '/credits' });
+    else if (p.startsWith('/settings')) items.push({ label: 'Instellingen', path: '/settings' });
     else if (p.startsWith('/analytics')) items.push({ label: 'Analytics', path: '/analytics' });
     else if (p.startsWith('/content-templates')) items.push({ label: 'Content Templates', path: '/content-templates' });
   }

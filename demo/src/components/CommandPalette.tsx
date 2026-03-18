@@ -34,11 +34,11 @@ export default function CommandPalette({
     () => [
       { id: 'dash', label: 'Dashboard', path: routes.dashboard(), kind: 'page' },
       { id: 'dir', label: 'Directory', path: '/directory', kind: 'page' },
-      { id: 'profile', label: 'My Profile', path: '/preferences?tab=profile', kind: 'page' },
-      { id: 'prefs', label: 'Preferences', path: '/preferences', kind: 'page' },
-      { id: 'wallet', label: 'My Wallet', path: '/credits?wallet=personal', kind: 'page' },
-      { id: 'recents', label: 'Recents', path: '/recents', kind: 'page' },
-      { id: 'favorites', label: 'Favorites', path: '/favorites', kind: 'page' },
+      { id: 'profile', label: 'Mijn profiel', path: '/preferences?tab=profile', kind: 'page' },
+      { id: 'prefs', label: 'Voorkeuren', path: '/preferences', kind: 'page' },
+      { id: 'wallet', label: 'Mijn Portemonnee', path: '/credits?wallet=personal', kind: 'page' },
+      { id: 'recents', label: 'Recent', path: '/recents', kind: 'page' },
+      { id: 'favorites', label: 'Favorieten', path: '/favorites', kind: 'page' },
     ],
     []
   );
@@ -176,26 +176,26 @@ export default function CommandPalette({
               setQuery(e.target.value);
               setActiveIndex(0);
             }}
-            placeholder="Search pages, recents, favorites…"
+            placeholder="Zoek pagina’s, recent, favorieten…"
             className={`flex-1 border-none bg-transparent fs-14 ${styles.searchInput}`}
           />
           {active?.path && (
             <button
               type="button"
               onClick={onToggleFavoriteCurrent}
-              title={isFavorite(active.path) ? 'Remove from favorites' : 'Add to favorites'}
+              title={isFavorite(active.path) ? 'Verwijder uit favorieten' : 'Toevoegen aan favorieten'}
               className={styles.favButton}
               data-saved={isFavorite(active.path)}
             >
               <AppIcon icon={Star} size={14} />
-              {isFavorite(active.path) ? 'Saved' : 'Save'}
+              {isFavorite(active.path) ? 'Opgeslagen' : 'Opslaan'}
             </button>
           )}
         </div>
 
         <div className={`overflow-y-auto ${styles.resultsList}`}>
           {filtered.length === 0 ? (
-            <div className={styles.noResults}>No results.</div>
+            <div className={styles.noResults}>Geen resultaten.</div>
           ) : (
             filtered.map((item, idx) => {
               const selected = idx === activeIndex;

@@ -340,7 +340,7 @@ export function NavbarQuickReviewModal({
               className={`${s.tabBtn} ${queueModalTab === 'in-progress' ? styles.tabBtnAmberActive : styles.tabBtnInactive}`}
               data-active={queueModalTab === 'in-progress'}
             >
-              In Progress ({totalInProgress})
+              In behandeling ({totalInProgress})
             </button>
           </div>
         </div>

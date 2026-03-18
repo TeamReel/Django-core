@@ -79,11 +79,11 @@ export function ApprovalsPageContent({
     : ['all', 'review', 'completed', 'rejected'] as const;
 
   const tabs = [
-    { id: 'all', label: 'All' },
-    { id: 'review', label: 'Needs Review' },
-    ...(!isPlayer && !isSupporter ? [{ id: 'active', label: 'In Progress' }] : []),
-    { id: 'completed', label: 'Approved' },
-    { id: 'rejected', label: 'Rejected' },
+    { id: 'all', label: 'Alle' },
+    { id: 'review', label: 'Te beoordelen' },
+    ...(!isPlayer && !isSupporter ? [{ id: 'active', label: 'In behandeling' }] : []),
+    { id: 'completed', label: 'Goedgekeurd' },
+    { id: 'rejected', label: 'Afgewezen' },
     ...(!isPlayer && !isSupporter ? [{ id: 'ai_queue', label: 'AI Queue' }] : []),
     ...(!isPlayer && !isSupporter ? [{ id: 'video', label: 'Video' }] : []),
   ];

@@ -34,12 +34,12 @@ import type { ApprovalsToast } from './types';
 
 const tabTitles: Record<FilterState, { title: string; subtitle: string }> = {
   all: { title: 'Queue', subtitle: 'Alle items — workflows, AI-generatie en video processing.' },
-  review: { title: 'Needs Review', subtitle: 'Items die wachten op beoordeling.' },
-  active: { title: 'In Progress', subtitle: 'Actieve workflows, AI-jobs en video processing.' },
-  completed: { title: 'Approved', subtitle: 'Goedgekeurde en afgeronde items.' },
-  rejected: { title: 'Rejected', subtitle: 'Afgewezen en mislukte items.' },
+  review: { title: 'Te beoordelen', subtitle: 'Items die wachten op beoordeling.' },
+  active: { title: 'In behandeling', subtitle: 'Actieve workflows, AI-jobs en video processing.' },
+  completed: { title: 'Goedgekeurd', subtitle: 'Goedgekeurde en afgeronde items.' },
+  rejected: { title: 'Afgewezen', subtitle: 'Afgewezen en mislukte items.' },
   ai_queue: { title: 'AI Queue', subtitle: 'Alle AI-generatie jobs.' },
-  video: { title: 'Video Processing', subtitle: 'Transcode, compose en lineup jobs.' },
+  video: { title: 'Videoverwerking', subtitle: 'Transcode, compose en lineup jobs.' },
 };
 
 export function useApprovalsData() {

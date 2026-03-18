@@ -60,16 +60,16 @@ export default function SearchPage() {
 
   const getCategoryLabel = (category: string): string => {
     const labels: Record<string, string> = {
-      organisations: 'Federations',
+      organisations: 'Federaties',
       clubs: 'Clubs',
       teams: 'Teams',
-      seasons: 'Seasons',
-      competitions: 'Competitions',
-      matches: 'Matches',
-      users: 'Users',
-      periods: 'Periods',
-      activities: 'Activities',
-      projects: 'Projects',
+      seasons: 'Seizoenen',
+      competitions: 'Competities',
+      matches: 'Wedstrijden',
+      users: 'Gebruikers',
+      periods: 'Periodes',
+      activities: 'Activiteiten',
+      projects: 'Projecten',
     };
     return labels[category] || category;
   };
@@ -212,7 +212,7 @@ export default function SearchPage() {
                         onClick={() => handleCategoryClick(category)}
                         className={`fw-500 cursor-pointer border-none bg-transparent ${styles.viewAllButton}`}
                       >
-                        View All
+                        Bekijk alles
                       </button>
                     )}
                   </div>

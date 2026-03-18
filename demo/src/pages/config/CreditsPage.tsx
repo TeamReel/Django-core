@@ -65,8 +65,8 @@ export const CreditsPage: React.FC = () => {
         {/* Scope header */}
         <div className={styles.scopeLabel}>
           {data.scope === 'personal'
-            ? 'My Wallet'
-            : `Organisation Wallet${data.currentOrgName ? ` (${data.currentOrgName})` : ''}`}
+            ? 'Mijn Portemonnee'
+            : `Organisatie Portemonnee${data.currentOrgName ? ` (${data.currentOrgName})` : ''}`}
         </div>
 
         {data.scope === 'personal' ? (

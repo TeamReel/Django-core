@@ -24,10 +24,10 @@ export function UserDetailOverviewTab({ data }: Props) {
             <div className="text-sm font-semibold text-gray-900">
               Federations <span className="text-gray-500 fw-600">({userOrgs.length})</span>
             </div>
-            <button type="button" className="app-action-button action-btn" onClick={() => setTab('federations')}>View all</button>
+            <button type="button" className="app-action-button action-btn" onClick={() => setTab('federations')}>Bekijk alles</button>
           </div>
           {userOrgs.length === 0 ? (
-            <div className="text-sm text-gray-500">No federations.</div>
+            <div className="text-sm text-gray-500">Geen federaties.</div>
           ) : (
             <div className="space-y-2">
               {userOrgs.slice(0, 6).map((o) => {
@@ -51,10 +51,10 @@ export function UserDetailOverviewTab({ data }: Props) {
             <div className="text-sm font-semibold text-gray-900">
               Clubs <span className="text-gray-500 fw-600">({clubsForTab.length})</span>
             </div>
-            <button type="button" className="app-action-button action-btn" onClick={() => setTab('clubs')}>View all</button>
+            <button type="button" className="app-action-button action-btn" onClick={() => setTab('clubs')}>Bekijk alles</button>
           </div>
           {clubsForTab.length === 0 ? (
-            <div className="text-sm text-gray-500">No clubs.</div>
+            <div className="text-sm text-gray-500">Geen clubs.</div>
           ) : (
             <div className="space-y-2">
               {clubsForTab.slice(0, 6).map((c) => {
@@ -79,10 +79,10 @@ export function UserDetailOverviewTab({ data }: Props) {
             <div className="text-sm font-semibold text-gray-900">
               Teams <span className="text-gray-500 fw-600">({teamMemberships.length})</span>
             </div>
-            <button type="button" className="app-action-button action-btn" onClick={() => setTab('teams')}>View all</button>
+            <button type="button" className="app-action-button action-btn" onClick={() => setTab('teams')}>Bekijk alles</button>
           </div>
           {teamMemberships.length === 0 ? (
-            <div className="text-sm text-gray-500">No teams.</div>
+            <div className="text-sm text-gray-500">Geen teams.</div>
           ) : (
             <div className="space-y-2">
               {teamMemberships.slice(0, 6).map((t) => {
@@ -109,10 +109,10 @@ export function UserDetailOverviewTab({ data }: Props) {
             <div className="text-sm font-semibold text-gray-900">
               Matches <span className="text-gray-500 fw-600">({linkedMatches.length})</span>
             </div>
-            <button type="button" className="app-action-button action-btn" onClick={() => setTab('matches')}>View all</button>
+            <button type="button" className="app-action-button action-btn" onClick={() => setTab('matches')}>Bekijk alles</button>
           </div>
           {linkedMatches.length === 0 ? (
-            <div className="text-sm text-gray-500">No matches.</div>
+            <div className="text-sm text-gray-500">Geen wedstrijden.</div>
           ) : (
             <div className="space-y-2">
               {linkedMatches.slice(0, 6).map((m) => {

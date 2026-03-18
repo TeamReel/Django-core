@@ -2,6 +2,7 @@
  * TopNavbar mobile overlay sections — extracted from TopNavbar.tsx
  */
 
+import { useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
 import { SearchBar } from './SearchBar';
 import s from './TopNavbar.module.css';
@@ -12,25 +13,42 @@ interface MobileSearchOverlayProps {
 }
 
 export function MobileSearchOverlay({ onClose, onQueryChange }: MobileSearchOverlayProps) {
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose();
+  }, [onClose]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
   return (
-    <div className={s.mobileSearchOverlay}>
-      <div className={s.mobileSearchHeader}>
-        <div className={s.mobileSearchInputWrap}>
-          <SearchBar
-            placeholder="Zoeken..."
-            onQueryChange={(q) => onQueryChange(String(q || ''))}
-          />
+    <>
+      {/* Backdrop — tap to close */}
+      <div
+        className={s.mobileSearchBackdrop}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div className={s.mobileSearchOverlay}>
+        <div className={s.mobileSearchHeader}>
+          <div className={s.mobileSearchInputWrap}>
+            <SearchBar
+              placeholder="Zoeken..."
+              onQueryChange={(q) => onQueryChange(String(q || ''))}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className={s.mobileSearchClose}
+            aria-label="Sluiten"
+          >
+            <X size={20} />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className={s.mobileSearchClose}
-          aria-label="Sluiten"
-        >
-          <X size={20} />
-        </button>
       </div>
-    </div>
+    </>
   );
 }
 

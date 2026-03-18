@@ -93,7 +93,7 @@ export const CompetitionOverviewTab: React.FC<CompetitionOverviewTabProps> = ({
         <Card>
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Matches</h3>
-            <Button variant="secondary" size="sm" onClick={() => navigateToTab('matches')}>View All</Button>
+            <Button variant="secondary" size="sm" onClick={() => navigateToTab('matches')}>Bekijk alles</Button>
           </div>
           <CompetitionMatchesTable
             rows={matches.slice(0, 5)}

@@ -115,7 +115,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
           if (profileSaving) return;
           setIsProfileModalOpen(false);
         }}
-        title="Edit profile"
+        title="Profiel bewerken"
         footer={
           <div className={`gap-8 ${styles.footer}`}>
             <Button
@@ -148,14 +148,14 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   setIsProfileModalOpen(false);
                 } catch (e) {
                   logger.error('Failed to update profile', e);
-                  setProfileError(e instanceof Error ? e.message : 'Failed to update profile');
+                  setProfileError(e instanceof Error ? e.message : 'Profiel bijwerken mislukt');
                 } finally {
                   setProfileSaving(false);
                 }
               }}
               disabled={profileSaving}
             >
-              {profileSaving ? 'Saving…' : 'Save'}
+              {profileSaving ? 'Opslaan…' : 'Opslaan'}
             </Button>
           </div>
         }
@@ -212,7 +212,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
             disabled={profileSaving}
           />
           <div className={`text-xs text-gray-500 ${styles.marginTopSpace2}`}>
-            Required to confirm changes to your account.
+            Vereist om wijzigingen aan je account te bevestigen.
           </div>
         </div>
       </ProfileSheet>
@@ -224,7 +224,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
           if (passwordSaving) return;
           setIsPasswordModalOpen(false);
         }}
-        title="Change password"
+        title="Wachtwoord wijzigen"
         footer={
           <div className={`gap-8 ${styles.footer}`}>
             <Button
@@ -256,21 +256,21 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   setPasswordConfirm('');
                 } catch (e) {
                   logger.error('Failed to change password', e);
-                  setPasswordError(e instanceof Error ? e.message : 'Failed to change password');
+                  setPasswordError(e instanceof Error ? e.message : 'Wachtwoord wijzigen mislukt');
                 } finally {
                   setPasswordSaving(false);
                 }
               }}
               disabled={passwordSaving}
             >
-              {passwordSaving ? 'Saving…' : 'Change password'}
+              {passwordSaving ? 'Opslaan…' : 'Wachtwoord wijzigen'}
             </Button>
           </div>
         }
       >
         {passwordSuccess && (
           <div className="mb-12">
-            <Alert variant="success">Password updated.</Alert>
+            <Alert variant="success">Wachtwoord bijgewerkt.</Alert>
           </div>
         )}
         {passwordError && (
@@ -280,21 +280,21 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
         )}
         <div className="flex-col gap-12">
           <Input
-            label="Current password"
+            label="Huidig wachtwoord"
             value={passwordCurrent}
             onChange={(e) => setPasswordCurrent(e.target.value)}
             type="password"
             disabled={passwordSaving}
           />
           <Input
-            label="New password"
+            label="Nieuw wachtwoord"
             value={passwordNext}
             onChange={(e) => setPasswordNext(e.target.value)}
             type="password"
             disabled={passwordSaving}
           />
           <Input
-            label="Confirm new password"
+            label="Bevestig nieuw wachtwoord"
             value={passwordConfirm}
             onChange={(e) => setPasswordConfirm(e.target.value)}
             type="password"

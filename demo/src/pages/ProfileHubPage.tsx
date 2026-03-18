@@ -175,27 +175,27 @@ export default function ProfileHubPage() {
       <div className={s.section}>
         <button className={s.row} onClick={openEditProfile}>
           <User size={20} />
-          <span className={s.rowLabel}>Edit Profile</span>
+          <span className={s.rowLabel}>Profiel bewerken</span>
           <ChevronRight size={16} className={s.chevron} />
         </button>
         <button className={s.row} onClick={openChangePassword}>
           <KeyRound size={20} />
-          <span className={s.rowLabel}>Change Password</span>
+          <span className={s.rowLabel}>Wachtwoord wijzigen</span>
           <ChevronRight size={16} className={s.chevron} />
         </button>
         <button className={s.row} onClick={() => setCreditsOpen(true)}>
           <Wallet size={20} />
-          <span className={s.rowLabel}>Credits & Wallet</span>
+          <span className={s.rowLabel}>Credits & Portemonnee</span>
           <ChevronRight size={16} className={s.chevron} />
         </button>
       </div>
 
       {/* ── Appearance ───────────────────────────────────────────────── */}
-      <div className={s.sectionLabel}>Appearance</div>
+      <div className={s.sectionLabel}>Uiterlijk</div>
       <div className={s.section}>
         <div className={s.row}>
           {preferences?.theme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
-          <span className={s.rowLabel}>Theme</span>
+          <span className={s.rowLabel}>Thema</span>
           <div className={s.themePills}>
             {(['light', 'dark', 'auto'] as const).map((t) => (
               <button
@@ -211,11 +211,11 @@ export default function ProfileHubPage() {
       </div>
 
       {/* ── Language & Region ────────────────────────────────────────── */}
-      <div className={s.sectionLabel}>Language & Region</div>
+      <div className={s.sectionLabel}>Taal & Regio</div>
       <div className={s.section}>
         <div className={s.row}>
           <Globe size={20} />
-          <span className={s.rowLabel}>Language</span>
+          <span className={s.rowLabel}>Taal</span>
           <select
             className={s.inlineSelect}
             value={preferences?.language || 'en'}
@@ -228,7 +228,7 @@ export default function ProfileHubPage() {
         </div>
         <div className={s.row}>
           <Globe size={20} />
-          <span className={s.rowLabel}>Timezone</span>
+          <span className={s.rowLabel}>Tijdzone</span>
           <select
             className={s.inlineSelect}
             value={preferences?.timezone || 'UTC'}
@@ -242,11 +242,11 @@ export default function ProfileHubPage() {
       </div>
 
       {/* ── Notifications ────────────────────────────────────────────── */}
-      <div className={s.sectionLabel}>Notifications</div>
+      <div className={s.sectionLabel}>Meldingen</div>
       <div className={s.section}>
         <div className={s.row}>
           <Mail size={20} />
-          <span className={s.rowLabel}>Email Notifications</span>
+          <span className={s.rowLabel}>E-mailmeldingen</span>
           <button
             className={`${s.toggle} ${preferences?.email_notifications ? s.toggleOn : ''}`}
             onClick={() => toggleNotifPref('email_notifications')}
@@ -256,7 +256,7 @@ export default function ProfileHubPage() {
         </div>
         <div className={s.row}>
           <Megaphone size={20} />
-          <span className={s.rowLabel}>Marketing Emails</span>
+          <span className={s.rowLabel}>Marketing e-mails</span>
           <button
             className={`${s.toggle} ${preferences?.marketing_email ? s.toggleOn : ''}`}
             onClick={() => toggleNotifPref('marketing_email')}

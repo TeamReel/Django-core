@@ -557,12 +557,27 @@
 
 .mobileSearchOverlay {
   position: fixed;
-  inset: 0;
+  top: 48px;
+  left: 0;
+  right: 0;
   z-index: 1200;
-  background: var(--app-bg);
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   animation: mobileSearchSlideDown 150ms ease-out;
+}
+
+.mobileSearchBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1199;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 @keyframes mobileSearchSlideDown {

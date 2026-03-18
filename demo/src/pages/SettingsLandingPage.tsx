@@ -8,13 +8,13 @@ import { useUserRole } from '../components/PermissionGuards';
 export default function SettingsLandingPage() {
   const { isSystemAdmin, isOrgAdmin, isLandAdmin } = useUserRole();
   const isStaff = isSystemAdmin || isLandAdmin;
-  useSetBackNavigation({ label: 'Profile', path: '/profile' });
+  useSetBackNavigation({ label: 'Profiel', path: '/profile' });
 
   const tiles: TileItem[] = [
     {
       path: '/profile',
-      label: 'Preferences',
-      description: 'Manage your personal settings and notifications',
+      label: 'Voorkeuren',
+      description: 'Beheer je persoonlijke instellingen en meldingen',
       icon: Settings,
       color: 'var(--app-muted-text)',
     },
@@ -24,7 +24,7 @@ export default function SettingsLandingPage() {
     tiles.push({
       path: '/content-templates',
       label: 'Templates',
-      description: 'Configure content generation templates',
+      description: 'Configureer content generatie templates',
       icon: Palette,
       color: 'var(--color-violet-500)',
     });
@@ -33,8 +33,8 @@ export default function SettingsLandingPage() {
   if (isOrgAdmin) {
     tiles.push({
       path: '/permissions',
-      label: 'Organisation',
-      description: 'Manage members, roles, and permissions',
+      label: 'Organisatie',
+      description: 'Leden, rollen en rechten beheren',
       icon: Users,
       color: 'var(--color-blue-500)',
     });
@@ -44,7 +44,7 @@ export default function SettingsLandingPage() {
     tiles.push({
       path: '/health',
       label: 'Platform',
-      description: 'System health, integrations, and diagnostics',
+      description: 'Systeemstatus, integraties en diagnose',
       icon: Activity,
       color: 'var(--color-green-400)',
     });
@@ -52,7 +52,7 @@ export default function SettingsLandingPage() {
     tiles.push({
       path: '/flags',
       label: 'Feature Flags',
-      description: 'Control feature availability across the platform',
+      description: 'Beheer beschikbaarheid van functies op het platform',
       icon: Shield,
       color: 'var(--color-amber-400)',
     });

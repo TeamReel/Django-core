@@ -24,7 +24,7 @@ export interface NavSection {
 export const NAV_CONFIG: NavSection[] = [
   {
     id: 'overview',
-    title: 'OVERVIEW',
+    title: 'OVERZICHT',
     visibility: 'everyone',
     items: [
       { path: routes.dashboard(), label: 'Dashboard', icon: LayoutDashboard, visibility: 'everyone' },
@@ -43,30 +43,30 @@ export const NAV_CONFIG: NavSection[] = [
     visibility: 'everyone',
     items: [
       { path: routes.studio(), label: 'Gallery', icon: Sparkles, visibility: 'everyone' },
-      { path: routes.medialib(), label: 'Media Library', icon: Library, visibility: 'everyone' },
+      { path: routes.medialib(), label: 'Mediabibliotheek', icon: Library, visibility: 'everyone' },
       { path: routes.approvals(), label: 'Queue', icon: ClipboardCheck, visibility: 'everyone' },
     ],
   },
   {
     id: 'settings',
-    title: 'SETTINGS',
+    title: 'INSTELLINGEN',
     visibility: 'everyone',
     items: [
-      { path: routes.preferences({ tab: 'profile' }), label: 'Preferences', icon: Settings, visibility: 'everyone' },
+      { path: routes.preferences({ tab: 'profile' }), label: 'Voorkeuren', icon: Settings, visibility: 'everyone' },
       { path: routes.contentTemplates(), label: 'Templates', icon: Palette, visibility: 'superadmin' },
       { path: routes.workflowTemplates(), label: 'Workflows', icon: GitBranch, visibility: 'superadmin' },
       { path: routes.appBackgrounds(), label: 'Achtergronden', icon: Library, visibility: 'superadmin' },
-      { path: routes.permissions(), label: 'Organisation', icon: Users, visibility: 'superadmin' },
+      { path: routes.permissions(), label: 'Organisatie', icon: Users, visibility: 'superadmin' },
       { path: routes.health(), label: 'Platform', icon: Activity, visibility: 'superadmin' },
     ],
   },
   {
     id: 'help',
-    title: 'HELP',
+    title: 'HULP',
     visibility: 'everyone',
     bottom: true,
     items: [
-      { path: routes.docs(), label: 'User Guide', icon: BookOpen, visibility: 'everyone' },
+      { path: routes.docs(), label: 'Handleiding', icon: BookOpen, visibility: 'everyone' },
     ],
   },
 ];

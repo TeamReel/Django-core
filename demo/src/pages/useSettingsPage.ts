@@ -140,10 +140,10 @@ export function useSettingsPage() {
   };
 
   const sections = [
-    { id: 'profile', label: 'Profile' },
-    { id: 'security', label: 'Security' },
-    { id: 'notifications', label: 'Notifications' },
-    { id: 'preferences', label: 'Preferences' },
+    { id: 'profile', label: 'Profiel' },
+    { id: 'security', label: 'Beveiliging' },
+    { id: 'notifications', label: 'Meldingen' },
+    { id: 'preferences', label: 'Voorkeuren' },
   ];
 
   return {

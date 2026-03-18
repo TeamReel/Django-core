@@ -97,7 +97,7 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
                 <div
                   className={`nav-search-container${d.navSearchHasQuery ? ' has-query' : ''} ${s.searchWrap}`}
                 >
-                  <SearchBar placeholder="Search..." onQueryChange={(q) => d.setNavSearchHasQuery(Boolean(String(q || '').trim()))} />
+                  <SearchBar placeholder="Zoeken..." onQueryChange={(q) => d.setNavSearchHasQuery(Boolean(String(q || '').trim()))} />
                 </div>
               )}
 
@@ -110,6 +110,18 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
                   aria-label="Zoeken" title="Zoeken"
                 >
                   <AppIcon icon={Search} size={20} />
+                </button>
+              )}
+
+              {/* Mobile: Theme Toggle */}
+              {isMobile && (
+                <button
+                  onClick={d.toggleTheme}
+                  className={`nav-icon-button ${s.navIconBtn}`}
+                  title={`Wissel naar ${d.currentThemeMode === 'light' ? 'donker' : 'licht'} thema`}
+                  aria-label={`Wissel naar ${d.currentThemeMode === 'light' ? 'donker' : 'licht'} thema`}
+                >
+                  <AppIcon icon={d.currentThemeMode === 'light' ? Moon : Sun} size={20} />
                 </button>
               )}
 
@@ -173,8 +185,8 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
                 <button
                   onClick={d.toggleTheme}
                   className={`nav-icon-button ${s.themeBtn}`}
-                  title={`Switch to ${d.currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
-                  aria-label={`Switch to ${d.currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
+                  title={`Wissel naar ${d.currentThemeMode === 'light' ? 'donker' : 'licht'} thema`}
+                  aria-label={`Wissel naar ${d.currentThemeMode === 'light' ? 'donker' : 'licht'} thema`}
                 >
                   <AppIcon icon={d.currentThemeMode === 'light' ? Moon : Sun} size={20} />
                 </button>
@@ -257,8 +269,8 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
             </div>
           ) : (
             <div className="flex-row gap-12">
-              <Link to="/login" className={s.signInLink}>Sign in</Link>
-              <Link to="/register" className={s.registerLink}>Register</Link>
+              <Link to="/login" className={s.signInLink}>Inloggen</Link>
+              <Link to="/register" className={s.registerLink}>Registreren</Link>
             </div>
           )}
         </div>

@@ -25,9 +25,9 @@ export const getStatusColor = (status: ModuleInfo['status']): string => {
 
 export const getStatusLabel = (status: ModuleInfo['status']): string => {
   switch (status) {
-    case 'complete': return '✅ Complete';
-    case 'in-progress': return '🚧 In Progress';
-    case 'planned': return '📋 Planned';
+    case 'complete': return '✅ Voltooid';
+    case 'in-progress': return '🚧 In behandeling';
+    case 'planned': return '📋 Gepland';
     default: return '? Unknown';
   }
 };
