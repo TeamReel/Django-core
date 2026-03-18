@@ -4,6 +4,7 @@
 import React from 'react';
 import { Badge, Card } from '@django-core/design-system';
 import { CONTENT_TYPES, type ContentTemplate } from '../../identity/ContentGenerationModal';
+import { ContentIcon } from '../../../components/ContentIcon';
 import type { ThenVsNowVideoType } from '../ThenVsNowModal';
 import s from '../ProjectSeasonDetailPage.module.css';
 
@@ -64,7 +65,7 @@ export function SeasonContentTypesCard({
               <div className={s.contentTileIcon} style={{
                 filter: (isThenVsNow || hasTemplate) ? 'none' : 'grayscale(100%)',
               }}>
-                {item.icon}
+                <ContentIcon icon={item.icon} size={20} />
               </div>
               <div className={s.contentTileLabel} style={{
                 color: (isThenVsNow || hasTemplate) ? 'var(--app-text)' : 'var(--app-muted-text)',

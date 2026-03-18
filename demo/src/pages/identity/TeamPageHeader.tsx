@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, Pencil, Eye, Trash2, MoreHorizontal } from 'lucide-react';
+import { Check, Pencil, Eye, Trash2, MoreHorizontal, Trophy, Star } from 'lucide-react';
 import { ShareButton } from '../../components/ShareButton';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { api } from '@/api';
@@ -119,7 +119,7 @@ export function TeamPageHeader({
                     setOverflowOpen(false);
                   }}
                 >
-                  {team?.team_type === 'legends' ? '⚽ Maak Regulier' : '⭐ Maak Legends'}
+                  {team?.team_type === 'legends' ? <><Trophy size={14} /> Maak Regulier</> : <><Star size={14} /> Maak Legends</>}
                 </button>
               )}
               {!isPlayer && (

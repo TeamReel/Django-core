@@ -13,10 +13,10 @@ export type ContentTypeFilter = 'all' | 'ai_video' | 'ai_image' | 'lineup_video'
 
 export const CONTENT_TYPE_CHIPS: { key: ContentTypeFilter; label: string; icon: string }[] = [
   { key: 'all', label: 'Alles', icon: 'clipboard-list' },
-  { key: 'ai_video', label: 'AI Video', icon: '🎬' },
-  { key: 'ai_image', label: 'AI Image', icon: '🖼️' },
-  { key: 'lineup_video', label: 'Lineup Video', icon: '⚽' },
-  { key: 'video_processing', label: 'Video Processing', icon: '⚙️' },
+  { key: 'ai_video', label: 'AI Video', icon: 'film' },
+  { key: 'ai_image', label: 'AI Image', icon: 'image' },
+  { key: 'lineup_video', label: 'Lineup Video', icon: 'circle-dot' },
+  { key: 'video_processing', label: 'Video Processing', icon: 'video' },
 ];
 
 export interface VideoFollowUpInfo {

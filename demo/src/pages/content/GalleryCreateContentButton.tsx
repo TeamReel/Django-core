@@ -9,16 +9,17 @@ import { useNavigate } from 'react-router-dom';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import { routes } from '../../routes';
 import { useUserRole } from '../../components/PermissionGuards';
+import { ContentIcon } from '../../components/ContentIcon';
 import styles from './GalleryCreateContentButton.module.css';
 
 const GALLERY_QUICK_TYPES = [
-  { key: 'flyer', label: 'Match Flyer', icon: '📣', desc: 'Wedstrijdposter voor social media' },
-  { key: 'lineup', label: 'Lineup', icon: '📋', desc: 'Opstelling met foto\'s en formatie' },
-  { key: 'walkon', label: 'Walk-on Video', icon: '🚶', desc: 'Intro video met spelersnamen' },
-  { key: 'anthem', label: 'Anthem Video', icon: '🎵', desc: 'Anthem of clublied video' },
-  { key: 'goal', label: 'Goal Celebration', icon: '⚽', desc: 'Doelpunt viering animatie' },
-  { key: 'end_score', label: 'Final Score', icon: '🏁', desc: 'Eindstand graphic' },
-  { key: 'highlights', label: 'Highlights', icon: '🎬', desc: 'Hoogtepunten compilatie' },
+  { key: 'flyer', label: 'Match Flyer', icon: 'megaphone', desc: 'Wedstrijdposter voor social media' },
+  { key: 'lineup', label: 'Lineup', icon: 'clipboard-list', desc: 'Opstelling met foto\'s en formatie' },
+  { key: 'walkon', label: 'Walk-on Video', icon: 'footprints', desc: 'Intro video met spelersnamen' },
+  { key: 'anthem', label: 'Anthem Video', icon: 'music', desc: 'Anthem of clublied video' },
+  { key: 'goal', label: 'Goal Celebration', icon: 'circle-dot', desc: 'Doelpunt viering animatie' },
+  { key: 'end_score', label: 'Final Score', icon: 'flag', desc: 'Eindstand graphic' },
+  { key: 'highlights', label: 'Highlights', icon: 'film', desc: 'Hoogtepunten compilatie' },
 ];
 
 export function GalleryCreateContentButton() {
@@ -77,7 +78,7 @@ export function GalleryCreateContentButton() {
                   }}
                   className={`flex-row gap-12 w-full cursor-pointer text-left border ${styles.typeBtn}`}
                 >
-                  <span className={styles.typeIcon}>{ct.icon}</span>
+                  <span className={styles.typeIcon}><ContentIcon icon={ct.icon} size={18} /></span>
                   <div>
                     <div className="fs-14 fw-600 text-primary">{ct.label}</div>
                     <div className={`fs-12 text-muted ${styles.typeDesc}`}>{ct.desc}</div>

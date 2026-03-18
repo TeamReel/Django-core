@@ -7,7 +7,8 @@
 
 import React, { memo, useRef, useState } from 'react';
 import { Card, Text, Badge, Button } from '@django-core/design-system';
-import { Download, Share2, Trash2, X, Play, Pause, Maximize2, Clock, FileText, Tag, Calendar } from 'lucide-react';
+import { Download, Share2, Trash2, X, Play, Pause, Maximize2, Clock, FileText, Tag, Calendar, Film, CircleDot, MapPin, Home } from 'lucide-react';
+import { ContentIcon } from '../../components/ContentIcon';
 import { clickableProps } from '@/utils/a11y';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
@@ -66,19 +67,19 @@ export const ContentCard = memo(function ContentCard({
               <img src={url} alt={item.title || getAssetTypeLabel(normalizedType)} className={`p-8 object-contain ${styles.thumbMedia}`} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             )
           ) : (
-            <span className={styles.fallbackIcon}>{getAssetTypeIcon(normalizedType)}</span>
+            <span className={styles.fallbackIcon}><ContentIcon icon={getAssetTypeIcon(normalizedType)} size={24} /></span>
           )}
           <span className={`absolute fw-700 badge-overlay ${styles.typeBadge}`}>
             {getAssetTypeLabel(normalizedType)}
           </span>
           {isVideo && (
             <span className={`absolute fw-700 badge-overlay ${styles.videoBadge}`}>
-              🎬 Video
+              <Film size={12} aria-hidden="true" /> Video
             </span>
           )}
           {sportType && (
             <span className={`absolute fw-600 badge-overlay ${styles.sportBadge}`}>
-              ⚽ {sportType}
+              <CircleDot size={12} aria-hidden="true" /> {sportType}
             </span>
           )}
         </div>
@@ -99,8 +100,8 @@ export const ContentCard = memo(function ContentCard({
 
           {(opponent || activityDate || scoreHome !== undefined) && (
             <div className="flex-row flex-wrap gap-6 text-secondary fs-11">
-              {opponent && <span className="flex-row gap-2">{homeAway === 'away' ? '📍' : '🏠'} vs {opponent}</span>}
-              {activityDate && <span>📅 {new Date(activityDate).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}</span>}
+              {opponent && <span className="flex-row gap-2">{homeAway === 'away' ? <MapPin size={12} aria-hidden="true" /> : <Home size={12} aria-hidden="true" />} vs {opponent}</span>}
+              {activityDate && <span><Calendar size={12} aria-hidden="true" /> {new Date(activityDate).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}</span>}
               {scoreHome !== undefined && scoreAway !== undefined && <span className="fw-700 text-primary">{scoreHome} - {scoreAway}</span>}
             </div>
           )}
@@ -116,7 +117,7 @@ export const ContentCard = memo(function ContentCard({
 
           <div className={`gallery-card-verbose flex-row flex-wrap gap-4 ${styles.badgesRow}`}>
             <Badge size="sm" variant="default">{item.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'}</Badge>
-            {seasonKey && <Badge size="sm" variant="default">📅 {seasonKey}</Badge>}
+            {seasonKey && <Badge size="sm" variant="default"><Calendar size={12} aria-hidden="true" /> {seasonKey}</Badge>}
           </div>
 
           <Text size="xs" color="secondary" className="mt-4">
@@ -125,8 +126,8 @@ export const ContentCard = memo(function ContentCard({
           </Text>
 
           <div className={`mt-8 gap-4 border-top flex-row ${styles.actionsRow}`}>
-            <button onClick={(e) => { e.stopPropagation(); onDownload?.(item); }} title="Download" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">⬇️</button>
-            <button onClick={(e) => { e.stopPropagation(); onShare?.(item); }} title="Share" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">📤</button>
+            <button onClick={(e) => { e.stopPropagation(); onDownload?.(item); }} title="Download" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8"><Download size={14} aria-hidden="true" /></button>
+            <button onClick={(e) => { e.stopPropagation(); onShare?.(item); }} title="Share" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8"><Share2 size={14} aria-hidden="true" /></button>
             <button onClick={(e) => { e.stopPropagation(); onDelete?.(item); }} title="Delete" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">Verwijder</button>
           </div>
         </div>
@@ -139,14 +140,15 @@ export const ContentCard = memo(function ContentCard({
 // FilterChip
 // ============================================================================
 
-export function FilterChip({ active, onClick, label, count }: {
-  active: boolean; onClick: () => void; label: string; count: number;
+export function FilterChip({ active, onClick, label, count, icon }: {
+  active: boolean; onClick: () => void; label: string; count: number; icon?: React.ReactNode;
 }) {
   return (
     <button
       onClick={onClick}
       className={`${styles.filterChip} ${active ? styles.filterChipActive : ''}`}
     >
+      {icon && <span className={styles.chipIcon}>{icon}</span>}
       {label}
       <span className={`${styles.chipCount} ${active ? styles.chipCountActive : ''}`}>
         {count}
@@ -159,7 +161,7 @@ export function FilterChip({ active, onClick, label, count }: {
 // EmptyState
 // ============================================================================
 
-export function EmptyState({ icon, message, sub, action }: { icon: string; message: string; sub: string; action?: React.ReactNode }) {
+export function EmptyState({ icon, message, sub, action }: { icon: React.ReactNode; message: string; sub: string; action?: React.ReactNode }) {
   return (
     <Card className={`text-center ${styles.emptyCard}`}>
       <div className={`mb-8 ${styles.emptyIcon}`}>{icon}</div>

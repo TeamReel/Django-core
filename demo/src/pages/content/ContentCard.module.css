@@ -89,6 +89,12 @@
   color: var(--color-white, var(--app-surface));
 }
 
+.chipIcon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
 /* ============================================================================
  * EmptyState
  * ============================================================================ */

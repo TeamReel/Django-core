@@ -6,6 +6,7 @@
  */
 
 import React, { useRef } from 'react';
+import { Sparkles } from 'lucide-react';
 import { getAssetUrl, type BrandAsset } from '../../hooks/useBrandProfile';
 import s from './AssetsTab.module.css';
 import sc from './AssetSubComponents.module.css';
@@ -153,7 +154,7 @@ export function AssetCard({
                   onClick={() => onReplace(assetType)}
                   className={s.btnPrimary}
                 >
-                  🎨 Genereer
+                  <Sparkles size={14} /> Genereer
                 </button>
                 {onPostProcess && (
                   <button

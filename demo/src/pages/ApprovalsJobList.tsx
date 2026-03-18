@@ -2,8 +2,8 @@
  * Unified job list: AI generation + video processing jobs interleaved by date.
  * Supports swipe-to-approve/reject on reviewable cards (X1).
  */
-import { useMemo, useCallback } from 'react';
-import { Check, X } from 'lucide-react';
+import React, { useMemo, useCallback } from 'react';
+import { Check, X, Clock, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
 import SwipeableCard from '../components/SwipeableCard';
 import { clickableProps } from '@/utils/a11y';
 import {
@@ -23,8 +23,8 @@ type UnifiedItem =
   | { kind: 'ai'; job: GenerationJob; sortDate: number }
   | { kind: 'video'; job: VideoJob; sortDate: number };
 
-const statusIcon: Record<GenJobStatus, string> = {
-  queued: '⏳', waiting: '⏳', processing: '', retrying: '🔄', completed: '✅', failed: '❌', cancelled: '',
+const statusIcon: Record<GenJobStatus, React.ReactNode> = {
+  queued: <Clock size={14} aria-hidden="true" />, waiting: <Clock size={14} aria-hidden="true" />, processing: '', retrying: <RefreshCw size={14} aria-hidden="true" />, completed: <CheckCircle2 size={14} aria-hidden="true" />, failed: <XCircle size={14} aria-hidden="true" />, cancelled: '',
 };
 
 interface ApprovalsJobListProps {
@@ -131,7 +131,7 @@ export function ApprovalsJobList({
                 )}
                 {job.status === 'retrying' && (
                   <div className={`${s.errorInline} ${styles.warningText}`}>
-                    🔄 AI model tijdelijk niet beschikbaar — wordt automatisch opnieuw geprobeerd…
+                    <RefreshCw size={14} aria-hidden="true" /> AI model tijdelijk niet beschikbaar — wordt automatisch opnieuw geprobeerd…
                     {job.error_message && <> ({job.error_message.slice(0, 100)})</>}
                   </div>
                 )}

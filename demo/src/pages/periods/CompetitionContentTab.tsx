@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { CheckCircle2, Square } from 'lucide-react';
 import { Alert, Card } from '@django-core/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
 import { periodPathKey } from '../../utils/periodPath';
 import { CONTENT_TYPES } from '../identity/ContentGenerationModal';
+import { ContentIcon } from '../../components/ContentIcon';
 import styles from './CompetitionContentTab.module.css';
 
 type MatchRecord = Record<string, any>;
@@ -65,7 +67,7 @@ export function CompetitionContentTab({
                   <th className={styles.thDate}>Datum</th>
                   {matchContentTypes.map(ct => (
                     <th key={ct.id} className={styles.thContentType} title={ct.label}>
-                      {ct.icon}
+                      <ContentIcon icon={ct.icon} size={14} />
                     </th>
                   ))}
                   <th className={styles.thScore}>Score</th>
@@ -100,7 +102,7 @@ export function CompetitionContentTab({
                         return (
                           <td key={ct.id} className={styles.tdContentType}>
                             <span title={media ? 'Gereed' : 'Niet gemaakt'} className={styles.statusIcon}>
-                              {media ? '✅' : '⬜'}
+                              {media ? <CheckCircle2 size={16} aria-hidden="true" /> : <Square size={16} aria-hidden="true" />}
                             </span>
                           </td>
                         );
@@ -118,7 +120,7 @@ export function CompetitionContentTab({
               <span>Gereed</span>
               <span>Niet gemaakt</span>
               {matchContentTypes.map(ct => (
-                <span key={ct.id} title={ct.label}>{ct.icon} {ct.label}</span>
+                <span key={ct.id} title={ct.label}><ContentIcon icon={ct.icon} size={14} /> {ct.label}</span>
               ))}
             </div>
           </div>

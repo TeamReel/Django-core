@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Camera, Pencil } from 'lucide-react';
+import { ChevronRight, Camera, Pencil, Check, Minus } from 'lucide-react';
 import { getMediaUrl, countFilledMediaSlots, memberHasMedia } from '../../utils/mediaHelpers';
 import { MEDIA_SLOTS } from '../../constants/mediaSlots';
 import {
@@ -146,7 +146,7 @@ export const MemberCard = memo(function MemberCard({
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />
                     ) : (
-                      <span className={st.expandSlotIcon}>{hasMed ? '✓' : '—'}</span>
+                      <span className={st.expandSlotIcon}>{hasMed ? <Check size={14} /> : <Minus size={14} />}</span>
                     )}
                   </div>
                   <span className={st.expandSlotLabel}>{slot.label}</span>

@@ -135,10 +135,31 @@ export function fmtTime(m: MatchRecord): string {
 }
 
 export function matchDisplayTitle(m: MatchRecord): string {
+  // 1. Explicit name from API
   const name = String(m?.name || '').trim();
   if (name) return name;
-  const home = m?.metadata?.home_team || m?.metadata?.team_home || '';
-  const away = m?.metadata?.away_team || m?.metadata?.team_away || '';
+
+  // 2. Title field (e.g. "Team A vs Team B")
+  const title = String((m as Record<string, unknown>)?.title || '').trim();
+  if (title) return title;
+
+  // 3. Home/away from metadata
+  const meta = (m?.metadata || {}) as Record<string, unknown>;
+  const home = (meta.home_team || meta.team_home || '') as string;
+  const away = (meta.away_team || meta.team_away || '') as string;
   if (home && away) return `${home} — ${away}`;
+
+  // 4. Project names (home project vs opponent project)
+  const proj = (m?.project || {}) as Record<string, unknown>;
+  const oppProj = (m?.opponent_project || {}) as Record<string, unknown>;
+  const homeProject = String(proj.club_name || proj.name || '').trim();
+  const awayProject = String(oppProj.club_name || oppProj.name || '').trim();
+  if (homeProject && awayProject) return `${homeProject} vs ${awayProject}`;
+  if (homeProject) return homeProject;
+
+  // 5. Fallback with date if available
+  const date = m?.start_time ? new Date(m.start_time).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : '';
+  if (date) return `Wedstrijd ${date}`;
+
   return `Wedstrijd ${String(m?.id || '').slice(0, 8)}`;
 }

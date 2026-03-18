@@ -10,6 +10,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Badge } from '@django-core/design-system';
+import { ContentIcon } from '../../../components/ContentIcon';
 import type { ContentTemplate } from '../../identity/ContentGenerationModal';
 import styles from './MatchContentComponents.module.css';
 
@@ -61,7 +62,7 @@ export function Thumbnail({ url, isVideo, icon }: { url: string | null; isVideo:
   if (!url) {
     return (
       <div className={`flex-center rounded-8 ${styles.thumbnailEmpty}`}>
-        {icon || '—'}
+        {icon ? <ContentIcon icon={icon} size={18} /> : '—'}
       </div>
     );
   }

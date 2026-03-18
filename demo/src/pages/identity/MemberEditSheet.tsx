@@ -3,18 +3,18 @@
  * access role + functional roles, inline from the Selectie tab.
  */
 import React, { useEffect, useState } from 'react';
-import { X, Shield, Users, Check, Loader2 } from 'lucide-react';
+import { X, Shield, Users, Check, Loader2, CircleDot, ClipboardList, ShieldHalf, Megaphone } from 'lucide-react';
 import { api } from '@/api';
 import st from './MemberEditSheet.module.css';
 import { logger } from '@/utils/logger';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 /* ── Functional role definitions (must match backend valid choices) ── */
-const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string; emoji: string }> = [
-  { value: 'player',    label: 'Speler',     emoji: '⚽' },
-  { value: 'coach',     label: 'Coach',      emoji: '📋' },
-  { value: 'keeper',    label: 'Keeper',     emoji: '🧤' },
-  { value: 'supporter', label: 'Supporter',  emoji: '📣' },
+const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string; icon: React.ReactNode }> = [
+  { value: 'player',    label: 'Speler',     icon: <CircleDot size={16} /> },
+  { value: 'coach',     label: 'Coach',      icon: <ClipboardList size={16} /> },
+  { value: 'keeper',    label: 'Keeper',     icon: <ShieldHalf size={16} /> },
+  { value: 'supporter', label: 'Supporter',  icon: <Megaphone size={16} /> },
 ];
 
 const ACCESS_ROLES: Array<{ value: string; label: string; desc: string }> = [
@@ -228,7 +228,7 @@ export function MemberEditSheet({
                   style={isActive ? { borderColor: color, background: `${color}18` } : undefined}
                   onClick={() => toggleFunctionalRole(opt.value)}
                 >
-                  <span className={st.roleEmoji}>{opt.emoji}</span>
+                  <span className={st.roleEmoji}>{opt.icon}</span>
                   <span className={st.roleToggleLabel} style={isActive ? { color } : undefined}>
                     {opt.label}
                   </span>

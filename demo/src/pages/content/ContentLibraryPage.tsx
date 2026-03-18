@@ -26,6 +26,7 @@ import {
   type HierarchyTab, type ContentCategory, type ContentItem,
 } from './contentLibraryTypes';
 import { ContentCard, FilterChip, EmptyState, ContentPreviewModal } from './ContentCard';
+import { ContentIcon } from '../../components/ContentIcon';
 import { GalleryCreateContentButton } from './GalleryCreateContentButton';
 import { GalleryMatchTimeline } from './GalleryMatchTimeline';
 import { useContentLibraryData } from './useContentLibraryData';
@@ -306,7 +307,8 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
                       key={st}
                       active={data.subtypeFilter === st}
                       onClick={() => data.setSubtypeFilter(st)}
-                      label={`${filter?.icon || '📄'} ${filter?.label || getAssetTypeLabel(st)}`}
+                      icon={<ContentIcon icon={filter?.icon || 'file'} size={14} />}
+                      label={filter?.label || getAssetTypeLabel(st)}
                       count={data.subtypeCounts[st] || 0}
                     />
                   );
@@ -317,7 +319,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
             {data.categoryFilter === 'all' && (
               <div className={styles.chipsRow}>
                 {CONTENT_TYPE_FILTERS.map(({ key, label, icon }) => (
-                  <FilterChip key={key} active={data.subtypeFilter === key} onClick={() => data.setSubtypeFilter(key)} label={`${icon} ${label}`} count={data.subtypeCounts[key] || 0} />
+                  <FilterChip key={key} active={data.subtypeFilter === key} onClick={() => data.setSubtypeFilter(key)} icon={<ContentIcon icon={icon} size={14} />} label={label} count={data.subtypeCounts[key] || 0} />
                 ))}
               </div>
             )}
@@ -330,7 +332,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
               </div>
             ) : (
               <EmptyState
-                icon="🎬"
+                icon={<ContentIcon icon="film" size={24} />}
                 message={data.contentItems.length > 0 ? 'Geen content gevonden.' : matchId ? 'Nog geen content voor deze wedstrijd.' : 'Selecteer een wedstrijd om content te maken.'}
                 sub={data.contentItems.length > 0 ? 'Pas je filters of zoekopdracht aan.' : matchId ? 'Gebruik de + Create knop hierboven om te beginnen.' : 'Kies eerst een actieve wedstrijd via Matches.'}
                 action={data.contentItems.length === 0 && !matchId ? (

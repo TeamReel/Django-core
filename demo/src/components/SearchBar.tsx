@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Search } from 'lucide-react';
 import { useSearch, useDebounce, type GroupedSearchResults, type SearchResult } from '../hooks/useSearch';
 import { sanitizeHighlight } from '../utils/sanitize';
 import { routes } from '../routes';
@@ -130,8 +131,9 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
         />
         <span
           className={`absolute fs-16 text-secondary ${styles.searchIcon}`}
+          aria-hidden="true"
         >
-          🔍
+          <Search size={16} />
         </span>
       </form>
 

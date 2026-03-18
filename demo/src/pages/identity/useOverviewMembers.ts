@@ -95,7 +95,9 @@ export function useOverviewMembers({
 
         if (cancelled) return;
         setOverviewMembers(sorted.slice(0, 6));
-        setOverviewMembersCount(extractMembersCount(json, normalized));
+        // Use normalized.length (team-filtered count) instead of raw API count
+        // which returns the org-level total (e.g. 2116 instead of 28)
+        setOverviewMembersCount(normalized.length);
       } catch (e) {
         logger.error('Failed to load members', e);
         if (cancelled) return;

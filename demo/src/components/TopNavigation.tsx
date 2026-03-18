@@ -3,6 +3,7 @@ import { ContextSwitcher, useContextSwitcher } from '@django-core/context-switch
 import type { Organisation } from '@django-core/context-switcher';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Bell } from 'lucide-react';
 import { useTheme } from '@django-core/theme-system';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
@@ -152,8 +153,9 @@ export default function TopNavigation() {
             onClick={() => navigate('/notifications')}
             className={styles.notificationButton}
             title="Notifications"
+            aria-label="Notifications"
           >
-            🔔
+            <Bell size={18} />
             {/* Unread badge - only show if count > 0 */}
             {unreadCount > 0 && (
               <span className={styles.unreadBadge}>

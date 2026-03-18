@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { Sparkles, Shirt } from 'lucide-react';
 import { AssetGenerationModal } from '../AssetGenerationModal';
 import { HistoryModal } from './AssetSubComponents';
 import type { AssetsTabData } from './useAssetsTabData';
@@ -67,25 +68,25 @@ export const AiButtonsRow: React.FC<AiButtonsRowProps> = ({ d }) => (
       onClick={() => { d.setAiPreselectedTemplate(undefined); d.setAiInitialParams({}); d.setAiCustomInputs(d.baseAiInputAssets); d.setShowAiModal(true); }}
       className={s.aiGradientBtn}
     >
-      🎨 AI Asset Genereren
+      <Sparkles size={16} /> AI Asset Genereren
     </button>
     <button
       onClick={() => { d.setAiPreselectedTemplate('tenue_generate'); d.setAiInitialParams({ kit_type: 'home' }); d.setAiCustomInputs(d.baseAiInputAssets); d.setShowAiModal(true); }}
       className={s.quickBtn}
     >
-      👕 Tenue
+      <Shirt size={16} /> Tenue
     </button>
     <button
       onClick={() => { d.setAiPreselectedTemplate('keeper_tenue'); d.setAiInitialParams({}); d.setAiCustomInputs(d.baseAiInputAssets); d.setShowAiModal(true); }}
       className={s.quickBtn}
     >
-      🧤 Keeper
+      <Shirt size={16} /> Keeper
     </button>
     <button
       onClick={() => { d.setAiPreselectedTemplate('tracksuit_generate'); d.setAiInitialParams({}); d.setAiCustomInputs(d.baseAiInputAssets); d.setShowAiModal(true); }}
       className={s.quickBtn}
     >
-      🏃 Training
+      <Shirt size={16} /> Training
     </button>
   </div>
 );

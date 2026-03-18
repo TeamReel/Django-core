@@ -5,6 +5,7 @@
  * Extracted during Phase 24 of the frontend refactoring plan.
  */
 import React from 'react';
+import { Zap } from 'lucide-react';
 import { Badge } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
 
@@ -64,7 +65,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
             className={dp.batchBtn}
             onClick={() => setIsBatchModalOpen(true)}
           >
-            ⚡ Batch Actie ({selectedIds.size})
+            <Zap size={14} /> Batch Actie ({selectedIds.size})
           </button>
           <button
             type="button"

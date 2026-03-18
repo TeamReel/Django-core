@@ -9,6 +9,7 @@
  */
 
 import React from 'react';
+import { Zap, CheckCircle2, Lock, Users, Trash2, AlertTriangle } from 'lucide-react';
 import { Badge, Button } from '@django-core/design-system';
 import { getMemberName } from './memberBatchAction.types';
 import type { MemberBatchActionModalProps } from './memberBatchAction.types';
@@ -43,9 +44,9 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                 <div className="flex-between border-bottom py-20 px-24">
                     <div className="flex-row gap-12">
                         <h2 className="m-0 fs-18 fw-600">
-                            {d.step === 'configure' && '⚡ Batch Actie'}
+                            {d.step === 'configure' && <><Zap size={16} /> Batch Actie</>}
                             {d.step === 'running' && 'Bezig...'}
-                            {d.step === 'done' && '✅ Voltooid'}
+                            {d.step === 'done' && <><CheckCircle2 size={16} /> Voltooid</>}
                         </h2>
                         <Badge variant="default">{members.length} member{members.length !== 1 ? 's' : ''}</Badge>
                     </div>
@@ -85,9 +86,9 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                                 disabled={!d.canProceed}
                                 onClick={d.executeBatch}
                             >
-                                {d.selectedAction === 'role' && `🔐 Rol wijzigen (${members.length})`}
-                                {d.selectedAction === 'assign_team' && `👥 Toewijzen (${members.length})`}
-                                {d.selectedAction === 'delete' && `🗑️ Verwijderen (${members.length})`}
+                                {d.selectedAction === 'role' && <><Lock size={14} /> Rol wijzigen ({members.length})</>}
+                                {d.selectedAction === 'assign_team' && <><Users size={14} /> Toewijzen ({members.length})</>}
+                                {d.selectedAction === 'delete' && <><Trash2 size={14} /> Verwijderen ({members.length})</>}
                             </Button>
                         </>
                     )}
@@ -211,7 +212,7 @@ const ConfigureStep: React.FC<{ d: HookData; members: MemberBatchActionModalProp
         {d.selectedAction === 'delete' && (
             <div className={styles.card} data-variant="error">
                     <div className={`gap-10 flex-row ${styles.deleteWarningContent}`}>
-                    <span className="fs-20">⚠️</span>
+                    <span className="fs-20"><AlertTriangle size={20} className="text-error" /></span>
                     <div>
                         <div className="fw-600 fs-14 text-error">
                             Let op: deze actie kan niet ongedaan worden
@@ -261,7 +262,7 @@ const RunningStep: React.FC<{ progress: HookData['progress']; progressPercent: n
 const DoneStep: React.FC<{ progress: HookData['progress']; errors: string[] }> = ({ progress, errors }) => (
     <div>
         <div className="text-center mb-16">
-            <div className={`mb-8 ${styles.doneEmoji}`}>{progress.failed === 0 ? '✅' : '⚠️'}</div>
+            <div className={`mb-8 ${styles.doneEmoji}`}>{progress.failed === 0 ? <CheckCircle2 size={32} className="text-success" /> : <AlertTriangle size={32} className="text-error" />}</div>
             <div className="fs-16 fw-600 mb-4">{progress.failed === 0 ? 'Alle acties voltooid!' : 'Voltooid met fouten'}</div>
             <div className="fs-13 text-muted">
                 {progress.success} geslaagd{progress.failed > 0 ? `, ${progress.failed} mislukt` : ''}

@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { CONTENT_TYPE_CHIPS, type ContentTypeFilter } from '../approvalsTypes';
+import { ContentIcon } from '../../components/ContentIcon';
 import s from '../ApprovalsPage.module.css';
 
 interface ApprovalsContentTypeChipsProps {
@@ -28,7 +29,7 @@ export function ApprovalsContentTypeChips({
             className={`${s.chip} ${isActive ? s.chipActive : ''}`}
             disabled={count === 0 && chip.key !== 'all'}
           >
-            <span>{chip.icon}</span>
+            <span><ContentIcon icon={chip.icon} size={14} /></span>
             <span>{chip.label}</span>
             <span className={s.chipBadge}>{count}</span>
           </button>

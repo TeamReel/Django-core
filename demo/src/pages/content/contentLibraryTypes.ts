@@ -90,30 +90,30 @@ export const SUB_TABS: Record<HierarchyTab, { key: string; label: string }[]> = 
 };
 
 export const CONTENT_TYPE_FILTERS: { key: string; label: string; icon: string }[] = [
-  { key: 'all', label: 'All', icon: '📚' },
-  { key: 'flyer', label: 'Match Flyer', icon: '📣' },
+  { key: 'all', label: 'All', icon: 'book-open' },
+  { key: 'flyer', label: 'Match Flyer', icon: 'megaphone' },
   { key: 'lineup', label: 'Lineup', icon: 'clipboard-list' },
-  { key: 'walkon', label: 'Walk-on', icon: '🚶' },
-  { key: 'anthem', label: 'Anthem', icon: '🎵' },
-  { key: 'goal', label: 'Goal Celebration', icon: '⚽' },
-  { key: 'score_update', label: 'Score Update', icon: '🔢' },
-  { key: 'end_score', label: 'Final Score', icon: '🏁' },
-  { key: 'match_summary', label: 'Match Summary', icon: '📊' },
-  { key: 'highlights', label: 'Highlights', icon: '🎬' },
+  { key: 'walkon', label: 'Walk-on', icon: 'footprints' },
+  { key: 'anthem', label: 'Anthem', icon: 'music' },
+  { key: 'goal', label: 'Goal Celebration', icon: 'circle-dot' },
+  { key: 'score_update', label: 'Score Update', icon: 'hash' },
+  { key: 'end_score', label: 'Final Score', icon: 'flag' },
+  { key: 'match_summary', label: 'Match Summary', icon: 'bar-chart' },
+  { key: 'highlights', label: 'Highlights', icon: 'film' },
   { key: 'transformation', label: 'Transformation', icon: 'refresh-cw' },
-  { key: 'season_recap', label: 'Season Recap', icon: '📅' },
-  { key: 'member_intro', label: 'Member Intro', icon: '👋' },
-  { key: 'member_goal_celebration', label: 'Member Goal', icon: '⚽' },
-  { key: 'member_in_tenue', label: 'In Tenue', icon: '👕' },
+  { key: 'season_recap', label: 'Season Recap', icon: 'calendar' },
+  { key: 'member_intro', label: 'Member Intro', icon: 'hand' },
+  { key: 'member_goal_celebration', label: 'Member Goal', icon: 'circle-dot' },
+  { key: 'member_in_tenue', label: 'In Tenue', icon: 'shirt' },
 ];
 
 export const CONTENT_CATEGORIES: { key: ContentCategory; label: string; icon: string; subtypes: string[] }[] = [
-  { key: 'all', label: 'Alles', icon: '📚', subtypes: [] },
-  { key: 'pre_match', label: 'Pre-Match', icon: '📋', subtypes: ['flyer', 'lineup', 'walkon', 'anthem'] },
-  { key: 'during_match', label: 'During Match', icon: '⚡', subtypes: ['goal', 'score_update'] },
-  { key: 'post_match', label: 'Post-Match', icon: '📊', subtypes: ['end_score', 'match_summary', 'highlights'] },
-  { key: 'season', label: 'Season', icon: '📅', subtypes: ['transformation', 'season_recap'] },
-  { key: 'member', label: 'Member', icon: '👤', subtypes: ['member_intro', 'member_goal_celebration', 'member_in_tenue'] },
+  { key: 'all', label: 'Alles', icon: 'book-open', subtypes: [] },
+  { key: 'pre_match', label: 'Pre-Match', icon: 'clipboard-list', subtypes: ['flyer', 'lineup', 'walkon', 'anthem'] },
+  { key: 'during_match', label: 'During Match', icon: 'zap', subtypes: ['goal', 'score_update'] },
+  { key: 'post_match', label: 'Post-Match', icon: 'bar-chart', subtypes: ['end_score', 'match_summary', 'highlights'] },
+  { key: 'season', label: 'Season', icon: 'calendar', subtypes: ['transformation', 'season_recap'] },
+  { key: 'member', label: 'Member', icon: 'user', subtypes: ['member_intro', 'member_goal_celebration', 'member_in_tenue'] },
 ];
 
 export const LEVEL_LABELS: Record<HierarchyTab, string> = {
@@ -158,5 +158,5 @@ export function getAssetTypeIcon(assetType: string): string {
     ...CONTENT_TYPES.member.items,
   ];
   const found = allItems.find(item => item.subtype === assetType);
-  return found?.icon || '📄';
+  return found?.icon || 'file';
 }

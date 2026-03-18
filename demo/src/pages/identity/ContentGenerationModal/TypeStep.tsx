@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { CONTENT_TYPES } from './constants';
+import { ContentIcon } from '../../../components/ContentIcon';
 import styles from './TypeStep.module.css';
 
 interface TypeStepProps {
@@ -24,7 +25,7 @@ export default function TypeStep({ onSelectType }: TypeStepProps) {
                 onClick={() => onSelectType(typeKey, item.subtype, item.label)}
                 className={styles.typeCard}
               >
-                <div className={styles.typeIcon}>{item.icon}</div>
+                <div className={styles.typeIcon}><ContentIcon icon={item.icon} size={20} /></div>
                 <div className={styles.typeLabel}>{item.label}</div>
               </div>
             ))}

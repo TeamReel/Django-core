@@ -184,7 +184,7 @@ export default function MatchContentTab({
                     <ContentRow
                       key={`goal-new`}
                       label={allGoalMedia.length > 0 ? '+ Nieuw doelpunt' : item.label}
-                      icon={allGoalMedia.length > 0 ? '➕' : item.icon}
+                      icon={allGoalMedia.length > 0 ? 'plus' : item.icon}
                       mediaUrl={null}
                       isVideo={false}
                       hasMedia={false}
