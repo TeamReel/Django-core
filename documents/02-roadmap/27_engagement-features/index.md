@@ -1,8 +1,8 @@
 # Roadmap #27 — Engagement Features (Premium App)
 
-> **Status:** 🚧 Gepland
-> **Start:** —
-> **Scope:** `demo/src/pages/activities/match-detail/`, `demo/src/components/dashboard/`, `demo/src/components/ShareButton*`, `demo/src/hooks/`
+> **Status:** ✅ Afgerond
+> **Start:** 2026-03-18
+> **Scope:** `demo/src/pages/activities/match-detail/`, `demo/src/components/dashboard/`, `demo/src/components/ContentShareSheet/`, `demo/src/hooks/`, `demo/src/utils/`
 
 ## Doel
 
