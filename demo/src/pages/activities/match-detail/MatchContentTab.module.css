@@ -20,3 +20,117 @@
   border: 1px solid var(--app-border, var(--app-text));
   background: var(--app-surface, var(--color-neutral-900));
 }
+
+/* ── Generate All bar ──────────────────────────────────────────────── */
+
+.generateAllBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--app-surface, var(--color-neutral-900));
+  border: 1px solid var(--app-border);
+}
+
+.generateAllBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--app-primary);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  transition: opacity var(--duration-normal) var(--ease-default);
+}
+
+.generateAllBtn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.generateAllBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.generateAllBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pendingBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.25);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.generateAllProgress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 0;
+}
+
+.progressTrack {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--app-border);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--app-success);
+  transition: width var(--duration-normal) var(--ease-default);
+}
+
+.cancelBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--app-muted-text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 44px;
+  transition: color var(--duration-fast) var(--ease-default),
+              border-color var(--duration-fast) var(--ease-default);
+}
+
+.cancelBtn:hover {
+  color: var(--app-error);
+  border-color: var(--app-error);
+}
+
+.cancelBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .generateAllBtn,
+  .cancelBtn,
+  .progressFill {
+    transition: none;
+  }
+}

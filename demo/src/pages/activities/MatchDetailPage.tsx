@@ -295,6 +295,7 @@ export default function HierarchyMatchDetailPage() {
               competition={d.competition}
               templatesLoading={d.templatesLoading}
               matchMediaLoading={d.matchMediaLoading}
+              isContentModalOpen={d.isContentModalOpen}
               availableTemplates={d.availableTemplates}
               getLatestMediaForSubtype={d.getLatestMediaForSubtype}
               getMediaHistoryForSubtype={d.getMediaHistoryForSubtype}

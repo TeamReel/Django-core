@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { Wand2, X } from 'lucide-react';
 import { getAssetUrl } from '@/hooks/useBrandProfile';
 import {
   CONTENT_TYPES,
@@ -15,12 +16,18 @@ import type {
 import { ContentRow, getSyntheticTemplate } from './MatchContentComponents';
 import styles from './MatchContentTab.module.css';
 
+interface QueueItem {
+  subtype: string;
+  label: string;
+}
+
 interface MatchContentTabProps {
   match: MatchDetail;
   org: Organisation | null;
   competition: Period | null;
   templatesLoading: boolean;
   matchMediaLoading: boolean;
+  isContentModalOpen: boolean;
   availableTemplates: Record<string, ContentTemplate[]>;
   getLatestMediaForSubtype: (subtype: string) => MatchMediaItem | null;
   getMediaHistoryForSubtype: (subtype: string) => MatchMediaItem[];
@@ -37,6 +44,7 @@ export default function MatchContentTab({
   competition,
   templatesLoading,
   matchMediaLoading,
+  isContentModalOpen,
   availableTemplates,
   getLatestMediaForSubtype,
   getMediaHistoryForSubtype,
@@ -46,6 +54,13 @@ export default function MatchContentTab({
   handleDeleteMediaItem,
   handleRestoreMediaItem,
 }: MatchContentTabProps) {
+
+  // ── Generate-All queue ──────────────────────────────────────────────
+  const [generateAllActive, setGenerateAllActive] = useState(false);
+  const [generateAllTotal, setGenerateAllTotal] = useState(0);
+  const [generateAllDone, setGenerateAllDone] = useState(0);
+  const generateAllQueueRef = useRef<QueueItem[]>([]);
+  const prevModalOpenRef = useRef(false);
 
   /** Resolve the best matching template for a given subtype */
   const resolveTemplate = (subtype: string): ContentTemplate | undefined => {
@@ -90,6 +105,68 @@ export default function MatchContentTab({
     }
   };
 
+  // ── Generate-All helpers ────────────────────────────────────────────
+
+  /** Build list of subtypes that still need content */
+  const pendingItems = useMemo<QueueItem[]>(() => {
+    const items: QueueItem[] = [];
+    for (const categoryKey of ['pre_match', 'during_match', 'post_match'] as const) {
+      const category = CONTENT_TYPES[categoryKey];
+      if (!category) continue;
+      for (const item of category.items) {
+        if (!item.enabled) continue;
+        if (item.subtype === 'goal') continue; // goal is per-instance, skip in batch
+        if (getLatestMediaForSubtype(item.subtype)) continue; // already has media
+        const existing = getContentItemForSubtype(item.subtype);
+        if (existing && ['queued', 'generating'].includes(existing.status)) continue;
+        const hasTemplate = !!resolveTemplate(item.subtype);
+        const templateNotRequired = ['match_intro', 'goal', 'poster', 'lineup_flyer'].includes(item.subtype);
+        if (!hasTemplate && !templateNotRequired) continue;
+        items.push({ subtype: item.subtype, label: item.label });
+      }
+    }
+    return items;
+  }, [availableTemplates, match, getLatestMediaForSubtype, getContentItemForSubtype]);
+
+  /** Stable ref for opening the next queue item (avoids stale closures) */
+  const openNextRef = useRef<() => void>(() => {});
+  openNextRef.current = () => {
+    const next = generateAllQueueRef.current.shift();
+    if (next) {
+      handleGenerate(next.subtype, next.label);
+    } else {
+      setGenerateAllActive(false);
+    }
+  };
+
+  /** Watch modal close → auto-open next queued item */
+  useEffect(() => {
+    const wasOpen = prevModalOpenRef.current;
+    prevModalOpenRef.current = isContentModalOpen;
+    if (wasOpen && !isContentModalOpen && generateAllActive) {
+      setGenerateAllDone(prev => prev + 1);
+      // Small delay to let modal close animation finish
+      const timer = setTimeout(() => openNextRef.current(), 250);
+      return () => clearTimeout(timer);
+    }
+  }, [isContentModalOpen, generateAllActive]);
+
+  /** Start batch generation */
+  const handleGenerateAll = () => {
+    if (pendingItems.length === 0) return;
+    generateAllQueueRef.current = pendingItems.slice(1);
+    setGenerateAllTotal(pendingItems.length);
+    setGenerateAllDone(0);
+    setGenerateAllActive(true);
+    handleGenerate(pendingItems[0].subtype, pendingItems[0].label);
+  };
+
+  /** Cancel batch generation */
+  const handleCancelGenerateAll = () => {
+    generateAllQueueRef.current = [];
+    setGenerateAllActive(false);
+  };
+
   if (matchMediaLoading) {
     return (
       <div className={`text-center text-muted ${styles.loadingContainer}`}>
@@ -101,6 +178,51 @@ export default function MatchContentTab({
 
   return (
     <div className="flex-col gap-16">
+
+      {/* ── Generate All bar ───────────────────────────────────── */}
+      {!matchMediaLoading && (
+        <div className={styles.generateAllBar}>
+          {generateAllActive ? (
+            <>
+              <div className={styles.generateAllProgress}>
+                <span className="fs-13 fw-600">
+                  {generateAllDone} van {generateAllTotal} items
+                </span>
+                <div className={styles.progressTrack}>
+                  <div
+                    className={styles.progressFill}
+                    style={{ width: `${generateAllTotal > 0 ? (generateAllDone / generateAllTotal) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+              <button
+                type="button"
+                className={styles.cancelBtn}
+                onClick={handleCancelGenerateAll}
+                aria-label="Annuleer batch generatie"
+              >
+                <X size={16} />
+                <span className="hide-mobile">Annuleer</span>
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className={styles.generateAllBtn}
+              onClick={handleGenerateAll}
+              disabled={pendingItems.length === 0}
+              aria-label={`Genereer alle ${pendingItems.length} ontbrekende items`}
+            >
+              <Wand2 size={16} />
+              Genereer alles
+              {pendingItems.length > 0 && (
+                <span className={styles.pendingBadge}>{pendingItems.length}</span>
+              )}
+            </button>
+          )}
+        </div>
+      )}
+
       {(['pre_match', 'during_match', 'post_match'] as const).map((categoryKey) => {
         const category = CONTENT_TYPES[categoryKey];
         if (!category) return null;

@@ -102,6 +102,7 @@ export const ContentSheet: React.FC<ContentSheetProps> = ({
               competition={competition ?? null}
               templatesLoading={content.templatesLoading}
               matchMediaLoading={content.matchMediaLoading}
+              isContentModalOpen={content.contentModalOpen}
               availableTemplates={content.availableTemplates}
               getLatestMediaForSubtype={content.getLatestMediaForSubtype}
               getMediaHistoryForSubtype={content.getMediaHistoryForSubtype}
