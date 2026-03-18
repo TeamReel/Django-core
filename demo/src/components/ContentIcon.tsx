@@ -39,6 +39,10 @@ import {
   Clock,
   Plus,
   FileText,
+  Ban,
+  Clapperboard,
+  Palette,
+  Package,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -74,10 +78,15 @@ const ICON_MAP: Record<string, LucideIcon> = {
   bell: Bell,
   'alert-triangle': AlertTriangle,
   'check-circle': CheckCircle2,
+  'check-circle-2': CheckCircle2,
   'x-circle': XCircle,
   clock: Clock,
   plus: Plus,
   file: FileText,
+  ban: Ban,
+  clapperboard: Clapperboard,
+  palette: Palette,
+  package: Package,
 };
 
 interface ContentIconProps {

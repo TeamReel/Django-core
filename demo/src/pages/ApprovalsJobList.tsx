@@ -4,6 +4,7 @@
  */
 import React, { useMemo, useCallback } from 'react';
 import { Check, X, Clock, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
+import { ContentIcon } from '../components/ContentIcon';
 import SwipeableCard from '../components/SwipeableCard';
 import { clickableProps } from '@/utils/a11y';
 import {
@@ -219,7 +220,7 @@ export function ApprovalsJobList({
             >
               <div className="flex-between">
                 <div className="flex-row gap-8">
-                  <span className="fs-18">{typeDisplay.icon}</span>
+                  <ContentIcon icon={typeDisplay.icon} size={18} />
                   <span className="fw-600 fs-13 text-primary">{typeDisplay.label}</span>
                   <span className={s.jobShortId}>{vJob.id.slice(0, 8)}</span>
                 </div>
@@ -231,7 +232,7 @@ export function ApprovalsJobList({
                     className={`${styles.videoStatusBadge} fw-700 rounded-full uppercase`}
                     data-status={vJob.status}
                   >
-                    {statusDisplay.icon} {statusDisplay.label}
+                    <ContentIcon icon={statusDisplay.icon} size={14} /> {statusDisplay.label}
                   </span>
                 </div>
               </div>
