@@ -7,14 +7,13 @@
  * as a modal bottom sheet. The other 4 tabs navigate to core destinations.
  * Active tab shows a filled pill background in the theme primary color.
  *
- * My Team resolves to the user's active team/season via context API,
+ * My Team resolves to the user's active team/season via useAppSelection(),
  * falling back to /directory?tab=clubs when no team is selected.
  * Only visible on mobile (<640px).
  */
-import { memo, useState, useEffect, useCallback } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, CalendarDays, Plus, Images, UserCircle } from 'lucide-react';
-import { getActiveContext, ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { useHapticFeedback } from '../hooks/useHapticFeedback';
 import { useCreateContext } from '../hooks/useCreateContext';
@@ -28,30 +27,13 @@ const MobileBottomNav = memo(function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const haptic = useHapticFeedback();
-  const { orgSlug, clubSlugOrId, teamSlugOrId } = useAppSelection();
+  const { orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId } = useAppSelection();
   const { prefill: createPrefill } = useCreateContext();
 
-  const [activeSeasonSlug, setActiveSeasonSlug] = useState<string | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardMatchId, setWizardMatchId] = useState<string | undefined>(undefined);
   const [wizardAutoFlow, setWizardAutoFlow] = useState<CreateFlowType | undefined>(undefined);
   const [wizardSubtype, setWizardSubtype] = useState<string | undefined>(undefined);
-
-  const fetchContext = useCallback(async () => {
-    try {
-      const ctx = await getActiveContext();
-      setActiveSeasonSlug(ctx?.season?.slug || ctx?.season?.id || null);
-    } catch {
-      setActiveSeasonSlug(null);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchContext();
-    const handler = () => fetchContext();
-    window.addEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, handler);
-    return () => window.removeEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, handler);
-  }, [fetchContext]);
 
   // Preload chunks for the 4 fixed bottom tabs on idle
   useEffect(() => {
@@ -89,8 +71,8 @@ const MobileBottomNav = memo(function MobileBottomNav() {
       : routes.dashboard();
 
   // Season tab: active season under the current team, or fallback to directory
-  const seasonPath = activeSeasonSlug && teamPath !== routes.dashboard()
-    ? `${teamPath}/${encodeURIComponent(activeSeasonSlug)}`
+  const seasonPath = seasonSlugOrId && teamPath !== routes.dashboard()
+    ? `${teamPath}/${encodeURIComponent(seasonSlugOrId)}`
     : teamPath !== routes.dashboard()
       ? teamPath
       : '/directory?tab=clubs';
