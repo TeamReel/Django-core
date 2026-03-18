@@ -12,6 +12,7 @@ export {
 export { RecentContentCard } from './RecentContentCard';
 export { ContentProgressCard } from './ContentProgressCard';
 export { ContentPipelineCard } from './ContentPipelineCard';
+export { ContentStreakWidget } from './ContentStreakWidget';
 export { NextStepCard } from './NextStepCard';
 export { SeasonProgressCard } from './SeasonProgressCard';
 export { TeamReadinessCard } from './TeamReadinessCard';

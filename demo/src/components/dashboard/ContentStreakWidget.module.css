@@ -1,0 +1,165 @@
+/* ContentStreakWidget — CSS Module */
+
+.widget {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  min-height: 56px;
+}
+
+.compact {
+  padding: var(--space-2) var(--space-3);
+  min-height: 44px;
+}
+
+/* ── Flame icon ─────────────────────────────────────── */
+
+.flameWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--app-surface-2);
+}
+
+.compact .flameWrap {
+  width: 32px;
+  height: 32px;
+}
+
+.flameIcon {
+  color: var(--app-warning);
+}
+
+.flameInactive {
+  color: var(--app-muted-text);
+  opacity: 0.5;
+}
+
+.warningIcon {
+  color: var(--app-error);
+}
+
+/* ── Content ────────────────────────────────────────── */
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.label {
+  color: var(--app-text);
+  font-size: 0.875rem;
+  line-height: 1.3;
+}
+
+.sublabel {
+  color: var(--app-muted-text);
+  line-height: 1.3;
+}
+
+.streakCount {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Action button ──────────────────────────────────── */
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--app-muted-text);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-default);
+}
+
+.actionBtn:hover {
+  color: var(--app-text);
+}
+
+.actionBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ── At-risk state (pulsing border) ─────────────────── */
+
+.atRisk {
+  border-color: var(--app-error);
+  animation: pulseRisk 2s ease-in-out infinite;
+}
+
+.atRisk .label {
+  color: var(--app-error);
+}
+
+@keyframes pulseRisk {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+/* ── Milestone tiers ────────────────────────────────── */
+
+.milestoneBronze .flameWrap {
+  background: color-mix(in srgb, var(--app-warning) 15%, transparent);
+}
+
+.milestoneSilver .flameWrap {
+  background: color-mix(in srgb, var(--app-warning) 22%, transparent);
+}
+
+.milestoneGold .flameWrap {
+  background: color-mix(in srgb, var(--app-warning) 30%, transparent);
+}
+
+.milestoneGold .flameIcon {
+  filter: drop-shadow(0 0 4px var(--app-warning));
+}
+
+/* ── Loading state ──────────────────────────────────── */
+
+.loading {
+  min-height: 56px;
+}
+
+.loadingSkeleton {
+  height: 16px;
+  width: 60%;
+  border-radius: var(--radius-sm);
+  background: var(--app-surface-2);
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* ── Reduced motion ─────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .atRisk,
+  .loadingSkeleton {
+    animation: none;
+  }
+
+  .actionBtn {
+    transition: none;
+  }
+}

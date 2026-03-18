@@ -13,6 +13,7 @@ import {
   OrgStatsCard,
   ContentProgressCard,
   ContentPipelineCard,
+  ContentStreakWidget,
   NextStepCard,
   SeasonProgressCard,
   MediaReadinessCard,
@@ -22,6 +23,7 @@ import { useUserRole } from '../components/PermissionGuards';
 import { useCreditBalance } from '../hooks/useCreditBalance';
 import { usePreloadRoutes } from '../hooks/usePreloadRoutes';
 import { useClosestMatch } from '../hooks/useClosestMatch';
+import { useContentStreak } from '../hooks/useContentStreak';
 import { useMatchDayMode } from '../hooks/useMatchDayMode';
 import { CONTENT_TYPES } from './identity/ContentGenerationModal';
 import styles from './DashboardPage.module.css';
@@ -59,6 +61,12 @@ export default function DashboardPage() {
     activeMatch,
     matchData?.contentDoneSubtypes ?? [],
     totalContentItems,
+  );
+
+  // ── Content streak ──
+  const { data: streakData, isLoading: streakLoading } = useContentStreak(
+    project?.id,
+    activeMatch?.id,
   );
 
   // ── Role tiers ──
@@ -129,6 +137,16 @@ export default function DashboardPage() {
           {/* 0. Active Match — always at the top */}
           {matchDay.isMatchDay && <div className={styles.matchDayActiveMatch}><ActiveMatchCard /></div>}
           {!matchDay.isMatchDay && <ActiveMatchCard />}
+
+          {/* 0b. Content Streak — only when ≥2 past matches */}
+          {streakData && (
+            <ContentStreakWidget
+              streak={streakData}
+              hasHistory={streakData.totalMatchesChecked >= 2}
+              loading={streakLoading}
+              onAction={activeMatch ? () => navigate(`/matches/${activeMatch.id}?tab=content`) : undefined}
+            />
+          )}
 
           {/* 1. Next step suggestion — context-aware guidance */}
           <NextStepCard />

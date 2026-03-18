@@ -27,6 +27,8 @@ import { useTeamDetailData } from './useTeamDetailData';
 import { useTeamTabData } from './useTeamTabData';
 import { useSeasonDetailPageData } from '../periods/useSeasonDetailPageData';
 import SeasonDetailModals from '../periods/SeasonDetailModals';
+import { ContentStreakWidget } from '../../components/dashboard/ContentStreakWidget';
+import { useContentStreak } from '../../hooks/useContentStreak';
 
 // ── Tab components (reuse existing) ──
 import SeasonOverviewTab from '../periods/SeasonOverviewTab';
@@ -63,6 +65,10 @@ export const MyTeamHubPage: React.FC = () => {
   // ── Season-level data (via SeasonProvider) ──
   const seasonCtx = useSeasonContext();
   const d = useSeasonDetailPageData();
+
+  // ── Content streak ──
+  const projectId = d.project?.id != null ? String(d.project.id) : undefined;
+  const { data: streakData, isLoading: streakLoading } = useContentStreak(projectId);
 
   // ── Unified RBAC ──
   const { isPlayer, isSupporter } = d;
@@ -347,7 +353,16 @@ export const MyTeamHubPage: React.FC = () => {
 
           {/* Overview — merged team + season overview */}
           {activeTab === 'overview' && (
-            <SeasonOverviewTab
+            <>
+              {streakData && (
+                <ContentStreakWidget
+                  streak={streakData}
+                  hasHistory={streakData.totalMatchesChecked >= 2}
+                  loading={streakLoading}
+                  compact
+                />
+              )}
+              <SeasonOverviewTab
               season={d.season}
               competitions={d.competitions}
               members={d.members}
@@ -363,6 +378,7 @@ export const MyTeamHubPage: React.FC = () => {
               brandSponsorUrl={d.brandSponsorUrl}
               batchBrandKits={d.batchBrandKits}
             />
+            </>
           )}
 
           {/* Wedstrijden — season matches */}
