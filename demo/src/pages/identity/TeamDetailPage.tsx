@@ -5,6 +5,10 @@ import TeamOrganisationDetailPage from './TeamOrganisationDetailPage';
 import { organisationsApi, projectsApi } from '@/api';
 import { unwrapEnvelope } from '../../utils/apiEnvelope';
 import { usePreloadRoutes } from '../../hooks/usePreloadRoutes';
+import { getApiV1BaseUrl } from '../../utils/apiFetch';
+import { fetchAllPages } from '../../utils/fetchAllPages';
+import { isSeasonPeriod } from '../../providers/seasonProviderHelpers';
+import { periodPathKey } from '../../utils/periodPath';
 
 type Project = {
   id: string;
@@ -90,6 +94,73 @@ export default function TeamDetailPage() {
     );
   }
 
-  // Wrapper so Club vs Team detail can diverge safely over time.
+  // Auto-redirect to season Hub when the team has seasons
+  return (
+    <TeamSeasonRedirect
+      orgSlug={orgSlugOrId}
+      clubSlug={canonicalClub}
+      teamSlug={teamSlugOrId}
+    />
+  );
+}
+
+// ── Season auto-redirect ─────────────────────────────────────────────────────
+// Fetches the team's seasons. If found, redirects to the Hub at the
+// active season route. Otherwise, renders TeamOrganisationDetailPage.
+
+function TeamSeasonRedirect({
+  orgSlug,
+  clubSlug,
+  teamSlug,
+}: {
+  orgSlug: string;
+  clubSlug: string;
+  teamSlug: string;
+}) {
+  const location = useLocation();
+  const [seasonRedirect, setSeasonRedirect] = useState<string | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      try {
+        // 1. Resolve the team project to get its UUID
+        const team = await organisationsApi.getProject(orgSlug, teamSlug);
+        const teamId = String(team?.id || '').trim();
+        if (!teamId || cancelled) { setChecked(true); return; }
+
+        // 2. Fetch root periods (seasons) for this team
+        const apiV1 = getApiV1BaseUrl();
+        const periodsUrl = `${apiV1}/periods/?project_id=${encodeURIComponent(teamId)}&parent_id=null&page_size=50`;
+        const periods = await fetchAllPages<Record<string, unknown>>(
+          periodsUrl,
+          { credentials: 'include' },
+          { ttlMs: 60_000, cacheKey: `periods:root:${teamId}` },
+        );
+
+        const seasons = periods.filter(isSeasonPeriod);
+        if (!cancelled && seasons.length > 0) {
+          // Pick the most recently created season (last = newest)
+          const active = seasons[0];
+          const slug = periodPathKey(active as { name?: string; slug?: string; id?: string | number })
+            || String((active as { id?: string }).id || '');
+          if (slug) {
+            setSeasonRedirect(`/${orgSlug}/${clubSlug}/${teamSlug}/${encodeURIComponent(slug)}${location.search || ''}`);
+          }
+        }
+      } catch {
+        // If season check fails, just stay on team page
+      }
+      if (!cancelled) setChecked(true);
+    };
+
+    run();
+    return () => { cancelled = true; };
+  }, [orgSlug, clubSlug, teamSlug, location.search]);
+
+  if (seasonRedirect) return <Navigate to={seasonRedirect} replace />;
+  if (!checked) return null; // brief blank while checking
   return <TeamOrganisationDetailPage />;
 }

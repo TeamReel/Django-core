@@ -1,5 +1,5 @@
 import React from 'react';
-import ProjectSeasonDetailPage from '../periods/ProjectSeasonDetailPage';
+import { MyTeamHubPage } from './MyTeamHubPage';
 import { SeasonProvider } from '../../providers/SeasonProvider';
 import { usePreloadRoutes } from '../../hooks/usePreloadRoutes';
 
@@ -12,7 +12,7 @@ export default function SeasonDetailPage() {
 
   return (
     <SeasonProvider>
-      <ProjectSeasonDetailPage />
+      <MyTeamHubPage />
     </SeasonProvider>
   );
 }
