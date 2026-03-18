@@ -12,7 +12,7 @@
  *   Admin    → Overview, Wedstrijden, Media, Selectie, Beheer (5)
  */
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert } from '@django-core/design-system';
 import {
   Pencil, Check, MoreHorizontal, Eye, Trash2,
@@ -74,15 +74,22 @@ export const MyTeamHubPage: React.FC = () => {
   });
 
   // ── Active tab (RBAC-gated) ──
+  const [searchParams] = useSearchParams();
   const activeTab = useMemo(() => {
-    const params = new URLSearchParams(window.location.search);
-    const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
+    const raw = String(searchParams.get('tab') || 'overview').trim().toLowerCase();
 
-    // Tab aliasing for backward compatibility
-    const aliased =
-      raw === 'content' ? 'media'
-        : (raw === 'competitions' || raw === 'assets') ? 'beheer'
-          : raw;
+    // Tab aliasing — maps Panel B / legacy tab names to Hub tabs
+    const ALIAS_MAP: Record<string, string> = {
+      content: 'media',
+      competitions: 'beheer',
+      assets: 'beheer',
+      transactions: 'beheer',
+      workflow: 'beheer',
+      matches: 'wedstrijden',
+      squad: 'selectie',
+      team: 'selectie',
+    };
+    const aliased = ALIAS_MAP[raw] ?? raw;
 
     const allowed = isSupporter
       ? new Set(['overview', 'wedstrijden'])
@@ -90,7 +97,7 @@ export const MyTeamHubPage: React.FC = () => {
         ? new Set(['overview', 'wedstrijden', 'media', 'selectie'])
         : new Set(['overview', 'wedstrijden', 'media', 'selectie', 'beheer']);
     return allowed.has(aliased) ? aliased : 'overview';
-  }, [isPlayer, isSupporter]);
+  }, [searchParams, isPlayer, isSupporter]);
 
   // ── Tab navigation ──
   const navigateToTab = useCallback(
@@ -183,7 +190,7 @@ export const MyTeamHubPage: React.FC = () => {
         {/* ── Header ── */}
         <div className={s.headerRow}>
           <div className={s.titleBlock}>
-            <Link to={team.backToClubHref} className={s.parentLink}>
+            <Link to={team.backToClubHref.split('?')[0]} className={s.parentLink}>
               ‹ {team.club?.name || 'Club'}
             </Link>
             <div className={s.titleRow}>

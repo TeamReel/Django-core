@@ -1,6 +1,10 @@
 /* ── Inline pills variant (default) ────────────────────── */
 
 .inlineWrap {
+  /* Override global .mobile-tab-bar { display: none } so inline pills
+     are visible on ALL viewports, not just mobile (<640px). */
+  display: flex;
+  flex-direction: column;
   position: relative;
   margin-bottom: var(--space-2);
   padding: 0 var(--space-4);
