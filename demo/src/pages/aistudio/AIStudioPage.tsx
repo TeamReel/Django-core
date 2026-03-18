@@ -20,6 +20,7 @@ import type { ContentItem } from '../content/contentLibraryTypes';
 import { StudioContentCard, StudioPreviewModal, ViewAllSheet, type ViewAllData, type ViewMode } from './StudioCards';
 import { StudioSection } from './StudioSection';
 import { VideoJobCard, ActiveJobsStrip } from './StudioJobComponents';
+import { ContentShareSheet } from '../../components/ContentShareSheet';
 import styles from './AIStudioPage.module.css';
 
 // ============================================================================
@@ -41,6 +42,7 @@ export default function AIStudioPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('type');
   const [previewItem, setPreviewItem] = useState<ContentItem | null>(null);
   const [viewAllData, setViewAllData] = useState<ViewAllData | null>(null);
+  const [shareData, setShareData] = useState<{ url: string; title: string; contentType: 'image' | 'video' } | null>(null);
 
   const handleRefresh = useCallback(async () => {
     await data.refresh();
@@ -282,8 +284,24 @@ export default function AIStudioPage() {
 
       {/* ── Preview modal ── */}
       {previewItem && (
-        <StudioPreviewModal item={previewItem} onClose={() => setPreviewItem(null)} />
+        <StudioPreviewModal
+          item={previewItem}
+          onClose={() => setPreviewItem(null)}
+          onShare={(url, title, contentType) => {
+            setPreviewItem(null);
+            setShareData({ url, title, contentType });
+          }}
+        />
       )}
+
+      {/* ── Content share sheet (page-level to avoid z-index conflicts) ── */}
+      <ContentShareSheet
+        isOpen={!!shareData}
+        onClose={() => setShareData(null)}
+        contentUrl={shareData?.url ?? ''}
+        contentTitle={shareData?.title ?? ''}
+        contentType={shareData?.contentType ?? 'image'}
+      />
 
       {/* ── View all bottom sheet ── */}
       <ViewAllSheet

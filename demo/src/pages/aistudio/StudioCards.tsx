@@ -8,7 +8,7 @@ import { Play, Download, Share2, X } from 'lucide-react';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { getAssetTypeLabel } from '../content/contentLibraryTypes';
 import type { ContentItem } from '../content/contentLibraryTypes';
-import { ContentShareSheet } from '../../components/ContentShareSheet';
+import { downloadFile } from '../../utils/downloadFile';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import styles from './AIStudioPage.module.css';
 
@@ -82,9 +82,11 @@ export function StudioContentCard({
 export function StudioPreviewModal({
   item,
   onClose,
+  onShare,
 }: {
   item: ContentItem;
   onClose: () => void;
+  onShare?: (url: string, title: string, contentType: 'image' | 'video') => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   useEscapeKey(onClose);
@@ -98,18 +100,21 @@ export function StudioPreviewModal({
   const opponent = (item.extraction_metadata?.opponent as string) || '';
   const activityTitle = (item.extraction_metadata?.activity_title as string) || '';
 
-  const handleDownload = () => {
+  const [downloading, setDownloading] = useState(false);
+  const handleDownload = async () => {
     if (!url) return;
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = item.title || 'download';
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    setDownloading(true);
+    try {
+      const ext = isVideo ? 'mp4' : 'jpg';
+      const filename = `${(item.title || 'download').replace(/\s+/g, '_')}.${ext}`;
+      await downloadFile(url, filename);
+    } catch {
+      // Fallback: open in new tab
+      window.open(url, '_blank');
+    } finally {
+      setDownloading(false);
+    }
   };
-
-  const [shareSheetOpen, setShareSheetOpen] = useState(false);
 
   return (
     <div className={styles.previewOverlay} onClick={onClose} role="presentation">
@@ -154,23 +159,15 @@ export function StudioPreviewModal({
 
         {/* Actions */}
         <div className={styles.previewActions}>
-          <button className={styles.previewAction} onClick={handleDownload} type="button">
-            <Download size={18} /> Download
+          <button className={styles.previewAction} onClick={handleDownload} disabled={downloading} type="button">
+            <Download size={18} /> {downloading ? 'Laden...' : 'Download'}
           </button>
-          <button className={styles.previewAction} onClick={() => setShareSheetOpen(true)} type="button">
-            <Share2 size={18} /> Delen
-          </button>
+          {onShare && url && (
+            <button className={styles.previewAction} onClick={() => { onShare(url, item.title || 'Content', isVideo ? 'video' : 'image'); onClose(); }} type="button">
+              <Share2 size={18} /> Delen
+            </button>
+          )}
         </div>
-
-        {url && (
-          <ContentShareSheet
-            isOpen={shareSheetOpen}
-            onClose={() => setShareSheetOpen(false)}
-            contentUrl={url}
-            contentTitle={item.title || 'Content'}
-            contentType={isVideo ? 'video' : 'image'}
-          />
-        )}
       </div>
     </div>
   );

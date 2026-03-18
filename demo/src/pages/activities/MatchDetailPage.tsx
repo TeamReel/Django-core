@@ -55,6 +55,14 @@ export default function HierarchyMatchDetailPage() {
     return () => document.removeEventListener('mousedown', handler);
   }, [overflowOpen]);
 
+  /* ---- readiness ring: derive done subtypes from media data ---- */
+  /* Hook MUST be above early-return guards to keep hook count stable (React rules of hooks) */
+  const readiness = useMemo(() => {
+    if (!d.match) return { percent: 0, done: 0, total: 0 };
+    const doneSubtypes = Object.keys(d.mediaBySubtype ?? {});
+    return calculateMatchReadiness(doneSubtypes, d.match);
+  }, [d.mediaBySubtype, d.match]);
+
   /* ---- loading / error / redirect guards ---- */
 
   if (d.loading) {
@@ -84,12 +92,6 @@ export default function HierarchyMatchDetailPage() {
   if (d.clubSlugRedirectTarget) return <Navigate to={d.clubSlugRedirectTarget} replace />;
 
   const { match } = d;
-
-  /* ---- readiness ring: derive done subtypes from media data ---- */
-  const readiness = useMemo(() => {
-    const doneSubtypes = Object.keys(d.mediaBySubtype ?? {});
-    return calculateMatchReadiness(doneSubtypes, match);
-  }, [d.mediaBySubtype, match]);
 
   /* ---- render ---- */
 

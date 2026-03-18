@@ -51,8 +51,8 @@ export const ContentStreakWidget: React.FC<ContentStreakWidgetProps> = ({
     );
   }
 
-  // Don't show if no match history
-  if (!hasHistory) return null;
+  // Only hide if no match history AND no active match to act on
+  if (!hasHistory && !onAction) return null;
 
   const { currentStreak, isAtRisk } = streak;
   const milestone = getMilestoneTier(currentStreak);
