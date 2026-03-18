@@ -27,6 +27,7 @@ import {
 } from './contentLibraryTypes';
 import { ContentCard, FilterChip, EmptyState, ContentPreviewModal } from './ContentCard';
 import { ContentIcon } from '../../components/ContentIcon';
+import { ContentShareSheet } from '../../components/ContentShareSheet';
 import { GalleryCreateContentButton } from './GalleryCreateContentButton';
 import { GalleryMatchTimeline } from './GalleryMatchTimeline';
 import { useContentLibraryData } from './useContentLibraryData';
@@ -71,8 +72,9 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
   // Show timeline view when on match level with no specific subtype filter and no search
   const showTimeline = !embedded && data.subtypeFilter === 'all' && !data.searchQuery;
 
-  // Preview state
+  // Preview + share state
   const [previewItem, setPreviewItem] = useState<ContentItem | null>(null);
+  const [shareItem, setShareItem] = useState<ContentItem | null>(null);
 
   // ── Handlers ──
   const handlePreview = (item: ContentItem) => setPreviewItem(item);
@@ -90,15 +92,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
     }
   };
 
-  const handleShare = async (item: ContentItem) => {
-    const url = item.file_url || getAssetUrl(item.storage_path);
-    if (navigator.share && url) {
-      try { await navigator.share({ title: item.title || 'Generated Content', url }); } catch { /* cancelled */ }
-    } else if (url) {
-      await navigator.clipboard.writeText(url);
-      pushToast({ message: 'Link gekopieerd naar klembord', type: 'success' });
-    }
-  };
+  const handleShare = (item: ContentItem) => setShareItem(item);
 
   const handleDelete = async (item: ContentItem) => {
     if (confirm(`Weet je zeker dat je "${item.title || 'dit item'}" wilt verwijderen?`)) {
@@ -350,6 +344,17 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
 
       {/* Preview Modal */}
       {previewItem && <ContentPreviewModal item={previewItem} onClose={() => setPreviewItem(null)} />}
+
+      {/* Share Sheet */}
+      {shareItem && (
+        <ContentShareSheet
+          isOpen={!!shareItem}
+          onClose={() => setShareItem(null)}
+          contentUrl={(shareItem.file_url || getAssetUrl(shareItem.storage_path)) ?? ''}
+          contentTitle={shareItem.title || 'Content'}
+          contentType={shareItem.mime_type?.startsWith('video') ? 'video' : 'image'}
+        />
+      )}
     </div>
   );
 };

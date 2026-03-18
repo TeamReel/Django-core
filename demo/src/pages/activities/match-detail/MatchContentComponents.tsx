@@ -11,6 +11,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Badge } from '@django-core/design-system';
 import { ContentIcon } from '../../../components/ContentIcon';
+import { ContentShareSheet } from '../../../components/ContentShareSheet';
 import type { ContentTemplate } from '../../identity/ContentGenerationModal';
 import styles from './MatchContentComponents.module.css';
 
@@ -118,6 +119,7 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
   updatedAt?: string | null;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [shareSheetOpen, setShareSheetOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -128,54 +130,6 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [menuOpen]);
-
-  const handleShare = async () => {
-    if (!mediaUrl) return;
-    setMenuOpen(false);
-    try {
-      let shared = false;
-      try {
-        const resp = await fetch(mediaUrl);
-        if (resp.ok) {
-          const blob = await resp.blob();
-          const ext = isVideo ? 'mp4' : (mediaUrl.match(/\.(png|jpg|jpeg|webp)/i)?.[1] || 'jpg');
-          const mimeType = isVideo ? 'video/mp4' : (blob.type || `image/${ext}`);
-          const fileName = `${itemLabel.replace(/\s+/g, '_')}.${ext}`;
-          const file = new File([blob], fileName, { type: mimeType });
-          if (navigator.canShare?.({ files: [file] })) {
-            await navigator.share({ files: [file], title: itemLabel });
-            shared = true;
-          }
-        }
-      } catch { /* CORS */ }
-      if (!shared && !isVideo) {
-        try {
-          const blob = await new Promise<Blob>((resolve, reject) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => {
-              const canvas = document.createElement('canvas');
-              canvas.width = img.naturalWidth;
-              canvas.height = img.naturalHeight;
-              canvas.getContext('2d')!.drawImage(img, 0, 0);
-              canvas.toBlob((b) => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/png');
-            };
-            img.onerror = () => reject(new Error('img load failed'));
-            img.src = mediaUrl;
-          });
-          const fileName = `${itemLabel.replace(/\s+/g, '_')}.png`;
-          const file = new File([blob], fileName, { type: 'image/png' });
-          if (navigator.canShare?.({ files: [file] })) {
-            await navigator.share({ files: [file], title: itemLabel });
-            shared = true;
-          }
-        } catch { /* canvas tainted */ }
-      }
-      if (!shared) {
-        await navigator.share({ title: itemLabel, url: mediaUrl });
-      }
-    } catch { /* user cancelled */ }
-  };
 
   return (
     <div
@@ -245,11 +199,9 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
                 >
                   ↓ Downloaden
                 </a>
-                {typeof navigator !== 'undefined' && 'share' in navigator && (
-                  <button type="button" onClick={(e) => { e.stopPropagation(); handleShare(); }}>
-                    ⤴ Delen
-                  </button>
-                )}
+                <button type="button" onClick={(e) => { e.stopPropagation(); setShareSheetOpen(true); setMenuOpen(false); }}>
+                  ⤴ Delen
+                </button>
                 {canGenerate && (
                   <button type="button" onClick={(e) => { e.stopPropagation(); onGenerate(); setMenuOpen(false); }}>
                     ⟳ Opnieuw genereren
@@ -262,6 +214,16 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
           <span className="text-muted fs-16">›</span>
         ) : null}
       </div>
+
+      {hasMedia && mediaUrl && (
+        <ContentShareSheet
+          isOpen={shareSheetOpen}
+          onClose={() => setShareSheetOpen(false)}
+          contentUrl={mediaUrl}
+          contentTitle={itemLabel}
+          contentType={isVideo ? 'video' : 'image'}
+        />
+      )}
     </div>
   );
 }

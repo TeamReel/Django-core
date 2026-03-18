@@ -1,0 +1,97 @@
+/* ContentShareSheet — CSS Module */
+
+.optionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+/* ── Share option button ────────────────────────────── */
+
+.option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-2);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  transition: background var(--duration-fast) var(--ease-default);
+}
+
+.option:hover:not(:disabled) {
+  background: var(--app-surface-2);
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Icon circles ───────────────────────────────────── */
+
+.optionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  color: #fff;
+}
+
+.whatsapp {
+  background: #25d366;
+}
+
+.download {
+  background: var(--app-primary);
+}
+
+.copy {
+  background: var(--app-muted-text);
+}
+
+.native {
+  background: var(--app-link);
+}
+
+/* ── Label ──────────────────────────────────────────── */
+
+.optionLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--app-text);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* ── Instagram tip ──────────────────────────────────── */
+
+.instaTip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-2);
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--app-border);
+  color: var(--app-muted-text);
+}
+
+/* ── Reduced motion ─────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .option {
+    transition: none;
+  }
+}

@@ -2,12 +2,13 @@
  * Studio card & modal components extracted from AIStudioPage.
  */
 
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { BottomSheet } from '@django-core/design-system';
 import { Play, Download, Share2, X } from 'lucide-react';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { getAssetTypeLabel } from '../content/contentLibraryTypes';
 import type { ContentItem } from '../content/contentLibraryTypes';
+import { ContentShareSheet } from '../../components/ContentShareSheet';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import styles from './AIStudioPage.module.css';
 
@@ -108,14 +109,7 @@ export function StudioPreviewModal({
     document.body.removeChild(link);
   };
 
-  const handleShare = async () => {
-    if (!url) return;
-    if (navigator.share) {
-      try { await navigator.share({ title: item.title || 'Content', url }); } catch { /* cancelled */ }
-    } else {
-      await navigator.clipboard.writeText(url);
-    }
-  };
+  const [shareSheetOpen, setShareSheetOpen] = useState(false);
 
   return (
     <div className={styles.previewOverlay} onClick={onClose} role="presentation">
@@ -163,10 +157,20 @@ export function StudioPreviewModal({
           <button className={styles.previewAction} onClick={handleDownload} type="button">
             <Download size={18} /> Download
           </button>
-          <button className={styles.previewAction} onClick={handleShare} type="button">
+          <button className={styles.previewAction} onClick={() => setShareSheetOpen(true)} type="button">
             <Share2 size={18} /> Delen
           </button>
         </div>
+
+        {url && (
+          <ContentShareSheet
+            isOpen={shareSheetOpen}
+            onClose={() => setShareSheetOpen(false)}
+            contentUrl={url}
+            contentTitle={item.title || 'Content'}
+            contentType={isVideo ? 'video' : 'image'}
+          />
+        )}
       </div>
     </div>
   );
