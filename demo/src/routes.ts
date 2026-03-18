@@ -41,6 +41,7 @@ export const routes = {
     `/search${qs({ q: params?.q, types: params?.types })}`,
   directory: (params?: { tab?: string; orgId?: string }) =>
     `/directory${qs({ tab: params?.tab, org_id: params?.orgId })}`,
+  myTeams: () => '/my-teams' as const,
 
   // ── Auth ─────────────────────────────────────────────────────────
   login: () => '/login' as const,

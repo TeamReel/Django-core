@@ -21,3 +21,26 @@
 .topNavWrapper {
   flex-shrink: 0;
 }
+
+/* ── Page transition ── */
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mainContent {
+  animation: pageFadeIn var(--duration-normal, 200ms) var(--ease-default, ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mainContent {
+    animation: none;
+  }
+}

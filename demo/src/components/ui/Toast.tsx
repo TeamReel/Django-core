@@ -42,7 +42,7 @@ const ToastContext = createContext<ToastContextValue | null>(null);
 
 let _toastIdCounter = 0;
 
-export function ToastProvider({ children, autoDismissMs = 5000 }: { children: React.ReactNode; autoDismissMs?: number }) {
+export function ToastProvider({ children, autoDismissMs = 5000, maxVisible = 3 }: { children: React.ReactNode; autoDismissMs?: number; maxVisible?: number }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const timersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
 
@@ -66,7 +66,7 @@ export function ToastProvider({ children, autoDismissMs = 5000 }: { children: Re
   }, []);
 
   return (
-    <ToastContext.Provider value={{ toasts, pushToast, removeToast }}>
+    <ToastContext.Provider value={{ toasts: toasts.slice(-maxVisible), pushToast, removeToast }}>
       {children}
     </ToastContext.Provider>
   );

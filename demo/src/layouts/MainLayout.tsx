@@ -1,17 +1,58 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import TopNavbar from '../components/TopNavbar';
 import Sidebar from '../components/Sidebar';
 import MobileBottomNav from '../components/MobileBottomNav';
 import OnboardingWizard from '../components/OnboardingWizard';
+import { ShortcutGuide } from '../components/ShortcutGuide';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import styles from './MainLayout.module.css';
 
 export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [shortcutGuideOpen, setShortcutGuideOpen] = useState(false);
   const openSearchRef = useRef<(() => void) | null>(null);
+  const mainContentRef = useRef<HTMLElement>(null);
+  const prevPathRef = useRef<string>('');
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Register global keyboard shortcuts
+  useKeyboardShortcuts([
+    {
+      key: '/',
+      action: () => openSearchRef.current?.(),
+      description: 'Zoeken',
+    },
+    {
+      key: '?',
+      shift: true,
+      action: () => setShortcutGuideOpen(true),
+      description: 'Sneltoetsen tonen',
+    },
+    {
+      key: 'Escape',
+      action: () => setShortcutGuideOpen(false),
+      description: 'Sluiten',
+      allowInInput: true,
+    },
+    {
+      key: 'h',
+      action: () => navigate('/dashboard'),
+      description: 'Naar dashboard',
+    },
+    {
+      key: 'n',
+      action: () => {
+        // Trigger the FAB / quick-create if available
+        const fab = document.querySelector<HTMLButtonElement>('[data-fab-create]');
+        fab?.click();
+      },
+      description: 'Nieuw item',
+    },
+  ]);
 
   // Auto-close mobile sidebar on route change
   useEffect(() => {
@@ -19,6 +60,19 @@ export default function MainLayout() {
       setMobileMenuOpen(false);
     }
   }, [location.pathname, location.search]);
+
+  // Page transition: restart fade-in animation on route change
+  useEffect(() => {
+    if (location.pathname !== prevPathRef.current) {
+      prevPathRef.current = location.pathname;
+      const el = mainContentRef.current;
+      if (el) {
+        el.style.animation = 'none';
+        void el.offsetHeight; // force reflow to restart animation
+        el.style.animation = '';
+      }
+    }
+  }, [location.pathname]);
 
   // Store the openSearch function from TopNavbar
   const handleOpenSearchRef = useCallback((openSearch: () => void) => {
@@ -173,7 +227,8 @@ export default function MainLayout() {
 
         {/* Main Content Area */}
         <main
-          className="main-content"
+          ref={mainContentRef}
+          className={`main-content ${styles.mainContent}`}
           style={{
             flex: 1,
             overflowY: 'auto',
@@ -197,6 +252,9 @@ export default function MainLayout() {
           </>
         )}
       </div>
+
+      {/* Keyboard shortcut cheatsheet */}
+      <ShortcutGuide isOpen={shortcutGuideOpen} onClose={() => setShortcutGuideOpen(false)} />
     </div>
   );
 }

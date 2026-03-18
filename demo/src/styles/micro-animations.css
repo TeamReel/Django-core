@@ -1,0 +1,157 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Micro-animations — Premium interaction feedback
+   ═══════════════════════════════════════════════════════════════════════════
+   Imported once in main.tsx. All animations use only `transform` + `opacity`
+   for 60fps compositing. Every rule respects `prefers-reduced-motion`.               */
+
+/* ────────────────────────────── Button press ────────────────────────────── */
+
+button:active:not(:disabled),
+[role="button"]:active:not([aria-disabled="true"]) {
+  transform: scale(0.97);
+  transition: transform var(--duration-fast, 100ms) var(--ease-default, ease-out);
+}
+
+/* ────────────────────────────── Card hover ──────────────────────────────── */
+
+@media (hover: hover) {
+  .card-hover:hover,
+  [data-card-hover]:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    transition: transform var(--duration-normal, 200ms) var(--ease-default, ease-out),
+                box-shadow var(--duration-normal, 200ms) var(--ease-default, ease-out);
+  }
+}
+
+/* ────────────────────────────── Tab underline slide ─────────────────────── */
+
+[role="tab"] {
+  position: relative;
+}
+
+[role="tab"]::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  right: 50%;
+  height: 2px;
+  background: var(--app-primary, #3B8EA5);
+  border-radius: 1px;
+  transition: left var(--duration-normal, 200ms) var(--ease-default, ease-out),
+              right var(--duration-normal, 200ms) var(--ease-default, ease-out);
+}
+
+[role="tab"][aria-selected="true"]::after,
+[role="tab"].active::after {
+  left: 0;
+  right: 0;
+}
+
+/* ────────────────────────────── Progress bar fill ───────────────────────── */
+
+@keyframes progressFill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+[role="progressbar"] > *:first-child,
+.progress-fill {
+  transform-origin: left;
+  animation: progressFill var(--duration-slow, 300ms) var(--ease-default, ease-out) both;
+}
+
+/* ────────────────────────────── Badge count bounce ──────────────────────── */
+
+@keyframes badgeBounce {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.badge-animate,
+[data-badge-animate] {
+  animation: badgeBounce var(--duration-slow, 300ms) var(--ease-default, ease-out);
+}
+
+/* ────────────────────────────── Fade-in on mount ───────────────────────── */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fadeInUp var(--duration-normal, 200ms) var(--ease-default, ease-out) both;
+}
+
+/* ────────────────────────────── Toggle / switch ─────────────────────────── */
+
+[role="switch"] > span,
+.toggle-knob {
+  transition: transform var(--duration-normal, 200ms) var(--ease-default, ease-out);
+}
+
+/* ────────────────────────────── Focus ring pulse ────────────────────────── */
+
+@keyframes focusPulse {
+  0%   { box-shadow: 0 0 0 2px var(--app-focus-ring); }
+  50%  { box-shadow: 0 0 0 4px var(--app-focus-ring); }
+  100% { box-shadow: 0 0 0 2px var(--app-focus-ring); }
+}
+
+:focus-visible {
+  animation: focusPulse 1.5s ease-in-out 1;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   Reduced motion — disable ALL micro-animations
+   ════════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  button:active:not(:disabled),
+  [role="button"]:active:not([aria-disabled="true"]) {
+    transform: none;
+  }
+
+  .card-hover:hover,
+  [data-card-hover]:hover {
+    transform: none;
+  }
+
+  [role="tab"]::after {
+    transition: none;
+  }
+
+  [role="progressbar"] > *:first-child,
+  .progress-fill {
+    animation: none;
+    transform: scaleX(1);
+  }
+
+  .badge-animate,
+  [data-badge-animate] {
+    animation: none;
+  }
+
+  .animate-in {
+    animation: none;
+  }
+
+  [role="switch"] > span,
+  .toggle-knob {
+    transition: none;
+  }
+
+  :focus-visible {
+    animation: none;
+  }
+}

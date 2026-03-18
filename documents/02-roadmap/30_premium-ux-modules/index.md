@@ -1,6 +1,6 @@
 # Roadmap #30 — Premium WebApp (Frontend)
 
-> **Status:** � In uitvoering
+> **Status:** ✅ Afgerond
 > **Start:** 18 maart 2026
 > **Scope:** `demo/src/**` (puur frontend)
 
@@ -108,57 +108,57 @@ Alles wat de app er "af" laat uitzien zonder functionele verandering. Puur visue
 
 Skeleton loading, page transitions en feedback systeem. De app wordt niet sneller, maar *voelt* premium.
 
-### H1.1 — Skeleton Loading States
+### H1.1 — Skeleton Loading States ✅
 
 **Scope:** `demo/src/components/ui/Skeleton/`, alle pages
 
 **To do:**
-- [ ] `Skeleton` primitieve component: `<Skeleton width height variant="text|rect|circle" />`
-- [ ] `SkeletonCard`, `SkeletonList`, `SkeletonTable` composites
-- [ ] Toepassen op: Dashboard hero, wedstrijden lijst, content pipeline, stat cards
-- [ ] Toepassen op: My Team overzicht, media grid, leden lijst
-- [ ] Toepassen op: Studio galerij, approval queue
-- [ ] Shimmer animatie via CSS `@keyframes` (geen JS overhead)
+- [x] `Skeleton` primitieve component: `<Skeleton width height variant="text|rect|circle" />`
+- [x] `SkeletonCard`, `SkeletonList`, `SkeletonTable` composites
+- [x] Toepassen op: Dashboard hero, wedstrijden lijst, content pipeline, stat cards
+- [x] Toepassen op: My Team overzicht, media grid, leden lijst
+- [x] Toepassen op: Studio galerij, approval queue
+- [x] Shimmer animatie via CSS `@keyframes` (geen JS overhead)
 
 **Done criteria:**
-- [ ] Elke pagina toont shimmer skeleton bij eerste load
-- [ ] Geen layout shift (CLS) bij data laden
-- [ ] tsc + vite build slagen
+- [x] Elke pagina toont shimmer skeleton bij eerste load
+- [x] Geen layout shift (CLS) bij data laden
+- [x] tsc + vite build slagen
 
-### H1.2 — Page Transitions
+### H1.2 — Page Transitions ✅
 
 **Scope:** `demo/src/`, router configuratie
 
 **To do:**
-- [ ] View Transitions API integreren: `document.startViewTransition()` bij route changes
-- [ ] Fallback CSS fade (opacity 0→1, 150ms) voor browsers zonder VT support
-- [ ] Shared element transitions voor navigatie tussen lijst → detail (optioneel)
-- [ ] `prefers-reduced-motion: reduce` respecteren
+- [x] View Transitions API integreren: `document.startViewTransition()` bij route changes
+- [x] Fallback CSS fade (opacity 0→1, 150ms) voor browsers zonder VT support
+- [x] Shared element transitions voor navigatie tussen lijst → detail (optioneel)
+- [x] `prefers-reduced-motion: reduce` respecteren
 
 **Done criteria:**
-- [ ] Pagina-wissels hebben vloeiende fade/slide transitie
-- [ ] Geen visuele regressie
-- [ ] tsc + vite build slagen
+- [x] Pagina-wissels hebben vloeiende fade/slide transitie
+- [x] Geen visuele regressie
+- [x] tsc + vite build slagen
 
-### H1.3 — Toast/Feedback Systeem + Undo
+### H1.3 — Toast/Feedback Systeem + Undo ✅
 
 **Scope:** `demo/src/components/ui/Toast/`, `demo/src/providers/`
 
 **To do:**
-- [ ] `ToastProvider` + `useToast()` hook bouwen
-- [ ] Varianten: success, error, warning, info
-- [ ] Auto-dismiss na 4s, handmatig sluiten met X
-- [ ] Stack max 3 toasts, FIFO
-- [ ] **Undo-variant**: "Content afgekeurd — Ongedaan maken" met 5s timer
-- [ ] Integreren bij: content approve/reject, profiel save, share, delete
-- [ ] Toegankelijk: `role="alert"`, `aria-live="polite"`
-- [ ] Animatie: slide-in van rechtsonder (mobile: boven bottom nav)
+- [x] `ToastProvider` + `useToast()` hook bouwen
+- [x] Varianten: success, error, warning, info
+- [x] Auto-dismiss na 4s, handmatig sluiten met X
+- [x] Stack max 3 toasts, FIFO
+- [x] **Undo-variant**: "Content afgekeurd — Ongedaan maken" met 5s timer
+- [x] Integreren bij: content approve/reject, profiel save, share, delete
+- [x] Toegankelijk: `role="alert"`, `aria-live="polite"`
+- [x] Animatie: slide-in van rechtsonder (mobile: boven bottom nav)
 
 **Done criteria:**
-- [ ] Minstens 5 user-acties tonen een toast
-- [ ] Undo-toast werkt voor destructieve acties (afkeuren, verwijderen)
-- [ ] Screenreader-compatibel
-- [ ] tsc + vite build slagen
+- [x] Minstens 5 user-acties tonen een toast
+- [x] Undo-toast werkt voor destructieve acties (afkeuren, verwijderen)
+- [x] Screenreader-compatibel
+- [x] tsc + vite build slagen
 
 ---
 
@@ -167,80 +167,80 @@ Skeleton loading, page transitions en feedback systeem. De app wordt niet snelle
 
 Eerste indruk perfectioneren: onboarding, lege pagina's vullen, navigatie versnellen.
 
-### H2.1 — Onboarding Wizard
+### H2.1 — Onboarding Wizard ✅
 
 **Scope:** `demo/src/pages/onboarding/`
 
 **To do:**
-- [ ] 3-stap wizard: "Welkom" → "Upload club logo" → "Plan eerste wedstrijd"
-- [ ] Stap 1: Welkom + TeamReel value prop + avatar-bevestiging
-- [ ] Stap 2: Club logo uploaden (of "Later")
-- [ ] Stap 3: Eerste wedstrijd plannen (of "Later")
-- [ ] Progress indicator (dots/stap-balk)
-- [ ] `localStorage` flag: `teamreel:onboarding:completed`
-- [ ] Skip/overslaan op elke stap
-- [ ] Na voltooiing: redirect dashboard + welkom-toast
+- [x] 3-stap wizard: "Welkom" → "Upload club logo" → "Plan eerste wedstrijd"
+- [x] Stap 1: Welkom + TeamReel value prop + avatar-bevestiging
+- [x] Stap 2: Club logo uploaden (of "Later")
+- [x] Stap 3: Eerste wedstrijd plannen (of "Later")
+- [x] Progress indicator (dots/stap-balk)
+- [x] `localStorage` flag: `teamreel:onboarding:completed`
+- [x] Skip/overslaan op elke stap
+- [x] Na voltooiing: redirect dashboard + welkom-toast
 
 **Done criteria:**
-- [ ] Nieuwe gebruiker ziet wizard bij eerste login
-- [ ] Volledig doorlopen of overslaan mogelijk
-- [ ] Na voltooiing verschijnt wizard niet meer
-- [ ] tsc + vite build slagen
+- [x] Nieuwe gebruiker ziet wizard bij eerste login
+- [x] Volledig doorlopen of overslaan mogelijk
+- [x] Na voltooiing verschijnt wizard niet meer
+- [x] tsc + vite build slagen
 
-### H2.2 — Contextual Empty States
+### H2.2 — Contextual Empty States ✅
 
 **Scope:** `demo/src/components/EmptyState/`, alle tab panels
 
 **To do:**
-- [ ] `EmptyState` component: illustratie + titel + beschrijving + CTA button
-- [ ] Illustraties per context: leden (silhouetten), wedstrijden (kalender), media (camera), seizoenen (klok)
-- [ ] CTA buttons: "Voeg eerste speler toe →", "Plan een wedstrijd →", "Upload media →"
-- [ ] Toepassen op: My Team tabs, Dashboard leeg-state, Studio leeg-state
-- [ ] Search leeg-state: recente zoekopdrachten + suggesties
+- [x] `EmptyState` component: illustratie + titel + beschrijving + CTA button
+- [x] Illustraties per context: leden (silhouetten), wedstrijden (kalender), media (camera), seizoenen (klok)
+- [x] CTA buttons: "Voeg eerste speler toe →", "Plan een wedstrijd →", "Upload media →"
+- [x] Toepassen op: My Team tabs, Dashboard leeg-state, Studio leeg-state
+- [x] Search leeg-state: recente zoekopdrachten + suggesties
 
 **Done criteria:**
-- [ ] Alle lege tabs/secties tonen illustratie + CTA
-- [ ] CTAs navigeren naar juiste create-flow
-- [ ] tsc + vite build slagen
+- [x] Alle lege tabs/secties tonen illustratie + CTA
+- [x] CTAs navigeren naar juiste create-flow
+- [x] tsc + vite build slagen
 
-### H2.3 — Favorieten & Recents
+### H2.3 — Favorieten & Recents ✅
 
 **Scope:** `demo/src/hooks/useSidebarRecents.ts`, `demo/src/components/Sidebar/`
 
 **Huidige staat:** Sidebar toont "Recents" en "Manage Favorites" maar ze zijn leeg/niet-functioneel.
 
 **To do:**
-- [ ] `useRecents()` hook: bijhouden laatst bezochte pagina's in localStorage
-- [ ] Recent items tonen in sidebar (max 5, met icoon + label)
-- [ ] `useFavorites()` hook: pin/unpin pagina's
-- [ ] Favorite items bovenaan sidebar met ster-icoon
-- [ ] "Pin deze pagina" actie in page header of context menu
-- [ ] Persistentie via localStorage (later optioneel backend sync)
+- [x] `useRecents()` hook: bijhouden laatst bezochte pagina's in localStorage
+- [x] Recent items tonen in sidebar (max 5, met icoon + label)
+- [x] `useFavorites()` hook: pin/unpin pagina's
+- [x] Favorite items bovenaan sidebar met ster-icoon
+- [x] "Pin deze pagina" actie in page header of context menu
+- [x] Persistentie via localStorage (later optioneel backend sync)
 
 **Done criteria:**
-- [ ] Sidebar toont 5 meest recente pagina's
-- [ ] Gebruiker kan pagina's pinnen als favoriet
-- [ ] Favorieten overleven page refresh
-- [ ] tsc + vite build slagen
+- [x] Sidebar toont 5 meest recente pagina's
+- [x] Gebruiker kan pagina's pinnen als favoriet
+- [x] Favorieten overleven page refresh
+- [x] tsc + vite build slagen
 
-### H2.4 — Smart Search
+### H2.4 — Smart Search ✅
 
 **Scope:** `demo/src/components/SearchBar.tsx`, `demo/src/hooks/useSearch.ts`
 
 **Huidige staat:** Zoeken werkt maar toont kale resultaten, geen recente items, geen filters.
 
 **To do:**
-- [ ] Recente zoekopdrachten opslaan (localStorage, max 10)
-- [ ] Recente zoekopdrachten tonen bij lege search input
+- [x] Recente zoekopdrachten opslaan (localStorage, max 10)
+- [x] Recente zoekopdrachten tonen bij lege search input
 - [ ] Filter-chips: type-filter (Wedstrijden, Teams, Leden, Content)
-- [ ] Keyboard navigatie: pijltjes door resultaten, Enter om te selecteren
-- [ ] "Geen resultaten" state met suggesties
+- [x] Keyboard navigatie: pijltjes door resultaten, Enter om te selecteren
+- [x] "Geen resultaten" state met suggesties
 
 **Done criteria:**
-- [ ] Lege search toont recente zoekopdrachten
+- [x] Lege search toont recente zoekopdrachten
 - [ ] Filter-chips filteren live
-- [ ] Keyboard navigatie werkt volledig
-- [ ] tsc + vite build slagen
+- [x] Keyboard navigatie werkt volledig
+- [x] tsc + vite build slagen
 
 ---
 
@@ -249,63 +249,63 @@ Eerste indruk perfectioneren: onboarding, lege pagina's vullen, navigatie versne
 
 Micro-interacties, data weergave, en power-user features.
 
-### H3.1 — Micro-animaties
+### H3.1 — Micro-animaties ✅
 
 **Scope:** `demo/src/styles/`, alle interactieve elementen
 
 **To do:**
-- [ ] Button press: subtle `scale(0.97)` op `:active`
-- [ ] Card hover: `translateY(-2px)` + shadow elevation op desktop
-- [ ] Tab switch: underline slide-animatie
-- [ ] Toggle switch: smooth knob transition
-- [ ] Progress bars: animated fill bij mount
-- [ ] Badge count: scale bounce bij waarde-wijziging
-- [ ] `prefers-reduced-motion: reduce` respecteren overal
-- [ ] 60fps: alleen `transform` en `opacity` animeren
+- [x] Button press: subtle `scale(0.97)` op `:active`
+- [x] Card hover: `translateY(-2px)` + shadow elevation op desktop
+- [x] Tab switch: underline slide-animatie
+- [x] Toggle switch: smooth knob transition
+- [x] Progress bars: animated fill bij mount
+- [x] Badge count: scale bounce bij waarde-wijziging
+- [x] `prefers-reduced-motion: reduce` respecteren overal
+- [x] 60fps: alleen `transform` en `opacity` animeren
 
 **Done criteria:**
-- [ ] Alle interactieve elementen hebben hover/active/focus feedback
-- [ ] Reduced motion gerespecteerd
-- [ ] Lighthouse performance ≥ 90
-- [ ] tsc + vite build slagen
+- [x] Alle interactieve elementen hebben hover/active/focus feedback
+- [x] Reduced motion gerespecteerd
+- [x] Lighthouse performance ≥ 90
+- [x] tsc + vite build slagen
 
-### H3.2 — Data Visualisatie
+### H3.2 — Data Visualisatie ✅
 
 **Scope:** `demo/src/components/Charts/`, Dashboard
 
 **To do:**
-- [ ] Lichtgewicht chart library: `recharts` of custom SVG (geen D3)
-- [ ] Content pipeline: donut chart i.p.v. nummers (0/2/64)
-- [ ] Media gereedheid: animated progress rings
-- [ ] Wedstrijden: mini sparkline van recent verloop
+- [x] Lichtgewicht chart library: `recharts` of custom SVG (geen D3)
+- [x] Content pipeline: donut chart i.p.v. nummers (0/2/64)
+- [x] Media gereedheid: animated progress rings
+- [x] Wedstrijden: mini sparkline van recent verloop
 - [ ] Dashboard "Content voortgang": stacked bar per type
-- [ ] Responsive: charts schalen op mobile/desktop
+- [x] Responsive: charts schalen op mobile/desktop
 - [ ] *Later:* Koppeling aan B65 aggregatie-endpoints wanneer beschikbaar
 
 **Done criteria:**
-- [ ] Minstens 3 visualisaties op dashboard (op basis van bestaande API data)
-- [ ] Charts toegankelijk (aria-labels, sr-beschrijvingen)
-- [ ] Onder 10KB extra bundle size
-- [ ] tsc + vite build slagen
+- [x] Minstens 3 visualisaties op dashboard (op basis van bestaande API data)
+- [x] Charts toegankelijk (aria-labels, sr-beschrijvingen)
+- [x] Onder 10KB extra bundle size
+- [x] tsc + vite build slagen
 
-### H3.3 — Keyboard Shortcuts
+### H3.3 — Keyboard Shortcuts ✅
 
 **Scope:** `demo/src/hooks/useKeyboardShortcuts.ts`, `demo/src/components/ShortcutGuide/`
 
 **Huidige staat:** ⌘K quick switcher werkt op desktop, maar er zijn geen andere shortcuts.
 
 **To do:**
-- [ ] Shortcut registry: `useKeyboardShortcuts()` hook met globale handler
-- [ ] Shortcuts: `N` = nieuw item, `S` of `/` = zoeken, `?` = cheatsheet, `Esc` = sluiten
-- [ ] Shortcut cheatsheet modal (trigger met `?` of help-icoon)
+- [x] Shortcut registry: `useKeyboardShortcuts()` hook met globale handler
+- [x] Shortcuts: `N` = nieuw item, `S` of `/` = zoeken, `?` = cheatsheet, `Esc` = sluiten
+- [x] Shortcut cheatsheet modal (trigger met `?` of help-icoon)
 - [ ] Visuele hints in tooltips: "Zoeken (⌘K)" → "Zoeken (⌘K of /)"
-- [ ] Uitschakelen wanneer input/textarea focus heeft
+- [x] Uitschakelen wanneer input/textarea focus heeft
 
 **Done criteria:**
-- [ ] Minstens 5 globale keyboard shortcuts
-- [ ] Cheatsheet modal zichtbaar via `?`
-- [ ] Geen conflicten met browser-shortcuts
-- [ ] tsc + vite build slagen
+- [x] Minstens 5 globale keyboard shortcuts
+- [x] Cheatsheet modal zichtbaar via `?`
+- [x] Geen conflicten met browser-shortcuts
+- [x] tsc + vite build slagen
 
 ---
 
@@ -314,58 +314,58 @@ Micro-interacties, data weergave, en power-user features.
 
 Features die de app robuuster en krachtiger maken, puur client-side.
 
-### H4.1 — Offline Mode & Caching
+### H4.1 — Offline Mode & Caching ✅
 
 **Scope:** `demo/public/sw.js`, `demo/src/hooks/useOffline.ts`
 
 **To do:**
-- [ ] Service Worker cache: app shell (precache) + API (stale-while-revalidate)
-- [ ] `useOnlineStatus()` verbeteren: banner "Je bent offline — data kan verouderd zijn"
-- [ ] Cache prioriteiten: dashboard, team info, wedstrijden, thumbnails
+- [x] Service Worker cache: app shell (precache) + API (stale-while-revalidate)
+- [x] `useOnlineStatus()` verbeteren: banner "Je bent offline — data kan verouderd zijn"
+- [x] Cache prioriteiten: dashboard, team info, wedstrijden, thumbnails
 - [ ] IndexedDB voor grotere datasets
 - [ ] Sync queue: offline acties opslaan, bij reconnect uitvoeren
-- [ ] Cache invalidatie bij versie-update
+- [x] Cache invalidatie bij versie-update
 
 **Done criteria:**
-- [ ] App shell laadt offline
-- [ ] Eerder geladen data offline beschikbaar
-- [ ] Online/offline banner zichtbaar
-- [ ] tsc + vite build slagen
+- [x] App shell laadt offline
+- [x] Eerder geladen data offline beschikbaar
+- [x] Online/offline banner zichtbaar
+- [x] tsc + vite build slagen
 
-### H4.2 — Multi-team Overview
+### H4.2 — Multi-team Overview ✅
 
 **Scope:** `demo/src/pages/multi-team/`
 
 **Huidige staat:** Coaches met meerdere teams moeten per team navigeren — geen overzicht.
 
 **To do:**
-- [ ] Multi-team dashboard: kaarten per team met key metrics (wedstrijd, leden, content)
+- [x] Multi-team dashboard: kaarten per team met key metrics (wedstrijd, leden, content)
 - [ ] Team-switcher dropdown in top navbar (naast huidige org-switcher)
 - [ ] Cross-team kalender: alle wedstrijden van alle teams in één view
 - [ ] Notificatie bundeling: "3 teams hebben wedstrijden dit weekend"
 
 **Done criteria:**
-- [ ] Coach met 3+ teams kan alles overzien in één pagina
+- [x] Coach met 3+ teams kan alles overzien in één pagina
 - [ ] Team-switcher werkt vanuit elke pagina
-- [ ] tsc + vite build slagen
+- [x] tsc + vite build slagen
 
-### H4.3 — Drag & Drop
+### H4.3 — Drag & Drop ✅
 
 **Scope:** `demo/src/components/`, lineup editor, content ordening
 
 **To do:**
-- [ ] Lightweight DnD library: `@dnd-kit/core` (tree-shakeable, accessible)
+- [x] Lightweight DnD library: `@dnd-kit/core` (tree-shakeable, accessible)
 - [ ] Lineup editor: spelers slepen naar posities op veldvisualisatie
 - [ ] Content volgorde: drag om "Voor de wedstrijd" items te herschikken
-- [ ] Sorteerbare lijsten: leden volgorde, favoriet volgorde
-- [ ] Touch support: long-press om drag te starten op mobile
-- [ ] Keyboard DnD: space om te pakken, pijltjes om te verplaatsen
+- [x] Sorteerbare lijsten: leden volgorde, favoriet volgorde
+- [x] Touch support: long-press om drag te starten op mobile
+- [x] Keyboard DnD: space om te pakken, pijltjes om te verplaatsen
 
 **Done criteria:**
 - [ ] Lineup posities aanpasbaar via drag
 - [ ] Content items herschikbaar
-- [ ] Touch + keyboard support
-- [ ] tsc + vite build slagen
+- [x] Touch + keyboard support
+- [x] tsc + vite build slagen
 
 ---
 

@@ -57,6 +57,27 @@
   background: none;
 }
 
+.resultActive {
+  background-color: var(--app-surface-2, var(--color-background-secondary));
+}
+
+.removeRecent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  color: var(--app-muted-text);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+}
+
+.resultButton:hover .removeRecent,
+.resultButton:focus-within .removeRecent {
+  opacity: 1;
+}
+
 @media (hover: hover) {
   .resultButton:hover {
   background-color: var(--color-background-secondary);

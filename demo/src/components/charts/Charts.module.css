@@ -1,0 +1,73 @@
+/* Charts — Shared styles for DonutChart, SparkLine, ProgressRing */
+
+/* ── DonutChart ── */
+
+.donutWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.donutSvg {
+  display: block;
+}
+
+.donutSegment {
+  transition: stroke-dashoffset var(--duration-slow, 300ms) var(--ease-default, ease-out);
+}
+
+.donutCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.donutTotal {
+  font-size: var(--text-xl, 20px);
+  font-weight: var(--font-bold, 700);
+  color: var(--app-text);
+}
+
+/* ── SparkLine ── */
+
+.sparkLine {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.sparkLinePath {
+  vector-effect: non-scaling-stroke;
+}
+
+/* ── ProgressRing ── */
+
+.progressRingWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressRingArc {
+  transition: stroke-dashoffset var(--duration-slow, 300ms) var(--ease-default, ease-out);
+}
+
+.progressRingLabel {
+  position: absolute;
+  font-size: var(--text-xs, 10px);
+  font-weight: var(--font-semibold, 600);
+  color: var(--app-text);
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .donutSegment,
+  .progressRingArc {
+    transition: none;
+  }
+}

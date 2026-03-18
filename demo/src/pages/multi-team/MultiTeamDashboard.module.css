@@ -1,0 +1,199 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   MultiTeamDashboard — styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-4);
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* ── Org summary bar ────────────────────────────────────────────────────── */
+
+.orgBar {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+  -webkit-overflow-scrolling: touch;
+}
+
+.orgChip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--duration-fast) ease,
+              background var(--duration-fast) ease;
+  min-width: 0;
+}
+
+.orgChip:hover {
+  border-color: var(--app-primary);
+}
+
+.orgChip:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.orgChipActive {
+  border-color: var(--app-primary);
+  background: color-mix(in srgb, var(--app-primary) 8%, var(--app-surface));
+}
+
+.orgChipMeta {
+  font-size: 0.75rem;
+  color: var(--app-muted-text);
+}
+
+/* ── Team grid ──────────────────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ── Team card ──────────────────────────────────────────────────────────── */
+
+.teamCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text);
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--duration-normal) ease,
+              box-shadow var(--duration-normal) ease,
+              border-color var(--duration-normal) ease;
+  min-height: 44px;
+}
+
+@media (hover: hover) {
+  .teamCard:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--app-primary);
+  }
+
+  .teamCard:hover .chevron {
+    transform: translateX(2px);
+  }
+}
+
+.teamCard:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.teamCard:active {
+  transform: scale(0.98);
+}
+
+/* ── Card internals ─────────────────────────────────────────────────────── */
+
+.teamHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.teamName {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--app-muted-text);
+  transition: transform var(--duration-fast) ease;
+}
+
+.teamStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 0.8125rem;
+  color: var(--app-muted-text);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.statusActive {
+  background: color-mix(in srgb, var(--app-success) 15%, transparent);
+  color: var(--app-success);
+}
+
+.statusArchived {
+  background: color-mix(in srgb, var(--app-muted-text) 15%, transparent);
+  color: var(--app-muted-text);
+}
+
+.teamFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: auto;
+  color: var(--app-muted-text);
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .teamCard {
+    transition: none;
+  }
+
+  .chevron {
+    transition: none;
+  }
+
+  .orgChip {
+    transition: none;
+  }
+}

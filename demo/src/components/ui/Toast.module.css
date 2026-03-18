@@ -12,6 +12,15 @@
   pointer-events: none;
 }
 
+/* Mobile: position above bottom nav */
+@media (max-width: 639px) {
+  .container {
+    bottom: calc(var(--tr-bottom-navbar-offset, 96px) + var(--space-2));
+    right: var(--space-3);
+    left: var(--space-3);
+  }
+}
+
 /* Toast item base */
 .toast {
   padding: var(--space-3) 20px;
@@ -24,6 +33,20 @@
   cursor: pointer;
   animation: toast-slide-in var(--duration-normal) var(--ease-out);
   color: var(--color-white, var(--color-white));
+}
+
+/* Mobile: full-width toasts */
+@media (max-width: 639px) {
+  .toast {
+    max-width: 100%;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
 }
 
 /* Type variants */

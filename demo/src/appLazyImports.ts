@@ -101,6 +101,9 @@ export const ProjectSeasonsPage = lazyWithRetry(() => import('./pages/periods/Pr
 export const ProjectCompetitionDetailPage = lazyWithRetry(() => import('./pages/periods/CompetitionDetailWrapper'));
 export const ProjectSeasonMemberDetailPage = lazyWithRetry(() => import('./pages/identity/SeasonMemberDetailPage'));
 
+// Multi-team
+export const MultiTeamDashboard = lazyWithRetry(() => import('./pages/multi-team/MultiTeamDashboard'));
+
 // Work hierarchy pages
 export const ClubsPage = lazyWithRetry(() => import('./pages/work/ClubsPage'));
 export const TeamsPage = lazyWithRetry(() => import('./pages/work/TeamsPage'));

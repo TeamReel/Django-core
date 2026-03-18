@@ -54,6 +54,7 @@ import {
   SeasonsPage,
   CompetitionsPage,
   AIStudioPage,
+  MultiTeamDashboard,
 } from './appLazyImports';
 
 // Route groups (legacy bridge — will be replaced with nested children)
@@ -89,6 +90,7 @@ export const router = createBrowserRouter(
         <Route path="/recents" element={<ProtectedRoute><RecentsPage /></ProtectedRoute>} />
         <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
         <Route path="/directory" element={<ProtectedRoute><DirectoryPage /></ProtectedRoute>} />
+        <Route path="/my-teams" element={<ProtectedRoute><Suspense fallback={<SkeletonGrid columns={3} count={6} />}><MultiTeamDashboard /></Suspense></ProtectedRoute>} />
 
         {/* Section landing pages */}
         <Route path="/apps" element={<ProtectedRoute><AppsPage /></ProtectedRoute>} />
