@@ -11,9 +11,10 @@
 
 /* ── Hero card ── */
 .heroCard {
-  background: linear-gradient(135deg, var(--app-surface-2, var(--app-text)) 0%, var(--app-surface, var(--color-neutral-900)) 100%);
+  background: linear-gradient(135deg, var(--app-surface-2) 0%, var(--app-surface) 100%);
+  border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-6) var(--space-5);
+  padding: var(--space-8) var(--space-6);
   text-align: center;
 }
 
@@ -61,8 +62,8 @@
 
 /* ── Section card (shared) ── */
 .sectionCard {
-  background: var(--app-surface-2, var(--app-text));
-  border: 1px solid var(--app-border, var(--color-neutral-600));
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -71,8 +72,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) var(--space-4);
-  border-bottom: 1px solid var(--app-border, var(--color-neutral-600));
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .sectionTitle {
@@ -98,8 +99,13 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.sectionLink:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
 .sectionLink:active {
-  background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
+  background: var(--app-surface-2);
 }
 
 /* ── Row items shared ── */
@@ -109,18 +115,27 @@
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
   min-height: 48px;
-  border-bottom: 1px solid var(--app-border, var(--app-text));
+  border-bottom: 1px solid var(--app-border);
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
-  transition: background var(--duration-fast);
+  transition: background var(--duration-fast) var(--ease-default);
 }
 
 .itemRow:last-child {
   border-bottom: none;
 }
 
+.itemRow:hover {
+  background: var(--app-surface-2);
+}
+
 .itemRow:active {
-  background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
+  background: var(--app-surface-2);
+}
+
+.itemRow:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: -2px;
 }
 
 .itemName {
@@ -171,7 +186,7 @@
   align-items: baseline;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--app-border, var(--app-text));
+  border-bottom: 1px solid var(--app-border);
 }
 
 .infoRow:last-child {
@@ -204,5 +219,26 @@
 
   .heroCard {
     grid-column: 1 / -1;
+  }
+
+  .heroStats {
+    gap: var(--space-8);
+  }
+}
+
+@media (min-width: 1024px) {
+  .overviewRoot {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .heroCard {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .itemRow,
+  .sectionLink {
+    transition: none;
   }
 }

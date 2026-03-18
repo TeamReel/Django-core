@@ -13,7 +13,7 @@
  *
  * No duplication of data hooks or UI components.
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Pencil, LayoutGrid, Users, Shield, Palette } from 'lucide-react';
 import { ClubOverviewTab } from './ClubOverviewTab';
@@ -66,6 +66,32 @@ export function HubClubTab({
   const [identitySubtab, setIdentitySubtab] = useState<'assets' | 'kits' | 'brand'>('assets');
   const [editModalOpen, setEditModalOpen] = useState(false);
 
+  // Fade hint for sub-tab scroll overflow
+  const subTabsRef = useRef<HTMLDivElement>(null);
+  const [showSubTabFade, setShowSubTabFade] = useState(false);
+
+  const checkSubTabOverflow = useCallback(() => {
+    const el = subTabsRef.current;
+    if (!el) return;
+    setShowSubTabFade(
+      el.scrollWidth > el.clientWidth + 8 &&
+      el.scrollLeft + el.clientWidth < el.scrollWidth - 8,
+    );
+  }, []);
+
+  useEffect(() => {
+    const el = subTabsRef.current;
+    if (!el) return;
+    // Scroll active sub-tab into view
+    const activePill = el.querySelector('[aria-selected="true"]') as HTMLElement | null;
+    if (activePill) {
+      activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+    checkSubTabOverflow();
+    el.addEventListener('scroll', checkSubTabOverflow, { passive: true });
+    return () => el.removeEventListener('scroll', checkSubTabOverflow);
+  }, [activeSubTab, checkSubTabOverflow]);
+
   // Overview data (lazy — only fetched when overview sub-tab is active)
   const overview = useHubClubOverview({
     orgSlug,
@@ -116,23 +142,25 @@ export function HubClubTab({
       </div>
 
       {/* ── Sub-tab pills ── */}
-      <div className={s.subTabs} role="tablist" aria-label="Club secties">
-        {SUB_TABS.map((tab) => {
-          const Icon = tab.icon;
-          const active = activeSubTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={active}
-              className={`${s.subTab} ${active ? s.subTabActive : ''}`}
-              onClick={() => setActiveSubTab(tab.id)}
-            >
-              <Icon size={14} />
-              {tab.label}
-            </button>
-          );
-        })}
+      <div className={s.subTabsWrap} data-fade={showSubTabFade}>
+        <div ref={subTabsRef} className={s.subTabs} role="tablist" aria-label="Club secties">
+          {SUB_TABS.map((tab) => {
+            const Icon = tab.icon;
+            const active = activeSubTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                role="tab"
+                aria-selected={active}
+                className={`${s.subTab} ${active ? s.subTabActive : ''}`}
+                onClick={() => setActiveSubTab(tab.id)}
+              >
+                <Icon size={14} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ── Sub-tab content ── */}

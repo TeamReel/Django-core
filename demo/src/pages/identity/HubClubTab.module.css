@@ -14,26 +14,45 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  position: relative;
 }
 
 .subTabs::-webkit-scrollbar { display: none; }
 
+/* Right-edge fade hint when more sub-tabs are scrollable */
+.subTabsWrap {
+  position: relative;
+}
+
+.subTabsWrap[data-fade="true"]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40px;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, var(--app-bg, var(--color-white)) 90%);
+  z-index: 1;
+}
+
 .subTab {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-2) var(--space-3);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-xl);
   background: var(--app-surface);
   color: var(--app-muted-text);
   font-size: var(--text-sm);
-  font-weight: var(--font-medium);
+  font-weight: var(--font-semibold);
   white-space: nowrap;
   cursor: pointer;
   transition: background var(--duration-fast) var(--ease-default),
               color var(--duration-fast) var(--ease-default),
-              border-color var(--duration-fast) var(--ease-default);
+              border-color var(--duration-fast) var(--ease-default),
+              box-shadow var(--duration-fast) var(--ease-default);
   min-height: 44px;
   min-width: 44px;
 }
@@ -41,6 +60,7 @@
 .subTab:hover {
   background: var(--app-surface-2);
   color: var(--app-text);
+  border-color: var(--app-text);
 }
 
 .subTab:focus-visible {
@@ -52,11 +72,13 @@
   background: var(--app-primary);
   color: white;
   border-color: var(--app-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .subTabActive:hover {
   background: var(--app-primary);
   color: white;
+  border-color: var(--app-primary);
 }
 
 /* ── Content area ── */
@@ -64,28 +86,29 @@
   min-height: 200px;
 }
 
-/* ── Identity sub-tabs ── */
+/* ── Identity sub-tabs (segmented control) ── */
 .identityToggle {
-  display: flex;
+  display: inline-flex;
   gap: var(--space-1);
   margin-bottom: var(--space-4);
   padding: var(--space-1);
   background: var(--app-surface-2);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
 }
 
 .identityToggleBtn {
-  flex: 1;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--app-muted-text);
   font-size: var(--text-sm);
-  font-weight: var(--font-medium);
+  font-weight: var(--font-semibold);
   cursor: pointer;
   transition: background var(--duration-fast) var(--ease-default),
-              color var(--duration-fast) var(--ease-default);
+              color var(--duration-fast) var(--ease-default),
+              box-shadow var(--duration-fast) var(--ease-default);
   min-height: 44px;
 }
 
@@ -109,8 +132,8 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  background: var(--app-surface);
+  padding: var(--space-4);
+  background: linear-gradient(135deg, var(--app-surface-2) 0%, var(--app-surface) 100%);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
 }
@@ -118,7 +141,7 @@
 .clubName {
   flex: 1;
   font-size: var(--text-lg);
-  font-weight: var(--font-bold);
+  font-weight: var(--font-extrabold);
   color: var(--app-text);
   margin: 0;
 }

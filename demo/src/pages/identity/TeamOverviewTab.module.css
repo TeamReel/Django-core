@@ -1,5 +1,5 @@
-/* ============================================================================
-   TeamOverviewTab — Premium mobile-first overview (Season-style)
+﻿/* ============================================================================
+   TeamOverviewTab â€” Premium mobile-first overview (Season-style)
    ============================================================================ */
 
 .overviewRoot {
@@ -8,9 +8,10 @@
   gap: var(--space-4);
 }
 
-/* ── Hero card ── */
+/* â”€â”€ Hero card â”€â”€ */
 .heroCard {
-  background: linear-gradient(135deg, var(--app-surface-2, var(--app-text)) 0%, var(--app-surface, var(--color-neutral-900)) 100%);
+  background: linear-gradient(135deg, var(--app-surface-2) 0%, var(--app-surface) 100%);
+  border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   padding: var(--space-6) var(--space-5);
   text-align: center;
@@ -58,10 +59,10 @@
   letter-spacing: 0.04em;
 }
 
-/* ── Section card (shared) ── */
+/* â”€â”€ Section card (shared) â”€â”€ */
 .sectionCard {
-  background: var(--app-surface-2, var(--app-text));
-  border: 1px solid var(--app-border, var(--color-neutral-600));
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
@@ -70,8 +71,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) var(--space-4);
-  border-bottom: 1px solid var(--app-border, var(--color-neutral-600));
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .sectionTitle {
@@ -106,7 +107,7 @@
   background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
 }
 
-/* ── Brand assets grid ── */
+/* â”€â”€ Brand assets grid â”€â”€ */
 .brandGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -118,7 +119,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--app-border, var(--app-text));
+  border-bottom: 1px solid var(--app-border);
 }
 
 .brandItem:nth-last-child(-n+2) {
@@ -141,7 +142,7 @@
   color: var(--app-text);
 }
 
-/* ── Media asset progress bars ── */
+/* â”€â”€ Media asset progress bars â”€â”€ */
 .assetList {
   display: flex;
   flex-direction: column;
@@ -153,7 +154,7 @@
   grid-template-rows: auto auto;
   gap: var(--space-1) var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--app-border, var(--app-text));
+  border-bottom: 1px solid var(--app-border);
   align-items: center;
 }
 
@@ -196,7 +197,7 @@
   grid-column: 1 / -1;
   grid-row: 2;
   height: 4px;
-  background: var(--app-surface, var(--color-neutral-900));
+  background: var(--app-surface);
   border-radius: var(--radius-sm);
   overflow: hidden;
 }
@@ -212,7 +213,7 @@
   background: var(--color-green-400);
 }
 
-/* ── Per-seizoen breakdown table ── */
+/* â”€â”€ Per-seizoen breakdown table â”€â”€ */
 .breakdownTable {
   display: flex;
   flex-direction: column;
@@ -222,7 +223,7 @@
   display: grid;
   grid-template-columns: 1fr 56px 56px 20px;
   padding: var(--space-2) var(--space-4);
-  border-bottom: 1px solid var(--app-border, var(--app-text));
+  border-bottom: 1px solid var(--app-border);
 }
 
 .breakdownHeader .breakdownColName,
@@ -241,7 +242,7 @@
   padding: var(--space-3) var(--space-4);
   min-height: 48px;
   border: none;
-  border-bottom: 1px solid var(--app-border, var(--app-text));
+  border-bottom: 1px solid var(--app-border);
   background: none;
   font: inherit;
   text-align: left;
@@ -286,7 +287,7 @@
   text-align: center;
 }
 
-/* ── Member list ── */
+/* â”€â”€ Member list â”€â”€ */
 .memberList {
   display: flex;
   flex-direction: column;
@@ -298,7 +299,7 @@
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   min-height: 48px;
-  border-bottom: 1px solid var(--app-border, var(--app-text));
+  border-bottom: 1px solid var(--app-border);
 }
 
 .memberRow:last-child {
@@ -309,7 +310,7 @@
   width: 32px;
   height: 32px;
   border-radius: var(--radius-full);
-  background: var(--app-surface, var(--color-neutral-900));
+  background: var(--app-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -328,7 +329,7 @@
   text-overflow: ellipsis;
 }
 
-/* ── Details card ── */
+/* â”€â”€ Details card â”€â”€ */
 .detailList {
   display: flex;
   flex-direction: column;
@@ -339,7 +340,7 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--app-border, var(--app-text));
+  border-bottom: 1px solid var(--app-border);
 }
 
 .detailRow:last-child {
@@ -363,7 +364,7 @@
   text-overflow: ellipsis;
 }
 
-/* ── Empty / loading ── */
+/* â”€â”€ Empty / loading â”€â”€ */
 .emptyText {
   padding: var(--space-4);
   text-align: center;
@@ -378,7 +379,7 @@
   color: var(--app-muted-text);
 }
 
-/* ── Match list (upcoming + recent) ── */
+/* â”€â”€ Match list (upcoming + recent) â”€â”€ */
 .matchList {
   display: flex;
   flex-direction: column;
@@ -391,7 +392,7 @@
   padding: var(--space-3) var(--space-4);
   min-height: 48px;
   border: none;
-  border-bottom: 1px solid var(--app-border, var(--app-text));
+  border-bottom: 1px solid var(--app-border);
   background: transparent;
   width: 100%;
   text-align: left;
@@ -457,7 +458,7 @@
   flex-shrink: 0;
 }
 
-/* ── Desktop: 2-column grid for sections ── */
+/* â”€â”€ Desktop: 2-column grid for sections â”€â”€ */
 @media (min-width: 768px) {
   .overviewRoot {
     display: grid;
@@ -505,10 +506,10 @@
 }
 
 .compCard {
-  border: 1px solid var(--app-border, var(--color-neutral-600));
+  border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--app-surface, var(--color-neutral-900));
+  background: var(--app-surface);
 }
 
 .compHeader {
@@ -561,7 +562,7 @@
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-full);
   border: 1px solid var(--app-border);
-  background: var(--app-surface, var(--color-neutral-900));
+  background: var(--app-surface);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: var(--app-muted-text);
@@ -580,7 +581,7 @@
 }
 
 .compBody {
-  border-top: 1px solid var(--app-border, var(--color-neutral-600));
+  border-top: 1px solid var(--app-border);
   padding: var(--space-2) var(--space-3);
   display: flex;
   flex-direction: column;
@@ -608,10 +609,10 @@
 }
 
 .playerCard {
-  border: 1px solid var(--app-border, var(--color-neutral-600));
+  border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--app-surface, var(--color-neutral-900));
+  background: var(--app-surface);
 }
 
 .playerHeader {
@@ -669,7 +670,7 @@
 }
 
 .playerSlots {
-  border-top: 1px solid var(--app-border, var(--color-neutral-600));
+  border-top: 1px solid var(--app-border);
   display: flex;
   flex-direction: column;
 }
@@ -679,7 +680,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  border-bottom: 1px solid var(--app-border, var(--color-neutral-600));
+  border-bottom: 1px solid var(--app-border);
 }
 
 .playerSlotRow:last-child {

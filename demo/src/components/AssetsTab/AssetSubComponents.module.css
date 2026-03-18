@@ -5,8 +5,8 @@
 }
 
 .previewDynamic {
-  --checker-dark: var(--color-neutral-800);
-  --checker-light: var(--color-neutral-900);
+  --checker-dark: color-mix(in srgb, var(--app-surface) 70%, var(--app-border));
+  --checker-light: var(--app-surface);
   aspect-ratio: var(--aspect-ratio, 3 / 4);
   background: repeating-conic-gradient(var(--checker-dark) 0% 25%, var(--checker-light) 0% 50%) 50% / 20px 20px;
 }
@@ -37,10 +37,25 @@
 
 .editBtn {
   --edit-btn-bg: var(--color-violet-500);
-  --edit-btn-bg-disabled: var(--color-neutral-500);
+  --edit-btn-bg-disabled: var(--app-muted-text);
   cursor: pointer;
   background: var(--edit-btn-bg);
   opacity: 1;
+  border: none;
+  border-radius: var(--radius-md);
+  min-height: 36px;
+  color: white;
+  font-weight: var(--font-semibold);
+  transition: opacity var(--duration-fast) var(--ease-default);
+}
+
+.editBtn:hover {
+  opacity: 0.85;
+}
+
+.editBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
 }
 
 .editBtn[data-processing] {
