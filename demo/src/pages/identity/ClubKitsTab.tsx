@@ -101,7 +101,7 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
     return (<Card className="p-24"><div className="text-center text-muted">Loading kits...</div></Card>);
   }
   if (!brandProfileId) {
-    return (<Card className="p-24"><Alert variant="warning">No brand profile found for this club. Create a brand profile on the Identity tab first to manage kits.</Alert></Card>);
+    return (<Card className="p-24"><Alert variant="warning">Geen brand profile gevonden voor deze club. Maak eerst een brand profile aan via het Identity-tabblad.</Alert></Card>);
   }
 
   return (

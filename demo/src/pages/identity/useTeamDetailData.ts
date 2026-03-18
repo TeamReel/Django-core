@@ -313,15 +313,13 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
   // ── Navigation memos ──
   const backToClubHref = useMemo(() => {
     if (!orgKeyForRoutes || !clubKeyForRoutes) return '/federations';
-    return `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}${location.search || ''}`;
-  }, [clubKeyForRoutes, location.search, orgKeyForRoutes]);
+    return `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}`;
+  }, [clubKeyForRoutes, orgKeyForRoutes]);
 
   const federationClubsHref = useMemo(() => {
     if (!orgKeyForRoutes) return '/federations';
-    const params = new URLSearchParams(location.search || '');
-    params.set('tab', 'clubs');
-    return `/${encodeURIComponent(orgKeyForRoutes)}?${params.toString()}`;
-  }, [location.search, orgKeyForRoutes]);
+    return `/${encodeURIComponent(orgKeyForRoutes)}?tab=clubs`;
+  }, [orgKeyForRoutes]);
 
   const teamBreadcrumbOptions: BreadcrumbSwitcherOption[] = useMemo(() => {
     const base = (clubTeamsForSwitcher || []).map((t: Project) => ({

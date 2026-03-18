@@ -145,7 +145,7 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
     } catch (e: unknown) {
       logger.error('Failed to load team credits balance', e);
       setBalance(null);
-      setBalanceError(e instanceof Error ? e.message : 'Failed to load team credits balance');
+      setBalanceError('Kan team-credits niet laden. Probeer het later opnieuw.');
     } finally {
       setBalanceLoading(false);
     }
@@ -166,7 +166,7 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
     } catch (e: unknown) {
       logger.error('Failed to load user wallet balance', e);
       setUserBalance(null);
-      setUserBalanceError(e instanceof Error ? e.message : 'Failed to load your credits balance');
+      setUserBalanceError('Kan je credits-saldo niet laden. Probeer het later opnieuw.');
     } finally {
       setUserBalanceLoading(false);
     }
@@ -182,7 +182,7 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
     } catch (e: unknown) {
       logger.error('Failed to load team transactions', e);
       setTransactions([]);
-      setTransactionsError(e instanceof Error ? e.message : 'Failed to load team transactions');
+      setTransactionsError('Kan transacties niet laden. Probeer het later opnieuw.');
     } finally {
       setTransactionsLoading(false);
     }

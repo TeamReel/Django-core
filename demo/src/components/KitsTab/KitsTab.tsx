@@ -189,7 +189,7 @@ export function KitsTab({
     return (
       <Card className="p-24">
         <Alert variant="warning">
-          No brand profile found. Create a brand profile on the Identity tab first to manage kits.
+          Geen brand profile gevonden. Maak eerst een brand profile aan via het Beheer-tabblad (Assets).
         </Alert>
       </Card>
     );
