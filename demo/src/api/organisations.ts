@@ -73,6 +73,11 @@ export const organisationsApi = {
     return api.get<Project>(`/organisations/${orgSlug}/projects/${projectSlug}/`, signal);
   },
 
+  /** Get a team (child project) under a club within an organisation. */
+  getTeam(orgSlug: string, clubSlug: string, teamSlug: string, signal?: AbortSignal) {
+    return api.get<Project>(`/organisations/${orgSlug}/projects/${clubSlug}/teams/${teamSlug}/`, signal);
+  },
+
   /** Create a project within an organisation. */
   createProject(orgSlug: string, data: Partial<Project>, opts?: MutateOptions) {
     return api.post<Project>(`/organisations/${orgSlug}/projects/`, data, opts);

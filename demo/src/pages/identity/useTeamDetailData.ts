@@ -150,7 +150,7 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
             `/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
           ),
           api.get<Project>(
-            `/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/${encodeURIComponent(teamSlugOrId)}/`,
+            `/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/${encodeURIComponent(clubSlugOrId)}/teams/${encodeURIComponent(teamSlugOrId)}/`,
           ),
         ]);
 

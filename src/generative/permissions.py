@@ -13,11 +13,65 @@ from rest_framework.views import View
 
 
 class IsProjectMember(BasePermission):
-    """Allow access only to project members.
+    """Allow access only to project members and authorised admins.
 
     Checks both request-level (query params, post data) and object-level
-    (obj.project) membership.
+    (obj.project) membership.  In addition to direct project membership
+    the following elevated roles are granted access:
+
+    - Superusers / staff
+    - Organisation admins (admin membership on the project's organisation)
+    - Club admins (ADMIN membership on the team's parent club project)
     """
+
+    # ── helpers ─────────────────────────────────────────────────────
+
+    @staticmethod
+    def _is_project_accessible(user, project_id) -> bool:  # noqa: ANN001
+        """Return ``True`` if *user* may access the project identified by *project_id*."""
+        from projects.models import Project, ProjectMembership
+
+        # Superuser / staff bypass
+        if user.is_superuser or user.is_staff:
+            return True
+
+        # Direct project membership (any role)
+        if ProjectMembership.objects.filter(
+            project_id=project_id, user=user, deleted_at__isnull=True
+        ).exists():
+            return True
+
+        # Resolve the project for org / parent checks
+        try:
+            project = Project.objects.select_related("organisation").get(pk=project_id)
+        except (Project.DoesNotExist, ValueError):
+            return False
+
+        # Organisation admin
+        if project.organisation_id:
+            from organisations.models import Membership as OrgMembership
+
+            if OrgMembership.objects.filter(
+                organisation_id=project.organisation_id,
+                user=user,
+                role="admin",
+                is_active=True,
+            ).exists():
+                return True
+
+        # Club admin – ADMIN membership on the parent (club) project
+        if project.parent_project_id:
+            if ProjectMembership.objects.filter(
+                project_id=project.parent_project_id,
+                user=user,
+                role=ProjectMembership.Role.ADMIN,
+                deleted_at__isnull=True,
+            ).exists():
+                return True
+
+        return False
+
+    # ── DRF interface ───────────────────────────────────────────────
 
     def has_permission(self, request: Request, view: View) -> bool:
         """Check if user is member of project specified in request."""
@@ -32,10 +86,7 @@ class IsProjectMember(BasePermission):
             # No project filter = allow (org-level filtering in ViewSet)
             return True
 
-        # Check project membership
-        from projects.models import ProjectMembership
-
-        return ProjectMembership.objects.filter(project_id=project_id, user=request.user).exists()
+        return self._is_project_accessible(request.user, project_id)
 
     def has_object_permission(self, request: Request, view: View, obj) -> bool:
         """Check if user can access object's project."""
@@ -43,10 +94,7 @@ class IsProjectMember(BasePermission):
         if not hasattr(obj, "project") or not obj.project:
             return True
 
-        # Check membership
-        from projects.models import ProjectMembership
-
-        return ProjectMembership.objects.filter(project=obj.project, user=request.user).exists()
+        return self._is_project_accessible(request.user, obj.project_id)
 
 
 class IsOrgAdmin(BasePermission):

@@ -127,7 +127,9 @@ function TeamSeasonRedirect({
     const run = async () => {
       try {
         // 1. Resolve the team project to get its UUID
-        const team = await organisationsApi.getProject(orgSlug, teamSlug);
+        // Use the teams endpoint to avoid ambiguous slug issues (e.g. multiple
+        // clubs having a "heren-5" team) — the club context disambiguates.
+        const team = await organisationsApi.getTeam(orgSlug, clubSlug, teamSlug);
         const teamId = String(team?.id || '').trim();
         if (!teamId || cancelled) { setChecked(true); return; }
 
