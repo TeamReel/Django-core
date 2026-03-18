@@ -9,7 +9,7 @@
  * RBAC tab visibility:
  *   Supporter → Overview, Wedstrijden (2)
  *   Player   → Overview, Wedstrijden, Media, Selectie (4)
- *   Admin    → Overview, Wedstrijden, Media, Selectie, Beheer (5)
+ *   Admin    → Overview, Wedstrijden, Media, Selectie, Beheer, Club (6)
  */
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -38,6 +38,7 @@ import SeasonMatchesTab from '../periods/SeasonMatchesTab';
 import SeasonAssetsSettingsTab from '../periods/SeasonAssetsSettingsTab';
 import { TeamOverviewTab } from './TeamOverviewTab';
 import { TeamBeheerTab } from './TeamBeheerTab';
+import { HubClubTab } from './HubClubTab';
 
 import s from './MyTeamHubPage.module.css';
 
@@ -88,6 +89,9 @@ export const MyTeamHubPage: React.FC = () => {
       matches: 'wedstrijden',
       squad: 'selectie',
       team: 'selectie',
+      identity: 'club',
+      kits: 'club',
+      brand: 'club',
     };
     const aliased = ALIAS_MAP[raw] ?? raw;
 
@@ -95,7 +99,7 @@ export const MyTeamHubPage: React.FC = () => {
       ? new Set(['overview', 'wedstrijden'])
       : isPlayer
         ? new Set(['overview', 'wedstrijden', 'media', 'selectie'])
-        : new Set(['overview', 'wedstrijden', 'media', 'selectie', 'beheer']);
+        : new Set(['overview', 'wedstrijden', 'media', 'selectie', 'beheer', 'club']);
     return allowed.has(aliased) ? aliased : 'overview';
   }, [searchParams, isPlayer, isSupporter]);
 
@@ -332,6 +336,7 @@ export const MyTeamHubPage: React.FC = () => {
             ...(!isSupporter ? [{ id: 'media', label: 'Media' }] : []),
             ...(!isSupporter ? [{ id: 'selectie', label: 'Selectie' }] : []),
             ...(isAdmin ? [{ id: 'beheer', label: 'Beheer' }] : []),
+            ...(isAdmin ? [{ id: 'club', label: 'Club' }] : []),
           ]}
           activeTab={activeTab}
         />
@@ -480,6 +485,20 @@ export const MyTeamHubPage: React.FC = () => {
                 </section>
               )}
             </div>
+          )}
+
+          {/* Club — admin-only, club management sub-tabs */}
+          {activeTab === 'club' && isAdmin && team.org && team.club && (
+            <HubClubTab
+              org={team.org}
+              club={team.club}
+              orgSlug={team.orgSlugForDirectoryLists}
+              clubId={team.clubIdForDirectoryLists}
+              orgKeyForRoutes={team.orgKeyForRoutes}
+              clubKeyForRoutes={team.clubKeyForRoutes}
+              brandProfileId={team.brandProfileId}
+              apiBaseUrl={team.apiBaseUrl}
+            />
           )}
         </div>
       </div>

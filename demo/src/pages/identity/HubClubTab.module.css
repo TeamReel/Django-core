@@ -1,0 +1,164 @@
+/* ─── HubClubTab — Club management within the Team Hub ─── */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ── Sub-tab pills ── */
+.subTabs {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.subTabs::-webkit-scrollbar { display: none; }
+
+.subTab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-xl);
+  background: var(--app-surface);
+  color: var(--app-muted-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-default),
+              color var(--duration-fast) var(--ease-default),
+              border-color var(--duration-fast) var(--ease-default);
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.subTab:hover {
+  background: var(--app-surface-2);
+  color: var(--app-text);
+}
+
+.subTab:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.subTabActive {
+  background: var(--app-primary);
+  color: white;
+  border-color: var(--app-primary);
+}
+
+.subTabActive:hover {
+  background: var(--app-primary);
+  color: white;
+}
+
+/* ── Content area ── */
+.content {
+  min-height: 200px;
+}
+
+/* ── Identity sub-tabs ── */
+.identityToggle {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+  padding: var(--space-1);
+  background: var(--app-surface-2);
+  border-radius: var(--radius-md);
+}
+
+.identityToggleBtn {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--app-muted-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-default),
+              color var(--duration-fast) var(--ease-default);
+  min-height: 44px;
+}
+
+.identityToggleBtn:hover {
+  color: var(--app-text);
+}
+
+.identityToggleBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.identityToggleBtnActive {
+  background: var(--app-surface);
+  color: var(--app-text);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Club header card ── */
+.clubHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+}
+
+.clubName {
+  flex: 1;
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--app-text);
+  margin: 0;
+}
+
+.clubMeta {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+}
+
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-md);
+  background: var(--app-surface);
+  color: var(--app-muted-text);
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  transition: background var(--duration-fast) var(--ease-default),
+              color var(--duration-fast) var(--ease-default);
+}
+
+.editBtn:hover {
+  background: var(--app-surface-2);
+  color: var(--app-text);
+}
+
+.editBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .subTab,
+  .identityToggleBtn,
+  .editBtn {
+    transition: none;
+  }
+}
