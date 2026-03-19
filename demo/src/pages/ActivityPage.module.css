@@ -28,7 +28,7 @@
   border-radius: var(--radius-xl);
   cursor: pointer;
   white-space: nowrap;
-  min-height: 36px;
+  min-height: 44px;
   transition: all var(--duration-fast) var(--ease-default);
 }
 
