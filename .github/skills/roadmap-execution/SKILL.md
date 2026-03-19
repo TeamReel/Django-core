@@ -1,6 +1,8 @@
+````skill
 ---
 name: roadmap-execution
 description: "Executes a roadmap phase end-to-end: reads the spec, plans tasks, implements code, verifies quality, and commits. Use when executing a roadmap, implementing a phase, or working through a spec."
+compatibility: "Requires PowerShell terminal, git, Node.js (for frontend builds), Python/Django (for backend)."
 metadata:
   author: teamreel
   argument-hint: "Roadmap number and phase (e.g. 'Roadmap #21 Phase H0')"
@@ -58,23 +60,24 @@ Execute each task following conventions:
 
 ### Step 5: Verify
 
-```bash
+```powershell
 # Frontend
-cd demo
+Push-Location demo
 npx tsc --noEmit    # Zero type errors
 npx vite build      # Build succeeds
+Pop-Location
 
 # Backend
-cd src
+Push-Location src
 python manage.py check       # System check
 python manage.py migrate     # Migrations apply
 pytest                       # Tests pass
+Pop-Location
 ```
 
 ### Step 6: Commit
 
-```bash
-# Conventional commit format
+```powershell
 git add -A
 git commit -m "feat(<scope>): <description>
 
@@ -93,9 +96,8 @@ After each phase, update the spec:
 2. Check off satisfied "Done criteria" (`- [x]`)
 
 After ALL phases of a roadmap are complete:
-```bash
-# Update spec status to ✅ Afgerond
-# Move folder to done/
+```powershell
+# Update spec status
 git mv documents/02-roadmap/{number}_{name}/ documents/02-roadmap/done/
 # Update index.md: move entry from Active to Done
 git commit -m "docs: move roadmap #XX to done"
@@ -109,7 +111,7 @@ git push
 | H0 | Foundation — models, types, basic structure |
 | H1 | Core features — main functionality |
 | H2 | UI polish — responsive, a11y, animations |
-| H3 | Integration — connect frontend ↔ backend |
+| H3 | Integration — connect frontend <> backend |
 | H4 | Advanced — edge cases, performance |
 | H5 | Final — lazy loading, a11y audit, bundle optimization |
 
@@ -122,3 +124,5 @@ git push
 - [ ] Design tokens only (no hardcoded values)
 - [ ] Mobile layout works (no overflow)
 - [ ] Dark mode tokens used (no hardcoded colors)
+
+````

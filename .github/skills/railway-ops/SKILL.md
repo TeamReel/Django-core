@@ -49,7 +49,7 @@ railway status
 
 ## Step 3: Execute the Command
 
-### ⚠️ CRITICAL: `railway run` Limitation
+### CRITICAL: `railway run` Limitation
 
 `railway run` injects Railway's **internal** `DATABASE_URL` (`postgres.railway.internal`) which is NOT reachable from your local machine. For commands that need DB access, use the **local execution approach** instead:
 

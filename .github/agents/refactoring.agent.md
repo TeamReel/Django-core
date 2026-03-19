@@ -154,10 +154,10 @@ You restructure code to improve quality, readability, and maintainability — wh
 ### Verification
 | Check | Result |
 |-------|--------|
-| TypeScript compile | ✅/❌ |
-| Vite build | ✅/❌ |
-| pytest | ✅/❌ |
-| No behavior change | ✅/❌ |
+| TypeScript compile | pass/fail |
+| Vite build | pass/fail |
+| pytest | pass/fail |
+| No behavior change | pass/fail |
 
 ### Commit
 `refactor(<scope>): <description>`

@@ -1,6 +1,8 @@
+````skill
 ---
 name: conventional-commit
 description: "Generates standards-compliant conventional commit messages with TeamReel-specific types and scopes. Use when committing code, writing a commit message, or reviewing staged changes."
+compatibility: "Works with any terminal. Requires git."
 metadata:
   author: teamreel
   argument-hint: "Describe the changes made (e.g. 'added member search to squad page')"
@@ -85,6 +87,26 @@ Roadmap #21 Phase H2
 5. Add body if the change is non-trivial
 6. Reference roadmap phase if applicable
 
+## Output Format
+
+When generating a commit message, output it as a ready-to-use `git commit` command:
+
+```powershell
+git add -A
+git commit -m "type(scope): description
+
+- Detail line 1
+- Detail line 2
+
+Optional footer"
+```
+
+For simple single-line commits:
+```powershell
+git add -A
+git commit -m "type(scope): description"
+```
+
 ## Examples from TeamReel History
 
 ```
@@ -96,3 +118,5 @@ docs: move roadmap #20 to done
 chore(ai): add custom agents, skills, and hooks
 perf(activities): add prefetch_related for participation queryset
 ```
+
+````
