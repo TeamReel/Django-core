@@ -96,6 +96,8 @@ urlpatterns = [
     path("api/v1/navigation/", include("navigation.urls")),
     # B62: Activity Feed API
     path("api/v1/", include("activity_feed.api.urls")),
+    # B46: Soft Delete & Trash API
+    path("api/v1/trash/", include("trash.api.urls")),
     # Security Baseline API
     path("api/security/", include("security_baseline.urls")),
     # Constitution API (B18)

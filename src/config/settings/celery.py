@@ -200,6 +200,18 @@ CELERY_BEAT_SCHEDULE = {
             "expires": 3600,
         },
     },
+    # B46: Cleanup expired trash items daily at 3:15 AM UTC
+    "cleanup-expired-trash": {
+        "task": "trash.tasks.cleanup_expired_trash",
+        "schedule": crontab(hour=3, minute=15),  # Daily at 3:15 AM UTC
+        "kwargs": {
+            "batch_size": 500,
+            "dry_run": False,
+        },
+        "options": {
+            "expires": 3600,  # Task expires if not run within 1 hour
+        },
+    },
 }
 
 # Beat Scheduler Settings

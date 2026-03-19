@@ -91,6 +91,8 @@ INSTALLED_APPS = [
     "src.video.apps.VideoConfig",
     # B62: Activity Feed
     "activity_feed.apps.ActivityFeedConfig",
+    # B46: Soft Delete & Trash
+    "trash.apps.TrashConfig",
 ]
 
 MIDDLEWARE = [
@@ -413,6 +415,18 @@ PERMISSIONS_CACHE_TTL = 300  # 5 minutes (for Redis cache in permission evaluati
 PERMISSIONS_AUDIT_BACKEND = (
     "permissions.audit.B09Backend"  # Use B09 adapter (supports internal audit app)
 )
+
+# =============================================================================
+# SOFT DELETE & TRASH (B46)
+# =============================================================================
+# Default retention period in days (how long items stay in trash before expiry)
+SOFT_DELETE_RETENTION_DAYS = int(os.getenv("SOFT_DELETE_RETENTION_DAYS", "30"))
+
+# Per-model retention overrides (optional)
+# SOFT_DELETE_RETENTION_OVERRIDES = {
+#     "content_generation.ContentItem": 60,  # Content stays 60 days
+#     "files.FileAsset": 14,  # Files only 14 days
+# }
 
 # Logging Configuration
 LOGGING = {

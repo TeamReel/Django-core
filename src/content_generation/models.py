@@ -16,6 +16,9 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from src.common.managers import AllObjectsManager, SoftDeleteManager
+from src.common.mixins import SoftDeleteMixin
+
 User = get_user_model()
 
 
@@ -93,16 +96,19 @@ class ApprovalStatus(models.TextChoices):
 # ========== Custom Managers ==========
 
 
-class ContentItemManager(models.Manager):
-    """Custom manager for ContentItem with soft-delete support"""
+class ContentItemManager(SoftDeleteManager):
+    """Custom manager for ContentItem with soft-delete support.
+
+    Inherits from SoftDeleteManager: default queryset excludes deleted items.
+    """
 
     def active(self):
-        """Exclude soft-deleted items"""
-        return self.filter(deleted_at__isnull=True)
+        """Exclude soft-deleted items (alias — manager already filters)."""
+        return self.all()
 
     def for_project(self, project_id):
-        """Project-scoped active items"""
-        return self.active().filter(project_id=project_id)
+        """Project-scoped active items."""
+        return self.filter(project_id=project_id)
 
 
 # ========== Models ==========
@@ -256,7 +262,7 @@ class ContentTemplate(models.Model):
         return f"{self.name} ({self.template_type})"
 
 
-class ContentItem(models.Model):
+class ContentItem(SoftDeleteMixin, models.Model):
     """Generated content instance with status tracking"""
 
     # Foreign Keys
@@ -314,11 +320,9 @@ class ContentItem(models.Model):
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
-    deleted_at = models.DateTimeField(
-        null=True, blank=True, db_index=True, help_text="Soft-delete timestamp"
-    )
 
     objects = ContentItemManager()
+    all_objects = AllObjectsManager()
 
     class Meta:
         db_table = "content_generation_contentitem"

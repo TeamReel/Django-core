@@ -4,16 +4,22 @@ import uuid
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from src.common.managers import AllObjectsManager, SoftDeleteManager
+from src.common.mixins import SoftDeleteMixin
 
-class ProjectMembershipManager(models.Manager):
-    """Manager for ProjectMembership."""
+
+class ProjectMembershipManager(SoftDeleteManager):
+    """Manager for ProjectMembership.
+
+    Inherits from SoftDeleteManager: default queryset excludes deleted items.
+    """
 
     def active(self):
-        """Return only active memberships (not soft-deleted)."""
-        return self.filter(deleted_at__isnull=True)
+        """Return only active memberships (alias — manager already filters)."""
+        return self.all()
 
 
-class ProjectMembership(models.Model):
+class ProjectMembership(SoftDeleteMixin, models.Model):
     """
     Explicit membership of a user in a project.
 
@@ -79,13 +85,9 @@ class ProjectMembership(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    deleted_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="Timestamp when membership was revoked (soft delete)",
-    )
 
     objects = ProjectMembershipManager()
+    all_objects = AllObjectsManager()
 
     class Meta:
         app_label = "projects"
