@@ -76,6 +76,7 @@ class MyViewSet(viewsets.ModelViewSet):
 ```
 src/<app_name>/
   __init__.py
+  README.md          # Module documentation (required)
   apps.py
   models.py
   admin.py

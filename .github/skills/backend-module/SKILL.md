@@ -194,6 +194,7 @@ Follow `src/activities/` as the gold-standard example:
 ```
 src/<app>/
   __init__.py          # Module docstring: "B{number}: {Title}"
+  README.md            # Module documentation (REQUIRED — see below)
   apps.py              # AppConfig with ready() for signals
   models.py            # Models: UUID PK, timestamps, org FK, soft delete
   admin.py             # Admin: list_display, filters, search, inlines
@@ -263,6 +264,25 @@ pytest src/{app_name}/tests/ -v --tb=short
 python -c "import {app_name}; print(f'{app_name} OK')"
 ```
 
+### README.md (Required)
+
+Every module **must** include a `README.md` in the app root (`src/<app>/README.md`).
+
+Follow the pattern from `src/activities/README.md` or `src/audit/README.md`:
+
+| Section | Content |
+|---------|---------|
+| Title + badge | `# B{number}: {Title}` + scope badge |
+| Scope | 1-2 sentence description |
+| Key Components | Models, services, tasks — with brief descriptions |
+| API Endpoints | Table: method, path, description, auth |
+| Permissions | Who can do what |
+| Quick Start | 2-3 code examples (create, query, use decorator/signal) |
+| Configuration | Settings, env vars, Celery queues |
+| Database | Notable indexes, constraints |
+| Testing | How to run tests, fixture overview |
+| Extension Points | Where future modules can hook in |
+
 ### Post-Build Analysis
 
 After all tests pass, do a quick self-review:
@@ -277,6 +297,7 @@ After all tests pass, do a quick self-review:
 | Permissions check ownership and staff status | |
 | No N+1 queries (select_related/prefetch_related used) | |
 | Migration is additive (no drops, no removes) | |
+| README.md exists with all required sections | |
 
 ---
 

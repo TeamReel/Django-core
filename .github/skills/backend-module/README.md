@@ -150,6 +150,7 @@ Je kunt altijd zeggen "aanpassen" om fases te herordenen of samenvoegen.
 ```
 src/<app>/
   __init__.py          # Module docstring: "B62: Activity Feed"
+  README.md            # Module documentatie (VERPLICHT)
   apps.py              # AppConfig met ready() voor signals
   models.py            # UUID PK, timestamps, org FK, soft delete
   admin.py             # list_display, filters, search, inlines

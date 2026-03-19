@@ -55,6 +55,12 @@ pytest src/<app>/tests/ -v --tb=short                # All green
 
 Plus self-review analysis (N+1 queries, convention compliance, test coverage).
 
+### Gate 3.5 — Documentation
+Create `src/<app>/README.md` following the pattern from `src/activities/README.md`:
+- Title + scope, key components, API endpoints table, permissions, quick start examples, configuration, database indexes, testing instructions, extension points.
+
+This is **mandatory** — no module is complete without a README.
+
 ### Gate 4 — Update Spec
 Mark module as `✅ IMPLEMENTED` in the roadmap spec file.
 
