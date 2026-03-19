@@ -15,7 +15,8 @@ This prompt triggers the full module builder pipeline with quality gates (inspir
 
 ### Gate 0 — Discovery
 1. Parse the module number (e.g. `B62`) from user input
-2. Read the spec: `documents/02-roadmap/modules/planned/*-B{number}-*.md`
+2. Read the spec: `documents/02-roadmap/modules/backlog/*-B{number}-*/index.md` (or `active/`)
+2b. Move module folder from `backlog/` to `active/` if not already there
 3. Read conventions: `.github/instructions/backend.instructions.md`
 4. **Ambiguity scan** — check spec for gaps in: models, relationships, endpoints, permissions, integrations, edge cases, async tasks
 5. **Clarify** — ask batched questions (1-5 depending on complexity), with sensible defaults the user can just confirm

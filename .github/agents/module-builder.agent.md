@@ -1,6 +1,6 @@
 ---
 name: "Module Builder"
-description: "Implements backend modules from spec to production — models, API, admin, tests, migration, docs. Reads module spec from documents/02-roadmap/modules/planned/, scaffolds the full Django app, and verifies everything works."
+description: "Implements backend modules from spec to production — models, API, admin, tests, migration, docs. Reads module spec from documents/02-roadmap/modules/backlog/ (moves to active/ during build, done/ after completion), scaffolds the full Django app, and verifies everything works."
 tools:
   [vscode/getProjectSetupInfo, vscode/askQuestions, execute/getTerminalOutput, execute/awaitTerminal, execute/killTerminal, execute/runInTerminal, execute/runTests, read/problems, read/readFile, read/terminalSelection, read/terminalLastCommand, agent/runSubagent, edit/createDirectory, edit/createFile, edit/editFiles, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/textSearch, search/usages, search/searchSubagent, todo, pylance-mcp-server/pylanceDocString, pylance-mcp-server/pylanceFileSyntaxErrors, pylance-mcp-server/pylanceSyntaxErrors, pylance-mcp-server/pylanceImports]
 agents:
@@ -26,7 +26,8 @@ You build backend modules for TeamReel from spec to production. You are fast, th
 When the user says "build module B62" or "implementeer B50", you follow the **gate-based workflow** defined in `.github/skills/backend-module/SKILL.md`. Always read that file first.
 
 ### Gate 0: Discovery
-1. Read the spec from `documents/02-roadmap/modules/planned/*-B{number}-*.md`
+1. Read the spec from `documents/02-roadmap/modules/backlog/*-B{number}-*/index.md` (or `active/`)
+2. Move the module folder to `active/` if still in `backlog/`
 2. Read `.github/instructions/backend.instructions.md`
 3. **Ambiguity scan** — check spec for gaps (models, relationships, endpoints, permissions, integrations, edge cases, async)
 4. **Clarify** — ask batched questions (scope-proportional: 1-5 depending on complexity), with sensible defaults

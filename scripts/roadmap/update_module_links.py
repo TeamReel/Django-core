@@ -9,7 +9,8 @@ Usage:
   python scripts/roadmap/update_module_links.py --write
 
 Defaults assume this repository layout:
-  documents/02-roadmap/modules/planned
+  documents/02-roadmap/modules/backlog
+  documents/02-roadmap/modules/active
   documents/02-roadmap/modules/done
 """
 
@@ -20,7 +21,7 @@ import re
 from pathlib import Path
 
 
-MODULE_FILENAME_RE = re.compile(r"^(?P<num>\d{3})-(?P<code>[A-Z]\d{2,3})-(?P<rest>.+)\.md$")
+MODULE_FILENAME_RE = re.compile(r"^(?P<num>\d{3})-(?P<code>[A-Z]\d{2,3})-(?P<rest>.+)$")
 
 # Matches links or inline code that contain a roadmap module filename.
 # Examples:
@@ -28,8 +29,8 @@ MODULE_FILENAME_RE = re.compile(r"^(?P<num>\d{3})-(?P<code>[A-Z]\d{2,3})-(?P<res
 #   modules/done/030-F09-frontend-backend-integration-guides.md
 #   `040-B31-content-templates-and-generation.md`
 MODULE_REF_RE = re.compile(
-    r"(?P<prefix>(?:\.{2}/)*modules/(?P<section>planned|done)/)"
-    r"(?P<num>\d{3})-(?P<code>[A-Z]\d{2,3})-[^\s\)\]`]+\.md"
+    r"(?P<prefix>(?:\.{2}/)*modules/(?P<section>backlog|active|done)/)"
+    r"(?P<num>\d{3})-(?P<code>[A-Z]\d{2,3})-[^\s\)\]`]+(?:\.md|/index\.md)"
 )
 
 INLINE_FILENAME_RE = re.compile(r"`(?P<num>\d{3})-(?P<code>[A-Z]\d{2,3})-[^`]+\.md`")
@@ -56,7 +57,9 @@ def build_index(modules_dir: Path) -> dict[str, str]:
     if not modules_dir.exists():
         return index
 
-    for path in sorted(modules_dir.glob("*.md")):
+    for path in sorted(modules_dir.iterdir()):
+        if not path.is_dir():
+            continue
         match = MODULE_FILENAME_RE.match(path.name)
         if not match:
             continue
@@ -66,32 +69,34 @@ def build_index(modules_dir: Path) -> dict[str, str]:
     return index
 
 
-def rewrite_content(content: str, planned_index: dict[str, str], done_index: dict[str, str]) -> str:
+def rewrite_content(content: str, backlog_index: dict[str, str], active_index: dict[str, str], done_index: dict[str, str]) -> str:
     def replace_ref(match: re.Match[str]) -> str:
         prefix = match.group("prefix")
         section = match.group("section")
         code = match.group("code")
 
-        if section == "planned":
-            filename = planned_index.get(code)
+        if section == "backlog":
+            filename = backlog_index.get(code)
+        elif section == "active":
+            filename = active_index.get(code)
         else:
             filename = done_index.get(code)
 
         if not filename:
             return match.group(0)
 
-        return f"{prefix}{filename}"
+        return f"{prefix}{filename}/index.md"
 
     updated = MODULE_REF_RE.sub(replace_ref, content)
 
     # Also update inline backticked filenames when we can infer the destination.
-    # We default to planned if a code exists there; otherwise fall back to done.
+    # We default to backlog if a code exists there; otherwise active, then done.
     def replace_inline(match: re.Match[str]) -> str:
         code = match.group("code")
-        filename = planned_index.get(code) or done_index.get(code)
+        filename = backlog_index.get(code) or active_index.get(code) or done_index.get(code)
         if not filename:
             return match.group(0)
-        return f"`{filename}`"
+        return f"`{filename}/index.md`"
 
     updated = INLINE_FILENAME_RE.sub(replace_inline, updated)
     return updated
@@ -111,10 +116,12 @@ def main() -> int:
     args = parser.parse_args()
 
     docs_root: Path = args.docs_root
-    planned_dir = docs_root / "02-roadmap" / "modules" / "planned"
+    planned_dir = docs_root / "02-roadmap" / "modules" / "backlog"
+    active_dir = docs_root / "02-roadmap" / "modules" / "active"
     done_dir = docs_root / "02-roadmap" / "modules" / "done"
 
     planned_index = build_index(planned_dir)
+    active_index = build_index(active_dir)
     done_index = build_index(done_dir)
 
     if not planned_index and not done_index:
@@ -136,7 +143,7 @@ def main() -> int:
             continue
 
         original, encoding_used = read_result
-        updated = rewrite_content(original, planned_index, done_index)
+        updated = rewrite_content(original, planned_index, active_index, done_index)
 
         if updated != original:
             changed_files.append(md_file)

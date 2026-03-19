@@ -6,35 +6,35 @@ The Roadmap is the **execution plan** for the Django Core-App. It translates the
 
 ## 2. Module Management (Kanban)
 
-We manage progress by moving module files between status folders in `documents/02-roadmap/modules/`.
+We manage progress by moving module **folders** between lifecycle directories in `documents/02-roadmap/modules/`.
 
+*   **[📋 Backlog](modules/backlog/)**: Specified but not started. Each module is a folder with `index.md` + `phases/todo/` + `phases/done/`.
+*   **[🚧 Active](modules/active/)**: Currently being built. Phase specs move from `todo/` to `done/` as work progresses.
 *   **[✅ Done](modules/done/)**: Fully implemented and merged.
-*   **[🚧 In Progress](modules/in-progress/)**: Currently being built.
-*   **[📋 Planned](modules/planned/)**: Specified but not started.
 
-**To update status:** Simply drag the module file (e.g., `B22.md`) from `planned` to `in-progress`.
+**To update status:** Move the module folder (e.g., `311-B50-scheduled-publishing/`) from `backlog/` to `active/` when starting work, and to `done/` after completion.
 
 ## 3. Phase Structure
 
 The project is divided into **18 Development Phases**. Click a phase to see its modules.
 
 ### Backend Core (Foundation)
-*   **[Phase 1: Foundation & Governance](phases/phase-01-foundation-and-governance.md)** (Modules 001-004) ✅
-*   **[Phase 2: Identity & Multi-Tenancy](phases/phase-02-identity-and-multi-tenancy.md)** (Modules 005-008) ✅
-*   **[Phase 3: Configuration, Audit & Transactions](phases/phase-03-configuration-audit-and-transactions.md)** (Modules 009-012) ✅
-*   **[Phase 4: Interfaces & Communication](phases/phase-04-interfaces-and-communication.md)** (Modules 013-017) ✅
-*   **[Phase 5: Operationalisation](phases/phase-05-operationalisation.md)** (Modules 018-021) ✅
+*   **[Phase 1: Foundation & Governance](deployment-phases/phase-01-foundation-and-governance.md)** (Modules 001-004) ✅
+*   **[Phase 2: Identity & Multi-Tenancy](deployment-phases/phase-02-identity-and-multi-tenancy.md)** (Modules 005-008) ✅
+*   **[Phase 3: Configuration, Audit & Transactions](deployment-phases/phase-03-configuration-audit-and-transactions.md)** (Modules 009-012) ✅
+*   **[Phase 4: Interfaces & Communication](deployment-phases/phase-04-interfaces-and-communication.md)** (Modules 013-017) ✅
+*   **[Phase 5: Operationalisation](deployment-phases/phase-05-operationalisation.md)** (Modules 018-021) ✅
 
 ### Frontend Core (UX)
-*   **[Phase 6: Frontend Foundations](phases/phase-06-frontend-foundations.md)** (Modules 022-025) ✅
-*   **[Phase 7: Frontend Resources & Integration](phases/phase-07-frontend-resources-and-integration.md)** (Modules 026-030) ✅
+*   **[Phase 6: Frontend Foundations](deployment-phases/phase-06-frontend-foundations.md)** (Modules 022-025) ✅
+*   **[Phase 7: Frontend Resources & Integration](deployment-phases/phase-07-frontend-resources-and-integration.md)** (Modules 026-030) ✅
 
 ### Demo Foundation (Validation)
-*   **[Phase 8: Demo Foundation](phases/phase-08-demo-foundation.md)** (Modules 031-033) ✅
+*   **[Phase 8: Demo Foundation](deployment-phases/phase-08-demo-foundation.md)** (Modules 031-033) ✅
 
 ### Extended Capabilities
-*   **[Phase 9: Backend Infrastructure](phases/done/phase-09-backend-infrastructure.md)** (Modules 034-038) ✅
-*   **[Phase 10: Content Engine Core](phases/done/phase-10-content-engine-core.md)** (Modules 039-044) ✅
+*   **[Phase 9: Backend Infrastructure](deployment-phases/done/phase-09-backend-infrastructure.md)** (Modules 034-038) ✅
+*   **[Phase 10: Content Engine Core](deployment-phases/done/phase-10-content-engine-core.md)** (Modules 039-044) ✅
 *   **Accelerated Modules** (045-049): B39, B40, B41, B37, B55 ✅
 
 ### Frontend Improvement Roadmaps — ✅ Done (`done/`)
@@ -67,14 +67,14 @@ The project is divided into **18 Development Phases**. Click a phase to see its 
 *   23 — [Dashboard Match Status & Past Matches](done/23_dashboard-match-status/index.md) (4/4 ✅)
 
 ### Planned Phases
-*   **[Phase 11: Frontend & Visual Development](phases/planned/phase-11-frontend-and-visual-development.md)** (Modules 045-047) 📋
-*   **[Phase 12: Workflows & Payments](phases/planned/phase-12-workflows-and-payments.md)** — B37 ✅, B36/B38 📋
-*   **[Phase 13: Advanced UI](phases/planned/phase-13-advanced-ui.md)** 📋
-*   **[Phase 14: Data Foundations Part 2](phases/phase-14-data-foundations-part-2.md)** (Modules 054-058) 📋
-*   **[Phase 15: ML/AI Platform](phases/phase-15-ml-ai-platform.md)** (Modules 059-064) 📋
-*   **[Phase 16: Platform Quality Gates](phases/phase-16-platform-quality-gates.md)** (Modules 065-069) 📋
-*   **[Phase 17: Integration Ecosystem](phases/phase-17-integration-ecosystem.md)** (Modules 070-071) 📋
-*   **[Phase 18: Operations & Resilience](phases/phase-18-operations-and-resilience.md)** (Modules 072) 📋
+*   **[Phase 11: Frontend & Visual Development](deployment-phases/planned/phase-11-frontend-and-visual-development.md)** (Modules 045-047) 📋
+*   **[Phase 12: Workflows & Payments](deployment-phases/planned/phase-12-workflows-and-payments.md)** — B37 ✅, B36/B38 📋
+*   **[Phase 13: Advanced UI](deployment-phases/planned/phase-13-advanced-ui.md)** 📋
+*   **[Phase 14: Data Foundations Part 2](deployment-phases/phase-14-data-foundations-part-2.md)** (Modules 054-058) 📋
+*   **[Phase 15: ML/AI Platform](deployment-phases/phase-15-ml-ai-platform.md)** (Modules 059-064) 📋
+*   **[Phase 16: Platform Quality Gates](deployment-phases/phase-16-platform-quality-gates.md)** (Modules 065-069) 📋
+*   **[Phase 17: Integration Ecosystem](deployment-phases/phase-17-integration-ecosystem.md)** (Modules 070-071) 📋
+*   **[Phase 18: Operations & Resilience](deployment-phases/phase-18-operations-and-resilience.md)** (Modules 072) 📋
 
 ## 4. Status Definitions
 

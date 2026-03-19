@@ -151,7 +151,7 @@ pytest tests/[module_name]/ -v
 
 ## References
 
-- **Spec**: [documents/02-roadmap/modules/done/XXX-Bxx-module-name.md](../../documents/02-roadmap/modules/done/XXX-Bxx-module-name.md)
+- **Spec**: [documents/02-roadmap/modules/done/XXX-Bxx-module-name/index.md](../../documents/02-roadmap/modules/done/XXX-Bxx-module-name/index.md)
 - **Module Doc**: [documents/04-modules/backend/Bxx-module-name.md](../../documents/04-modules/backend/Bxx-module-name.md)
 - **API Docs**: [Auto-generated API docs](../api/docs/)
 - **Constitution**: [Article II - Architecture and Modularity](../../.kittify/memory/constitution.md#ii-architecture-and-modularity)

@@ -6,9 +6,20 @@ argument-hint: "Module number (e.g. 'B62') or full name (e.g. 'activity-feed')"
 
 # Backend Module Builder
 
-Build a complete Django app from a module spec in `documents/02-roadmap/modules/planned/`.
+Build a complete Django app from a module spec in `documents/02-roadmap/modules/backlog/`.
 
 **Like spec-kitty, but focused:** No worktrees, no branch juggling. Same quality gates — discovery, clarify, constitution check, phased work, analysis — compressed into a single-chat flow.
+
+### Module Lifecycle
+
+```
+backlog/  →  active/  →  done/
+(folder)     (folder)     (folder)
+```
+
+- **backlog/**: Module spec as `{number}-{code}-{name}/index.md` + empty `phases/todo/` and `phases/done/`
+- **active/**: When work starts (Gate 0), move the folder here. Phase specs go into `phases/todo/` and move to `phases/done/` as completed.
+- **done/**: After Gate 4, move the folder here.
 
 ---
 
@@ -31,8 +42,13 @@ User: "build module B62"
 
 ### 0.1 Load the spec
 ```
-Read: documents/02-roadmap/modules/planned/*-B{number}-*.md
+# 1. Find the module spec in backlog or active
+Find: documents/02-roadmap/modules/backlog/*-B{number}-*/index.md
+  OR: documents/02-roadmap/modules/active/*-B{number}-*/index.md
 Read: .github/instructions/backend.instructions.md
+
+# 2. Move module folder from backlog/ to active/
+git mv documents/02-roadmap/modules/backlog/{folder} documents/02-roadmap/modules/active/{folder}
 ```
 
 ### 0.2 Ambiguity Scan
@@ -303,10 +319,13 @@ After all tests pass, do a quick self-review:
 
 ## Gate 4: Update Spec
 
-Update the module spec file in `documents/02-roadmap/modules/planned/`:
-- Status: `📋 ROADMAP` → `✅ IMPLEMENTED`
-- Check all delivery checklist items
-- Add implementation notes (files created, test count, decisions made)
+1. Update the spec `index.md`: Status `📋 ROADMAP` → `✅ IMPLEMENTED`
+2. Check all delivery checklist items
+3. Add implementation notes (files created, test count, decisions made)
+4. Move the module folder from `active/` to `done/`:
+```bash
+git mv documents/02-roadmap/modules/active/{folder} documents/02-roadmap/modules/done/{folder}
+```
 
 ---
 
