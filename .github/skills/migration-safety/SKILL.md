@@ -1,7 +1,10 @@
 ---
 name: migration-safety
-description: "Audit a Django migration for safety — detects destructive operations and generates safe alternatives"
-argument-hint: "Migration file path or app name (e.g. 'organisations/0043_add_slug')"
+description: "Audits Django migrations for destructive operations and generates safe alternatives. Use when creating a migration, reviewing schema changes, renaming fields, or removing models."
+compatibility: "Requires Django 5, PostgreSQL."
+metadata:
+  author: teamreel
+  argument-hint: "Migration file path or app name (e.g. 'organisations/0043_add_slug')"
 ---
 
 # Migration Safety Audit

@@ -1,7 +1,10 @@
 ---
 name: pytest-coverage
-description: "Generate test coverage reports for TeamReel's Django backend and React frontend — identify gaps, suggest tests, track coverage trends"
-argument-hint: "App or module to check coverage for (e.g. 'organisations' or 'demo/src/hooks')"
+description: "Generates test coverage reports for Django backend and React frontend, identifies testing gaps, and suggests tests to write. Use when checking coverage, finding untested code, or planning what to test next."
+compatibility: "Requires pytest, pytest-cov, vitest."
+metadata:
+  author: teamreel
+  argument-hint: "App or module to check coverage for (e.g. 'organisations' or 'demo/src/hooks')"
 ---
 
 # Test Coverage Analysis

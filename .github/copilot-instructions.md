@@ -15,20 +15,21 @@ Read the user's request and match it to one of these categories:
 | Signal in request | Action |
 |-------------------|--------|
 | "build", "implement", "add feature", "create", code changes | → **Implement** (Developer mode) |
-| "review", "audit", "check code", "look at" | → **Review** (read-only analysis) |
+| "review", "audit", "check code", "look at" (code) | → **Review** (read-only analysis) |
 | "refactor", "clean up", "extract", "restructure", "optimize code" | → **Refactor** — read `.github/agents/refactoring.agent.md` for full workflow |
 | "plan", "architect", "design system", "how should we" | → **Plan** (architecture, no code yet) |
 | "bug", "broken", "error", "not working", "fix" | → **Debug** — read `.github/prompts/debug.prompt.md` for workflow |
 | "accessible", "a11y", "WCAG", "screen reader", "focus" | → **Accessibility** — read `.github/agents/accessibility.agent.md` |
-| "test", "E2E", "playwright", "verify flow", "check the site" | → **Test** — read `.github/skills/webapp-testing/SKILL.md` |
-| "look at the UI", "visual review", "how does it look", "responsive", "mobile" | → **Visual Review** — read `.github/skills/web-design-reviewer/SKILL.md` |
+| "test", "E2E", "playwright", "verify flow", "check the site" | → **Test (browser)** — read `.github/skills/webapp-testing/SKILL.md` (user flows in real browser) |
+| "look at the UI", "visual review", "how does it look", "screenshot" | → **Visual Review (browser)** — read `.github/skills/web-design-reviewer/SKILL.md` (layout/responsive at pixel level) |
+| "review component", "check a11y", "token audit", "code review UI" | → **UI Review (code)** — read `.github/skills/ui-review/SKILL.md` (source code audit for a11y/tokens) |
 | "database", "query", "slow query", "index", "N+1", "PostgreSQL" | → **DBA** — read `.github/agents/postgresql-dba.agent.md` |
 | "deploy", "railway", "logs", "production", "server down" | → **Ops** — read `.github/agents/ops-deploy.agent.md` |
 | "seed", "management command", "run on railway", "railway run" | → **Railway Ops** — read `.github/skills/railway-ops/SKILL.md` + `.github/prompts/seed.prompt.md` |
 | "docs", "document", "update docs", "write documentation" | → **Docs** — read `.github/skills/documentation-writer/SKILL.md` |
 | "new component", "scaffold component" | → **Scaffold** — read `.github/skills/frontend-component/SKILL.md` |
 | "build module", "implementeer B", "module B", "bouw B" | → **Module Builder** — read `.github/skills/backend-module/SKILL.md` + `.github/prompts/build-module.prompt.md` |
-| "new endpoint", "API", "new model", "serializer" | → **API** — read `.github/skills/api-endpoint/SKILL.md` |
+| "new endpoint", "API", "new model", "serializer" (single resource) | → **API** — read `.github/skills/api-endpoint/SKILL.md` |
 | "migration", "migrate", "schema change" | → **Migration** — read `.github/skills/migration-safety/SKILL.md` |
 | "coverage", "test coverage", "untested" | → **Coverage** — read `.github/skills/pytest-coverage/SKILL.md` |
 | "commit", "commit message" | → **Commit** — read `.github/skills/conventional-commit/SKILL.md` |
@@ -181,20 +182,20 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 
 ## Available Skills
 
-| Skill | What it does |
-|-------|-------------|
-| `/frontend-component` | Scaffold React component (TSX + CSS Module + barrel + checklist) |
-| `/backend-module` | Build complete backend module from spec (models + API + admin + tests + migration) |
-| `/api-endpoint` | Create DRF endpoint (model + serializer + viewset + URL) |
-| `/migration-safety` | Audit Django migration for destructive operations |
-| `/ui-review` | Full a11y + token + mobile + dark mode audit (code-level) |
-| `/roadmap-execution` | Execute a roadmap phase end-to-end (spec → code → commit) |
-| `/webapp-testing` | Test running app via Playwright MCP (navigate, screenshot, verify flows) |
-| `/web-design-reviewer` | Visual UI review via live browser (layout, responsive, tokens) |
-| `/pytest-coverage` | Generate coverage reports, identify testing gaps |
-| `/conventional-commit` | Generate proper conventional commit messages |
-| `/documentation-writer` | Generate/update docs from code changes |
-| `/railway-ops` | Run management commands on Railway — seed data, logs, migrations, health checks |
+| Skill | What it does | Use when |
+|-------|-------------|----------|
+| `/frontend-component` | Scaffold React component (TSX + CSS Module + barrel) | Creating a new component or UI element |
+| `/backend-module` | Build complete Django app from B-number spec | Building a full module (multiple models + API + tests) |
+| `/api-endpoint` | Scaffold single DRF endpoint | Adding one endpoint to an existing app |
+| `/migration-safety` | Audit migration for destructive operations | Creating or reviewing schema changes |
+| `/ui-review` | **Code-level** a11y + token + mobile audit | Reviewing component source code |
+| `/webapp-testing` | **Browser-based** E2E flow testing via Playwright | Testing user flows on the live site |
+| `/web-design-reviewer` | **Browser-based** visual/layout review via Playwright | Checking how a page looks at different viewports |
+| `/roadmap-execution` | Execute a roadmap phase end-to-end | Implementing a spec phase |
+| `/pytest-coverage` | Generate coverage reports, find testing gaps | Checking what's untested |
+| `/conventional-commit` | Generate proper commit messages | Writing a commit message |
+| `/documentation-writer` | Generate/update docs from code changes | Documenting features or auditing docs |
+| `/railway-ops` | Run management commands on Railway | Seeding data, checking logs, deploying |
 
 ## Available Prompts
 

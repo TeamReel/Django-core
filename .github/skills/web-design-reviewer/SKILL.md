@@ -1,12 +1,24 @@
 ---
 name: web-design-reviewer
-description: "Visual UI review of the running TeamReel site — detects layout issues, responsive problems, accessibility gaps, and design inconsistencies through actual browser inspection"
-argument-hint: "URL to review (e.g. 'http://localhost:5173' or specific page)"
+description: "Visually inspects the running site through a real browser to detect layout issues, responsive problems, and design inconsistencies at the pixel level. Use when reviewing how a page looks in the browser, checking responsive behavior, or doing a visual QA pass. This is a browser-based review (not code-level)."
+compatibility: "Requires Playwright MCP server configured in .vscode/mcp.json."
+metadata:
+  author: teamreel
+  argument-hint: "URL to review (e.g. 'http://localhost:5173' or specific page)"
 ---
 
 # Web Design Reviewer
 
 Visually inspect the running TeamReel site through Playwright MCP to find layout issues, responsive problems, and design inconsistencies at the pixel level.
+
+## When to use
+- Reviewing how a page **looks in a real browser** (layout, spacing, colors)
+- Checking responsive behavior at different viewports via screenshots
+- Detecting visual regressions or design token violations in the rendered output
+
+## When NOT to use
+- Auditing component **source code** for a11y patterns → use `ui-review` instead
+- Testing user **flows** (click buttons, fill forms, verify behavior) → use `webapp-testing` instead
 
 ## Prerequisites
 

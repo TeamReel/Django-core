@@ -1,7 +1,9 @@
 ---
 name: documentation-writer
-description: "Generate and update TeamReel documentation from code changes — feature docs, API docs, component docs, and the AI context index"
-argument-hint: "What to document (e.g. 'new squad search feature' or 'audit all docs')"
+description: "Generates and updates documentation from code changes: feature docs, API docs, component docs, and the AI context index. Use when documenting a feature, updating docs after code changes, or auditing documentation freshness."
+metadata:
+  author: teamreel
+  argument-hint: "What to document (e.g. 'new squad search feature' or 'audit all docs')"
 ---
 
 # Documentation Writer
@@ -33,97 +35,15 @@ documents/
 
 ## Document Templates
 
-### Feature Documentation
-```markdown
-# [Feature Name]
+**Full templates**: See [references/doc-templates.md](references/doc-templates.md) for feature, component, and API endpoint templates.
 
-## Overview
-One-paragraph description of what the feature does and why.
+Quick reference — each document type:
 
-## User Flow
-1. User navigates to [page]
-2. User sees [UI state]
-3. User interacts with [element]
-4. System responds with [behavior]
-
-## Components
-| Component | Location | Purpose |
-|-----------|----------|---------|
-
-## Data Flow
-```
-API → Adapter → Hook → Component → User
-```
-
-## API Endpoints
-| Method | Endpoint | Request | Response |
-|--------|----------|---------|----------|
-
-## Design Decisions
-- **Why X**: [explanation]
-- **Trade-off**: [what we chose and why]
-
-## Related Files
-- Frontend: `demo/src/pages/[...]`
-- Backend: `src/[app]/views.py`
-- Styles: `demo/src/[...].module.css`
-```
-
-### Component Documentation
-```markdown
-# [Component Name]
-
-## Purpose
-[One sentence]
-
-## Props
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-
-## Usage
-```tsx
-<ComponentName title="Example" onClick={handler} />
-```
-
-## Accessibility
-- Keyboard: [navigation pattern]
-- Screen reader: [announcements]
-- Focus: [management approach]
-
-## Responsive
-- Mobile: [behavior]
-- Desktop: [behavior]
-```
-
-### API Endpoint Documentation
-```markdown
-# [Endpoint Name]
-
-## `METHOD /api/v1/resource/`
-
-### Authentication
-Required. Org-scoped.
-
-### Request
-```json
-{ "field": "value" }
-```
-
-### Response
-```json
-{ "id": "uuid", "field": "value" }
-```
-
-### Pagination
-Page-based. Default 20, max 100.
-
-### Errors
-| Code | Meaning |
-|------|---------|
-| 400 | Validation error |
-| 403 | Not in organisation |
-| 404 | Not found or inactive |
-```
+| Type | Key Sections | Template |
+|------|-------------|----------|
+| Feature doc | Overview, User Flow, Components, Data Flow, API, Design Decisions | [doc-templates.md](references/doc-templates.md#feature-documentation) |
+| Component doc | Purpose, Props, Usage, Accessibility, Responsive | [doc-templates.md](references/doc-templates.md#component-documentation) |
+| API endpoint doc | Method, Auth, Request, Response, Pagination, Errors | [doc-templates.md](references/doc-templates.md#api-endpoint-documentation) |
 
 ## Audit Workflow
 

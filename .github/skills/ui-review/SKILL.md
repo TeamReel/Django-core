@@ -1,12 +1,23 @@
 ---
 name: ui-review
-description: "Comprehensive accessibility and design system audit for React components — WCAG 2.1 AA compliance, token usage, mobile, dark mode"
-argument-hint: "Component or page path (e.g. 'demo/src/pages/Dashboard')"
+description: "Audits React component source code for WCAG 2.1 AA accessibility, design token compliance, mobile responsiveness, and dark mode support. Use when reviewing a component for accessibility, checking token usage, or auditing a11y before shipping. This is a code-level review (not browser-based)."
+metadata:
+  author: teamreel
+  argument-hint: "Component or page path (e.g. 'demo/src/pages/Dashboard')"
 ---
 
 # UI Review Skill
 
 Audit React components for accessibility (WCAG 2.1 AA), design system compliance, mobile responsiveness, and dark mode support.
+
+## When to use
+- Reviewing component **source code** for a11y, tokens, mobile patterns
+- Checking CSS files for hardcoded values vs design tokens
+- Auditing a component before shipping (code-level)
+
+## When NOT to use
+- Checking how a page **looks in a browser** → use `web-design-reviewer` instead
+- Testing user **flows end-to-end** (click, navigate, verify) → use `webapp-testing` instead
 
 ## Audit Checklist
 

@@ -1,7 +1,9 @@
 ---
 name: roadmap-execution
-description: "Execute a TeamReel roadmap phase end-to-end — read spec, plan tasks, implement, verify, commit"
-argument-hint: "Roadmap number and phase (e.g. 'Roadmap #21 Phase H0')"
+description: "Executes a roadmap phase end-to-end: reads the spec, plans tasks, implements code, verifies quality, and commits. Use when executing a roadmap, implementing a phase, or working through a spec."
+metadata:
+  author: teamreel
+  argument-hint: "Roadmap number and phase (e.g. 'Roadmap #21 Phase H0')"
 ---
 
 # Roadmap Execution Skill

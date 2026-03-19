@@ -1,7 +1,9 @@
 ---
 name: conventional-commit
-description: "Generate standards-compliant conventional commit messages for TeamReel — enforces commit types, scopes, and formatting"
-argument-hint: "Describe the changes made (e.g. 'added member search to squad page')"
+description: "Generates standards-compliant conventional commit messages with TeamReel-specific types and scopes. Use when committing code, writing a commit message, or reviewing staged changes."
+metadata:
+  author: teamreel
+  argument-hint: "Describe the changes made (e.g. 'added member search to squad page')"
 ---
 
 # Conventional Commit Generator

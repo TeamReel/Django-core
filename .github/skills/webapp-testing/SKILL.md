@@ -1,12 +1,24 @@
 ---
 name: webapp-testing
-description: "Test the running TeamReel web app via Playwright MCP — navigate pages, fill forms, take screenshots, verify user flows, check responsive behavior"
-argument-hint: "URL or page to test (e.g. 'http://localhost:5173/dashboard')"
+description: "Tests the running web app via Playwright MCP: navigates pages, fills forms, takes screenshots, and verifies user flows. Use when testing the live site, verifying a deployed feature, checking user flows end-to-end, or testing responsive behavior in a real browser."
+compatibility: "Requires Playwright MCP server configured in .vscode/mcp.json."
+metadata:
+  author: teamreel
+  argument-hint: "URL or page to test (e.g. 'http://localhost:5173/dashboard')"
 ---
 
 # Web Application Testing
 
 Test the running TeamReel app by interacting with it through a real browser via Playwright MCP.
+
+## When to use
+- Testing user **flows end-to-end** (navigate, click, fill forms, verify results)
+- Verifying a deployed feature works on the live site
+- Checking that API calls succeed and data renders correctly
+
+## When NOT to use
+- Auditing component **source code** for a11y/tokens → use `ui-review` instead
+- Checking **visual design** (layout, spacing, screenshots at viewports) → use `web-design-reviewer` instead
 
 ## Prerequisites
 

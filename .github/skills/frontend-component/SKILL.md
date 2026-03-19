@@ -1,7 +1,10 @@
 ---
 name: frontend-component
-description: "Scaffold a new React component following TeamReel conventions — generates TSX, CSS Module, barrel export, and optional test file"
-argument-hint: "Component name and location (e.g. 'MemberCard in components/members')"
+description: "Scaffolds a React component with TSX, CSS Module, barrel export, and optional test file following TeamReel conventions. Use when creating a new component, adding a UI element, or scaffolding a page."
+compatibility: "Requires React 18, TypeScript 5, Vite. Works in demo/src/ directory."
+metadata:
+  author: teamreel
+  argument-hint: "Component name and location (e.g. 'MemberCard in components/members')"
 ---
 
 # Frontend Component Scaffolding

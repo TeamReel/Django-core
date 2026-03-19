@@ -1,12 +1,22 @@
 ---
 name: api-endpoint
-description: "Create a new DRF API endpoint with model, serializer, viewset, URL routing, and org-scoping following TeamReel backend conventions"
-argument-hint: "Resource name and purpose (e.g. 'Training sessions for a project period')"
+description: "Scaffolds a Django REST Framework API endpoint with model, serializer, viewset, URL routing, and org-scoping. Use when creating a new endpoint, adding a model with CRUD API, or wiring up a new resource in the backend."
+compatibility: "Requires Django 5, DRF, PostgreSQL. Works in src/ directory."
+metadata:
+  author: teamreel
+  argument-hint: "Resource name and purpose (e.g. 'Training sessions for a project period')"
 ---
 
 # API Endpoint Scaffolding
 
 Create production-ready Django REST Framework endpoints for TeamReel.
+
+## When to use
+- Adding a **single endpoint** or resource to an existing app
+- Quick CRUD scaffolding for a new model
+
+## When NOT to use
+- Building a **complete new Django app** from a module spec → use `backend-module` instead
 
 ## Step 1: Identify the App
 

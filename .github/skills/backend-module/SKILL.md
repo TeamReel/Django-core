@@ -1,14 +1,24 @@
 ---
 name: backend-module
-description: "Build a complete backend module from spec to production — with discovery gates, constitution checks, phased implementation, and verification. Inspired by spec-kitty, optimized for Django modules."
-argument-hint: "Module number (e.g. 'B62') or full name (e.g. 'activity-feed')"
+description: "Builds a complete Django backend module from spec to production with discovery gates, convention checks, phased implementation, and verification. Use when building a module, implementing a B-number spec, or creating a new Django app from a roadmap module."
+compatibility: "Requires Django 5, DRF, pytest, PostgreSQL. Works in src/ directory."
+metadata:
+  author: teamreel
+  argument-hint: "Module number (e.g. 'B62') or full name (e.g. 'activity-feed')"
 ---
 
 # Backend Module Builder
 
 Build a complete Django app from a module spec in `documents/02-roadmap/modules/backlog/`.
 
-**Like spec-kitty, but focused:** No worktrees, no branch juggling. Same quality gates — discovery, clarify, constitution check, phased work, analysis — compressed into a single-chat flow.
+## When to use
+- Building a **complete new Django app** from a B-number module spec (multiple models, API, tests, admin)
+- Full lifecycle: discovery → convention check → phased build → verification
+
+## When NOT to use
+- Adding a **single endpoint** to an existing app → use `api-endpoint` instead
+
+**Like spec-kitty, but focused:** No worktrees, no branch juggling. Same quality gates compressed into a single-chat flow.
 
 ### Module Lifecycle
 
@@ -181,84 +191,11 @@ Doorgaan? (ja / aanpassen)
 4. **Test** (on final phase) — `pytest src/<app>/tests/ -v`
 5. **Report** — list files created, any issues found
 
-### File Creation Order (within each phase)
+### Architecture & File Order
 
-Always create files in dependency order:
-```
-1. __init__.py          (no deps)
-2. apps.py              (no deps)
-3. models.py            (depends on: Django, organisations)
-4. managers.py          (depends on: models)
-5. admin.py             (depends on: models)
-6. services.py          (depends on: models)
-7. tasks.py             (depends on: models, services)
-8. signals.py           (depends on: models)
-9. api/__init__.py      (no deps)
-10. api/permissions.py  (depends on: models)
-11. api/serializers.py  (depends on: models)
-12. api/views.py        (depends on: serializers, permissions)
-13. api/urls.py         (depends on: views)
-14. tests/conftest.py   (depends on: models)
-15. tests/test_*.py     (depends on: models, api)
-```
+**Full reference**: See [references/architecture.md](references/architecture.md) for file creation order, wire-up steps, README requirements, and code templates listing.
 
----
-
-## Reference Architecture
-
-Follow `src/activities/` as the gold-standard example:
-```
-src/<app>/
-  __init__.py          # Module docstring: "B{number}: {Title}"
-  README.md            # Module documentation (REQUIRED — see below)
-  apps.py              # AppConfig with ready() for signals
-  models.py            # Models: UUID PK, timestamps, org FK, soft delete
-  admin.py             # Admin: list_display, filters, search, inlines
-  managers.py          # Custom querysets (if needed)
-  services.py          # Business logic (if needed)
-  signals.py           # Signal handlers (if needed)
-  tasks.py             # Celery tasks (if needed)
-  api/
-    __init__.py
-    serializers.py     # List / Detail / Write serializers
-    views.py           # ViewSet with org-scoped queryset
-    urls.py            # SimpleRouter registration
-    permissions.py     # Per-model permission classes
-  tests/
-    __init__.py
-    conftest.py        # Fixtures: user, org, member, project + module-specific
-    test_models.py     # Creation, __str__, constraints, soft delete
-    test_api.py        # CRUD, filtering, pagination, org isolation
-    test_serializers.py # Read/write, validation, nested fields
-    test_permissions.py # Auth, roles, owner, non-owner boundaries
-```
-
----
-
-## Wire-Up Phase
-
-### Register app in INSTALLED_APPS
-
-Edit `src/config/settings/base.py`:
-```python
-INSTALLED_APPS = [
-    ...
-    "{app_name}.apps.{AppName}Config",
-]
-```
-
-### Register URLs
-
-Edit `src/config/urls.py`:
-```python
-path("api/v1/{url_prefix}/", include("{app_name}.api.urls")),
-```
-
-### Create migration
-```bash
-cd src && python manage.py makemigrations {app_name} --name "initial_{app_name}"
-python manage.py migrate
-```
+Quick reference — create files in dependency order: `__init__.py` → `apps.py` → `models.py` → `managers.py` → `admin.py` → `services.py` → `tasks.py` → `signals.py` → `api/` layer → `tests/`
 
 ---
 
@@ -282,38 +219,11 @@ python -c "import {app_name}; print(f'{app_name} OK')"
 
 ### README.md (Required)
 
-Every module **must** include a `README.md` in the app root (`src/<app>/README.md`).
-
-Follow the pattern from `src/activities/README.md` or `src/audit/README.md`:
-
-| Section | Content |
-|---------|---------|
-| Title + badge | `# B{number}: {Title}` + scope badge |
-| Scope | 1-2 sentence description |
-| Key Components | Models, services, tasks — with brief descriptions |
-| API Endpoints | Table: method, path, description, auth |
-| Permissions | Who can do what |
-| Quick Start | 2-3 code examples (create, query, use decorator/signal) |
-| Configuration | Settings, env vars, Celery queues |
-| Database | Notable indexes, constraints |
-| Testing | How to run tests, fixture overview |
-| Extension Points | Where future modules can hook in |
+Every module **must** include a `README.md`. See [references/architecture.md](references/architecture.md#readmemd-requirements) for full template.
 
 ### Post-Build Analysis
 
-After all tests pass, do a quick self-review:
-
-| Check | Pass? |
-|-------|-------|
-| Every model has UUID PK + timestamps + org FK | |
-| Every ViewSet filters by org + is_active | |
-| All serializers split (List/Detail/Write) | |
-| All test classes use `@pytest.mark.django_db` | |
-| Admin has list_display, list_filter, search_fields | |
-| Permissions check ownership and staff status | |
-| No N+1 queries (select_related/prefetch_related used) | |
-| Migration is additive (no drops, no removes) | |
-| README.md exists with all required sections | |
+See [references/architecture.md](references/architecture.md#post-build-analysis-checklist) for the complete self-review checklist.
 
 ---
 
@@ -329,22 +239,6 @@ git mv documents/02-roadmap/modules/active/{folder} documents/02-roadmap/modules
 
 ---
 
-## Quick Reference: Templates
+## Quick Reference
 
-All code templates in `.github/skills/backend-module/templates/`:
-
-| Template | Purpose |
-|----------|---------|
-| `__init__.py.tpl` | Module docstring |
-| `apps.py.tpl` | AppConfig |
-| `models.py.tpl` | Model with UUID, org FK, timestamps, soft delete |
-| `admin.py.tpl` | Admin registration |
-| `serializers.py.tpl` | List / Detail / Write pattern |
-| `views.py.tpl` | Org-scoped ViewSet |
-| `urls.py.tpl` | SimpleRouter |
-| `permissions.py.tpl` | RBAC-aware permissions |
-| `conftest.py.tpl` | Test fixtures |
-| `test_models.py.tpl` | Model tests |
-| `test_api.py.tpl` | API CRUD tests |
-| `test_serializers.py.tpl` | Serializer tests |
-| `test_permissions.py.tpl` | Permission boundary tests |
+**Templates**: All code templates in `templates/` — see [references/architecture.md](references/architecture.md#code-templates) for the full listing.
