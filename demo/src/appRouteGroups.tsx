@@ -76,6 +76,7 @@ import {
   TasksPage,
   DeploymentPage,
   NotificationsPage,
+  ActivityPage,
   // Files / Media
   FilesPage,
   MediaLibraryPage,
@@ -214,6 +215,7 @@ export function getAdminRoutes(): React.ReactNode[] {
     <Route key="a-docs" path="/docs" element={<AdminOnlyRoute><DocsPage /></AdminOnlyRoute>} />,
     <Route key="a-tasks" path="/tasks" element={<AdminOnlyRoute><TasksPage /></AdminOnlyRoute>} />,
     <Route key="a-notifications" path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />,
+    <Route key="a-activity" path="/activity" element={<ProtectedRoute><ActivityPage /></ProtectedRoute>} />,
     <Route key="a-deployment" path="/deployment" element={<AdminOnlyRoute><DeploymentPage /></AdminOnlyRoute>} />,
 
     // Files & Media

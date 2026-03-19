@@ -5,7 +5,7 @@
  */
 import {
     LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
-    Users, Sparkles, Settings, Palette, Star, Film,
+    Users, Sparkles, Settings, Palette, Star, Film, Activity,
     LineChart, BookOpen, Scroll, ClipboardCheck, Fingerprint,
 } from 'lucide-react';
 import type { PanelBResult } from './sidebarPanelBWork.types';
@@ -21,6 +21,7 @@ export function buildDashboardSection(): PanelBResult {
             { label: 'Dashboard', path: routes.dashboard(), icon: LayoutDashboard },
             { label: 'Recent', path: '/recents', icon: Timer },
             { label: 'Favorieten beheren', path: '/favorites', icon: Star },
+            { label: 'Activiteit', path: '/activity', icon: Activity },
         ],
         isActive: true,
     };

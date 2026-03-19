@@ -10,6 +10,7 @@ export const RecentsPage = lazyWithRetry(() => import('./pages/RecentsPage'));
 export const FavoritesPage = lazyWithRetry(() => import('./pages/FavoritesPage'));
 export const SearchPage = lazyWithRetry(() => import('./pages/SearchPage'));
 export const FilesPage = lazyWithRetry(() => import('./pages/files'));
+export const ActivityPage = lazyWithRetry(() => import('./pages/ActivityPage'));
 export const MediaLibraryPage = lazyWithRetry(() => import('./pages/medialib'));
 
 // Org context pages

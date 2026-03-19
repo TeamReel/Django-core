@@ -1,0 +1,258 @@
+/* ═══════════════════════════════════════════════════════════════
+   ActivityPage — Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+.page {
+  padding: var(--space-4) var(--space-4) var(--space-8);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ── Filter Bar ───────────────────────────────────────────────── */
+
+.filterBar {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-2) 0 var(--space-4);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filterBtn {
+  padding: var(--space-1) var(--space-3);
+  font-size: 13px;
+  font-weight: var(--font-medium, 500);
+  color: var(--app-muted-text);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 36px;
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.filterBtn:hover {
+  background: var(--app-surface-2, var(--color-neutral-100));
+}
+
+.filterBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.filterBtnActive {
+  background: var(--app-primary);
+  color: white;
+  border-color: var(--app-primary);
+}
+
+.filterBtnActive:hover {
+  background: var(--app-primary);
+  opacity: 0.9;
+}
+
+/* ── Timeline ─────────────────────────────────────────────────── */
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.dayGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.dayHeader {
+  font-size: 12px;
+  font-weight: var(--font-semibold, 600);
+  color: var(--app-muted-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: var(--space-3) 0 var(--space-1);
+  border-bottom: 1px solid var(--app-border);
+  margin-bottom: var(--space-1);
+}
+
+/* ── Timeline Item ────────────────────────────────────────────── */
+
+.timelineItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.timelineItem:hover {
+  background-color: var(--app-surface-2, var(--color-neutral-50));
+}
+
+.timelineIcon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  border-radius: var(--radius-md);
+  background: var(--app-surface-2, var(--color-neutral-100));
+}
+
+.timelineContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.timelineText {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--app-text);
+}
+
+.actorName {
+  font-weight: var(--font-semibold, 600);
+}
+
+.verbText {
+  color: var(--app-muted-text);
+}
+
+.targetBadge {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--app-muted-text);
+  background: var(--app-surface-2, var(--color-neutral-100));
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-1);
+}
+
+.timelineTime {
+  font-size: 12px;
+  color: var(--app-muted-text);
+  margin-top: 2px;
+}
+
+/* ── States ───────────────────────────────────────────────────── */
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+}
+
+.skeleton {
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--app-surface-2, var(--color-neutral-100));
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  color: var(--app-muted-text);
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: var(--space-3);
+}
+
+.emptyTitle {
+  font-size: 16px;
+  font-weight: var(--font-semibold, 600);
+  color: var(--app-text);
+  margin-bottom: var(--space-1);
+}
+
+.emptySubtitle {
+  font-size: 14px;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.errorState {
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+  color: var(--app-error);
+}
+
+.retryBtn {
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  font-size: 14px;
+  font-weight: var(--font-medium, 500);
+  color: var(--app-primary);
+  background: none;
+  border: 1px solid var(--app-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.retryBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ── Load More ────────────────────────────────────────────────── */
+
+.loadMoreContainer {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-4) 0;
+}
+
+.loadMoreBtn {
+  padding: var(--space-2) var(--space-6);
+  font-size: 14px;
+  font-weight: var(--font-medium, 500);
+  color: var(--app-primary);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  min-height: 44px;
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.loadMoreBtn:hover {
+  background: var(--app-surface-2, var(--color-neutral-50));
+}
+
+.loadMoreBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.loadMoreBtn:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+
+@media (min-width: 640px) {
+  .page {
+    padding: var(--space-6) var(--space-6) var(--space-10);
+  }
+}

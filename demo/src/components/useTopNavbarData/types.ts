@@ -7,6 +7,7 @@ import type { User } from '@django-core/auth-ui';
 import type { QueueCounts } from '../../hooks/useQueueCounts';
 import type { GenerationJob } from '../../hooks/useGenerationJobs';
 import type { VideoJob } from '../../types/api';
+import type { ActivityLogItem } from '../../types/api';
 import type { PhotoCompositeFollowUpInfo } from '../topNavbarHelpers';
 import type { LucideIcon } from 'lucide-react';
 
@@ -90,6 +91,9 @@ export interface UseTopNavbarDataReturn {
   creditsTooltip: string;
   creditsModalOpen: boolean;
   setCreditsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  // Activity feed (B62)
+  activityItems: ActivityLogItem[];
+  showActivityTab: boolean;
 }
 
 export interface NotificationItem {

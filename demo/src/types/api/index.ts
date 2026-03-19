@@ -20,3 +20,4 @@ export * from './workflow';
 export * from './credits';
 export * from './sport';
 export * from './navigation';
+export * from './activityFeed';

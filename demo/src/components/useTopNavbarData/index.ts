@@ -7,6 +7,7 @@ import { useTopNavbarState } from './state';
 import { useTopNavbarDerived } from './derived';
 import { useTopNavbarEffects } from './effects';
 import { useTopNavbarHandlers } from './handlers';
+import { useActivityFeed } from '../../hooks/useActivityFeed';
 import type { UseTopNavbarDataReturn } from './types';
 
 export type { UseTopNavbarDataReturn } from './types';
@@ -65,6 +66,14 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void): Us
   const queueBadgeCount = state.queueCounts.review > 0 ? state.queueCounts.review : state.queueCounts.active;
   const queueBadgeColor = state.queueCounts.review > 0 ? 'var(--app-error)' : 'var(--color-amber-400)';
   const hasFailedJobs = state.queueCounts.rejected > 0;
+
+  // Activity feed (B62) — only for org admins / coaches
+  const showActivityTab = state.isOrgAdmin || state.hasOrgRole;
+  const { items: activityItems } = useActivityFeed({
+    organisationId: state.orgIdForMyBalance,
+    pageSize: 10,
+    enabled: showActivityTab && !!state.orgIdForMyBalance,
+  });
 
   return {
     // Auth / roles
@@ -139,5 +148,8 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void): Us
     creditsTooltip: derived.creditsTooltip,
     creditsModalOpen: state.creditsModalOpen,
     setCreditsModalOpen: state.setCreditsModalOpen,
+    // Activity feed (B62)
+    activityItems,
+    showActivityTab,
   };
 }
