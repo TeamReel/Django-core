@@ -28,19 +28,18 @@ Test the running TeamReel app by interacting with it through a real browser via 
 ## Testing Workflow
 
 ### Step 1: Verify the App is Accessible
-```bash
+```powershell
 # Check live demo
-curl -s -o /dev/null -w "%{http_code}" https://demo.teamreel.app
+Invoke-WebRequest -Uri https://demo.teamreel.app -Method Head -UseBasicParsing | Select-Object StatusCode
 # Should return 200
 
 # Or check local dev server
-curl -s -o /dev/null -w "%{http_code}" http://localhost:5173
+Invoke-WebRequest -Uri http://localhost:5173 -Method Head -UseBasicParsing | Select-Object StatusCode
 ```
 
 If testing locally and dev server not running:
-```bash
-cd demo && npm run dev &
-sleep 5
+```powershell
+Push-Location demo; npm run dev &; Start-Sleep -Seconds 5
 ```
 
 ### Step 2: Navigate and Explore

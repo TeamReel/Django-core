@@ -25,13 +25,13 @@ Audit React components for accessibility (WCAG 2.1 AA), design system compliance
 
 Scan CSS files for hardcoded values:
 
-```bash
+```powershell
 # Find hardcoded colors (hex, rgb, hsl)
-grep -rn '#[0-9a-fA-F]\{3,6\}\|rgb(\|hsl(' demo/src/components/<target>
+Select-String -Path "demo/src/components/<target>/**/*.css" -Pattern '#[0-9a-fA-F]{3,6}|rgb\(|hsl\(' -Recurse
 
 # Find hardcoded spacing (px values except allowed)
 # Allowed: 0, 1px, 100%, 100vh, auto, 50%
-grep -rn '[0-9]\+px' demo/src/components/<target>
+Select-String -Path "demo/src/components/<target>/**/*.css" -Pattern '[0-9]+px' -Recurse
 ```
 
 **Must use tokens for:**

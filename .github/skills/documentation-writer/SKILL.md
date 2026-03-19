@@ -48,9 +48,9 @@ Quick reference — each document type:
 ## Audit Workflow
 
 ### Find Documentation Gaps
-1. List all components: `ls demo/src/components/`
-2. List all pages: `ls demo/src/pages/`
-3. List all API views: `grep -rn "class.*ViewSet" src/`
+1. List all components: `Get-ChildItem demo/src/components/`
+2. List all pages: `Get-ChildItem demo/src/pages/`
+3. List all API views: `Select-String -Path "src/**/*.py" -Pattern "class.*ViewSet" -Recurse`
 4. Compare against documented items in `ai-context-index.md`
 5. Identify undocumented code
 

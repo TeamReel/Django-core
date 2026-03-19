@@ -14,26 +14,29 @@ Read the user's request and match it to one of these categories:
 
 | Signal in request | Action |
 |-------------------|--------|
-| "build", "implement", "add feature", "create", code changes | → **Implement** (Developer mode) |
-| "review", "audit", "check code", "look at" (code) | → **Review** (read-only analysis) |
-| "refactor", "clean up", "extract", "restructure", "optimize code" | → **Refactor** — read `.github/agents/refactoring.agent.md` for full workflow |
-| "plan", "architect", "design system", "how should we" | → **Plan** (architecture, no code yet) |
-| "bug", "broken", "error", "not working", "fix" | → **Debug** — read `.github/prompts/debug.prompt.md` for workflow |
+| "build", "implement", "add feature", "create", code changes | → **Implement** — read `.github/agents/developer.agent.md` |
+| "review", "audit", "check code", "look at" (code) | → **Review** — read `.github/agents/reviewer.agent.md` |
+| "review API", "audit endpoint", "check API security" | → **API Review** — read `.github/prompts/api-review.prompt.md` |
+| "refactor", "clean up", "extract", "restructure", "optimize code" | → **Refactor** — read `.github/agents/refactoring.agent.md` |
+| "plan", "architect", "design system", "how should we" | → **Plan** — read `.github/agents/planner.agent.md` |
+| "bug", "broken", "error", "not working", "fix" | → **Debug** — read `.github/agents/debugger.agent.md` |
 | "accessible", "a11y", "WCAG", "screen reader", "focus" | → **Accessibility** — read `.github/agents/accessibility.agent.md` |
-| "test", "E2E", "playwright", "verify flow", "check the site" | → **Test (browser)** — read `.github/skills/webapp-testing/SKILL.md` (user flows in real browser) |
-| "look at the UI", "visual review", "how does it look", "screenshot" | → **Visual Review (browser)** — read `.github/skills/web-design-reviewer/SKILL.md` (layout/responsive at pixel level) |
-| "review component", "check a11y", "token audit", "code review UI" | → **UI Review (code)** — read `.github/skills/ui-review/SKILL.md` (source code audit for a11y/tokens) |
+| "test", "E2E", "playwright", "verify flow", "check the site" | → **Test (browser)** — read `.github/skills/webapp-testing/SKILL.md` |
+| "look at the UI", "visual review", "how does it look", "screenshot" | → **Visual Review (browser)** — read `.github/skills/web-design-reviewer/SKILL.md` |
+| "review component", "check a11y", "token audit", "code review UI" | → **UI Review (code)** — read `.github/skills/ui-review/SKILL.md` |
 | "database", "query", "slow query", "index", "N+1", "PostgreSQL" | → **DBA** — read `.github/agents/postgresql-dba.agent.md` |
 | "deploy", "railway", "logs", "production", "server down" | → **Ops** — read `.github/agents/ops-deploy.agent.md` |
 | "seed", "management command", "run on railway", "railway run" | → **Railway Ops** — read `.github/skills/railway-ops/SKILL.md` + `.github/prompts/seed.prompt.md` |
 | "docs", "document", "update docs", "write documentation" | → **Docs** — read `.github/skills/documentation-writer/SKILL.md` |
 | "new component", "scaffold component" | → **Scaffold** — read `.github/skills/frontend-component/SKILL.md` |
-| "build module", "implementeer B", "module B", "bouw B" | → **Module Builder** — read `.github/skills/backend-module/SKILL.md` + `.github/prompts/build-module.prompt.md` |
+| "build module", "implementeer B", "module B", "bouw B" | → **Module Builder** — read `.github/skills/backend-module/SKILL.md` |
 | "new endpoint", "API", "new model", "serializer" (single resource) | → **API** — read `.github/skills/api-endpoint/SKILL.md` |
 | "migration", "migrate", "schema change" | → **Migration** — read `.github/skills/migration-safety/SKILL.md` |
 | "coverage", "test coverage", "untested" | → **Coverage** — read `.github/skills/pytest-coverage/SKILL.md` |
 | "commit", "commit message" | → **Commit** — read `.github/skills/conventional-commit/SKILL.md` |
 | "roadmap", "phase", "execute roadmap" | → **Roadmap** — read `.github/skills/roadmap-execution/SKILL.md` |
+| "celery", "async task", "background job", "worker" | → **Celery Task** — read `.github/skills/celery-task/SKILL.md` |
+| "auth", "JWT", "login", "token", "401", "403", "permission denied" | → **Auth/JWT** — read `.github/prompts/auth.prompt.md` |
 | "performance", "bundle size", "render speed", "optimize" + UI | → Read `.github/prompts/performance.prompt.md` |
 | "code quality", "any types", "convention" | → Read `.github/prompts/code-quality.prompt.md` |
 | General question about codebase, data model, architecture | → Read `.github/prompts/domain.prompt.md` + `documents/05-demo/ai-context-index.md` |
@@ -196,6 +199,7 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 | `/conventional-commit` | Generate proper commit messages | Writing a commit message |
 | `/documentation-writer` | Generate/update docs from code changes | Documenting features or auditing docs |
 | `/railway-ops` | Run management commands on Railway | Seeding data, checking logs, deploying |
+| `/celery-task` | Scaffold and debug Celery async tasks | Creating background jobs, debugging workers |
 
 ## Available Prompts
 
@@ -205,8 +209,8 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 | `debug` | Something is broken — full-stack diagnosis |
 | `ui-review` | Review component for a11y, tokens, mobile |
 | `code-quality` | Scan for convention violations, `any` types |
-| `component` | Create a new component (quick scaffold) |
 | `api-review` | Audit a DRF endpoint for security, N+1 |
+| `auth` | JWT auth flow, 401/403 debugging, permission classes |
 | `roadmap` | Execute a roadmap phase |
 | `domain` | Architecture/data/feature question |
 | `performance` | Optimize bundle, queries, rendering |

@@ -48,27 +48,27 @@ You are a code quality auditor for TeamReel. Analyze code against project conven
 
 ## Scanning Commands
 
-```bash
+```powershell
 # Frontend type check
-cd demo && npx tsc --noEmit
+Push-Location demo; npx tsc --noEmit; Pop-Location
 
 # Frontend build check
-cd demo && npx vite build
+Push-Location demo; npx vite build; Pop-Location
 
 # Find any types
-grep -rn ": any" demo/src/ --include="*.ts" --include="*.tsx" | head -30
+Select-String -Path "demo/src/**/*.ts","demo/src/**/*.tsx" -Pattern ": any" -Recurse | Select-Object -First 30
 
 # Find hardcoded colors in CSS modules
-grep -rn "#[0-9a-fA-F]\{3,6\}" demo/src/ --include="*.css" | head -20
+Select-String -Path "demo/src/**/*.css" -Pattern '#[0-9a-fA-F]{3,6}' -Recurse | Select-Object -First 20
 
 # Find files over 500 lines
-find demo/src -name "*.tsx" -exec wc -l {} + | sort -rn | head -10
+Get-ChildItem demo/src -Filter *.tsx -Recurse | ForEach-Object { $lines = (Get-Content $_.FullName).Count; [PSCustomObject]@{Lines=$lines;File=$_.FullName} } | Sort-Object Lines -Descending | Select-Object -First 10
 
 # Backend type check
-cd src && mypy --config-file ../mypy.api.ini .
+Push-Location src; mypy --config-file ../mypy.api.ini .; Pop-Location
 
 # Find missing select_related
-grep -rn "\.objects\." src/ --include="*.py" | grep -v "select_related\|prefetch_related\|filter\|get\|create\|update\|delete\|exists\|count\|aggregate" | head -20
+Select-String -Path "src/**/*.py" -Pattern '\.objects\.' -Recurse | Where-Object { $_.Line -notmatch 'select_related|prefetch_related|filter|get|create|update|delete|exists|count|aggregate' } | Select-Object -First 20
 ```
 
 ## Output Format

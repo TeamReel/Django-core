@@ -28,9 +28,9 @@ pytest --cov=. --cov-report=json:../coverage.json
 ```
 
 ### Analyze Coverage Gaps
-```bash
-# Show files with lowest coverage
-pytest --cov=. --cov-report=term-missing 2>&1 | sort -t'%' -k1 -n | head -20
+```powershell
+# Show files with lowest coverage (PowerShell)
+pytest --cov=. --cov-report=term-missing 2>&1 | Select-String '%' | Sort-Object | Select-Object -First 20
 
 # Show uncovered lines in a specific file
 pytest --cov=organisations/views --cov-report=term-missing

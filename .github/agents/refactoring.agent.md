@@ -71,12 +71,12 @@ You restructure code to improve quality, readability, and maintainability — wh
 
 **Process**:
 1. Search for violations:
-   ```bash
+   ```powershell
    # Hardcoded colors
-   grep -rn '#[0-9a-fA-F]\{3,6\}\|rgb(\|hsl(' demo/src/
+   Select-String -Path "demo/src/**/*.css" -Pattern '#[0-9a-fA-F]{3,6}|rgb\(|hsl\(' -Recurse
 
    # Hardcoded spacing
-   grep -rn '[0-9]\+px' demo/src/ --include="*.css" --include="*.module.css"
+   Select-String -Path "demo/src/**/*.css","demo/src/**/*.module.css" -Pattern '[0-9]+px' -Recurse
    ```
 2. Replace with design tokens:
    - Colors → `var(--app-*)` semantic tokens
