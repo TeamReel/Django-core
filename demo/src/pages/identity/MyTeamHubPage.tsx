@@ -29,6 +29,8 @@ import { useSeasonDetailPageData } from '../periods/useSeasonDetailPageData';
 import SeasonDetailModals from '../periods/SeasonDetailModals';
 import { ContentStreakWidget } from '../../components/dashboard/ContentStreakWidget';
 import { useContentStreak } from '../../hooks/useContentStreak';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import { Settings } from 'lucide-react';
 
 // ── Tab components (reuse existing) ──
 import SeasonOverviewTab from '../periods/SeasonOverviewTab';
@@ -74,6 +76,9 @@ export const MyTeamHubPage: React.FC = () => {
   const { isPlayer, isSupporter } = d;
   const isAdmin = !isPlayer && !isSupporter;
 
+  // ── Responsive: 4 tabs on mobile, 6 on desktop ──
+  const isMobile = useIsMobile();
+
   // ── Back navigation: Hub → Club ──
   useSetBackNavigation({
     label: team.club?.name || 'Club',
@@ -105,9 +110,11 @@ export const MyTeamHubPage: React.FC = () => {
       ? new Set(['overview', 'wedstrijden'])
       : isPlayer
         ? new Set(['overview', 'wedstrijden', 'media', 'selectie'])
-        : new Set(['overview', 'wedstrijden', 'media', 'selectie', 'beheer', 'club']);
+        : isMobile
+          ? new Set(['overview', 'wedstrijden', 'media', 'selectie'])
+          : new Set(['overview', 'wedstrijden', 'media', 'selectie', 'beheer', 'club']);
     return allowed.has(aliased) ? aliased : 'overview';
-  }, [searchParams, isPlayer, isSupporter]);
+  }, [searchParams, isPlayer, isSupporter, isMobile]);
 
   // ── Tab navigation ──
   const navigateToTab = useCallback(
@@ -152,6 +159,7 @@ export const MyTeamHubPage: React.FC = () => {
 
   // ── Overflow menu ──
   const [overflowOpen, setOverflowOpen] = useState(false);
+  const [adminSectionOpen, setAdminSectionOpen] = useState(false);
   const overflowRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!overflowOpen) return;
@@ -341,8 +349,8 @@ export const MyTeamHubPage: React.FC = () => {
             { id: 'wedstrijden', label: 'Wedstrijden' },
             ...(!isSupporter ? [{ id: 'media', label: 'Media' }] : []),
             ...(!isSupporter ? [{ id: 'selectie', label: 'Selectie' }] : []),
-            ...(isAdmin ? [{ id: 'beheer', label: 'Beheer' }] : []),
-            ...(isAdmin ? [{ id: 'club', label: 'Club' }] : []),
+            ...(isAdmin ? [{ id: 'beheer', label: 'Beheer', desktopOnly: true }] : []),
+            ...(isAdmin ? [{ id: 'club', label: 'Club', desktopOnly: true }] : []),
           ]}
           activeTab={activeTab}
         />
@@ -378,6 +386,78 @@ export const MyTeamHubPage: React.FC = () => {
               brandSponsorUrl={d.brandSponsorUrl}
               batchBrandKits={d.batchBrandKits}
             />
+
+            {/* Admin: inline Beheer section (mobile replacement for Beheer tab) */}
+            {isAdmin && (
+              <section className={s.adminSection}>
+                <button
+                  type="button"
+                  className={s.adminSectionToggle}
+                  onClick={() => setAdminSectionOpen((o) => !o)}
+                  aria-expanded={adminSectionOpen}
+                >
+                  <Settings size={16} />
+                  <span>Instellingen</span>
+                  <span className={s.adminSectionChevron} data-open={adminSectionOpen}>&#8250;</span>
+                </button>
+                {adminSectionOpen && (
+                  <div className={s.adminSectionContent}>
+                    {/* Competitions management */}
+                    <div className={s.beheerSection}>
+                      <h3 className={s.beheerSectionTitle}>Competities</h3>
+                      <SeasonCompetitionsTab
+                        competitions={d.competitions}
+                        competitionsLoading={d.competitionsLoading}
+                        userCanEditProject={d.userCanEditProject}
+                        userCanDeleteProject={d.userCanDeleteProject}
+                        apiBaseUrl={d.apiBaseUrl}
+                        getMatchCountForCompetition={d.getMatchCountForCompetition}
+                        getCompetitionParticipantsCount={d.getCompetitionParticipantsCount}
+                        setIsCreateCompetitionModalOpen={d.setIsCreateCompetitionModalOpen}
+                        setSelectedDetailPeriod={d.setSelectedDetailPeriod}
+                        setIsPeriodDetailModalOpen={d.setIsPeriodDetailModalOpen}
+                        setSelectedEditPeriod={d.setSelectedEditPeriod}
+                        setIsPeriodEditModalOpen={d.setIsPeriodEditModalOpen}
+                        setCompetitions={d.setCompetitions}
+                      />
+                    </div>
+
+                    {/* Season assets & settings */}
+                    {d.season && d.project && (
+                      <div className={s.beheerSection}>
+                        <h3 className={s.beheerSectionTitle}>Assets & Instellingen</h3>
+                        <SeasonAssetsSettingsTab
+                          season={d.season}
+                          project={d.project}
+                          org={d.org}
+                          orgSlugOrId={d.orgSlugOrId}
+                          club={d.club}
+                          userCanEditProject={d.userCanEditProject}
+                          apiBaseUrl={d.apiBaseUrl}
+                          onSeasonUpdate={d.setSeason}
+                        />
+                      </div>
+                    )}
+
+                    {/* Team-level admin */}
+                    {team.org && team.team && team.teamIdForDirectoryLists && (
+                      <div className={s.beheerSection}>
+                        <h3 className={s.beheerSectionTitle}>Team instellingen</h3>
+                        <TeamBeheerTab
+                          org={team.org}
+                          team={team.team}
+                          setTeam={team.setTeam}
+                          brandProfileId={team.brandProfileId ?? undefined}
+                          club={team.club}
+                          organisationId={team.orgIdForDirectoryLists}
+                          teamId={team.teamIdForDirectoryLists}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </section>
+            )}
             </>
           )}
 

@@ -18,6 +18,8 @@ export interface MobileTab {
   id: string;
   label: string;
   icon?: React.ReactNode;
+  /** When true, the pill is hidden on mobile (< 768px) via CSS. */
+  desktopOnly?: boolean;
 }
 
 interface MobileTabBarProps {
@@ -106,7 +108,7 @@ export default function MobileTabBar({ tabs, activeTab, basePath, paramName = 't
                 key={tab.id}
                 role="tab"
                 aria-selected={isActive}
-                className={styles.inlinePill}
+                className={`${styles.inlinePill}${tab.desktopOnly ? ` ${styles.desktopOnly}` : ''}`}
                 data-active={isActive}
                 onClick={() => handleTabClick(tab.id)}
               >
