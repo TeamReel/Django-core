@@ -83,7 +83,7 @@ class GenerationCreditService:
                 created_by=user,
                 idempotency_key=idempotency_key,
                 project=project,
-                source_type=SourceTypeChoices.USAGE,
+                source_type=SourceTypeChoices.USAGE_EVENT,
                 notes=description,
             )
             logger.info(

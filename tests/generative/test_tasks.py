@@ -32,7 +32,7 @@ class TestProcessGenerationRequest:
         assert _map_output_type("video") == OutputType.VIDEO
         assert _map_output_type("something-else") == OutputType.TEXT
 
-    @patch("src.generative.tasks.ExecutorFactory.get_executor")
+    @patch("src.generative.executors.factory.ExecutorFactory.get_executor")
     def test_success_creates_output_and_completes(self, mock_get_executor, generation_request):
         executor = Mock()
         executor.execute = AsyncMock(
@@ -59,7 +59,7 @@ class TestProcessGenerationRequest:
         assert output.text_content == "Generated"
         assert output.metadata["model"] == "gpt-4"
 
-    @patch("src.generative.tasks.ExecutorFactory.get_executor")
+    @patch("src.generative.executors.factory.ExecutorFactory.get_executor")
     def test_file_output_marks_request_failed(self, mock_get_executor, generation_request):
         executor = Mock()
         executor.execute = AsyncMock(
@@ -78,7 +78,7 @@ class TestProcessGenerationRequest:
         assert GenerationOutput.objects.filter(request=generation_request).count() == 0
 
     @patch("src.generative.tasks.process_generation_request.apply_async")
-    @patch("src.generative.tasks.ExecutorFactory.get_executor")
+    @patch("src.generative.executors.factory.ExecutorFactory.get_executor")
     def test_transient_error_schedules_retry(
         self, mock_get_executor, mock_apply_async, generation_request
     ):
@@ -101,7 +101,7 @@ class TestProcessGenerationRequest:
         mock_apply_async.assert_called_once()
 
     @patch("src.generative.tasks.process_generation_request.apply_async")
-    @patch("src.generative.tasks.ExecutorFactory.get_executor")
+    @patch("src.generative.executors.factory.ExecutorFactory.get_executor")
     def test_permanent_error_fails_immediately(
         self, mock_get_executor, mock_apply_async, generation_request
     ):
@@ -127,7 +127,7 @@ class TestProcessGenerationRequest:
         mock_apply_async.assert_not_called()
 
     @patch("src.generative.tasks.process_generation_request.apply_async")
-    @patch("src.generative.tasks.ExecutorFactory.get_executor")
+    @patch("src.generative.executors.factory.ExecutorFactory.get_executor")
     def test_unknown_error_retries_once_then_fails(
         self, mock_get_executor, mock_apply_async, generation_request
     ):
@@ -160,7 +160,7 @@ class TestProcessGenerationRequest:
         mock_apply_async.assert_not_called()
 
     @patch("src.generative.tasks.process_generation_request.apply_async")
-    @patch("src.generative.tasks.ExecutorFactory.get_executor")
+    @patch("src.generative.executors.factory.ExecutorFactory.get_executor")
     def test_max_retries_enforced(self, mock_get_executor, mock_apply_async, generation_request):
         generation_request.retry_count = 5
         generation_request.save(update_fields=["retry_count"])
@@ -183,7 +183,7 @@ class TestProcessGenerationRequest:
         assert generation_request.retry_count == 6
         mock_apply_async.assert_not_called()
 
-    @patch("src.generative.tasks.ExecutorFactory.get_executor")
+    @patch("src.generative.executors.factory.ExecutorFactory.get_executor")
     def test_idempotency_skips_non_pending(self, mock_get_executor, generation_request):
         generation_request.status = RequestStatus.COMPLETED
         generation_request.save(update_fields=["status"])

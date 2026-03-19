@@ -198,10 +198,10 @@ class TestProjectDetailSerializer:
 class TestProjectUpdateSerializer:
     """Test ProjectUpdateSerializer."""
 
-    def test_only_name_description_and_metadata_allowed(self):
-        """Test only name, description, and metadata can be updated."""
+    def test_only_name_description_metadata_and_team_type_allowed(self):
+        """Test only name, description, metadata, and team_type can be updated."""
         serializer = ProjectUpdateSerializer()
-        assert set(serializer.Meta.fields) == {"name", "description", "metadata"}
+        assert set(serializer.Meta.fields) == {"name", "description", "metadata", "team_type"}
 
     def test_validate_name_empty(self, project):
         """Test validation fails for empty name."""

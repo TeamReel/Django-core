@@ -4,16 +4,37 @@ This module defines custom Prometheus metrics for monitoring transaction
 writes, balance queries, policy violations, and cache performance.
 """
 
-from prometheus_client import Counter, Histogram
+from prometheus_client import Counter, Histogram, REGISTRY
+
+
+def _get_or_create_counter(name: str, documentation: str, labelnames: list[str]) -> Counter:
+    """Get existing counter or create new one, avoiding duplicate registration."""
+    try:
+        return Counter(name, documentation, labelnames)
+    except ValueError:
+        # Already registered - get from registry
+        return REGISTRY._names_to_collectors.get(name)
+
+
+def _get_or_create_histogram(
+    name: str, documentation: str, labelnames: list[str], buckets: tuple
+) -> Histogram:
+    """Get existing histogram or create new one, avoiding duplicate registration."""
+    try:
+        return Histogram(name, documentation, labelnames, buckets=buckets)
+    except ValueError:
+        # Already registered - get from registry
+        return REGISTRY._names_to_collectors.get(name)
+
 
 # Transaction write metrics
-transaction_writes_total = Counter(
+transaction_writes_total = _get_or_create_counter(
     "transaction_writes_total",
     "Total number of transaction writes",
     ["organization_id", "source_type"],
 )
 
-transaction_write_latency_seconds = Histogram(
+transaction_write_latency_seconds = _get_or_create_histogram(
     "transaction_write_latency_seconds",
     "Transaction write latency in seconds",
     ["source_type"],
@@ -21,13 +42,13 @@ transaction_write_latency_seconds = Histogram(
 )
 
 # Balance query metrics
-balance_queries_total = Counter(
+balance_queries_total = _get_or_create_counter(
     "balance_queries_total",
     "Total number of balance queries",
     ["scope"],  # 'organization' or 'project'
 )
 
-balance_query_latency_seconds = Histogram(
+balance_query_latency_seconds = _get_or_create_histogram(
     "balance_query_latency_seconds",
     "Balance query latency in seconds",
     ["scope", "cache_hit"],
@@ -35,14 +56,14 @@ balance_query_latency_seconds = Histogram(
 )
 
 # Policy enforcement metrics
-policy_violations_total = Counter(
+policy_violations_total = _get_or_create_counter(
     "policy_violations_total",
     "Total number of policy violations",
     ["enforcement_mode", "violation_type"],  # violation_type: 'insufficient_balance'
 )
 
 # Cache performance metrics
-cache_hits_total = Counter(
+cache_hits_total = _get_or_create_counter(
     "cache_hits_total",
     "Total number of cache hits",
     ["cache_key_prefix"],  # 'balance:org' or 'balance:proj'
