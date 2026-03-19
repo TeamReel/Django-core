@@ -30,14 +30,9 @@ export function MobileSearchOverlay({ onClose, onQueryChange }: MobileSearchOver
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className={s.mobileSearchOverlay}>
-        <div className={s.mobileSearchHeader}>
-          <div className={s.mobileSearchInputWrap}>
-            <SearchBar
-              placeholder="Zoeken..."
-              onQueryChange={(q) => onQueryChange(String(q || ''))}
-            />
-          </div>
+      <div className={s.mobileSearchOverlay} role="dialog" aria-label="Zoeken">
+        {/* Input row: search + close */}
+        <div className={s.mobileSearchInputRow}>
           <button
             type="button"
             onClick={onClose}
@@ -46,6 +41,15 @@ export function MobileSearchOverlay({ onClose, onQueryChange }: MobileSearchOver
           >
             <X size={20} />
           </button>
+        </div>
+        {/* Full-width search with inline results */}
+        <div className={s.mobileSearchBody}>
+          <SearchBar
+            placeholder="Zoeken..."
+            onQueryChange={(q) => onQueryChange(String(q || ''))}
+            inline
+            autoFocus
+          />
         </div>
       </div>
     </>

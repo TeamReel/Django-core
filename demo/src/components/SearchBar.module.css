@@ -39,6 +39,16 @@
   max-height: 70vh;
 }
 
+.dropdownInline {
+  position: static;
+  top: auto;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  box-shadow: none;
+  max-height: none;
+}
+
 .categoryHeader {
   background-color: var(--color-background-secondary);
 }

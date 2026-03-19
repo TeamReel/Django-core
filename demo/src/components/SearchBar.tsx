@@ -11,9 +11,13 @@ interface SearchBarProps {
   placeholder?: string;
   className?: string;
   onQueryChange?: (query: string) => void;
+  /** Render results inline (flow) instead of absolute dropdown. Used in mobile overlay. */
+  inline?: boolean;
+  /** Auto-focus input on mount */
+  autoFocus?: boolean;
 }
 
-export function SearchBar({ placeholder = 'Search...', className = '', onQueryChange }: SearchBarProps) {
+export function SearchBar({ placeholder = 'Search...', className = '', onQueryChange, inline = false, autoFocus = false }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [results, setResults] = useState<GroupedSearchResults | null>(null);
@@ -207,6 +211,7 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
               setIsOpen(true);
             }
           }}
+          autoFocus={autoFocus}
           role="combobox"
           aria-expanded={isOpen}
           aria-haspopup="listbox"
@@ -223,7 +228,7 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
       {/* Recent search queries */}
       {showRecents && (
         <div
-          className={`absolute rounded-8 shadow-lg overflow-y-auto z-1000 ${styles.dropdown}`}
+          className={`${inline ? '' : 'absolute'} rounded-8 shadow-lg overflow-y-auto z-1000 ${styles.dropdown} ${inline ? styles.dropdownInline : ''}`}
           role="listbox"
         >
           <div className={`flex-between py-12 px-16 fw-600 fs-13 text-primary ${styles.categoryHeader}`}>
@@ -262,7 +267,7 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
 
       {showResults && (
         <div
-          className={`absolute rounded-8 shadow-lg overflow-y-auto z-1000 ${styles.dropdown}`}
+          className={`${inline ? '' : 'absolute'} rounded-8 shadow-lg overflow-y-auto z-1000 ${styles.dropdown} ${inline ? styles.dropdownInline : ''}`}
           role="listbox"
         >
           {isSearching && (
