@@ -27,6 +27,7 @@ Read the user's request and match it to one of these categories:
 | "seed", "management command", "run on railway", "railway run" | → **Railway Ops** — read `.github/skills/railway-ops/SKILL.md` + `.github/prompts/seed.prompt.md` |
 | "docs", "document", "update docs", "write documentation" | → **Docs** — read `.github/skills/documentation-writer/SKILL.md` |
 | "new component", "scaffold component" | → **Scaffold** — read `.github/skills/frontend-component/SKILL.md` |
+| "build module", "implementeer B", "module B", "bouw B" | → **Module Builder** — read `.github/skills/backend-module/SKILL.md` + `.github/prompts/build-module.prompt.md` |
 | "new endpoint", "API", "new model", "serializer" | → **API** — read `.github/skills/api-endpoint/SKILL.md` |
 | "migration", "migrate", "schema change" | → **Migration** — read `.github/skills/migration-safety/SKILL.md` |
 | "coverage", "test coverage", "untested" | → **Coverage** — read `.github/skills/pytest-coverage/SKILL.md` |
@@ -176,12 +177,14 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 | **Ops & Deploy** | Railway logs, deploys, monitoring | Read + Terminal (Railway CLI) | → Developer / DBA |
 | **Refactoring** | Systematic code restructuring | Read + Edit + Terminal | → Reviewer (verify) |
 | **Documentation** | Generate & sync domain docs | Read + Edit | → Reviewer (verify) |
+| **Module Builder** | Build backend modules from spec to production | Read + Edit + Terminal + Pylance | → Reviewer (verify) |
 
 ## Available Skills
 
 | Skill | What it does |
 |-------|-------------|
 | `/frontend-component` | Scaffold React component (TSX + CSS Module + barrel + checklist) |
+| `/backend-module` | Build complete backend module from spec (models + API + admin + tests + migration) |
 | `/api-endpoint` | Create DRF endpoint (model + serializer + viewset + URL) |
 | `/migration-safety` | Audit Django migration for destructive operations |
 | `/ui-review` | Full a11y + token + mobile + dark mode audit (code-level) |
@@ -197,6 +200,7 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 
 | Prompt | When to use |
 |--------|-------------|
+| `build-module` | Build backend module from spec — scaffold, test, wire up |
 | `debug` | Something is broken — full-stack diagnosis |
 | `ui-review` | Review component for a11y, tokens, mobile |
 | `code-quality` | Scan for convention violations, `any` types |

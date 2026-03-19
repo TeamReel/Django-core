@@ -1,0 +1,5 @@
+"""
+B{NUMBER}: {MODULE_TITLE}
+
+{DESCRIPTION}
+"""
