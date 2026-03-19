@@ -1,0 +1,50 @@
+{
+  "skill_name": "ui-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review de dashboard pagina op accessibility en design tokens",
+      "target": "demo/src/pages/Dashboard/",
+      "expected_output": "Gestructureerd review rapport met per-dimensie bevindingen: token compliance, a11y, mobile, dark mode",
+      "assertions": [
+        "Rapport bevat sectie over design token compliance met specifieke file:line referenties",
+        "Rapport bevat sectie over WCAG 2.1 AA accessibility",
+        "Hardcoded kleuren (hex/rgb) worden gedetecteerd in CSS files",
+        "Hardcoded spacing (px waarden) worden gedetecteerd",
+        "Ontbrekende :focus-visible op interactive elementen wordt gemeld",
+        "Ontbrekende aria-labels op icon-only buttons worden gemeld",
+        "Touch target grootte (< 44px) wordt gecontroleerd",
+        "prefers-reduced-motion check wordt uitgevoerd op animaties",
+        "Clickable non-button elementen zonder role/tabIndex/onKeyDown worden gedetecteerd",
+        "Rapport eindigt met een severity-gerankte issue lijst",
+        "Elke issue bevat een concrete fix-instructie (niet alleen 'fix dit')"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "check a11y van ContentStreakWidget",
+      "target": "demo/src/components/dashboard/ContentStreakWidget.tsx",
+      "expected_output": "Component-level a11y audit met specifieke bevindingen",
+      "assertions": [
+        "Leest het component bestand EN het bijbehorende CSS module",
+        "Controleert aria-labels en role attributen",
+        "Controleert keyboard navigatie (onKeyDown handlers)",
+        "Controleert reduced-motion respect in CSS",
+        "Geeft concrete code-fixes per issue"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "token audit op MediaReadinessCard",
+      "target": "demo/src/components/dashboard/MediaReadinessCard.tsx",
+      "expected_output": "Token compliance rapport met alle hardcoded waarden en hun token-vervanging",
+      "assertions": [
+        "Leest zowel TSX als CSS module",
+        "Identificeert hardcoded kleuren en geeft token-alternatief",
+        "Identificeert hardcoded spacing en geeft token-alternatief",
+        "Checkt border-radius, shadows, transitions op token gebruik",
+        "Geen false positives op toegestane waarden (0, 1px, 100%)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+﻿# B46: Soft Delete & Trash
+
+**Priority:** 🔥 Bouwen
+**Phase:** 13
+**Status:** � READY
+**Module ID:** 313
+**Category:** Backend
+
+## Description
+
+## 286. B46 – Soft Delete & Trash
+
+**Doel**: Recycle bin pattern met restore functionaliteit en permanente delete na retentieperiode.
+
+**Waarom agnostisch**: Data recovery is universeel - accidental deletes, compliance, user confidence.
+
+**Wat moet er gebeuren**:
+- **SoftDeleteMixin** (abstract model mixin):
+  - Fields: deleted_at, deleted_by (user FK)
+  - Manager: excludes soft-deleted by default
+  - Method: soft_delete(), restore(), permanent_delete()
+- **TrashItem model** (optional wrapper):
+  - Fields: content_type, object_id, deleted_at, deleted_by
+  - Metadata: original_data (JSON snapshot), restore_path
+  - Expiration: expires_at (auto-calculated from retention)
+- **Trash management**:
+  - List trashed items per user/org/project
+  - Restore to original location
+  - Permanent delete (immediate)
+  - Empty trash (bulk permanent delete)
+- **Retention policy**:
+  - Configurable per model type (default: 30 days)
+  - Scheduled cleanup via Celery beat
+  - Grace period warnings before permanent delete
+- **Cascade handling**:
+  - Soft-delete related objects (configurable)
+  - Restore cascades back
+- **Permissions**:
+  - View trash: owner or admin
+  - Restore: owner or admin
+  - Permanent delete: admin only (configurable)
+- **Integration**: B09 (audit), B15 (cleanup task), B17 (notifications)
+
+**Scope**: 🔧 **Backend Only** (Django app + REST API + tests + README)
+
+**API Endpoints**:
+- `GET /api/v1/trash/` - List trashed items
+- `POST /api/v1/trash/{id}/restore/` - Restore item
+- `DELETE /api/v1/trash/{id}/` - Permanent delete
+- `DELETE /api/v1/trash/` - Empty trash (bulk)
+- `GET /api/v1/trash/stats/` - Trash statistics
+
+**Status**: � IN UITVOERING
+
+## Huidige staat
+
+### Wat werkt ✅
+- **ContentItem** heeft al `deleted_at` field + `ContentItemManager.active()` die soft-deleted items filtert
+- **ProjectMembership** heeft `deleted_at` field
+- **WorkflowTemplate** soft-delete via `is_active` flag
+- Backend instructions schrijven `deleted_at` pattern al voor als conventie
+- `backend-module` skill template bevat `test_soft_delete` test
+
+### Wat ontbreekt ❌
+- Geen gedeelde mixin: elke model implementeert soft-delete apart (inconsistent, duplication)
+- Geen `deleted_by` tracking: onbekend wie iets verwijderd heeft
+- Geen TrashItem model: geen unified view op alle verwijderde items
+- Geen restore functionaliteit: eenmaal soft-deleted = handmatig DB fix nodig
+- Geen retention policy: soft-deleted items blijven eeuwig in de DB
+- Geen Celery cleanup task: geen automatische permanente delete na retentieperiode
+- Geen cascade soft-delete: verwijder een Activity → Participations blijven hangen
+- Geen API endpoints: geen trash overview of restore actions
+- Geen audit logging: delete/restore events niet gelogd in B09
+
+## Design beslissingen
+
+| Vraag | Besluit | Reden |
+|-------|---------|-------|
+| Mixin of aparte app? | **Mixin in `src/common/`** + TrashItem model in nieuwe `src/trash/` app | Mixin herbruikbaar door alle apps, TrashItem heeft eigen admin/API |
+| Bestaande `deleted_at` fields migreren? | **Ja, incrementeel** (H1) | ContentItem en ProjectMembership overzetten naar mixin, backward compatible |
+| TrashItem als GenericFK wrapper? | **Ja** | Unified trash view over alle models, `content_type` + `object_id` |
+| JSON snapshot bij delete? | **Ja, optioneel** (configurable per model) | Maakt restore mogelijk zelfs als gerelateerde data verwijderd is |
+| Retention default? | **30 dagen** | Balans tussen storage en recovery window, configurable per model |
+| Cascade soft-delete? | **Opt-in per model** via `soft_delete_cascade_fields` class attribute | Niet elke relatie moet mee-verwijderd worden |
+| Permanent delete permissie? | **Admin only** | Voorkomt dat gewone gebruikers data definitief kwijtraken |
+
+## Fasering
+
+| Fase | Titel | Effort | Status |
+|------|-------|--------|--------|
+| H0 | SoftDeleteMixin | ~3 uur | 📋 Todo |
+| H1 | Migratie bestaande models | ~3 uur | 📋 Todo |
+| H2 | TrashItem Model & API | ~4 uur | 📋 Todo |
+| H3 | Retention Policy & Cleanup | ~2 uur | 📋 Todo |
+| H4 | Audit Integration & Hardening | ~2 uur | 📋 Todo |
+
+> Fase-specs: `phases/todo/` → verplaats naar `phases/done/` bij voltooiing.
+
+## Acceptatiecriteria (geheel)
+
+- [ ] `SoftDeleteMixin` is beschikbaar en gedocumenteerd in `src/common/`
+- [ ] ContentItem en ProjectMembership gebruiken de mixin
+- [ ] Trash API endpoints werken met org-scoping en permission checks
+- [ ] Retention policy ruimt expired items automatisch op via Celery beat
+- [ ] Soft delete/restore events worden gelogd in audit trail (B09)
+- [ ] Geen regressie op bestaande functionaliteit (API's, admin, frontend)
+- [ ] Build passes (`python manage.py check` + `pytest`)
+- [ ] Migration is backward compatible (geen data loss)
+- [ ] README in `src/trash/README.md` met usage examples
+
+## Notes
+<!-- Add progress notes here -->
+
+---
+
+## Delivery Checklist
+
+- [ ] **Migrations**: Applied to Railway (production-safe)
+- [ ] **Seed Data**: Fixtures/factories created for testing
+- [ ] **Admin**: Registered & configured in Django Admin
+- [ ] **API**: Endpoints tested in Swagger/OpenAPI
+- [ ] **Demo Integration**: Visible in demo app (if applicable)
+- [ ] **Manual Test**: Test file completed in `documents/08-testing/manual-tests/`
+- [ ] **Documentation**: README updated with usage examples

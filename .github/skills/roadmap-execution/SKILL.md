@@ -16,7 +16,9 @@ Execute a roadmap phase from spec to production-ready code.
 
 ### Step 1: Read the Spec
 
-Roadmap specs live in: `documents/02-roadmap/{number}_{name}/index.md`
+Roadmap specs live in:
+- Feature modules: `documents/02-roadmap/modules/ready/{number}-{code}-{name}/index.md` (or `active/` if already started)
+- Phase specs: `phases/todo/H{n}_name.md` within the module folder
 
 Each phase has two sections:
 - **To do:** — checklist of tasks to implement

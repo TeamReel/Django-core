@@ -9,7 +9,7 @@ metadata:
 
 # Backend Module Builder
 
-Build a complete Django app from a module spec in `documents/02-roadmap/modules/backlog/`.
+Build a complete Django app from a module spec in `documents/02-roadmap/modules/ready/` (or `backlog/` if not yet specced).
 
 ## When to use
 - Building a **complete new Django app** from a B-number module spec (multiple models, API, tests, admin)
@@ -23,12 +23,13 @@ Build a complete Django app from a module spec in `documents/02-roadmap/modules/
 ### Module Lifecycle
 
 ```
-backlog/  →  active/  →  done/
-(folder)     (folder)     (folder)
+backlog/  →  ready/  →  active/  →  done/
+(idea)       (specced)   (building)  (complete)
 ```
 
-- **backlog/**: Module spec as `{number}-{code}-{name}/index.md` + empty `phases/todo/` and `phases/done/`
-- **active/**: When work starts (Gate 0), move the folder here. Phase specs go into `phases/todo/` and move to `phases/done/` as completed.
+- **backlog/**: Raw module idea, `index.md` without detailed phases
+- **ready/**: Fully specced with `index.md` + `phases/todo/H{n}_*.md` — ready to build
+- **active/**: When work starts (Gate 0), move the folder here. Phase files move from `phases/todo/` to `phases/done/` as completed.
 - **done/**: After Gate 4, move the folder here.
 
 ---
@@ -52,13 +53,14 @@ User: "build module B62"
 
 ### 0.1 Load the spec
 ```
-# 1. Find the module spec in backlog or active
-Find: documents/02-roadmap/modules/backlog/*-B{number}-*/index.md
+# 1. Find the module spec in ready, active, or backlog
+Find: documents/02-roadmap/modules/ready/*-B{number}-*/index.md
   OR: documents/02-roadmap/modules/active/*-B{number}-*/index.md
+  OR: documents/02-roadmap/modules/backlog/*-B{number}-*/index.md
 Read: .github/instructions/backend.instructions.md
 
-# 2. Move module folder from backlog/ to active/
-git mv documents/02-roadmap/modules/backlog/{folder} documents/02-roadmap/modules/active/{folder}
+# 2. Move module folder to active/ (from ready/ or backlog/)
+git mv documents/02-roadmap/modules/ready/{folder} documents/02-roadmap/modules/active/{folder}
 ```
 
 ### 0.2 Ambiguity Scan

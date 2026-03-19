@@ -6,6 +6,7 @@ against the rendered JSON body (response.json()).
 
 from __future__ import annotations
 
+import uuid
 from datetime import timedelta
 
 import pytest
@@ -46,19 +47,20 @@ class TestAuthDefaultContextEndpoint:
         assert payload["match"] is None
 
     def test_picks_next_match_context_for_team_member(self, authenticated_client, regular_user):
-        org = Organisation.objects.create(name="KNVB", creator=regular_user)
+        uid = uuid.uuid4().hex[:8]
+        org = Organisation.objects.create(name=f"KNVB-{uid}", creator=regular_user)
         club = Project.objects.create(
             organisation=org,
             creator=regular_user,
-            name="Ajax",
-            slug="ajax",
+            name=f"Ajax-{uid}",
+            slug=f"ajax-{uid}",
             parent_project=None,
         )
         team = Project.objects.create(
             organisation=org,
             creator=regular_user,
-            name="Heren 1",
-            slug="heren-1",
+            name=f"Heren 1-{uid}",
+            slug=f"heren-1-{uid}",
             parent_project=club,
         )
 

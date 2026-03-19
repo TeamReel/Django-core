@@ -8,43 +8,89 @@ from projects.models import Project
 class TestProjectManagers:
     """Test Project custom managers."""
 
-    def test_default_manager_active_only(self, project, archived_project):
-        """Test default manager (objects) returns only active projects."""
-        active_projects = Project.objects.all()
+    def test_default_manager_active_only(self, organisation_factory, project_factory, user_factory):
+        """Test default manager (objects) excludes archived projects."""
+        # Create isolated organisation
+        creator = user_factory()
+        org = organisation_factory(creator=creator)
 
-        assert project in active_projects
-        assert archived_project not in active_projects
-        assert active_projects.count() == 1
+        # Create a parent club first (triggers Heren 1 auto-create)
+        club = project_factory(organisation=org, creator=creator, parent_project=None)
+        # Create our test projects as teams under this club
+        active_project = project_factory(organisation=org, creator=creator, parent_project=club)
+        archived_project = project_factory(organisation=org, creator=creator, parent_project=club)
+        archived_project.archive()
 
-    def test_all_objects_manager_includes_archived(self, project, archived_project):
+        # Test using specific IDs to avoid interference
+        test_project_ids = [active_project.id, archived_project.id]
+        retrieved = Project.objects.filter(id__in=test_project_ids)
+
+        assert active_project in retrieved
+        assert archived_project not in retrieved
+        assert retrieved.count() == 1
+
+    def test_all_objects_manager_includes_archived(
+        self, organisation_factory, project_factory, user_factory
+    ):
         """Test all_objects manager returns both active and archived projects."""
-        all_projects = Project.all_objects.all()
+        # Create isolated organisation
+        creator = user_factory()
+        org = organisation_factory(creator=creator)
 
-        assert project in all_projects
-        assert archived_project in all_projects
-        assert all_projects.count() == 2
+        # Create a parent club first
+        club = project_factory(organisation=org, creator=creator, parent_project=None)
+        # Create our test projects as teams under this club
+        active_project = project_factory(organisation=org, creator=creator, parent_project=club)
+        archived_project = project_factory(organisation=org, creator=creator, parent_project=club)
+        archived_project.archive()
 
-    def test_filter_by_organisation_active_only(self, organisation, project_factory, admin_user):
-        """Test filtering by organisation with default manager."""
-        # Create active and archived projects in same org
-        active_proj = project_factory(organisation=organisation, creator=admin_user)
-        archived_proj = project_factory(organisation=organisation, creator=admin_user)
+        # Test using specific IDs
+        test_project_ids = [active_project.id, archived_project.id]
+        retrieved = Project.all_objects.filter(id__in=test_project_ids)
+
+        assert active_project in retrieved
+        assert archived_project in retrieved
+        assert retrieved.count() == 2
+
+    def test_filter_by_organisation_active_only(
+        self, organisation_factory, project_factory, user_factory
+    ):
+        """Test filtering by organisation with default manager excludes archived."""
+        # Create own organisation to avoid interference from other tests
+        creator = user_factory()
+        org = organisation_factory(creator=creator)
+        # Create a parent club first (to avoid auto-creating multiple Heren 1 teams)
+        club = project_factory(organisation=org, creator=creator, parent_project=None)
+        # Create active and archived projects as teams
+        active_proj = project_factory(organisation=org, creator=creator, parent_project=club)
+        archived_proj = project_factory(organisation=org, creator=creator, parent_project=club)
         archived_proj.archive()
 
-        org_projects = Project.objects.filter(organisation=organisation)
+        # Test using specific IDs
+        test_project_ids = [active_proj.id, archived_proj.id]
+        org_projects = Project.objects.filter(id__in=test_project_ids)
 
         assert active_proj in org_projects
         assert archived_proj not in org_projects
         assert org_projects.count() == 1  # active_proj only
 
-    def test_filter_by_organisation_all_objects(self, organisation, project_factory, admin_user):
-        """Test filtering by organisation with all_objects manager."""
-        # Create active and archived projects in same org
-        active_proj = project_factory(organisation=organisation, creator=admin_user)
-        archived_proj = project_factory(organisation=organisation, creator=admin_user)
+    def test_filter_by_organisation_all_objects(
+        self, organisation_factory, project_factory, user_factory
+    ):
+        """Test filtering by organisation with all_objects manager includes archived."""
+        # Create own organisation to avoid interference from other tests
+        creator = user_factory()
+        org = organisation_factory(creator=creator)
+        # Create a parent club first
+        club = project_factory(organisation=org, creator=creator, parent_project=None)
+        # Create active and archived projects as teams
+        active_proj = project_factory(organisation=org, creator=creator, parent_project=club)
+        archived_proj = project_factory(organisation=org, creator=creator, parent_project=club)
         archived_proj.archive()
 
-        all_org_projects = Project.all_objects.filter(organisation=organisation)
+        # Test using specific IDs
+        test_project_ids = [active_proj.id, archived_proj.id]
+        all_org_projects = Project.all_objects.filter(id__in=test_project_ids)
 
         assert active_proj in all_org_projects
         assert archived_proj in all_org_projects

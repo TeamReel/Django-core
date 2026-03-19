@@ -4,6 +4,9 @@ applyTo: "demo/src/**"
 
 # Frontend Development — TeamReel
 
+## Domain Context
+For UX flows, component library, and design system docs → read `documents/05-demo/ai-context-index.md`
+
 ## Stack
 React 18 + TypeScript 5.6 (strict) + Vite. No CSS-in-JS, no Tailwind. Pure CSS Modules + design tokens.
 

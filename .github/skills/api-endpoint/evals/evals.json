@@ -1,0 +1,33 @@
+{
+  "skill_name": "api-endpoint",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Maak een API endpoint voor team notities - coaches kunnen notities toevoegen per wedstrijd",
+      "expected_output": "Model + serializer + viewset + URL routing, org-scoped",
+      "assertions": [
+        "Model heeft UUID PK + created_at + updated_at",
+        "Model heeft organisation FK voor scoping",
+        "Model heeft activity FK (wedstrijd relatie)",
+        "Viewset filtert queryset op request.user organisatie",
+        "Drie serializer pattern: List, Detail, Create",
+        "select_related/prefetch_related op FK lookups",
+        "permission_classes gezet op viewset",
+        "URL geregistreerd met SimpleRouter",
+        "URL prefix volgt /api/v1/ patroon",
+        "Write endpoint heeft permission check (coach+ rol)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "voeg een endpoint toe aan activities voor match highlights",
+      "expected_output": "Endpoint in bestaand activities app, niet een nieuwe app",
+      "assertions": [
+        "Voegt toe aan src/activities/, maakt geen nieuwe app",
+        "Org-scoping in get_queryset()",
+        "Geen N+1 queries (prefetch/select_related)",
+        "Admin registratie aanwezig"
+      ]
+    }
+  ]
+}

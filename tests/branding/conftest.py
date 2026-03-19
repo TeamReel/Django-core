@@ -102,7 +102,12 @@ def project_factory(db, organisation_factory, user_factory):
 
 @pytest.fixture
 def brand_profile_factory(db, organisation_factory, project_factory):
-    """Factory for creating brand profiles."""
+    """Factory for creating brand profiles.
+
+    Uses update_or_create to handle auto-created brands from project signals.
+    When a club (project without parent) is created, a signal auto-creates a BrandProfile.
+    This factory will return the existing brand (updated with provided values) or create new.
+    """
 
     def _create_brand_profile(name=None, organisation=None, project=None, is_active=True, **kwargs):
         if name is None:
@@ -114,13 +119,26 @@ def brand_profile_factory(db, organisation_factory, project_factory):
         if organisation is None and project is None:
             organisation = organisation_factory()
 
-        return BrandProfile.objects.create(
-            name=name,
-            organisation=organisation,
-            project=project,
-            is_active=is_active,
-            **kwargs,
-        )
+        # Use update_or_create to handle signal-created brands
+        if project:
+            brand, _created = BrandProfile.objects.update_or_create(
+                project=project,
+                defaults={
+                    "name": name,
+                    "is_active": is_active,
+                    **kwargs,
+                },
+            )
+        else:
+            brand, _created = BrandProfile.objects.update_or_create(
+                organisation=organisation,
+                defaults={
+                    "name": name,
+                    "is_active": is_active,
+                    **kwargs,
+                },
+            )
+        return brand
 
     return _create_brand_profile
 
@@ -261,9 +279,19 @@ def org_member(user_factory, organisation):
 
 
 @pytest.fixture
-def project(project_factory, organisation):
-    """Single test project under organisation."""
-    return project_factory(organisation=organisation)
+def club(project_factory, organisation):
+    """A club (project without parent) - triggers auto-brand creation signal."""
+    return project_factory(organisation=organisation, name="Test Club")
+
+
+@pytest.fixture
+def project(project_factory, organisation, club):
+    """A team project under a club - does NOT trigger auto-brand creation.
+
+    Tests that need to control BrandProfile creation should use this fixture.
+    The signal only auto-creates brands for clubs (parent_project=None).
+    """
+    return project_factory(organisation=organisation, parent_project=club, name="Test Team")
 
 
 @pytest.fixture

@@ -4,6 +4,9 @@ applyTo: "src/**"
 
 # Backend Development — TeamReel
 
+## Domain Context
+For data model, features, and architecture docs → read `documents/05-demo/ai-context-index.md`
+
 ## Stack
 Django 5 + Django REST Framework. PostgreSQL. Celery (Redis broker, 4 queues). S3 storage.
 

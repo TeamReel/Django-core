@@ -8,6 +8,7 @@ against the rendered JSON body (response.json()).
 
 from __future__ import annotations
 
+import uuid
 from datetime import timedelta
 
 import pytest
@@ -53,19 +54,20 @@ class TestAuthActiveContextEndpoint:
     def test_patch_set_match_sets_full_context_and_affects_default_context(
         self, authenticated_client, regular_user
     ):
-        org = Organisation.objects.create(name="KNVB", creator=regular_user)
+        uid = uuid.uuid4().hex[:8]
+        org = Organisation.objects.create(name=f"KNVB-{uid}", creator=regular_user)
         club = Project.objects.create(
             organisation=org,
             creator=regular_user,
-            name="Ajax",
-            slug="ajax",
+            name=f"Ajax-{uid}",
+            slug=f"ajax-{uid}",
             parent_project=None,
         )
         team = Project.objects.create(
             organisation=org,
             creator=regular_user,
-            name="Heren 1",
-            slug="heren-1",
+            name=f"Heren 1-{uid}",
+            slug=f"heren-1-{uid}",
             parent_project=club,
         )
         ProjectMembership.objects.create(project=team, user=regular_user, role="viewer")
@@ -135,19 +137,20 @@ class TestAuthActiveContextEndpoint:
 
     def test_patch_clear_resets_all_levels(self, authenticated_client, regular_user):
         # Seed a minimal context via team membership.
-        org = Organisation.objects.create(name="KNVB", creator=regular_user)
+        uid = uuid.uuid4().hex[:8]
+        org = Organisation.objects.create(name=f"KNVB-{uid}", creator=regular_user)
         club = Project.objects.create(
             organisation=org,
             creator=regular_user,
-            name="Ajax",
-            slug="ajax",
+            name=f"Ajax-{uid}",
+            slug=f"ajax-{uid}",
             parent_project=None,
         )
         team = Project.objects.create(
             organisation=org,
             creator=regular_user,
-            name="Heren 1",
-            slug="heren-1",
+            name=f"Heren 1-{uid}",
+            slug=f"heren-1-{uid}",
             parent_project=club,
         )
         ProjectMembership.objects.create(project=team, user=regular_user, role="viewer")
@@ -180,19 +183,20 @@ class TestAuthActiveContextEndpoint:
     def test_patch_set_season_sets_membership_for_current_user(
         self, authenticated_client, regular_user
     ):
-        org = Organisation.objects.create(name="KNVB", creator=regular_user)
+        uid = uuid.uuid4().hex[:8]
+        org = Organisation.objects.create(name=f"KNVB-{uid}", creator=regular_user)
         club = Project.objects.create(
             organisation=org,
             creator=regular_user,
-            name="Ajax",
-            slug="ajax",
+            name=f"Ajax-{uid}",
+            slug=f"ajax-{uid}",
             parent_project=None,
         )
         team = Project.objects.create(
             organisation=org,
             creator=regular_user,
-            name="Heren 1",
-            slug="heren-1",
+            name=f"Heren 1-{uid}",
+            slug=f"heren-1-{uid}",
             parent_project=club,
         )
 
@@ -236,7 +240,8 @@ class TestAuthActiveContextEndpoint:
     def test_patch_set_season_creates_membership_when_missing(
         self, authenticated_client, regular_user
     ):
-        org = Organisation.objects.create(name="KNVB", creator=regular_user)
+        uid = uuid.uuid4().hex[:8]
+        org = Organisation.objects.create(name=f"KNVB-{uid}", creator=regular_user)
         OrganisationMembership.objects.create(
             user=regular_user,
             organisation=org,
@@ -247,15 +252,15 @@ class TestAuthActiveContextEndpoint:
         club = Project.objects.create(
             organisation=org,
             creator=regular_user,
-            name="Ajax",
-            slug="ajax",
+            name=f"Ajax-{uid}",
+            slug=f"ajax-{uid}",
             parent_project=None,
         )
         team = Project.objects.create(
             organisation=org,
             creator=regular_user,
-            name="Heren 1",
-            slug="heren-1",
+            name=f"Heren 1-{uid}",
+            slug=f"heren-1-{uid}",
             parent_project=club,
         )
 
@@ -298,25 +303,26 @@ class TestAuthActiveContextEndpoint:
     def test_patch_set_membership_for_other_user_is_denied(
         self, authenticated_client, regular_user
     ):
+        uid = uuid.uuid4().hex[:8]
         other_user = User.objects.create_user(
-            email="other@example.com",
+            email=f"other-{uid}@example.com",
             password="password123",
             first_name="Other",
             last_name="User",
         )
-        org = Organisation.objects.create(name="KNVB", creator=regular_user)
+        org = Organisation.objects.create(name=f"KNVB-{uid}", creator=regular_user)
         club = Project.objects.create(
             organisation=org,
             creator=regular_user,
-            name="Ajax",
-            slug="ajax",
+            name=f"Ajax-{uid}",
+            slug=f"ajax-{uid}",
             parent_project=None,
         )
         team = Project.objects.create(
             organisation=org,
             creator=regular_user,
-            name="Heren 1",
-            slug="heren-1",
+            name=f"Heren 1-{uid}",
+            slug=f"heren-1-{uid}",
             parent_project=club,
         )
 

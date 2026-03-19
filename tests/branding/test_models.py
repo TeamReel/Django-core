@@ -238,14 +238,22 @@ class TestBrandAsset:
             )
             assert asset.asset_type == asset_type
 
-    def test_get_url_with_file(self, org_brand, file_asset_factory):
-        """Test get_url returns file storage_path when file exists."""
+    def test_get_url_with_file(self, org_brand, file_asset_factory, mocker):
+        """Test get_url returns presigned URL from storage backend."""
         file = file_asset_factory(organization=org_brand.organisation)
         asset = BrandAsset.objects.create(profile=org_brand, file=file, asset_type="logo")
 
+        # Mock the storage backend to return a presigned URL
+        mock_backend = mocker.MagicMock()
+        expected_url = f"https://s3.example.com/presigned/{file.storage_path}"
+        mock_backend.get_url.return_value = expected_url
+        mocker.patch("files.utils.get_storage_backend", return_value=mock_backend)
+
         url = asset.get_url()
-        # get_url returns the file's storage_path
-        assert url == file.storage_path
+        assert url == expected_url
+        mock_backend.get_url.assert_called_once_with(
+            file.storage_path, signed=True, expiry_seconds=3600
+        )
 
     def test_inactive_asset(self, org_brand, file_asset_factory):
         """Test creating inactive asset."""

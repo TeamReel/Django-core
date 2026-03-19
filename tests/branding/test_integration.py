@@ -28,7 +28,7 @@ class TestUserStory1OrgBrandSetup:
 
         # Step 1: Create org brand profile
         brand_response = api_client.post(
-            "/api/branding/profiles/",
+            "/api/v1/branding/profiles/",
             {
                 "organisation": str(organisation.id),
                 "name": "Acme Corp Brand",
@@ -49,13 +49,13 @@ class TestUserStory1OrgBrandSetup:
 
         for token in token_data:
             token["profile"] = brand_id
-            response = api_client.post(f"/api/branding/profiles/{brand_id}/tokens/", token)
+            response = api_client.post(f"/api/v1/branding/profiles/{brand_id}/tokens/", token)
             assert response.status_code == 201
 
         # Step 3: Add brand assets (file is required)
         file_asset = file_asset_factory(organization=organisation)
         asset_response = api_client.post(
-            f"/api/branding/profiles/{brand_id}/assets/",
+            f"/api/v1/branding/profiles/{brand_id}/assets/",
             {
                 "profile": brand_id,
                 "file": str(file_asset.id),
@@ -88,7 +88,7 @@ class TestUserStory2ProjectOverride:
 
         # Step 1: Create project brand
         brand_response = api_client.post(
-            "/api/branding/profiles/",
+            "/api/v1/branding/profiles/",
             {
                 "project": str(project.id),
                 "name": "Team Alpha Brand",
@@ -100,7 +100,7 @@ class TestUserStory2ProjectOverride:
 
         # Step 2: Override primary color only
         override_response = api_client.post(
-            f"/api/branding/profiles/{project_brand_id}/tokens/",
+            f"/api/v1/branding/profiles/{project_brand_id}/tokens/",
             {
                 "profile": project_brand_id,
                 "key": "primary_color",
@@ -112,7 +112,7 @@ class TestUserStory2ProjectOverride:
         assert override_response.status_code == 201
 
         # Step 3: Verify merge inheritance
-        resolve_response = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
+        resolve_response = api_client.get(f"/api/v1/branding/tokens/resolve/?project={project.id}")
         assert resolve_response.status_code == 200
 
         resolved = extract_data(resolve_response)
@@ -148,9 +148,7 @@ class TestUserStory3ConsumerApp:
         )
 
         # Add assets to both levels
-        org_asset = brand_asset_factory(
-            profile=org_brand, asset_type="logo", alt_text="Org Logo"
-        )
+        org_asset = brand_asset_factory(profile=org_brand, asset_type="logo", alt_text="Org Logo")
         project_asset = brand_asset_factory(
             profile=project_brand, asset_type="favicon", alt_text="Team Favicon"
         )
@@ -159,7 +157,7 @@ class TestUserStory3ConsumerApp:
 
         # Fetch complete brand with assets
         response = api_client.get(
-            f"/api/branding/tokens/resolve/?project={project.id}&include_assets=true"
+            f"/api/v1/branding/tokens/resolve/?project={project.id}&include_assets=true"
         )
         assert response.status_code == 200
 
@@ -197,11 +195,12 @@ class TestUserStory4BrandUpdate:
         org_tokens,
         project_factory,
         brand_profile_factory,
+        club,
     ):
         """Test org brand update affects all projects."""
-        # Create multiple projects
-        project1 = project_factory(organisation=organisation)
-        project2 = project_factory(organisation=organisation)
+        # Create multiple projects (as teams under club so signal doesn't auto-create brands)
+        project1 = project_factory(organisation=organisation, parent_project=club)
+        project2 = project_factory(organisation=organisation, parent_project=club)
 
         # Only project2 has override
         project2_brand = brand_profile_factory(project=project2, name="P2 Brand")
@@ -217,17 +216,17 @@ class TestUserStory4BrandUpdate:
         # Update org token
         org_color_token = org_tokens[0]  # primary_color
         update_response = api_client.patch(
-            f"/api/branding/profiles/{org_brand.id}/tokens/{org_color_token.id}/",
+            f"/api/v1/branding/profiles/{org_brand.id}/tokens/{org_color_token.id}/",
             {"value": "#NEW_ORG_COLOR"},
         )
         assert update_response.status_code == 200
 
         # Verify project1 inherits new color
-        resolve1 = api_client.get(f"/api/branding/tokens/resolve/?project={project1.id}")
+        resolve1 = api_client.get(f"/api/v1/branding/tokens/resolve/?project={project1.id}")
         assert extract_data(resolve1)["tokens"]["primary_color"] == "#NEW_ORG_COLOR"
 
         # Verify project2 keeps override
-        resolve2 = api_client.get(f"/api/branding/tokens/resolve/?project={project2.id}")
+        resolve2 = api_client.get(f"/api/v1/branding/tokens/resolve/?project={project2.id}")
         assert extract_data(resolve2)["tokens"]["primary_color"] == "#OVERRIDE"
 
 
@@ -248,13 +247,13 @@ class TestUserStory5InactiveBrands:
         api_client.force_authenticate(org_admin)
 
         # Verify brand is initially active
-        resolve_active = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
+        resolve_active = api_client.get(f"/api/v1/branding/tokens/resolve/?project={project.id}")
         assert resolve_active.status_code == 200
         assert len(extract_data(resolve_active)["tokens"]) == 3
 
         # Deactivate brand
         deactivate_response = api_client.patch(
-            f"/api/branding/profiles/{org_brand.id}/",
+            f"/api/v1/branding/profiles/{org_brand.id}/",
             {"is_active": False},
         )
         assert deactivate_response.status_code == 200
@@ -265,20 +264,22 @@ class TestUserStory5InactiveBrands:
         assert brand.is_active is False
 
         # Verify resolution excludes inactive brand
-        resolve_inactive = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
+        resolve_inactive = api_client.get(f"/api/v1/branding/tokens/resolve/?project={project.id}")
         assert resolve_inactive.status_code == 200
         assert extract_data(resolve_inactive)["tokens"] == {}
         assert extract_data(resolve_inactive)["source"] == "none"
 
         # Verify can reactivate
         reactivate_response = api_client.patch(
-            f"/api/branding/profiles/{org_brand.id}/",
+            f"/api/v1/branding/profiles/{org_brand.id}/",
             {"is_active": True},
         )
         assert reactivate_response.status_code == 200
 
         # Tokens should be available again
-        resolve_reactivated = api_client.get(f"/api/branding/tokens/resolve/?project={project.id}")
+        resolve_reactivated = api_client.get(
+            f"/api/v1/branding/tokens/resolve/?project={project.id}"
+        )
         assert len(extract_data(resolve_reactivated)["tokens"]) == 3
 
 
@@ -292,7 +293,7 @@ class TestEdgeCases:
 
         # Try to create duplicate key
         response = api_client.post(
-            f"/api/branding/profiles/{org_brand.id}/tokens/",
+            f"/api/v1/branding/profiles/{org_brand.id}/tokens/",
             {
                 "profile": str(org_brand.id),
                 "key": "primary_color",  # Already exists
@@ -313,7 +314,7 @@ class TestEdgeCases:
         api_client.force_authenticate(org_admin)
 
         response = api_client.post(
-            f"/api/branding/profiles/{org_brand.id}/assets/",
+            f"/api/v1/branding/profiles/{org_brand.id}/assets/",
             {
                 "profile": str(org_brand.id),
                 "asset_type": "logo",  # Already exists
@@ -328,7 +329,7 @@ class TestEdgeCases:
         """Test error handling when project param missing."""
         api_client.force_authenticate(org_admin)
 
-        response = api_client.get("/api/branding/tokens/resolve/")
+        response = api_client.get("/api/v1/branding/tokens/resolve/")
         assert response.status_code == 400
         assert "error" in response.json()
 
@@ -354,7 +355,7 @@ class TestEdgeCases:
 
         # Child should still inherit from ORG, not parent project
         # (Project-to-project inheritance is not implemented, only org->project)
-        response = api_client.get(f"/api/branding/tokens/resolve/?project={child.id}")
+        response = api_client.get(f"/api/v1/branding/tokens/resolve/?project={child.id}")
         assert response.status_code == 200
         # Should not have parent_token (unless org has it)
         tokens = extract_data(response)["tokens"]

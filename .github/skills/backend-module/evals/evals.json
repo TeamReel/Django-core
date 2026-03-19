@@ -1,0 +1,28 @@
+{
+  "skill_name": "backend-module",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Bouw een nieuwe Django app voor team polls - coaches kunnen polls aanmaken, spelers stemmen",
+      "expected_output": "Volledige Django app met models, API, admin, tests, README",
+      "assertions": [
+        "App aangemaakt in src/ directory",
+        "Alle models hebben UUID PK + created_at + updated_at + created_by",
+        "Alle models hebben organisation FK",
+        "API is org-scoped in get_queryset()",
+        "Drie serializer pattern (List/Detail/Write)",
+        "select_related/prefetch_related op FK lookups",
+        "permission_classes gezet",
+        "App toegevoegd aan INSTALLED_APPS",
+        "URLs geregistreerd in config/urls.py onder api/v1/",
+        "SimpleRouter gebruikt voor URL registratie",
+        "Admin registratie met list_display, filters, search",
+        "README.md aanwezig in app directory",
+        "pytest tests aanwezig",
+        "Factories aangemaakt (factory_boy)",
+        "signals.py geïmporteerd in apps.py ready() als signals bestaan",
+        "makemigrations genereert migratie zonder errors"
+      ]
+    }
+  ]
+}

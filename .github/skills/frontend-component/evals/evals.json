@@ -1,0 +1,33 @@
+{
+  "skill_name": "frontend-component",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Maak een TeamStatsCard component voor het dashboard dat team statistieken toont",
+      "expected_output": "TSX + CSS Module + barrel export, volgt alle TeamReel conventies",
+      "assertions": [
+        "Maakt ComponentName.tsx met typed props interface",
+        "Maakt ComponentName.module.css met design tokens (geen hardcoded waarden)",
+        "CSS is mobile-first (base = phone, breakpoints toevoegen)",
+        "Component heeft correcte aria attributen",
+        "Alle interactive elementen hebben :focus-visible in CSS",
+        "prefers-reduced-motion media query aanwezig als animaties gebruikt",
+        "Props interface geëxporteerd",
+        "Geen any types",
+        "Barrel export toegevoegd als het in components/ui/ staat"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "scaffold een NotificationBell in components/ui",
+      "expected_output": "UI primitive met barrel export, a11y-compliant, token-only CSS",
+      "assertions": [
+        "Bestand aangemaakt in demo/src/components/ui/",
+        "Toegevoegd aan barrel export index.ts",
+        "Icon-only button heeft aria-label",
+        "Touch target >= 44x44px in CSS",
+        "Gebruikt var(--app-*) tokens, geen hardcoded kleuren"
+      ]
+    }
+  ]
+}

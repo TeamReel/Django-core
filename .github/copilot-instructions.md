@@ -15,31 +15,31 @@ Read the user's request and match it to one of these categories:
 | Signal in request | Action |
 |-------------------|--------|
 | "build", "implement", "add feature", "create", code changes | → **Implement** — read `.github/agents/developer.agent.md` |
-| "review", "audit", "check code", "look at" (code) | → **Review** — read `.github/agents/reviewer.agent.md` |
-| "review API", "audit endpoint", "check API security" | → **API Review** — read `.github/prompts/api-review.prompt.md` |
-| "refactor", "clean up", "extract", "restructure", "optimize code" | → **Refactor** — read `.github/agents/refactoring.agent.md` |
+| "review", "audit", "check code", "look at" (code) | → **Review** — read `.github/agents/reviewer.agent.md` (documents findings in roadmap) |
+| "review API", "audit endpoint", "check API security" | → **Review** — read `.github/prompts/api-review.prompt.md` |
+| "refactor", "clean up", "extract", "restructure", "optimize code" | → **Implement** — read `.github/agents/developer.agent.md` |
 | "plan", "architect", "design system", "how should we" | → **Plan** — read `.github/agents/planner.agent.md` |
-| "bug", "broken", "error", "not working", "fix" | → **Debug** — read `.github/agents/debugger.agent.md` |
-| "accessible", "a11y", "WCAG", "screen reader", "focus" | → **Accessibility** — read `.github/agents/accessibility.agent.md` |
-| "test", "E2E", "playwright", "verify flow", "check the site" | → **Test (browser)** — read `.github/skills/webapp-testing/SKILL.md` |
-| "look at the UI", "visual review", "how does it look", "screenshot" | → **Visual Review (browser)** — read `.github/skills/web-design-reviewer/SKILL.md` |
-| "review component", "check a11y", "token audit", "code review UI" | → **UI Review (code)** — read `.github/skills/ui-review/SKILL.md` |
+| "bug", "broken", "error", "not working", "fix" | → **Implement** — read `.github/agents/developer.agent.md` |
+| "accessible", "a11y", "WCAG", "screen reader", "focus" | → **Review** (code) or **Test** (live) — read `.github/agents/reviewer.agent.md` or `.github/agents/playwright-tester.agent.md` |
+| "test", "E2E", "playwright", "verify flow", "check the site" | → **Test** — read `.github/agents/playwright-tester.agent.md` |
+| "look at the UI", "visual review", "how does it look", "screenshot" | → **Test** — read `.github/agents/playwright-tester.agent.md` (documents findings in roadmap) |
+| "review component", "check a11y", "token audit", "code review UI" | → **Review** — read `.github/skills/ui-review/SKILL.md` |
 | "database", "query", "slow query", "index", "N+1", "PostgreSQL" | → **DBA** — read `.github/agents/postgresql-dba.agent.md` |
 | "deploy", "railway", "logs", "production", "server down" | → **Ops** — read `.github/agents/ops-deploy.agent.md` |
-| "seed", "management command", "run on railway", "railway run" | → **Railway Ops** — read `.github/skills/railway-ops/SKILL.md` + `.github/prompts/seed.prompt.md` |
-| "docs", "document", "update docs", "write documentation" | → **Docs** — read `.github/skills/documentation-writer/SKILL.md` |
-| "new component", "scaffold component" | → **Scaffold** — read `.github/skills/frontend-component/SKILL.md` |
-| "build module", "implementeer B", "module B", "bouw B" | → **Module Builder** — read `.github/skills/backend-module/SKILL.md` |
-| "new endpoint", "API", "new model", "serializer" (single resource) | → **API** — read `.github/skills/api-endpoint/SKILL.md` |
-| "migration", "migrate", "schema change" | → **Migration** — read `.github/skills/migration-safety/SKILL.md` |
-| "coverage", "test coverage", "untested" | → **Coverage** — read `.github/skills/pytest-coverage/SKILL.md` |
-| "commit", "commit message" | → **Commit** — read `.github/skills/conventional-commit/SKILL.md` |
-| "roadmap", "phase", "execute roadmap" | → **Roadmap** — read `.github/skills/roadmap-execution/SKILL.md` |
-| "celery", "async task", "background job", "worker" | → **Celery Task** — read `.github/skills/celery-task/SKILL.md` |
-| "auth", "JWT", "login", "token", "401", "403", "permission denied" | → **Auth/JWT** — read `.github/prompts/auth.prompt.md` |
+| "seed", "management command", "run on railway", "railway run" | → **Ops** — read `.github/skills/railway-ops/SKILL.md` + `.github/prompts/seed.prompt.md` |
+| "docs", "document", "update docs", "write documentation" | → **Implement** — read `.github/skills/documentation-writer/SKILL.md` |
+| "new component", "scaffold component" | → **Implement** — read `.github/skills/frontend-component/SKILL.md` |
+| "build module", "implementeer B", "module B", "bouw B" | → **Implement** — read `.github/skills/backend-module/SKILL.md` |
+| "new endpoint", "API", "new model", "serializer" (single resource) | → **Implement** — read `.github/skills/api-endpoint/SKILL.md` |
+| "migration", "migrate", "schema change" | → **Implement** — read `.github/skills/migration-safety/SKILL.md` |
+| "coverage", "test coverage", "untested" | → **Review** — read `.github/skills/pytest-coverage/SKILL.md` |
+| "commit", "commit message" | → **Implement** — read `.github/skills/conventional-commit/SKILL.md` |
+| "roadmap", "phase", "execute roadmap" | → **Implement** — read `.github/skills/roadmap-execution/SKILL.md` |
+| "celery", "async task", "background job", "worker" | → **Implement** — read `.github/skills/celery-task/SKILL.md` |
+| "auth", "JWT", "login", "token", "401", "403", "permission denied" | → Read `.github/prompts/auth.prompt.md` |
 | "performance", "bundle size", "render speed", "optimize" + UI | → Read `.github/prompts/performance.prompt.md` |
 | "code quality", "any types", "convention" | → Read `.github/prompts/code-quality.prompt.md` |
-| General question about codebase, data model, architecture | → Read `.github/prompts/domain.prompt.md` + `documents/05-demo/ai-context-index.md` |
+| General question about codebase, data model, architecture | → **Domain** — read `.github/agents/domain-expert.agent.md` + `documents/05-demo/ai-context-index.md` |
 
 **If the request spans multiple categories** (e.g. "refactor and then review"), execute them sequentially — refactor first, then review.
 
@@ -54,6 +54,7 @@ Also auto-load based on file location:
 - Editing `src/**` → read `.github/instructions/backend.instructions.md`
 - Editing `**/*.css` → read `.github/instructions/css.instructions.md`
 - Editing `tests/**` → read `.github/instructions/testing.instructions.md`
+- Any domain question → read `documents/05-demo/ai-context-index.md` for navigation
 
 ### Step 3: Clarify if Needed
 
@@ -65,6 +66,8 @@ Ask the user **only when** you cannot reasonably determine:
 
 Do NOT ask about things you can determine from context (file paths, tech stack, conventions).
 
+> **See "User Communication Protocol" below for how to phrase questions.**
+
 ### Step 4: Spec-First Gate (for large changes)
 
 Before implementing any **large change** (new page, new feature, multi-file refactor, new model + API), first create a roadmap spec:
@@ -75,70 +78,172 @@ Before implementing any **large change** (new page, new feature, multi-file refa
 - Multi-file refactor touching 5+ files → always
 - Bug fix or small tweak → skip, just implement
 
-**Spec workflow:**
-1. Determine the next roadmap number: check `documents/02-roadmap/` for highest existing number, increment by 1
-2. Create `documents/02-roadmap/{number}_{kebab-name}/index.md` with this structure:
+**Spec workflow — use existing module folders:**
 
-```markdown
-# Roadmap #{number} — {Title}
-
-> **Status:** 🚧 In uitvoering
-> **Start:** {date}
-> **Scope:** `{files/folders affected}`
-
-## Doel
-{1-2 sentences: what this achieves for the user}
-
-## Huidige staat
-### Wat werkt ✅
-{existing functionality}
-
-### Wat ontbreekt / niet klopt ❌
-{problems to solve}
-
-## Design beslissingen
-| Vraag | Besluit |
-|-------|--------|
-| {decision 1} | {choice + reasoning} |
-
-## Fasering
-
-### H0 — {Foundation}
-> **Effort:** {estimate} | **Impact:** {what it unlocks}
-
-**To do:**
-- [ ] {task 1}
-- [ ] {task 2}
-
-**Done criteria:**
-- [ ] {criterion 1}
-- [ ] {criterion 2}
-
-### H1 — {Core features}
-> **Effort:** {estimate} | **Impact:** {what it unlocks}
-
-**To do:**
-- [ ] {task 1}
-
-**Done criteria:**
-- [ ] {criterion 1}
-
-## Acceptatiecriteria (geheel)
-- [ ] {overall criterion 1}
-- [ ] Build passes (`npx tsc --noEmit` + `npx vite build`)
-- [ ] No new `any` types
-- [ ] All interactive elements accessible
+Specs live inside the existing module folder structure:
+```
+documents/02-roadmap/modules/
+├── backlog/    ← ideas & raw specs, NOT yet uitgewerkt met fases
+├── ready/      ← uitgewerkt met fases, klaar om opgepakt te worden
+│   └── {number}-{code}-{name}/
+│       ├── index.md
+│       └── phases/
+│           ├── todo/    ← H0_name.md, H1_name.md, ...
+│           └── done/    ← completed phases moved here
+├── active/     ← currently building (max 1-2 tegelijk)
+├── quick/      ← short improvements without phases (Q-series)
+│   └── Q{NNN}-{kebab-name}.md   ← one file per item
+├── done/       ← fully completed (all types)
+└── later/      ← deferred
 ```
 
-3. **Show the spec to the user** and ask for confirmation before implementing
-4. After user approves (or says "doe maar" / "go"), proceed with implementation
-5. After completion, update spec status to ✅ and move to `done/` if fully complete
+**NEVER** create new top-level folders in `documents/02-roadmap/` (e.g., `32_some-name/`). Always use the existing module folder.
 
-**Quick changes** (bug fixes, tweaks, small additions) skip the spec and go straight to implementation.
+**Two types of roadmap items:**
+
+| Type | When | Where | Format |
+|------|------|-------|--------|
+| **Feature** (backlog → ready) | >4 uur, meerdere lagen, nieuw model/pagina | `backlog/` → spec uit → `ready/` | `index.md` + `phases/todo/H{n}_name.md` |
+| **Quick** | ≤4 uur, 1-3 bestanden, fix/verbetering | `quick/Q{NNN}-{name}.md` | Eén bestand met checklist |
+
+**Feature lifecycle: `backlog/` → `ready/` → `active/` → `done/`**
+
+| Status | Map | Betekenis |
+|--------|-----|-----------|
+| `📋 ROADMAP` | `backlog/` | Idee of ruwe beschrijving, nog geen fases |
+| `📐 READY` | `ready/` | Uitgewerkt met fases in `phases/todo/`, klaar om te bouwen |
+| `🚧 IN UITVOERING` | `active/` | Er wordt nu aan gebouwd (max 1-2 tegelijk) |
+| `✅ DONE` | `done/` | Afgerond en geverifieerd |
+
+**Speccing (Planner):**
+1. Find the existing folder in `backlog/` (e.g., `313-B46-soft-delete-and-trash/`)
+2. Update `index.md`: add Huidige staat, Design beslissingen, Fasering table, Acceptatiecriteria
+3. Create individual phase specs in `phases/todo/` (e.g., `H0_foundation.md`, `H1_core-feature.md`)
+4. Change Status to `📐 READY` and move folder from `backlog/` to `ready/`
+5. **Show the spec to the user** and ask for confirmation
+
+**Building (Developer):**
+1. Pick a module from `ready/` — it already has phase specs
+2. Move folder from `ready/` to `active/`, set Status `🚧 IN UITVOERING`
+3. Build phase by phase, move each from `phases/todo/` to `phases/done/`
+4. After all phases done, update Status to `✅ DONE` and move folder to `done/`
+
+**Quick workflow:**
+1. Create `quick/Q{NNN}-{kebab-name}.md` using the quick module template
+2. After completion, move file to `done/`
+
+**Quick module template:**
+```markdown
+# Q{NNN} — {Naam}
+
+| | |
+|---|---|
+| Status | 📋 TODO |
+| Bron | {UI Review / Code Review / E2E Test / ...} |
+| Impact | {🔴 critical / 🟡 important / 🟢 nice-to-have} |
+| Effort | ~{n} uur |
+
+## Wat
+{Korte beschrijving van het probleem en de gewenste situatie}
+
+## Checklist
+- [ ] {taak 1}
+- [ ] {taak 2}
+- [ ] Tests
+- [ ] Verify
+```
 
 ### Step 5: Execute
 
 Follow the loaded workflow. Use `manage_todo_list` for multi-step work. After completion, suggest the logical next step (e.g. "Want me to review these changes?" or "Should I run E2E tests on this?").
+
+---
+
+## User Communication Protocol
+
+> **All agents MUST follow these rules when communicating with the user.**
+
+### Who is the user?
+
+The user is the **product owner and visionary** of TeamReel. He knows where the app should go, what features matter, and how the product should feel — but he is **not a programmer**. All agents are the technical experts; the user trusts you to make the right engineering decisions.
+
+### How to communicate
+
+- **Language**: Match the user's language (usually Dutch). Technical terms in English are fine.
+- **Tone**: Direct, confident, no hedging. Present solutions, not problems.
+- **Level**: Business-oriented. Explain *what* something does and *why* it matters, not *how* it works internally.
+- **Brevity**: Keep updates short. Use bullet points. No walls of text.
+
+### When to ask questions
+
+Only ask when you genuinely cannot determine the answer from the codebase, documentation, or conventions. Before asking, check if the answer is already in:
+- Existing code patterns
+- `documents/` specs and roadmaps
+- The instructions and skills loaded for this task
+
+### How to ask questions
+
+**Always use multiple-choice with a recommendation:**
+
+```
+Ik moet iets beslissen over [topic]:
+
+A) [Option A — kort uitgelegd]
+B) [Option B — kort uitgelegd]
+C) [Option C — kort uitgelegd]
+
+★ Mijn aanbeveling: **B** — [één zin waarom]
+```
+
+**Rules:**
+- 2-4 options maximum
+- Each option: 1 sentence, business-language
+- Always mark your recommendation with ★
+- If one option is clearly best practice: just do it and mention what you did — don't ask
+- Group related questions into one message, never fire questions one at a time
+
+### What NOT to do
+
+- ❌ Ask open-ended technical questions ("What pattern should I use for X?")
+- ❌ Present raw code choices ("Do you want a mixin or abstract base class?")
+- ❌ Ask about things you can determine from context
+- ❌ Wait for permission on standard engineering decisions (naming, file structure, patterns)
+- ❌ Explain implementation details unless the user asks
+
+---
+
+## Quality Standards (Definition of Done)
+
+> **All agents MUST meet these standards for every piece of work.**
+
+### Code Quality
+- Follows existing codebase conventions (check `instructions/` files)
+- Matches patterns already used in the project — don't invent new ones
+- No `any` types (TypeScript), type hints (Python)
+- Org-scoped querysets on all ViewSets
+- Design tokens only in CSS — no hardcoded values
+
+### Tests
+- Every new feature has tests (pytest for backend, Playwright for critical flows)
+- Every bugfix includes a regression test
+- Tests pass before considering work done: `pytest` (backend), `npx tsc --noEmit` + `npx vite build` (frontend)
+
+### Documentation
+- New models/endpoints → update or create docs in `documents/`
+- Phase specs updated when work is completed (move from `phases/todo/` to `phases/done/`)
+- Significant decisions documented in the module's `index.md`
+
+### Security & Performance
+- `permission_classes` on all ViewSets
+- `select_related`/`prefetch_related` — no N+1
+- Safe migrations only (see migration-safety skill)
+- No secrets in code
+
+### Accessibility
+- WCAG 2.1 AA compliance for all UI
+- `:focus-visible` on interactive elements
+- Touch targets ≥ 44×44px
+- `@media (prefers-reduced-motion: reduce)` on animations
 
 ---
 
@@ -171,17 +276,11 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 
 | Agent | Role | Tools | Hands off to |
 |-------|------|-------|-------------|
-| **Developer** | Full-stack implementation | All | → Reviewer |
-| **Reviewer** | Read-only code review & audit | Read-only | → Developer (fix) |
-| **Planner** | Architecture & implementation plans | Read-only | → Developer (build) |
-| **Debugger** | Systematic bug diagnosis & fix | Read + Terminal + Edit | → Reviewer (verify) |
-| **Accessibility** | WCAG 2.1/2.2 specialist | Read + Edit + Playwright MCP | → Developer (fix) |
-| **Playwright Tester** | E2E testing via live browser | Read + Terminal + Playwright MCP | → Developer (fix) |
-| **PostgreSQL DBA** | Query optimization, indexing, schema | Read + Terminal (Railway) | → Developer (apply) |
-| **Ops & Deploy** | Railway logs, deploys, monitoring | Read + Terminal (Railway CLI) | → Developer / DBA |
-| **Refactoring** | Systematic code restructuring | Read + Edit + Terminal | → Reviewer (verify) |
-| **Documentation** | Generate & sync domain docs | Read + Edit | → Reviewer (verify) |
-| **Module Builder** | Build backend modules from spec to production | Read + Edit + Terminal + Pylance | → Reviewer (verify) |
+| **Developer** | Full-stack implementation, debugging, refactoring, modules, docs | All | → Reviewer |
+| **Reviewer** | Code review, a11y audit (code-level), conventions | Read-only + terminal | → Developer (fix) |
+| **Planner** | Architecture & implementation plans | Read-only + create_file | → Developer (build) || **Domain Expert** | Product & domain knowledge, data model, features, architecture | Read-only | → Planner / Developer || **Playwright Tester** | E2E flows, live a11y, visual review via browser | Read + Playwright MCP | → Developer (fix) |
+| **PostgreSQL DBA** | Query optimization, indexing, schema | Read + Terminal | → Developer (apply) |
+| **Ops & Deploy** | Railway logs, deploys, monitoring | Read + Terminal | → Developer / DBA |
 
 ## Available Skills
 
