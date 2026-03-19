@@ -116,7 +116,7 @@ export function AssetCard({
                 title="Bewerkingsgeschiedenis"
                 aria-label="Bewerkingsgeschiedenis"
             >
-             ⏱️
+
             </button>
         )}
 

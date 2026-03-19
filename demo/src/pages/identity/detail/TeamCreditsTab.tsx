@@ -247,13 +247,13 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                 className={`grid gap-12 mb-16 ${styles.summaryGrid}`}
               >
                 <Card className="p-16 text-center">
-                  <div className="fs-12 opacity-60 uppercase">➕ Totaal bijgeschreven</div>
+                  <div className="fs-12 opacity-60 uppercase">Totaal bijgeschreven</div>
                   <div className={`fw-800 text-success ${styles.summaryValue}`}>
                     +{formatCredits(totals.added)}
                   </div>
                 </Card>
                 <Card className="p-16 text-center">
-                  <div className="fs-12 opacity-60 uppercase">➖ Totaal gebruikt</div>
+                  <div className="fs-12 opacity-60 uppercase">Totaal gebruikt</div>
                   <div className={`fw-800 text-error ${styles.summaryValue}`}>
                     {formatCredits(totals.used)}
                   </div>

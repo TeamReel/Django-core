@@ -75,7 +75,7 @@ export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, or
     </div>
 
     {/* Location */}
-    <Section title="📍 Locatie" description="Upload een voetbalveld foto → AI zet het om naar portrait formaat. Zonder eigen foto wordt de club-locatie geërfd.">
+    <Section title="Locatie" description="Upload een voetbalveld foto → AI zet het om naar portrait formaat. Zonder eigen foto wordt de club-locatie geërfd.">
       <AssetGrid>
         <AssetCard label="Veld foto (upload)" assetType="location_photo" asset={d.getAsset('location_photo')} onUpload={d.handleUpload} onDelete={d.handleDelete} aspectRatio="16 / 9" />
         {(() => { const e = d.getEffectiveAsset('stadium_background'); return (
@@ -86,7 +86,7 @@ export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, or
 
     {!d.profile && (
       <div className={s.warningBox}>
-        ⚠️ Nog geen brand profiel voor dit team. Upload of genereer een asset — het profiel wordt automatisch aangemaakt.
+        Nog geen brand profiel voor dit team. Upload of genereer een asset — het profiel wordt automatisch aangemaakt.
       </div>
     )}
   </div>

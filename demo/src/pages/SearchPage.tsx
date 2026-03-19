@@ -76,18 +76,18 @@ export default function SearchPage() {
 
   const getCategoryIcon = (category: string): string => {
     const icons: Record<string, string> = {
-      organisations: '🏛️',
-      clubs: '🏟️',
-      teams: '👕',
-      seasons: '🗓️',
-      competitions: '🏆',
-      matches: '🎯',
-      users: '👥',
-      periods: '🗓️',
-      activities: '📅',
-      projects: '📁',
+      organisations: '',
+      clubs: '',
+      teams: '',
+      seasons: '',
+      competitions: '',
+      matches: '',
+      users: '',
+      periods: '',
+      activities: '',
+      projects: '',
     };
-    return icons[category] || '📄';
+    return icons[category] || '';
   };
 
   const allCategories = ['organisations', 'clubs', 'teams', 'seasons', 'competitions', 'matches', 'users', 'periods', 'activities', 'projects'];
@@ -121,7 +121,7 @@ export default function SearchPage() {
                 onClick={() => setIsFilterSheetOpen(true)}
                 className="flex-row gap-6"
               >
-                🔍 Filters
+                Filters
                 {isFiltered && (
                   <span className={`flex-center fs-11 rounded-full text-white ${styles.filterBadge}`}>
                     {types.length}
@@ -134,7 +134,7 @@ export default function SearchPage() {
                 onClick={handleHierarchyToggle}
                 className={`flex-row gap-8 py-8 px-16 fs-14 fw-500 rounded-8 cursor-pointer transition ${showHierarchy ? styles.hierarchyToggleActive : styles.hierarchyToggle}`}
               >
-                🌳 {showHierarchy ? 'Hierarchy On' : 'Show Hierarchy'}
+                {showHierarchy ? 'Hierarchy On' : 'Show Hierarchy'}
               </button>
             )}
             </div>
@@ -309,7 +309,7 @@ export default function SearchPage() {
             onClick={handleClearFilter}
             className={`flex-row gap-12 p-16 border-none rounded-8 cursor-pointer text-left ${!isFiltered ? styles.filterSheetOptionActive : styles.filterSheetOption}`}
           >
-            <span className="fs-20">🔍</span>
+            <span className="fs-20"></span>
             <span className={!isFiltered ? styles.filterSheetLabelActive : styles.filterSheetLabel}>
               Alle categorieën
             </span>

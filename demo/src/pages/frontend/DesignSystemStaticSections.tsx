@@ -9,7 +9,7 @@ export function FormComponentsSection() {
       <h2 className="ds-section-title">Form Components</h2>
       <div className="grid-cols-2 gap-16 mb-16">
         <Card variant="filled" className="p-16">
-          <h3 className="ds-subsection-title">📝 Form Controls</h3>
+          <h3 className="ds-subsection-title">Form Controls</h3>
           <div className="flex-col gap-12">
             <Input type="text" placeholder="Text input" className="glow-input" />
             <Input type="email" placeholder="Email input" className="glow-input" />
@@ -22,7 +22,7 @@ export function FormComponentsSection() {
           </div>
         </Card>
         <Card variant="filled" className="p-16">
-          <h3 className="ds-subsection-title">☑️ Selection Controls</h3>
+          <h3 className="ds-subsection-title">Selection Controls</h3>
           <div className="flex-col gap-12">
             <label className="flex-row gap-8 fs-14">
               <input type="checkbox" /> Checkbox option
@@ -40,7 +40,7 @@ export function FormComponentsSection() {
         </Card>
       </div>
       <Card variant="filled" className="p-16">
-        <h3 className="ds-subsection-title">🚨 Form Validation States</h3>
+        <h3 className="ds-subsection-title">Form Validation States</h3>
         <div className="grid-cols-3 gap-16">
           <div>
             <Input
@@ -98,7 +98,7 @@ export function LayoutComponentsSection() {
           </div>
         </Card>
         <Card variant="filled" className="p-16">
-          <h3 className="ds-subsection-title">🎨 Card Variations</h3>
+          <h3 className="ds-subsection-title">Card Variations</h3>
           <div className="flex-col gap-8">
             <Card variant="outlined" padding="sm">
               <p className="fs-12 m-0">Outlined (Default)</p>
@@ -113,7 +113,7 @@ export function LayoutComponentsSection() {
         </Card>
       </div>
       <Card variant="filled" className="p-16">
-        <h3 className="ds-subsection-title">📏 Typography Scale</h3>
+        <h3 className="ds-subsection-title">Typography Scale</h3>
         <div className="flex-col gap-8">
           <h1 className={`fw-700 m-0 ${styles.heading1}`}>Heading 1 - 32px</h1>
           <h2 className="fs-24 fw-600 m-0">Heading 2 - 24px</h2>
@@ -135,7 +135,7 @@ export function InteractiveComponentsSection() {
       <h2 className="ds-section-title">Interactive Components</h2>
       <div className="grid-cols-2 gap-16 mb-16">
         <Card variant="filled" className="p-16">
-          <h3 className="ds-subsection-title">💬 Tooltips & Dropdowns</h3>
+          <h3 className="ds-subsection-title">Tooltips & Dropdowns</h3>
           <div className="flex-row gap-12 mb-12">
             <Button
               variant="secondary"
@@ -171,7 +171,7 @@ export function InteractiveComponentsSection() {
           </div>
         </Card>
         <Card variant="filled" className="p-16">
-          <h3 className="ds-subsection-title">🎭 Modal Dialog</h3>
+          <h3 className="ds-subsection-title">Modal Dialog</h3>
           <Button
             variant="primary"
             onClick={() => {
@@ -230,7 +230,7 @@ export function InteractiveComponentsSection() {
         </Card>
       </div>
       <Card variant="filled" className="p-16">
-        <h3 className="ds-subsection-title">⚡ Animations & Transitions</h3>
+        <h3 className="ds-subsection-title">Animations & Transitions</h3>
         <div className="flex-row gap-12 flex-wrap">
           <Button
             variant="secondary"

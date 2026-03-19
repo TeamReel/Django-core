@@ -23,10 +23,10 @@ export function ThemePage() {
             </div>
             <div className="gap-12 flex-row">
               <Button variant="secondary" onClick={toggleMode}>
-                {isDarkMode ? '🌙 Switch to Light' : '☀️ Switch to Dark'}
+                {isDarkMode ? 'Switch to Light' : 'Switch to Dark'}
               </Button>
               <Button variant="outline" onClick={() => setTheme({ mode: 'system' })}>
-                💻 System
+                System
               </Button>
             </div>
           </div>

@@ -242,7 +242,7 @@ export function AssetCompletionMatrix({
             <span></span> <span>Aanwezig</span>
           </div>
           <div className={styles.legendItem}>
-            <span>⬜</span> <span>Ontbreekt</span>
+            <span>--</span> <span>Ontbreekt</span>
           </div>
         </div>
       </div>

@@ -28,12 +28,12 @@ import styles from './AIStudioPage.module.css';
 // ============================================================================
 
 const PHASE_META: Record<string, { label: string; accent: string; icon: string }> = {
-  pre_match: { label: 'Voor de wedstrijd', accent: 'var(--studio-phase-pre, #3b82f6)', icon: '📋' },
-  during_match: { label: 'Tijdens de wedstrijd', accent: 'var(--studio-phase-during, #f59e0b)', icon: '⚡' },
-  post_match: { label: 'Na de wedstrijd', accent: 'var(--studio-phase-post, #10b981)', icon: '📊' },
-  season: { label: 'Seizoen', accent: 'var(--studio-phase-season, #8b5cf6)', icon: '📅' },
-  member: { label: 'Leden', accent: 'var(--studio-phase-member, #ec4899)', icon: '👤' },
-  other: { label: 'Overig', accent: 'var(--studio-phase-other, #6b7280)', icon: '📄' },
+  pre_match: { label: 'Voor de wedstrijd', accent: 'var(--studio-phase-pre, #3b82f6)', icon: '' },
+  during_match: { label: 'Tijdens de wedstrijd', accent: 'var(--studio-phase-during, #f59e0b)', icon: '' },
+  post_match: { label: 'Na de wedstrijd', accent: 'var(--studio-phase-post, #10b981)', icon: '' },
+  season: { label: 'Seizoen', accent: 'var(--studio-phase-season, #8b5cf6)', icon: '' },
+  member: { label: 'Leden', accent: 'var(--studio-phase-member, #ec4899)', icon: '' },
+  other: { label: 'Overig', accent: 'var(--studio-phase-other, #6b7280)', icon: '' },
 };
 
 export default function AIStudioPage() {
@@ -138,7 +138,7 @@ export default function AIStudioPage() {
         {/* ── Empty state ── */}
         {!data.loading && !data.error && data.contentGroups.length === 0 && data.matchGroups.length === 0 && !data.nonMatchGroup && (
           <div className={styles.emptyState}>
-            <span className={styles.emptyIcon}>🎬</span>
+            <span className={styles.emptyIcon}></span>
             <h2 className={styles.emptyTitle}>Nog geen content</h2>
             <p className={styles.emptySub}>
               Genereer je eerste content — flyers, line-ups, video's en meer — via het + menu.
@@ -183,14 +183,14 @@ export default function AIStudioPage() {
               <section className={styles.section}>
                 <div className={styles.sectionHeader}>
                   <div className={styles.sectionTitleRow}>
-                    <span className={styles.sectionIcon}>📅</span>
+                    <span className={styles.sectionIcon}></span>
                     <h3 className={styles.sectionTitle}>Seizoen &amp; Leden</h3>
                     <Badge size="sm" variant="default">{data.nonMatchGroup.items.length}</Badge>
                   </div>
                   {data.nonMatchGroup.items.length > 3 && (
                     <button
                       className={styles.sectionViewAll}
-                      onClick={() => setViewAllData({ title: '📅 Seizoen & Leden', items: data.nonMatchGroup!.items, viewMode: 'match' })}
+                      onClick={() => setViewAllData({ title: 'Seizoen & Leden', items: data.nonMatchGroup!.items, viewMode: 'match' })}
                       type="button"
                     >
                       Bekijk alles <ChevronRight size={14} />
@@ -225,7 +225,7 @@ export default function AIStudioPage() {
                   <section key={match.activityId} className={styles.section}>
                     <div className={styles.sectionHeader}>
                       <div className={styles.sectionTitleRow}>
-                        <span className={styles.sectionIcon}>⚽</span>
+                        <span className={styles.sectionIcon}></span>
                         <div className={styles.matchTitleBlock}>
                           <h3 className={styles.sectionTitle}>{match.title}</h3>
                           {subtitle && <span className={styles.matchSubtitle}>{subtitle}</span>}
@@ -235,7 +235,7 @@ export default function AIStudioPage() {
                       {match.items.length > 3 && (
                         <button
                           className={styles.sectionViewAll}
-                          onClick={() => setViewAllData({ title: `⚽ ${match.title}`, items: match.items, viewMode: 'match' })}
+                          onClick={() => setViewAllData({ title: match.title, items: match.items, viewMode: 'match' })}
                           type="button"
                         >
                           Bekijk alles <ChevronRight size={14} />
@@ -253,7 +253,7 @@ export default function AIStudioPage() {
             ) : (
               !data.nonMatchGroup && (
                 <div className={styles.emptyState}>
-                  <span className={styles.emptyIcon}>⚽</span>
+                  <span className={styles.emptyIcon}></span>
                   <h2 className={styles.emptyTitle}>Geen wedstrijd-content</h2>
                   <p className={styles.emptySub}>
                     Content gekoppeld aan wedstrijden verschijnt hier.

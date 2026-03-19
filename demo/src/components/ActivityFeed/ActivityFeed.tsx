@@ -192,7 +192,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
               data-variant="league"
               data-active={filter === 'league'}
             >
-              ⚽ League
+              League
             </button>
             <button
               onClick={() => setFilter('cup')}
@@ -200,7 +200,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
               data-variant="cup"
               data-active={filter === 'cup'}
             >
-              🏆 Cup
+              Cup
             </button>
           </div>
         </div>

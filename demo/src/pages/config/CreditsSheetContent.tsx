@@ -93,7 +93,7 @@ const PersonalWalletCompact: React.FC<{
     {personalError && <Alert variant="info" className="mb-16">{personalError}</Alert>}
 
     <div className={s.walletCard}>
-      <div className={s.walletEmoji}>👤</div>
+      <div className={s.walletEmoji}></div>
       <div className={s.walletBalance}>
         {Number(personalCredits?.current_balance ?? 0).toLocaleString()} Credits
       </div>

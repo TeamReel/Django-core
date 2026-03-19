@@ -123,14 +123,14 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
                 <div className={`w-full rounded-8 flex-center overflow-hidden mb-12 ${styles.kitImageContainer}`}>
                   {uploadingType === kitType.id ? (
                     <div className="text-center text-muted">
-                      <div className="mb-8 fs-24">{'⏳'}</div>
+                      <div className="mb-8 fs-24">{'...'}</div>
                       <div className="fs-12">Uploading...</div>
                     </div>
                   ) : imageUrl ? (
                     <img src={imageUrl} alt={kitType.label} className={`w-full h-full ${styles.kitImage}`} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                   ) : (
                     <div className="text-center text-muted">
-                      <div className={`mb-8 ${styles.kitPlaceholderIcon}`}>{'⏳'}</div>
+                      <div className={`mb-8 ${styles.kitPlaceholderIcon}`}>{'...'}</div>
                       <div className="fs-12">No image uploaded</div>
                     </div>
                   )}

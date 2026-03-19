@@ -71,7 +71,7 @@ export function NotificationsTabPanel() {
           <div className="space-y-4">
             <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
               <div className="flex">
-                <div className="flex-shrink-0">ℹ️</div>
+                <div className="flex-shrink-0">i</div>
                 <div className="ml-3">
                   <p className="text-sm text-blue-700">
                     This is an informational banner used for context.
@@ -81,7 +81,7 @@ export function NotificationsTabPanel() {
             </div>
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
               <div className="flex">
-                <div className="flex-shrink-0">⚠️</div>
+                <div className="flex-shrink-0">!</div>
                 <div className="ml-3">
                   <p className="text-sm text-yellow-700">
                     This is a warning banner used for non-blocking issues.

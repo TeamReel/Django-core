@@ -180,7 +180,7 @@ export function MemberIntroTab({
                             </>
                           ) : (
                             <Button size="sm" onClick={() => openAiModal('member_intro', kit.id, playerInTenueUrl, variant.id)} disabled={!hasPlayerInTenue} className={`${s.btnSmall} ${styles.btnFullWidth}`}>
-                              ✨ Genereer
+                              Genereer
                             </Button>
                           )}
                         </div>

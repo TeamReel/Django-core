@@ -63,7 +63,7 @@ export function MemberWalkingCompositeTab({
       <div className={s.cardPadding}>
         <div className={s.flexSpaceBetween}>
           <div className={s.flexCenterGap8}>
-            <span className={s.tabIcon}>🚶</span>
+            <span className={s.tabIcon}></span>
             <div className={s.tabTitle}>Walking Composite</div>
           </div>
           <Badge variant={userCanEditProject ? 'default' : 'info'}>
@@ -78,7 +78,7 @@ export function MemberWalkingCompositeTab({
         {/* Prerequisites */}
         <div className={s.prerequisiteRow}>
           <div className={`${s.prerequisiteCard} ${styles.prerequisiteCard}`} data-ready={!!legacyFullbodyUrl}>
-            <div className="fs-12 fw-600 mb-8">🏆 Legacy Fullbody</div>
+            <div className="fs-12 fw-600 mb-8">Legacy Fullbody</div>
             {legacyFullbodyUrl ? (
               <img src={legacyFullbodyUrl} alt="Legacy" className={s.prereqThumbnail} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
@@ -86,7 +86,7 @@ export function MemberWalkingCompositeTab({
             )}
           </div>
           <div className={`${s.prerequisiteCard} ${styles.prerequisiteCard}`} data-ready={!!currentFullbodyUrl}>
-            <div className="fs-12 fw-600 mb-8">👕 Huidige Fullbody</div>
+            <div className="fs-12 fw-600 mb-8">Huidige Fullbody</div>
             {currentFullbodyUrl ? (
               <img src={currentFullbodyUrl} alt="Current" className={s.prereqThumbnail} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
@@ -111,7 +111,7 @@ export function MemberWalkingCompositeTab({
                 )}
               </div>
               <div className={s.cardFooterPadding}>
-                <div className={s.variantLabel}>📸 Ver Beeld</div>
+                <div className={s.variantLabel}>Ver Beeld</div>
                 <div className={s.actionButtonRow}>
                   <Button size="sm" onClick={() => openAiModal('walking_composite_far', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)} disabled={!hasBothInputs} className={`${s.btnSmall} ${styles.fullWidth}`}>
                     {hasFarImage ? 'Opnieuw' : 'Genereer'}
@@ -133,7 +133,7 @@ export function MemberWalkingCompositeTab({
                 )}
               </div>
               <div className={s.cardFooterPadding}>
-                <div className={s.variantLabel}>📸 Dichtbij Beeld</div>
+                <div className={s.variantLabel}>Dichtbij Beeld</div>
                 <div className={s.actionButtonRow}>
                   <Button size="sm" onClick={() => openAiModal('walking_composite_near', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)} disabled={!hasBothInputs} className={`${s.btnSmall} ${styles.fullWidth}`}>
                     {hasNearImage ? 'Opnieuw' : 'Genereer'}
@@ -162,7 +162,7 @@ export function MemberWalkingCompositeTab({
                 )}
               </div>
               <div className={s.cardFooterPadding}>
-                <div className={s.variantLabel}>🎬 Walking Video</div>
+                <div className={s.variantLabel}>Walking Video</div>
                 <div className={s.actionButtonRow}>
                   {hasWalkingVideo ? (
                     <>
@@ -205,7 +205,7 @@ export function MemberWalkingCompositeTab({
                     </>
                   ) : (
                     <Button size="sm" onClick={() => { if (farImageUrl) openAiModal('walking_composite_video', 'home', farImageUrl, null, nearImageUrl); }} disabled={!(hasFarImage && hasNearImage)} className={`${s.btnSmall} ${styles.fullWidth}`}>
-                      ✨ Genereer
+                      Genereer
                     </Button>
                   )}
                 </div>

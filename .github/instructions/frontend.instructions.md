@@ -13,6 +13,7 @@ React 18 + TypeScript 5.6 (strict) + Vite. No CSS-in-JS, no Tailwind. Pure CSS M
 - Components: PascalCase, co-located `.module.css`
 - CSS classes: camelCase in modules (`.headerRow`, `.statusBadge`)
 - No `any` types. Define interfaces for all API responses.
+- **No emoji characters in UI text.** Use design tokens, CSS indicators, or Unicode text symbols (`✓`, `✗`, `✕`, `←`, `→`) instead of emoji (🎬, ⚽, 📋, etc.).
 
 ## Styling Decision Tree
 1. **Layout** (flex, grid, gap, margin, padding) → utility class

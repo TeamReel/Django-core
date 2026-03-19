@@ -259,7 +259,7 @@ export default function VideoQueuePage() {
         {/* Empty state */}
         {!loading && filteredJobs.length === 0 && (
           <div className={`text-center text-secondary ${styles.emptyState}`}>
-            <span className={`block mb-12 ${styles.emptyIcon}`}>🎬</span>
+            <span className={`block mb-12 ${styles.emptyIcon}`}></span>
             <p className="fs-14 mb-4">No video jobs {filter !== 'all' ? `with status "${filter}"` : ''}</p>
             <p className="fs-12">Video jobs appear here when content is generated with video output.</p>
           </div>

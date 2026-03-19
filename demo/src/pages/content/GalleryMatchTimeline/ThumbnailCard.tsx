@@ -52,7 +52,7 @@ export function ThumbnailCard({ item, onPreview }: ThumbnailCardProps) {
             {getAssetTypeIcon(normalizedType)}
           </div>
         )}
-        {isVideo && <span className={styles.thumbBadge}>🎬 Video</span>}
+        {isVideo && <span className={styles.thumbBadge}>Video</span>}
       </div>
       <div className={styles.thumbInfo}>
         <span className={styles.thumbType}>{getAssetTypeLabel(normalizedType)}</span>

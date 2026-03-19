@@ -67,7 +67,7 @@ export const AssetsTabClubLevel: React.FC<Props> = ({ d, readOnly, projectId, or
     </div>
 
     {/* Location */}
-    <Section title="📍 Locatie" description="Upload een voetbalveld foto → AI zet het om naar portrait formaat voor lineup.">
+    <Section title="Locatie" description="Upload een voetbalveld foto → AI zet het om naar portrait formaat voor lineup.">
       <AssetGrid>
         <AssetCard label="Veld foto (upload)" assetType="location_photo" asset={d.getAsset('location_photo')} onUpload={d.handleUpload} onDelete={d.handleDelete} aspectRatio="16 / 9" />
         <AssetCard label="Achtergrond (bewerkt)" assetType="stadium_background" asset={d.getAsset('stadium_background')} onUpload={d.handleUpload} onDelete={d.handleDelete} onReplace={d.handleReplaceAi} onPostProcess={d.handlePostProcess} isProcessing={d.postProcessingAsset === 'stadium_background'} aspectRatio="9 / 16" />
@@ -75,13 +75,13 @@ export const AssetsTabClubLevel: React.FC<Props> = ({ d, readOnly, projectId, or
     </Section>
 
     {/* Club Backgrounds — multiple custom backgrounds */}
-    <Section title="🖼️ Achtergronden" description="Upload eigen achtergronden voor video's. Na upload opent de AI-modal om de achtergrond te optimaliseren voor portrait formaat (1080×1920) zodat spelers er realistisch op geplaatst kunnen worden.">
+    <Section title="Achtergronden" description="Upload eigen achtergronden voor video's. Na upload opent de AI-modal om de achtergrond te optimaliseren voor portrait formaat (1080×1920) zodat spelers er realistisch op geplaatst kunnen worden.">
       <ClubBackgrounds d={d} />
     </Section>
 
     {!d.profile && (
       <div className={s.warningBox}>
-        ⚠️ Nog geen brand profiel aangemaakt voor deze club. Assets worden opgeslagen zodra er een brand profiel is.
+        Nog geen brand profiel aangemaakt voor deze club. Assets worden opgeslagen zodra er een brand profiel is.
       </div>
     )}
   </div>

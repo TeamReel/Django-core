@@ -97,7 +97,7 @@ export function MemberIdentityTab({
       <div className={s.cardPadding}>
         <div className={s.flexSpaceBetween}>
           <div className={s.flexCenterGap8}>
-            <span className={s.tabIcon}>🪪</span>
+            <span className={s.tabIcon}></span>
             <div className={s.tabTitle}>Identity</div>
           </div>
           {!isEditing && (
@@ -138,7 +138,7 @@ export function MemberIdentityTab({
                     }}
                   />
                 ) : (
-                  <div className={styles.emptyAvatarIcon}>👤</div>
+                  <div className={styles.emptyAvatarIcon}></div>
                 )}
               </div>
               <div className={`flex-1 ${styles.infoColumn}`}>

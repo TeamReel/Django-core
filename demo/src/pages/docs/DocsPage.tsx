@@ -69,10 +69,10 @@ export function DocsPage() {
                 <h3 className={`fs-18 fw-600 text-primary ${styles.sectionHeading}`}>Documentation Resources</h3>
                 <div className={styles.linkButtonGroup}>
                   <button onClick={() => window.open(DOCS_URL, '_blank')} className={styles.linkButtonPrimary}>
-                    📚 MkDocs Site
+                    MkDocs Site
                   </button>
-                  <button onClick={() => window.location.href = '/api-docs'} className={styles.linkButton}>📖 API Documentation</button>
-                  <button onClick={() => window.open(GITHUB_URL, '_blank')} className={styles.linkButton}>🔗 GitHub Repository</button>
+                  <button onClick={() => window.location.href = '/api-docs'} className={styles.linkButton}>API Documentation</button>
+                  <button onClick={() => window.open(GITHUB_URL, '_blank')} className={styles.linkButton}>GitHub Repository</button>
                 </div>
               </Card>
 

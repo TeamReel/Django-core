@@ -182,7 +182,7 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
             {menuOpen && (
               <div className={styles.overflowMenu}>
                 <button type="button" onClick={(e) => { e.stopPropagation(); onPreview(); setMenuOpen(false); }}>
-                  👁 Bekijken
+                  Bekijken
                 </button>
                 <a
                   href={mediaUrl}

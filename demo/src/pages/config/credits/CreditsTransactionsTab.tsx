@@ -162,7 +162,7 @@ export const CreditsTransactionsTab: React.FC<CreditsTransactionsTabProps> = ({
       {canSeeTestControls && (
         <Card variant="outlined" className="p-16 mt-16 max-w-600">
           <div className="flex-between mb-12">
-            <h3 className="m-0 fs-14">🧪 Test controls (demo)</h3>
+            <h3 className="m-0 fs-14">Test controls (demo)</h3>
           </div>
           <div className="flex-row gap-8 flex-wrap">
             <Button onClick={() => handleTestAction('+500')} variant="outline" size="sm">+500</Button>

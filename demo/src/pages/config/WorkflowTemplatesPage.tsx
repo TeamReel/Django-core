@@ -40,7 +40,7 @@ export default function WorkflowTemplatesPage() {
           <div
             className={`text-center text-secondary bg-surface-2 rounded-12 ${styles.emptyState}`}
           >
-            <div className={`mb-8 ${styles.emptyStateIcon}`}>📋</div>
+            <div className={`mb-8 ${styles.emptyStateIcon}`}></div>
                         <div className="fw-600 mb-4 fs-15">No workflow templates</div>
             <div className="fs-12">Create workflow templates via the API to define approval flows.</div>
           </div>

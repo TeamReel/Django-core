@@ -131,7 +131,7 @@ export const AssetsTabSeasonLevel: React.FC<Props> = ({ d, readOnly }) => (
                         onClick={() => d.handleReplaceAi(processedType)}
                         className={s.seasonAiBtn}
                       >
-                        ✨ Genereer met AI
+                        Genereer met AI
                       </button>
                       <span className={s.seasonHelperText}>
                         Genereert een nieuw tenue voor dit seizoen.<br/>(Gebruikt seizoens- of clubsponsor)

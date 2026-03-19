@@ -63,7 +63,7 @@ export function StudioContentCard({
             />
           )
         ) : (
-          <span className={styles.contentCardFallback}>📄</span>
+          <span className={styles.contentCardFallback}></span>
         )}
       </div>
       {label && (

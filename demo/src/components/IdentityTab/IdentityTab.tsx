@@ -199,7 +199,7 @@ export function IdentityTab({
         })}
 
         {/* Location */}
-        <Section title="📍 Locatie" description="Stadion of veld foto's.">
+        <Section title="Locatie" description="Stadion of veld foto's.">
           <AssetGrid>
             <AssetCard
               label="Locatie foto"
@@ -213,7 +213,7 @@ export function IdentityTab({
 
         {!profile && (
           <div className={styles.warningBox}>
-            ⚠️ Nog geen brand profiel aangemaakt voor deze club. Assets worden opgeslagen zodra er een brand profiel is.
+            Nog geen brand profiel aangemaakt voor deze club. Assets worden opgeslagen zodra er een brand profiel is.
           </div>
         )}
       </div>

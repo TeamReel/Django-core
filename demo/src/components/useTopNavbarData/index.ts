@@ -150,6 +150,5 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void): Us
     setCreditsModalOpen: state.setCreditsModalOpen,
     // Activity feed (B62)
     activityItems,
-    showActivityTab,
   };
 }

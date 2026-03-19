@@ -39,15 +39,15 @@ export const HealthCheckPage: React.FC = () => {
       case 'healthy':
       case 'active':
       case 'ok':
-        return '✅';
+        return '\u2713';
       case 'degraded':
       case 'planned':
-        return '⚠️';
+        return '!';
       case 'unhealthy':
       case 'error':
-        return '❌';
+        return '\u2717';
       default:
-        return '❓';
+        return '?';
     }
   };
 
@@ -102,7 +102,7 @@ export const HealthCheckPage: React.FC = () => {
         <div className="p-24">
           <h1 className="text-primary">System Health</h1>
           <div className={styles.errorBox}>
-            <strong>❌ Error:</strong> Unable to fetch health data ({error})
+            <strong>Fout:</strong> Unable to fetch health data ({error})
           </div>
         </div>
       </>

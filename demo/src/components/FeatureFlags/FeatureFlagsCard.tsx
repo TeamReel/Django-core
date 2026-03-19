@@ -140,7 +140,7 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
           <li><strong>{scopeType === 'ORGANISATION' ? 'Organisation' : 'Project'} Setting</strong>: Your {scopeType === 'ORGANISATION' ? 'organisation' : 'club'} override (if configured).</li>
           <li><strong>Effective Value</strong>: The actual active setting for {scopeName}.</li>
           <li className="text-amber-700 dark:text-amber-400">
-            ⚠️ If a global flag is <strong>disabled</strong>, it overrides all {scopeType === 'ORGANISATION' ? 'organisation' : 'project'} settings.
+            If a global flag is <strong>disabled</strong>, it overrides all {scopeType === 'ORGANISATION' ? 'organisation' : 'project'} settings.
           </li>
         </ul>
       </Alert>

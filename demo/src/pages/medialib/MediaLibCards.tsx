@@ -135,7 +135,7 @@ export const AssetCard = memo(function AssetCard({ asset, orgSlugOrId, onPreview
           )
         ) : (
           <span className={styles.emptyIcon}>
-            {contentType === 'kit' ? '👕' : contentType === 'logo' ? '🏷️' : contentType === 'closeup' ? '📸' : '📁'}
+            {contentType === 'kit' ? '' : contentType === 'logo' ? '' : contentType === 'closeup' ? '' : ''}
           </span>
         )}
         {/* Level badge overlay */}
@@ -144,7 +144,7 @@ export const AssetCard = memo(function AssetCard({ asset, orgSlugOrId, onPreview
         </span>
         {isVideo && (
           <span className={`badge-overlay ${styles.videoBadge}`}>
-            🎬 Video
+            Video
           </span>
         )}
       </div>
@@ -275,14 +275,14 @@ export const MemberMediaCard = memo(function MemberMediaCard({ item, orgSlugOrId
             />
           )
         ) : (
-          <span className={styles.emptyIcon}>👤</span>
+          <span className={styles.emptyIcon}></span>
         )}
         <span className={`badge-overlay ${styles.memberBadge}`}>
           Member
         </span>
         {isVideo && (
           <span className={`badge-overlay ${styles.videoBadge}`}>
-            🎬 Video
+            Video
           </span>
         )}
       </div>

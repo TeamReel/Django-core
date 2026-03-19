@@ -102,7 +102,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
 
     {/* Auto-processing notice */}
     <div className={`mb-20 rounded-8 fs-12 text-muted ${styles.autoProcessNotice}`}>
-      ✅ Bewerking (achtergrond verwijderen, closeup crop) verloopt automatisch na goedkeuring
+      Bewerking (achtergrond verwijderen, closeup crop) verloopt automatisch na goedkeuring
     </div>
 
     {/* Info box for video templates */}
@@ -158,7 +158,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
                 <img src={getAssetUrl(member.profilePhotoUrl) || ''} alt="" className={styles.avatar} loading="lazy" />
               ) : (
                 <div className={`flex-center ${styles.avatarFallback}`}>
-                  👤
+
                 </div>
               )}
               <div className="flex-1-min">

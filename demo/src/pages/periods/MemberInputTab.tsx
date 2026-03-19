@@ -35,7 +35,7 @@ export function MemberInputTab({
       <div className={s.cardPadding}>
         <div className={s.flexSpaceBetween}>
           <div className={s.flexCenterGap8}>
-            <span className={s.tabIcon}>📷</span>
+            <span className={s.tabIcon}></span>
             <div className={s.tabTitle}>Input Foto's</div>
           </div>
           <Badge variant={userCanEditProject ? 'default' : 'info'}>
@@ -49,7 +49,7 @@ export function MemberInputTab({
         <div className={s.inputPhotoGrid}>
           {/* Profile Photo */}
           <div>
-            <div className={`fs-13 fw-700 ${m.photoSectionLabel}`}>📷 Profielfoto</div>
+            <div className={`fs-13 fw-700 ${m.photoSectionLabel}`}>Profielfoto</div>
             <div className={s.photoThumbnailSquare}>
               {(profilePreview || form.profile?.url || membership?.user?.avatar_url) ? (
                 <img
@@ -60,7 +60,7 @@ export function MemberInputTab({
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
               ) : (
-                <div className={m.emptyPlaceholder}>👤</div>
+                <div className={m.emptyPlaceholder}></div>
               )}
             </div>
             {(profilePreview || form.profile?.url || membership?.user?.avatar_url) && (
@@ -92,10 +92,10 @@ export function MemberInputTab({
                 }}
               />
               {profileUploading ? (
-                <div className="fs-12 fw-600">⏳ Uploaden...</div>
+                <div className="fs-12 fw-600">Uploaden...</div>
               ) : (
                 <>
-                  <div className="fs-24 mb-4">📤</div>
+                  <div className="fs-24 mb-4"></div>
                   <div className="fs-11 fw-600">Upload / Vervang</div>
                 </>
               )}
@@ -104,7 +104,7 @@ export function MemberInputTab({
 
           {/* Legacy Photo */}
           <div>
-            <div className={`fs-13 fw-700 ${m.photoSectionLabel}`}>📸 Legacy Foto</div>
+            <div className={`fs-13 fw-700 ${m.photoSectionLabel}`}>Legacy Foto</div>
             <div className={s.photoThumbnailSquare}>
               {(legacyPhotoPreview || form.legacy_photo?.url) ? (
                 <img
@@ -115,7 +115,7 @@ export function MemberInputTab({
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
               ) : (
-                <div className={m.emptyPlaceholder}>📸</div>
+                <div className={m.emptyPlaceholder}></div>
               )}
             </div>
             {(legacyPhotoPreview || form.legacy_photo?.url) && (
@@ -147,10 +147,10 @@ export function MemberInputTab({
                 }}
               />
               {legacyPhotoUploading ? (
-                <div className="fs-12 fw-600">⏳ Uploaden...</div>
+                <div className="fs-12 fw-600">Uploaden...</div>
               ) : (
                 <>
-                  <div className="fs-24 mb-4">📤</div>
+                  <div className="fs-24 mb-4"></div>
                   <div className="fs-11 fw-600">Upload / Vervang</div>
                 </>
               )}

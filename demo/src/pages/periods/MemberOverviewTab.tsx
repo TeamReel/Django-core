@@ -79,7 +79,7 @@ export function MemberOverviewTab({
               <span className="fs-18">{item.icon}</span>
               <span className="fw-600 fs-13">{item.label}</span>
               <span className="ml-auto fs-13">
-                {item.hasContent ? '✅' : '⬜'}
+                {item.hasContent ? '\u2713' : '\u2014'}
               </span>
             </div>
           </div>
@@ -103,9 +103,9 @@ export function MemberOverviewTab({
         </div>
 
         <div className="mt-16">
-          {renderPhase('📥 Input Foto\'s', '📥', inputItems)}
-          {renderPhase('🖼️ Gegenereerde Assets', '🖼️', assetItems)}
-          {renderPhase('🎬 Video Content', '🎬', videoItems)}
+          {renderPhase('Input Foto\'s', '', inputItems)}
+          {renderPhase('Gegenereerde Assets', '', assetItems)}
+          {renderPhase('Video Content', '', videoItems)}
         </div>
 
         <div className={s.progressBar}>

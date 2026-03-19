@@ -159,7 +159,7 @@ export default function HierarchyTreeView({ hierarchy }: HierarchyTreeViewProps)
     <div className={styles.container}>
       <div className={styles.header}>
         <h3 className={styles.headerTitle}>
-          🌳 Context Hierarchy
+          Context Hierarchy
         </h3>
         <span className={styles.headerInfo}>
           {totalNodes} items • Showing "{hierarchy.anchor?.title}"

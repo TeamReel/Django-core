@@ -58,7 +58,7 @@ export function MemberPhotoCompositeTab({
       <div className={s.cardPadding}>
         <div className={s.flexSpaceBetween}>
           <div className={s.flexCenterGap8}>
-            <span className={s.tabIcon}>👥</span>
+            <span className={s.tabIcon}></span>
             <div className={s.tabTitle}>Duo Portret</div>
           </div>
           <Badge variant={userCanEditProject ? 'default' : 'info'}>
@@ -73,7 +73,7 @@ export function MemberPhotoCompositeTab({
         {/* Prerequisites */}
         <div className={s.prerequisiteRow}>
           <div className={`${s.prerequisiteCard} ${m.prerequisiteCardDynamic}`} data-ready={Boolean(legacyHalfbodyUrl)}>
-            <div className="fs-12 fw-600 mb-8">🏆 Legacy Halfbody</div>
+            <div className="fs-12 fw-600 mb-8">Legacy Halfbody</div>
             {legacyHalfbodyUrl ? (
               <img src={legacyHalfbodyUrl} alt="Legacy" className={s.prereqThumbnail} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
@@ -81,7 +81,7 @@ export function MemberPhotoCompositeTab({
             )}
           </div>
           <div className={`${s.prerequisiteCard} ${m.prerequisiteCardDynamic}`} data-ready={Boolean(currentHalfbodyUrl)}>
-            <div className="fs-12 fw-600 mb-8">👕 Huidige Halfbody</div>
+            <div className="fs-12 fw-600 mb-8">Huidige Halfbody</div>
             {currentHalfbodyUrl ? (
               <img src={currentHalfbodyUrl} alt="Current" className={s.prereqThumbnail} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
@@ -106,7 +106,7 @@ export function MemberPhotoCompositeTab({
                 )}
               </div>
               <div className={s.cardFooterPadding}>
-                <div className={s.variantLabel}>📸 Gemini Composite</div>
+                <div className={s.variantLabel}>Gemini Composite</div>
                 <div className={s.actionButtonRow}>
                   <Button size="sm" onClick={() => openAiModal('photo_composite_gemini', 'home', legacyHalfbodyUrl, null, currentHalfbodyUrl)} disabled={!hasBothInputs} className={`${s.btnSmall} w-full`}>
                     {hasCompositeImage ? 'Opnieuw' : 'Genereer'}
@@ -135,7 +135,7 @@ export function MemberPhotoCompositeTab({
                 )}
               </div>
               <div className={s.cardFooterPadding}>
-                <div className={s.variantLabel}>🎬 MiniMax Video</div>
+                <div className={s.variantLabel}>MiniMax Video</div>
                 <div className={s.actionButtonRow}>
                   {hasCompositeVideo ? (
                     <>
@@ -178,7 +178,7 @@ export function MemberPhotoCompositeTab({
                     </>
                   ) : (
                     <Button size="sm" onClick={() => { if (compositeImageUrl) openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null); }} disabled={!hasCompositeImage} className={`${s.btnSmall} w-full`}>
-                      ✨ Genereer
+                      Genereer
                     </Button>
                   )}
                 </div>

@@ -129,7 +129,7 @@ export default function TopNavigation() {
               className={styles.languageTrigger}
               aria-label="Select language"
             >
-              🌐 {language} <span className={styles.languageArrow}>{languageMenuOpen ? '▴' : '▾'}</span>
+              {language} <span className={styles.languageArrow}>{languageMenuOpen ? '▴' : '▾'}</span>
             </button>
 
             {languageMenuOpen && (

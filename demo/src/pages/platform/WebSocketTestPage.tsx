@@ -292,7 +292,7 @@ export const WebSocketTestPage: React.FC = () => {
                     disabled={!isConnected}
                     variant="primary"
                   >
-                    🧪 Emit Presence Event
+                    Emit Presence Event
                   </Button>
                   <p className="fs-12 text-muted">
                     Sends presence event with user_id and online status
@@ -350,7 +350,7 @@ export const WebSocketTestPage: React.FC = () => {
                     disabled={!isConnected}
                     variant="primary"
                   >
-                    🧪 Emit Activity Event
+                    Emit Activity Event
                   </Button>
                   <p className="fs-12 text-muted">
                     Sends activity event with action type and page context

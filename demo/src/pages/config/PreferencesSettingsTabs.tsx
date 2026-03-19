@@ -219,7 +219,7 @@ export function NotificationsTab({ d }: { d: Data }) {
               <div key={group.event_type} className="border-t border-gray-200 pt-4 first:border-t-0 first:pt-0">
                 <h4 className="text-sm font-semibold mb-3 text-gray-900">{formatEventType(group.event_type)}</h4>
                 <div className={`grid gap-12 ${styles.gridThreeCols}`}>
-                  {([['email', '📧 Email'], ['push', '🔔 Push'], ['in_app', '💬 In-App']] as const).map(([ch, label]) => (
+                  {([['email', 'Email'], ['push', 'Push'], ['in_app', 'In-App']] as const).map(([ch, label]) => (
                     <label key={ch} className="flex items-center cursor-pointer">
                       <input type="checkbox" checked={group.channels[ch]} onChange={() => handleToggleChannel(group.event_type, ch)}
                         disabled={channelPrefsSaving} className="h-4 w-4 rounded border-gray-300 mr-2" />

@@ -235,7 +235,7 @@ export function ResourceDisplayPage() {
             ) : (
               <div className="h-full flex items-center justify-center text-gray-400">
                 <div className="text-center">
-                  <div className="text-4xl mb-4">👈</div>
+                  <div className="text-4xl mb-4">←</div>
                   <p>Select a resource to view details</p>
                 </div>
               </div>

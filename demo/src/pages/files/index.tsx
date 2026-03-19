@@ -350,7 +350,7 @@ const FilesPage: React.FC = () => {
                               />
                             ) : (
                               <span className={styles.fileIcon}>
-                                {file.content_type.startsWith('image/') ? '🖼️' : '📄'}
+                                {file.content_type.startsWith('image/') ? 'IMG' : 'DOC'}
                               </span>
                             )}
                           </div>

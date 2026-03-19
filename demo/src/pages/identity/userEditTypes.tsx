@@ -76,7 +76,7 @@ export function RbacBadge({ label }: { label: string }) {
       padding: 'var(--space-1) var(--space-3)', borderRadius: 'var(--radius-full)', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-bold)',
       color: 'var(--color-white, #fff)', backgroundColor: getRbacColor(label), letterSpacing: '0.02em',
     }}>
-      🔰 {label}
+      {label}
     </span>
   );
 }

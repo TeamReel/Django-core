@@ -104,7 +104,7 @@ export const AppBackgroundsPage: React.FC = () => {
         actions={
           <div className="flex-row gap-12">
             <div className={`fs-11 rounded-6 fw-600 cursor-default ${styles.superadminBadge}`}>
-              👑 SUPERADMIN
+              SUPERADMIN
             </div>
             <Button variant="primary" size="sm" onClick={openCreate}>
               + Nieuwe achtergrond

@@ -78,7 +78,7 @@ export function MemberActionPhotoTab({
                 <div className={s.sectionTitle}>{kit.label}</div>
                 {userCanEditProject && fullbodyRef && (
                   <Button size="sm" onClick={() => openAiModal('member_action_photo', kit.id, fullbodyRef, null)} className={`${s.btnSmall} ${m.mlAuto}`}>
-                    ✨ Genereer
+                    Genereer
                   </Button>
                 )}
                 {!fullbodyRef && (

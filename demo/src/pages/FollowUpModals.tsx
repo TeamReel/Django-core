@@ -13,16 +13,16 @@ import fm from './FollowUpModals.module.css';
 // ─── Video Follow-Up Modal ──────────────────────────────────────────
 
 const INTRO_POSES = [
-  { value: 'arms_crossed', label: '🙅 Armen over elkaar', desc: 'Armen gekruist voor de borst, zelfverzekerde powerpose' },
-  { value: 'hand_up', label: '✋ Hand omhoog', desc: 'Eén hand omhoog als begroeting' },
-  { value: 'thumbs_up', label: '👍 Duim omhoog', desc: 'Duim omhoog naar de camera' },
+  { value: 'arms_crossed', label: 'Armen over elkaar', desc: 'Armen gekruist voor de borst, zelfverzekerde powerpose' },
+  { value: 'hand_up', label: 'Hand omhoog', desc: 'E\u00e9n hand omhoog als begroeting' },
+  { value: 'thumbs_up', label: 'Duim omhoog', desc: 'Duim omhoog naar de camera' },
 ] as const;
 
 const CELEBRATION_STYLES = [
-  { value: 'arms_wide', label: '🙌 Armen wijd', desc: 'Armen wijd gespreid, juichend' },
-  { value: 'fist_pump', label: '✊ Vuist omhoog', desc: 'Vuist de lucht in pompen' },
-  { value: 'point_to_sky', label: '☝️ Wijs naar hemel', desc: 'Wijst met één vinger naar de hemel' },
-  { value: 'slide', label: '🛝 Knieën slide', desc: 'Op de knieën glijden over het veld' },
+  { value: 'arms_wide', label: 'Armen wijd', desc: 'Armen wijd gespreid, juichend' },
+  { value: 'fist_pump', label: 'Vuist omhoog', desc: 'Vuist de lucht in pompen' },
+  { value: 'point_to_sky', label: 'Wijs naar hemel', desc: 'Wijst met \u00e9\u00e9n vinger naar de hemel' },
+  { value: 'slide', label: 'Knie\u00ebn slide', desc: 'Op de knie\u00ebn glijden over het veld' },
 ] as const;
 
 interface VideoFollowUpModalProps {
@@ -90,7 +90,7 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
         <div className={s.modalHeaderSimple}>
           <div className="flex-between">
             <div>
-              <div className={s.modalTitle}>🎬 Video's genereren?</div>
+              <div className={s.modalTitle}>Video's genereren?</div>
               <div className={s.modalSubtitle}>
                 Fullbody goedgekeurd voor <strong>{info.memberName}</strong> ({info.kitType}). Wil je ook video's genereren?
               </div>
@@ -101,7 +101,7 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
 
         <div className={`flex-col gap-20 ${s.modalBody}`}>
           <div>
-            <div className={`fs-14 fw-700 mb-8 ${s.sectionLabel}`}>🎬 Short Intro</div>
+            <div className={`fs-14 fw-700 mb-8 ${s.sectionLabel}`}>Short Intro</div>
             <div className={s.sectionDescription}>Korte intro video (6 sec) — kies een pose:</div>
             <div className={`grid gap-8 ${s.grid3col}`}>
               {INTRO_POSES.map(pose => (
@@ -120,7 +120,7 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
           </div>
 
           <div>
-            <div className={`fs-14 fw-700 mb-8 ${s.sectionLabel}`}>⚽ Goal Celebration</div>
+            <div className={`fs-14 fw-700 mb-8 ${s.sectionLabel}`}>Goal Celebration</div>
             <div className={s.sectionDescription}>Korte viering video (6 sec) — kies een stijl:</div>
             <div className={`grid gap-8 ${s.grid2col}`}>
               {CELEBRATION_STYLES.map(style => (
@@ -149,7 +149,7 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
             className={`${s.btnPrimary} ${fm.submitBtnDynamic}`}
             data-state={submitting ? 'submitting' : submitCount > 0 ? 'active' : 'disabled'}
           >
-            {submitting ? 'Bezig...' : submitCount > 0 ? `🚀 Genereer ${submitCount} video${submitCount > 1 ? "'s" : ''}` : 'Selecteer een optie'}
+            {submitting ? 'Bezig...' : submitCount > 0 ? `Genereer ${submitCount} video${submitCount > 1 ? "'s" : ''}` : 'Selecteer een optie'}
           </button>
         </div>
       </div>
@@ -212,7 +212,7 @@ export function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Phot
           <div className="flex-between">
             <div>
               <div className={s.modalTitle}>
-                {submitted ? '✅ Video in de wachtrij!' : '🎬 Video genereren?'}
+                {submitted ? 'Video in de wachtrij' : 'Video genereren?'}
               </div>
               <div className={s.modalSubtitle}>
                 {submitted
@@ -252,7 +252,7 @@ export function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Phot
                 className={`${s.btnPrimary} ${fm.submitBtnSecondary}`}
                 data-submitting={submitting}
               >
-                {submitting ? 'Bezig...' : '🚀 Genereer Video'}
+                {submitting ? 'Bezig...' : 'Genereer Video'}
               </button>
             </>
           )}

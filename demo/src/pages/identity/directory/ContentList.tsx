@@ -163,8 +163,8 @@ export const ContentList: React.FC = () => {
         </select>
         <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className={cl.filterSelect}>
           <option value="">All Types</option>
-          <option value="image">🖼️ Image</option>
-          <option value="video">🎬 Video</option>
+          <option value="image">Image</option>
+          <option value="video">Video</option>
         </select>
         <select value={providerFilter} onChange={(e) => setProviderFilter(e.target.value)} className={cl.filterSelect}>
           <option value="">All Providers</option>
@@ -223,7 +223,7 @@ export const ContentList: React.FC = () => {
               {filtered.map((job) => (
                 <tr key={job.task_id} className={cl.tableRow}>
                   <td className="dir-td">
-                    <span className={cl.typeIcon}>{job.output_type === 'image' ? '🖼️' : '🎬'}</span>
+                    <span className={cl.typeIcon}>{job.output_type === 'image' ? 'IMG' : 'VID'}</span>
                     <span className="fs-11 text-muted">{job.output_asset_type || job.output_type}</span>
                   </td>
                   <td className="dir-td-text">{job.label || '—'}</td>

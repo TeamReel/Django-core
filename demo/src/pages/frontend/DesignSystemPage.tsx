@@ -47,7 +47,7 @@ export function DesignSystemPage() {
                 >
                   Click Me ({clickCount})
                 </Button>
-                <p className="ds-caption">✨ Hover & click for effects</p>
+                <p className="ds-caption">Hover & click for effects</p>
               </Card>
               <Card variant="filled" className="interactive-card p-16">
                 <Button
@@ -58,12 +58,12 @@ export function DesignSystemPage() {
                 >
                   {isLoading ? 'Loading...' : 'Toggle Loading'}
                 </Button>
-                <p className="ds-caption">🔄 Try disabled state</p>
+                <p className="ds-caption">Try disabled state</p>
               </Card>
               <Card variant="filled" className="interactive-card p-16">
                 <Button
                   variant="destructive"
-                  onClick={() => alert('🗑️ Delete action confirmed!')}
+                  onClick={() => alert('Delete action confirmed!')}
                   className="interactive-button mb-8"
                 >
                   Delete Item
@@ -166,16 +166,16 @@ export function DesignSystemPage() {
           <Card variant="filled" className="p-16">
             <div className="flex-col gap-12">
               <Alert variant="success">
-                🎉 Success! You clicked the button {clickCount} times
+                Success! You clicked the button {clickCount} times
               </Alert>
               <Alert variant="warning">
-                ⚠️ {inputValue.length > 20 ? 'Text is getting quite long!' : 'Warning alert - type more than 20 characters'}
+                {inputValue.length > 20 ? 'Text is getting quite long!' : 'Warning alert - type more than 20 characters'}
               </Alert>
               <Alert variant="error">
-                🚨 {isLoading ? 'System is processing - please wait' : 'Danger alert - click Toggle Loading button'}
+                {isLoading ? 'System is processing - please wait' : 'Danger alert - click Toggle Loading button'}
               </Alert>
               <Alert variant="info">
-                ℹ️ Currently using {selectedVariant} button variant
+                Currently using {selectedVariant} button variant
               </Alert>
             </div>
           </Card>
@@ -184,7 +184,7 @@ export function DesignSystemPage() {
           <h2 className="ds-section-title">Loading States</h2>
           <div className="grid-cols-2 gap-16 mb-16">
             <Card variant="filled" className="p-16">
-              <h3 className="ds-subsection-title">🌊 Wave Loader</h3>
+              <h3 className="ds-subsection-title">Wave Loader</h3>
               <div className="flex-row gap-16">
                 <div className="wave-loader">
                   <div></div>
@@ -197,7 +197,7 @@ export function DesignSystemPage() {
               </div>
             </Card>
             <Card variant="filled" className="p-16">
-              <h3 className="ds-subsection-title">💫 Dots Loader</h3>
+              <h3 className="ds-subsection-title">Dots Loader</h3>
               <div className="flex-row gap-16">
                 <div className="dots-loader">
                   <div></div>
@@ -219,7 +219,7 @@ export function DesignSystemPage() {
               <p className="ds-caption">Indeterminate progress</p>
             </Card>
             <Card variant="filled" className="p-16">
-              <h3 className="ds-subsection-title">🫁 Breathing Effect</h3>
+              <h3 className="ds-subsection-title">Breathing Effect</h3>
               <div className="flex-row gap-16">
                 <div className="breathing-loader"></div>
                 <p className="ds-caption">Calm breathing</p>
@@ -228,7 +228,7 @@ export function DesignSystemPage() {
           </div>
           <div className="grid-cols-2 gap-16">
             <Card variant="filled" className="p-16">
-              <h3 className="ds-subsection-title">✨ Skeleton Loading</h3>
+              <h3 className="ds-subsection-title">Skeleton Loading</h3>
               <div className="flex-col gap-8">
                 <div className={`skeleton-loader ${styles.skeletonDemo}`} style={{ '--skeleton-h': '20px', '--skeleton-w': '80%' } as React.CSSProperties}></div>
                 <div className={`skeleton-loader ${styles.skeletonDemo}`} style={{ '--skeleton-h': '20px', '--skeleton-w': '60%' } as React.CSSProperties}></div>
@@ -236,7 +236,7 @@ export function DesignSystemPage() {
               </div>
             </Card>
             <Card variant="filled" className="p-16">
-              <h3 className="ds-subsection-title">🎭 Interactive Demo</h3>
+              <h3 className="ds-subsection-title">Interactive Demo</h3>
               <div className={`text-center flex-center flex-col gap-8 ${styles.interactiveDemoContainer}`}>
                 {isLoading ? (
                   <div className="flex-row gap-12">
@@ -300,7 +300,7 @@ export function DesignSystemPage() {
                 </div>
               </div>
               <div className="mb-16 p-16 bg-surface rounded-8">
-                <h4 className="fs-14 fw-600 m-0 mb-8">⌨️ Keyboard Shortcuts</h4>
+                <h4 className="fs-14 fw-600 m-0 mb-8">Keyboard Shortcuts</h4>
                 <div className={`grid-auto-fit gap-8 fs-12 text-muted ${styles.keyboardShortcutsGrid}`}>
                   <div><kbd className="px-4 py-4 bg-surface-2 rounded-4 fs-11">Ctrl+Enter</kbd> Increment counter</div>
                   <div><kbd className="px-4 py-4 bg-surface-2 rounded-4 fs-11">Escape</kbd> Clear input</div>
@@ -310,7 +310,7 @@ export function DesignSystemPage() {
               </div>
               {skeletonDemo && (
                 <div className="mb-16 p-16 bg-surface rounded-8">
-                  <h4 className="fs-14 fw-600 m-0 mb-12">✨ Skeleton Loading Demo</h4>
+                  <h4 className="fs-14 fw-600 m-0 mb-12">Skeleton Loading Demo</h4>
                   <div className="grid-cols-2 gap-16">
                     <div>
                       <div className={`skeleton-loader ${styles.skeletonDemo}`} style={{ '--skeleton-h': '24px', '--skeleton-w': '70%', '--skeleton-mb': '8px' } as React.CSSProperties}></div>
@@ -327,7 +327,7 @@ export function DesignSystemPage() {
                 </div>
               )}
               <p className="fs-14 text-muted">
-                🎮 Interact with components above to see real-time state changes
+                Interact with components above to see real-time state changes
               </p>
             </div>
           </Card>

@@ -137,7 +137,7 @@ export const ContentStreakWidget: React.FC = () => {
               {streak} {streak === 1 ? 'wedstrijd' : 'wedstrijden'}
             </div>
             <div className={styles.streakLabel}>
-              Content streak! {streak >= 5 ? '🔥' : ''}
+              Content streak!
               {streak >= 10 && <Trophy size={12} className={styles.trophyIcon} />}
             </div>
           </>

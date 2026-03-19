@@ -131,8 +131,8 @@ export const ContentOverview: React.FC = () => {
             </thead>
             <tbody>
               <tr><td className="dir-td">Total Content Items</td><td className="dir-td text-right tabular-nums">{summary.total}</td></tr>
-              <tr><td className="dir-td">🖼️ AI Images</td><td className="dir-td text-right tabular-nums">{summary.images}</td></tr>
-              <tr><td className="dir-td">🎬 AI Videos</td><td className="dir-td text-right tabular-nums">{summary.videos}</td></tr>
+              <tr><td className="dir-td">AI Images</td><td className="dir-td text-right tabular-nums">{summary.images}</td></tr>
+              <tr><td className="dir-td">AI Videos</td><td className="dir-td text-right tabular-nums">{summary.videos}</td></tr>
               <tr><td className="dir-td">Total Variants</td><td className="dir-td text-right tabular-nums">{summary.variants}</td></tr>
               <tr><td className="dir-td">Avg. Generation Time</td><td className="dir-td text-right tabular-nums">{fmtDur(summary.avgGenTime)}</td></tr>
               <tr><td className="dir-td">Est. Input Tokens</td><td className="dir-td text-right tabular-nums">{summary.totalInputTokens > 0 ? summary.totalInputTokens.toLocaleString('nl-NL') : '—'}</td></tr>

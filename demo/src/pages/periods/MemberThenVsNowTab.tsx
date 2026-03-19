@@ -72,7 +72,7 @@ export function MemberThenVsNowTab({
         {/* Prerequisites check */}
         <div className={s.prerequisiteRow}>
           <div className={`${s.prerequisiteCard} ${styles.prerequisiteCard}`} data-ready={Boolean(legacyFullbodyUrl)}>
-            <div className={styles.prerequisiteHeading}>🏆 Legacy in Tenue</div>
+            <div className={styles.prerequisiteHeading}>Legacy in Tenue</div>
             {legacyFullbodyUrl ? (
               <img src={legacyFullbodyUrl} alt="Legacy in Tenue" className={s.prereqThumbnail} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
@@ -80,7 +80,7 @@ export function MemberThenVsNowTab({
             )}
           </div>
           <div className={`${s.prerequisiteCard} ${styles.prerequisiteCard}`} data-ready={Boolean(currentFullbodyUrl)}>
-            <div className={styles.prerequisiteHeading}>👕 Huidige Fullbody</div>
+            <div className={styles.prerequisiteHeading}>Huidige Fullbody</div>
             {currentFullbodyUrl ? (
               <img src={currentFullbodyUrl} alt="Current" className={s.prereqThumbnail} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
@@ -92,7 +92,7 @@ export function MemberThenVsNowTab({
         {/* Transformation variants */}
         <div className={styles.transformationSection}>
           <div className={`${s.flexCenterGap8} ${styles.transformationHeader}`}>
-            <span className={styles.transformationIcon}>🔄</span>
+            <span className={styles.transformationIcon}></span>
             <div className={s.sectionTitle}>Transformatie</div>
             <div className={styles.transformationCaption}>4 sec — legacy verandert in huidige speler</div>
           </div>
@@ -183,7 +183,7 @@ export function MemberThenVsNowTab({
                         </>
                       ) : (
                         <Button size="sm" onClick={() => openAiModal('then_vs_now_transformation', 'home', legacyFullbodyUrl, variant.id, currentFullbodyUrl)} disabled={!hasBothInputs} className={`${s.btnSmall} ${styles.btnFullWidth}`}>
-                          ✨ Genereer
+                          Genereer
                         </Button>
                       )}
                     </div>

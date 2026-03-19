@@ -300,7 +300,7 @@ export function FieldVisualization({
             disabled={lineupSaving}
             className={`fs-13 fw-600 border-none rounded-6 text-white cursor-pointer ${styles.saveButton}`}
           >
-            {lineupSaving ? 'Opslaan...' : '💾 Opstelling opslaan'}
+            {lineupSaving ? 'Opslaan...' : 'Opstelling opslaan'}
           </button>
         </div>
       </div>

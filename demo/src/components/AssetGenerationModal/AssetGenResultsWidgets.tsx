@@ -71,7 +71,7 @@ export function ResultsStep({
       {/* Queued */}
       {generation.step === 'queued' && (
         <div className={`text-center ${styles.centeredSection}`}>
-          <div className={`mb-16 ${styles.emojiIconLarge}`}>🟢</div>
+          <div className={`mb-16 ${styles.emojiIconLarge}`}></div>
           <div className="fs-16 fw-700 mb-8">
             {requireApproval ? 'In Approvals Wachtrij!' : 'Toegevoegd aan de AI Queue!'}
           </div>
@@ -112,7 +112,7 @@ export function ResultsStep({
       {/* Retrying (transient error — 503 / rate limit) */}
       {generation.step === 'polling' && generation.error && (
         <div className={`text-center ${styles.centeredSection}`}>
-          <div className={`mb-16 ${styles.emojiIcon} ${styles.retryEmoji}`}>⏳</div>
+          <div className={`mb-16 ${styles.emojiIcon} ${styles.retryEmoji}`}></div>
           <div className="fs-14 fw-600 mb-8">AI model tijdelijk niet beschikbaar</div>
           <div
             className={`fs-12 text-muted mx-auto mb-12 ${styles.constrainedText}`}
@@ -156,7 +156,7 @@ export function ResultsStep({
                       rel="noreferrer"
                       className={`block mt-4 text-center fs-11 text-decoration-none ${styles.viewFullLink}`}
                     >
-                      🔍 Volledig bekijken
+                      Volledig bekijken
                     </a>
                   )}
                 </div>

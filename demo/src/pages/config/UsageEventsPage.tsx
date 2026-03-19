@@ -41,7 +41,7 @@ export const UsageEventsPage: React.FC = () => {
           <div className="flex-row gap-12">
             {/* Role badge */}
             <div className={`fs-11 rounded-6 fw-600 cursor-default ${styles.roleBadge}`} data-role={d.isSuperadmin ? 'admin' : 'org'}>
-              {d.isSuperadmin ? '👑 ADMIN' : '👤 ORG'}
+              {d.isSuperadmin ? 'ADMIN' : 'ORG'}
             </div>
 
             {/* Scope toggle — superadmin only */}
@@ -83,7 +83,7 @@ export const UsageEventsPage: React.FC = () => {
               disabled={d.generating || !d.currentOrganisation}
               variant="primary"
             >
-              {d.generating ? 'Generating...' : '🧪 Generate Test Usage Event'}
+              {d.generating ? 'Generating...' : 'Generate Test Usage Event'}
             </Button>
             <span className="fs-14 text-muted" />
           </div>

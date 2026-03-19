@@ -65,7 +65,7 @@ export function GalleryMatchTimelineContent({
   if (items.length === 0) {
     return (
       <div className={styles.emptyTimeline}>
-        <span className={styles.emptyIcon}>🎬</span>
+        <span className={styles.emptyIcon}></span>
         <span className={styles.emptyTitle}>Nog geen content</span>
         <span className={styles.emptySub}>
           Maak een wedstrijd aan en genereer je eerste content — flyers, line-ups, video's en meer.

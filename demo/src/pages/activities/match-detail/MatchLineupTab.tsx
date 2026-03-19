@@ -32,7 +32,7 @@ export default function MatchLineupTab({
 }: MatchLineupTabProps) {
   return (
     <div className="flex-col gap-16">
-      <Card title="⚽ Opstelling">
+      <Card title="Opstelling">
         <div className="p-16 flex-col gap-16">
           {/* Formation picker */}
           <FormationPicker

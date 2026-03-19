@@ -284,7 +284,7 @@ export default function ProjectSeasonMemberDetailPage() {
       {!loading && !error && membership && userCanEditProject && (
         <div className="mobile-action-bar show-mobile-only">
           <Button variant="primary" onClick={() => save(media.form, media.videoVariants)} disabled={saving} className={s.mobileActionSave}>
-            {saving ? 'Saving…' : '💾 Save'}
+            {saving ? 'Saving…' : 'Save'}
           </Button>
           <Button variant="secondary" onClick={() => { if (seasonKeyForLinks) navigate(`${seasonsBasePath}/${seasonKeyForLinks}?tab=selectie`); }} className={s.mobileActionSquad}>
             ← Squad

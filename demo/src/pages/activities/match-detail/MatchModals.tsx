@@ -58,7 +58,7 @@ export function ContentPreviewModal({ item, onClose }: ContentPreviewModalProps)
             </div>
           ) : (
             <div className="text-center py-8 text-gray-400">
-              <div className="text-3xl mb-2">🖼️</div>
+              <div className="text-3xl mb-2"></div>
               <p>Preview not available</p>
               <p className="text-sm">The generated file is being processed</p>
             </div>
@@ -85,7 +85,7 @@ export function ContentPreviewModal({ item, onClose }: ContentPreviewModalProps)
                 rel="noopener noreferrer"
                 className={`inline-flex gap-6 py-8 px-16 rounded-6 fs-14 fw-500 ${styles.actionLink}`}
               >
-                ⬇️ Download
+                Download
               </a>
             )}
             <Button variant="secondary" onClick={onClose}>
@@ -166,7 +166,7 @@ export function SavedAssetPreviewModal({
             rel="noopener noreferrer"
             className={`inline-flex gap-6 py-8 px-16 rounded-6 fs-14 fw-500 ${styles.actionLink}`}
           >
-            🔗 Open
+            Open
           </a>
           <Button variant="secondary" onClick={onClose}>
             Close

@@ -201,7 +201,7 @@ export const MediaAssetCard = memo(function MediaAssetCard({
               className={`absolute border-none rounded-4 fs-12 cursor-pointer text-white ${styles.historyButton}`}
               title={`${historyItems.length} eerdere versie(s)`}
             >
-              ⏱️ {historyItems.length}
+              {historyItems.length}
             </button>
           )}
         </div>

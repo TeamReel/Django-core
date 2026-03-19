@@ -56,7 +56,7 @@ export const FeatureFlagsPage: React.FC = () => {
         actions={
           <div className="flex-row gap-12">
             <div className={`fs-11 rounded-6 fw-600 cursor-default ${styles.superadminBadge}`}>
-              👑 SUPERADMIN
+              SUPERADMIN
             </div>
           </div>
         }
@@ -142,7 +142,7 @@ export const FeatureFlagsPage: React.FC = () => {
               disabled={d.syncing}
               onClick={d.handleSyncFlags}
             >
-              {d.syncing ? 'Syncing...' : '🔄 Sync Templates'}
+              {d.syncing ? 'Syncing...' : 'Sync Templates'}
             </Button>
           </div>
         </div>

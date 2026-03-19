@@ -86,7 +86,7 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
         >
           <div>
             <h2 className="fs-16 fw-700 m-0">
-              🎨 AI Asset Genereren
+              AI Asset Genereren
             </h2>
             <p className="fs-12 mt-4 m-0 text-muted">
               {stepTitle}
@@ -330,7 +330,7 @@ function ModalFooter({
             className={`fs-12 fw-600 rounded-4 border-none ${styles.footerGenerateButton}`}
             data-disabled={!selectedTemplate}
           >
-            🍌 Genereren ({variantCount} variant
+            Genereren ({variantCount} variant
             {variantCount > 1 ? 'en' : ''})
           </button>
         )}
@@ -341,7 +341,7 @@ function ModalFooter({
               onClick={handleRegenerate}
               className={`fs-12 bg-transparent rounded-4 cursor-pointer ${styles.footerRefreshButton}`}
             >
-              🔄 Opnieuw
+              Opnieuw
             </button>
             <button
               onClick={handleAccept}

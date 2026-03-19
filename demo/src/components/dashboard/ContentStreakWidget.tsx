@@ -118,9 +118,9 @@ export const ContentStreakWidget: React.FC<ContentStreakWidgetProps> = ({
             </span>
             {!compact && milestone !== 'none' && (
               <span className={`${styles.sublabel} fs-12`}>
-                {milestone === 'gold' && '🏆 Legendestreak!'}
-                {milestone === 'silver' && '🔥 Topstreak!'}
-                {milestone === 'bronze' && '💪 Goed bezig!'}
+                {milestone === 'gold' && 'Legendestreak!'}
+                {milestone === 'silver' && 'Topstreak!'}
+                {milestone === 'bronze' && 'Goed bezig!'}
               </span>
             )}
           </>

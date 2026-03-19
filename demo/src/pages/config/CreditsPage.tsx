@@ -55,7 +55,7 @@ export const CreditsPage: React.FC = () => {
                 letterSpacing: '0.5px',
               }}
             >
-              {data.isSuperAdmin ? '👑 ADMIN' : '👤 ORG'}
+              {data.isSuperAdmin ? 'ADMIN' : 'ORG'}
             </div>
           </div>
         }
@@ -160,7 +160,7 @@ const PersonalWalletView: React.FC<PersonalWalletViewProps> = ({
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <Card>
         <div className="p-6 text-center">
-          <div className="text-4xl mb-4">👤</div>
+          <div className="text-4xl mb-4"></div>
           <h2 className="text-xl font-bold mb-2">My Personal Wallet</h2>
           <div className="text-3xl font-bold text-gray-800 mb-2">
             {Number(personalCredits?.current_balance ?? 0).toLocaleString()} Credits

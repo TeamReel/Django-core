@@ -77,9 +77,9 @@ export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModa
             </div>
             {(job.provider || job.model || job.duration_seconds != null) && (
               <div className={s.providerInfo}>
-                {job.provider && <span>🤖 <strong>{job.provider}</strong></span>}
-                {job.model && <span>📦 {job.model}</span>}
-                {job.duration_seconds != null && <span>⏱️ {job.duration_seconds < 60 ? `${Math.round(job.duration_seconds)}s` : `${Math.floor(job.duration_seconds / 60)}m ${Math.round(job.duration_seconds % 60)}s`}</span>}
+                {job.provider && <span><strong>{job.provider}</strong></span>}
+                {job.model && <span>{job.model}</span>}
+                {job.duration_seconds != null && <span>{job.duration_seconds < 60 ? `${Math.round(job.duration_seconds)}s` : `${Math.floor(job.duration_seconds / 60)}m ${Math.round(job.duration_seconds % 60)}s`}</span>}
               </div>
             )}
           </div>

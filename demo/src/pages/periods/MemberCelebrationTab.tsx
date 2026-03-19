@@ -166,7 +166,7 @@ export function MemberCelebrationTab({
                             </>
                           ) : (
                             <Button size="sm" onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, variant.id)} disabled={!hasPlayerInTenue} className={`${s.btnSmall} ${styles.btnFullWidth}`}>
-                              ✨ Genereer
+                              Genereer
                             </Button>
                           )}
                         </div>

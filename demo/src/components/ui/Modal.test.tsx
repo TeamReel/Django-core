@@ -61,7 +61,7 @@ describe('Modal', () => {
   });
 
   it('renders icon when provided', () => {
-    render(<Modal {...defaultProps} icon={<span data-testid="modal-icon">🔔</span>} />);
+    render(<Modal {...defaultProps} icon={<span data-testid="modal-icon">N</span>} />);
     expect(screen.getByTestId('modal-icon')).toBeInTheDocument();
   });
 

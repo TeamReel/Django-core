@@ -308,3 +308,68 @@
 .creditsPanel {
   max-width: 400px;
 }
+
+/* === Close button (mobile-friendly, prominent) === */
+
+.closeBtnMobile {
+  background: none;
+  border: none;
+  color: var(--app-text-secondary);
+  cursor: pointer;
+  font-size: var(--text-lg);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.closeBtnMobile:hover {
+  background-color: var(--app-surface-2, var(--color-neutral-100));
+  color: var(--app-text);
+}
+
+.closeBtnMobile:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+/* === Verb category dot (replaces emoji icons) === */
+
+.verbDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  margin-top: 6px;
+  background-color: var(--app-muted-text);
+}
+
+.verbDot[data-category="content"] {
+  background-color: var(--color-blue-500, #3b82f6);
+}
+
+.verbDot[data-category="member"] {
+  background-color: var(--color-green-500, #22c55e);
+}
+
+.verbDot[data-category="match"] {
+  background-color: var(--color-amber-400, #fbbf24);
+}
+
+.verbDot[data-category="season"] {
+  background-color: var(--color-purple-500, #a855f7);
+}
+
+/* === Footer link (safe touch target) === */
+
+.modalFooterLink {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--app-border);
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}

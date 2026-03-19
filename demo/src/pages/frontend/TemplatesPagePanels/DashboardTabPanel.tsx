@@ -44,13 +44,13 @@ export function DashboardTabPanel() {
           <Dashboard.Grid columns={{ mobile: 1, desktop: 2 }}>
             <Card className="p-6 h-64 flex items-center justify-center bg-white">
               <div className="text-center text-gray-400">
-                <div className="text-4xl mb-2 opacity-50">📊</div>
+                <div className="text-4xl mb-2 opacity-50"></div>
                 <div className="text-sm font-medium opacity-75">Revenue Chart Placeholder</div>
               </div>
             </Card>
             <Card className="p-6 h-64 flex items-center justify-center bg-white">
               <div className="text-center text-gray-400">
-                <div className="text-4xl mb-2 opacity-50">🥧</div>
+                <div className="text-4xl mb-2 opacity-50"></div>
                 <div className="text-sm font-medium opacity-75">User Distribution Placeholder</div>
               </div>
             </Card>

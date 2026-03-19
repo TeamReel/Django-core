@@ -319,7 +319,6 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
         <NavbarNotificationsModal
           notificationsList={d.notificationsList}
           activityItems={d.activityItems}
-          showActivityTab={d.showActivityTab}
           onClose={() => d.setNotificationsModalOpen(false)}
           onNavigate={d.navigate}
         />

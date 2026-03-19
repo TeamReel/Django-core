@@ -63,7 +63,7 @@ const PatternSection = ({
     <div className="grid gap-24 mt-24 grid-cols-2">
       <Card className={`p-20 ${styles.practiceCard}`}>
         <h3 className="fs-16 fw-600 mb-12 text-success">
-          ✅ Best Practices
+          Best Practices
         </h3>
         <ul className={`m-0 text-secondary ${styles.practiceList}`}>
           {bestPractices.map((practice) => (
@@ -75,7 +75,7 @@ const PatternSection = ({
       {pitfalls && (
         <Card className={`p-20 ${styles.practiceCard}`}>
           <h3 className="fs-16 fw-600 mb-12 text-error">
-            ⚠️ Common Pitfalls
+            Common Pitfalls
           </h3>
           <ul className={`m-0 text-secondary ${styles.practiceList}`}>
             {pitfalls.map((pitfall) => (

@@ -39,7 +39,7 @@ export function VideoReviewModal({ job, onClose, onActionComplete, pushToast, ap
         await rejectJob(job.id);
       }
       pushToast(
-        action === 'approve' ? '✅ Video goedgekeurd' : '✘ Video afgewezen',
+        action === 'approve' ? 'Video goedgekeurd' : 'Video afgewezen',
         'success'
       );
       onActionComplete();
@@ -82,7 +82,7 @@ export function VideoReviewModal({ job, onClose, onActionComplete, pushToast, ap
             />
           ) : (
             <div className={s.emptyGallery}>
-              <div className={s.emptyIcon}>🎬</div>
+              <div className={s.emptyIcon}></div>
               <div>Video preview niet beschikbaar</div>
             </div>
           )}

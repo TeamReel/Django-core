@@ -100,7 +100,7 @@ export default function MatchOverviewTab({
         <div className={styles.heroTeams}>
           {/* Home */}
           <div className={styles.heroTeam}>
-            <TeamLogo url={homeLogoUrl} fallback="🏠" size={56} />
+            <TeamLogo url={homeLogoUrl} fallback="H" size={56} />
             <span className={styles.heroTeamName}>
               {homeTeamName}
             </span>
@@ -119,7 +119,7 @@ export default function MatchOverviewTab({
 
           {/* Away */}
           <div className={styles.heroTeam}>
-            <TeamLogo url={awayLogoUrl} fallback="⚽" size={56} />
+            <TeamLogo url={awayLogoUrl} fallback="U" size={56} />
             <span className={styles.heroTeamName}>
               {awayTeamName}
             </span>
@@ -150,7 +150,7 @@ export default function MatchOverviewTab({
           </div>
           {lineupFilledCount > 0 ? (
             <div className="flex-row gap-6">
-              <span className="fs-20">✅</span>
+              <span className="fs-20 text-success">{"\u2713"}</span>
               <div>
                 <div className="fs-14 fw-700 text-success">Ingevuld</div>
                 <div className="fs-11 text-muted">
@@ -160,7 +160,7 @@ export default function MatchOverviewTab({
             </div>
           ) : (
             <div className="flex-row gap-6">
-              <span className="fs-20">⬜</span>
+              <span className="fs-20 text-muted">{"\u2014"}</span>
               <div>
                 <div className="fs-14 fw-700 text-muted">Niet ingevuld</div>
               </div>
@@ -176,7 +176,7 @@ export default function MatchOverviewTab({
             Content
           </div>
           <div className="flex-row gap-6">
-            <span className="fs-20">{contentDone > 0 ? '🟢' : '⬜'}</span>
+            <span className="fs-20">{contentDone > 0 ? '\u2713' : '\u2014'}</span>
             <div>
               <div className={`fs-14 fw-700 ${styles.contentStatusValue}`} data-has-content={contentDone > 0 ? 'true' : 'false'}>
                 {contentDone}/{contentTotal}
@@ -217,11 +217,11 @@ export default function MatchOverviewTab({
                 const isFailed = existingItem?.status === 'failed';
                 const hasMedia = latestMedia != null;
 
-                let statusIcon = '⬜';
+                let statusIcon = '\u2014';
                 let statusColor = 'var(--app-muted-text, #666)';
-                if (isGenerating) { statusIcon = '⏳'; statusColor = 'var(--color-amber-400)'; }
-                else if (isFailed) { statusIcon = '❌'; statusColor = 'var(--color-red-500)'; }
-                else if (hasMedia) { statusIcon = '✅'; statusColor = 'var(--color-green-400)'; }
+                if (isGenerating) { statusIcon = '\u2026'; statusColor = 'var(--color-amber-400)'; }
+                else if (isFailed) { statusIcon = '\u2717'; statusColor = 'var(--color-red-500)'; }
+                else if (hasMedia) { statusIcon = '\u2713'; statusColor = 'var(--color-green-400)'; }
 
                 return (
                   <div
@@ -238,7 +238,7 @@ export default function MatchOverviewTab({
                     {hasMedia && !isGenerating ? (
                       <span className="fs-11 fw-600 text-success">Bekijk ↗</span>
                     ) : isGenerating ? (
-                      <span className="fs-11 fw-600 text-warning">⏳ Bezig</span>
+                      <span className="fs-11 fw-600 text-warning">Bezig...</span>
                     ) : isFailed ? (
                       <span className="fs-11 fw-600 text-error">Opnieuw ↻</span>
                     ) : (
@@ -263,12 +263,12 @@ export default function MatchOverviewTab({
               const isHome = String(evt.team_project?.id || '') === String(match.project?.id || '');
               const icon = (() => {
                 switch (String(evt.event_type || '').toLowerCase()) {
-                  case 'goal': return '⚽';
-                  case 'card_yellow': return '🟨';
-                  case 'card_red': return '🟥';
-                  case 'substitution': return '🔄';
-                  case 'injury': return '🚑';
-                  default: return '•';
+                  case 'goal': return '\u26BD';
+                  case 'card_yellow': return '\u25A0';
+                  case 'card_red': return '\u25A0';
+                  case 'substitution': return '\u21C4';
+                  case 'injury': return '+';
+                  default: return '\u2022';
                 }
               })();
               return (

@@ -221,7 +221,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
                 className={`fs-11 rounded-6 fw-600 cursor-default ${styles.roleBadge}`}
                 data-role={isSuperAdmin ? 'admin' : 'org'}
               >
-                {isSuperAdmin ? '👑 ADMIN' : '👤 ORG'}
+                {isSuperAdmin ? 'ADMIN' : 'ORG'}
               </div>
 
               {/* Scope Selector - Only for Superadmin */}

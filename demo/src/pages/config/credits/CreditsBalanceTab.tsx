@@ -94,7 +94,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
       <div className={`grid gap-16 mb-24 ${styles.statsGrid}`}>
         <Card className="p-20 text-center">
           <div className="fs-12 opacity-60 mb-8 uppercase tracking-wide">
-            ➕ Total Added
+            Total Added
           </div>
           <div className={`fw-700 text-success ${styles.statValue}`}>
             +{totalAdded.toLocaleString()}
@@ -104,7 +104,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
 
         <Card className="p-20 text-center">
           <div className="fs-12 opacity-60 mb-8 uppercase tracking-wide">
-            ➖ Total Used
+            Total Used
           </div>
           <div className={`fw-700 text-error ${styles.statValue}`}>
             {totalUsed.toLocaleString()}
@@ -114,7 +114,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
 
         <Card className="p-20 text-center">
           <div className="fs-12 opacity-60 mb-8 uppercase tracking-wide">
-            📊 Net Total
+            Net Total
           </div>
           <div className={`fw-700 ${styles.netTotalValue}`} data-negative={netTotal < 0 ? 'true' : 'false'}>
             {netTotal >= 0 ? '+' : ''}{netTotal.toLocaleString()}

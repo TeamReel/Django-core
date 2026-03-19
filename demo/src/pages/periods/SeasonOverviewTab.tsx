@@ -134,13 +134,13 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
   // ── Brand assets checklist ──
   const brandAssets = useMemo(() => {
     const items: { label: string; icon: string; present: boolean }[] = [
-      { label: 'Logo', icon: '🏷️', present: !!brandLogoUrl },
-      { label: 'Sponsor', icon: '🤝', present: !!brandSponsorUrl },
+      { label: 'Logo', icon: '', present: !!brandLogoUrl },
+      { label: 'Sponsor', icon: '', present: !!brandSponsorUrl },
     ];
     if (batchBrandKits) {
-      if (batchBrandKits.home !== undefined) items.push({ label: 'Thuis tenue', icon: '👕', present: !!batchBrandKits.home });
-      if (batchBrandKits.away !== undefined) items.push({ label: 'Uit tenue', icon: '👕', present: !!batchBrandKits.away });
-      if (batchBrandKits.third !== undefined) items.push({ label: 'Derde tenue', icon: '👕', present: !!batchBrandKits.third });
+      if (batchBrandKits.home !== undefined) items.push({ label: 'Thuis tenue', icon: '', present: !!batchBrandKits.home });
+      if (batchBrandKits.away !== undefined) items.push({ label: 'Uit tenue', icon: '', present: !!batchBrandKits.away });
+      if (batchBrandKits.third !== undefined) items.push({ label: 'Derde tenue', icon: '', present: !!batchBrandKits.third });
       if (batchBrandKits.keeper !== undefined) items.push({ label: 'Keeper tenue', icon: 'shield', present: !!batchBrandKits.keeper });
     }
     return items;

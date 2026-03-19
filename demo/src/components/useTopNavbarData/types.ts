@@ -93,7 +93,6 @@ export interface UseTopNavbarDataReturn {
   setCreditsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   // Activity feed (B62)
   activityItems: ActivityLogItem[];
-  showActivityTab: boolean;
 }
 
 export interface NotificationItem {

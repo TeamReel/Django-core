@@ -157,7 +157,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={<><span className="fs-20">⚙️</span> Actieve Jobs <Badge variant="info">{jobs.length} actief</Badge></>}
+      title={<>Actieve Jobs <Badge variant="info">{jobs.length} actief</Badge></>}
       size="md"
       footer={
         <>
@@ -258,7 +258,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
         <div
           className={`mt-16 py-12 px-16 rounded-8 fs-13 ${styles.infoNotice}`}
         >
-          💡 Video processing draait op de server. Je kunt dit venster sluiten - de verwerking gaat door.
+          Video processing draait op de server. Je kunt dit venster sluiten - de verwerking gaat door.
           De pagina wordt elke 5 seconden automatisch vernieuwd.
         </div>
       )}

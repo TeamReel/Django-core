@@ -1,20 +1,28 @@
-import { useState } from 'react';
 import { useEscapeKey } from '../hooks/useEscapeKey';
-import { VERB_LABELS, VERB_ICONS, type ActivityLogItem, type ActivityVerbValue } from '@/types/api';
+import { VERB_LABELS, type ActivityLogItem, type ActivityVerbValue } from '@/types/api';
 import s from './TopNavbarModals.module.css';
 import styles from './NavbarModals.module.css';
 
 export interface NotificationsModalProps {
   notificationsList: Array<{ id: string; message: string; is_read: boolean; created_at: string; title?: string; read?: boolean; action_url?: string | null }>;
-  /** Activity feed items from B62 API (admin/coach only) */
+  /** Activity feed items from B62 API — merged into notifications feed */
   activityItems?: ActivityLogItem[];
-  /** Whether the user can see the activity tab */
-  showActivityTab?: boolean;
   onClose: () => void;
   onNavigate: (path: string) => void;
 }
 
-type ModalTab = 'notifications' | 'activity';
+/* ── Unified feed item for merged display ────────────────────── */
+
+interface FeedItem {
+  id: string;
+  type: 'notification' | 'activity';
+  text: string;
+  subtext?: string;
+  timestamp: string;
+  isRead: boolean;
+  actionUrl?: string | null;
+  verbCategory?: string;
+}
 
 /** Format relative time in Dutch */
 function formatRelativeTime(dateStr: string): string {
@@ -37,161 +45,108 @@ function getVerbLabel(verb: string): string {
   return VERB_LABELS[verb as ActivityVerbValue] ?? verb;
 }
 
-/** Get the verb icon name */
-function getVerbIcon(verb: string): string {
-  return VERB_ICONS[verb as ActivityVerbValue] ?? 'activity';
+/** Derive verb category for CSS colour indicator */
+function getVerbCategory(verb: string): string {
+  if (verb.startsWith('content.')) return 'content';
+  if (verb.startsWith('member.')) return 'member';
+  if (verb.startsWith('match.') || verb === 'lineup.published') return 'match';
+  if (verb.startsWith('season.')) return 'season';
+  return 'default';
 }
 
-export function NavbarNotificationsModal({ notificationsList, activityItems = [], showActivityTab = false, onClose, onNavigate }: NotificationsModalProps) {
+/** Merge notifications + activity into one chronological feed */
+function buildFeed(
+  notifications: NotificationsModalProps['notificationsList'],
+  activityItems: ActivityLogItem[],
+): FeedItem[] {
+  const notifItems: FeedItem[] = notifications.map((n) => ({
+    id: `notif-${n.id}`,
+    type: 'notification' as const,
+    text: n.title || n.message,
+    subtext: n.title && n.message ? n.message : undefined,
+    timestamp: n.created_at,
+    isRead: n.read ?? n.is_read,
+    actionUrl: n.action_url,
+  }));
+
+  const actItems: FeedItem[] = activityItems.map((a) => ({
+    id: `act-${a.id}`,
+    type: 'activity' as const,
+    text: `${a.actor_email?.split('@')[0] ?? 'Systeem'} ${getVerbLabel(a.verb)}`,
+    timestamp: a.created_at,
+    isRead: true,
+    verbCategory: getVerbCategory(a.verb),
+  }));
+
+  return [...notifItems, ...actItems]
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 15);
+}
+
+export function NavbarNotificationsModal({ notificationsList, activityItems = [], onClose, onNavigate }: NotificationsModalProps) {
   useEscapeKey(onClose);
-  const [activeTab, setActiveTab] = useState<ModalTab>('notifications');
+  const feed = buildFeed(notificationsList, activityItems);
 
   return (
     <div onClick={onClose} className={s.modalOverlay} role="presentation">
-        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.notificationsPanel}`} role="dialog" aria-label="Notificaties">
+      <div onClick={(e) => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.notificationsPanel}`} role="dialog" aria-label="Notificaties">
+        {/* ── Header: title + close ── */}
         <div className={s.modalHeaderRow}>
           <div className="flex-1">
-            {showActivityTab ? (
-              <div
-                className={styles.tabBar}
-                role="tablist"
-                aria-label="Modal tabs"
-                onKeyDown={(e) => {
-                  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-                    e.preventDefault();
-                    const next: ModalTab = activeTab === 'notifications' ? 'activity' : 'notifications';
-                    setActiveTab(next);
-                    document.getElementById(`tab-${next}`)?.focus();
-                  }
-                }}
-              >
-                <button
-                  id="tab-notifications"
-                  role="tab"
-                  aria-selected={activeTab === 'notifications'}
-                  aria-controls="tabpanel-notifications"
-                  tabIndex={activeTab === 'notifications' ? 0 : -1}
-                  className={`${styles.tab} ${activeTab === 'notifications' ? styles.tabActive : ''}`}
-                  onClick={() => setActiveTab('notifications')}
-                >
-                  Notificaties
-                  {notificationsList.length > 0 && (
-                    <span className={styles.tabCount}>{notificationsList.length}</span>
-                  )}
-                </button>
-                <button
-                  id="tab-activity"
-                  role="tab"
-                  aria-selected={activeTab === 'activity'}
-                  aria-controls="tabpanel-activity"
-                  tabIndex={activeTab === 'activity' ? 0 : -1}
-                  className={`${styles.tab} ${activeTab === 'activity' ? styles.tabActive : ''}`}
-                  onClick={() => setActiveTab('activity')}
-                >
-                  Activiteit
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className={s.modalTitle15}>Notificaties</div>
-                <div className={s.modalSubtitle}>{notificationsList.length} recente notificaties</div>
-              </>
-            )}
+            <div className={s.modalTitle15}>Notificaties</div>
           </div>
-          <button onClick={() => { onClose(); onNavigate(activeTab === 'activity' ? '/activity' : '/notifications'); }} className={s.btnGhost}>
-            {activeTab === 'activity' ? 'Bekijk alles' : 'Alle Notificaties'} {'\u2192'}
+          <button onClick={onClose} className={styles.closeBtnMobile} aria-label="Sluiten">
+            {'\u2715'}
           </button>
-          <button onClick={onClose} className={s.closeBtn}>{'\u2715'}</button>
         </div>
 
-        <div
-          id={`tabpanel-${activeTab}`}
-          className="flex-1 overflow-y-auto p-16"
-          role="tabpanel"
-          aria-labelledby={`tab-${activeTab}`}
-        >
-          {activeTab === 'notifications' && (
-            <>
-              {notificationsList.length === 0 ? (
-                <div className="text-center p-24 text-secondary">
-                  <div className={`mb-8 ${s.emptyIcon32}`}>{'\ud83d\udced'}</div>
-                  <div className="fs-14">Geen notificaties</div>
-                </div>
-              ) : (
-                <div className="flex-col gap-8">
-                  {notificationsList.slice(0, 10).map((notif) => (
-                    <div
-                      key={notif.id}
-                      className={`p-12 rounded-8 ${styles.notifItem}`}
-                      data-read={notif.read}
-                      onClick={notif.action_url ? () => { onClose(); onNavigate(notif.action_url!); } : undefined}
-                      style={notif.action_url ? { cursor: 'pointer' } : undefined}
-                      role={notif.action_url ? 'button' : undefined}
-                      tabIndex={notif.action_url ? 0 : undefined}
-                      onKeyDown={notif.action_url ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClose(); onNavigate(notif.action_url!); } } : undefined}
-                    >
-                      <div className={`${s.notifMessage} ${styles.notifMessageText}`} data-read={notif.read}>
-                        {notif.title || notif.message}
+        {/* ── Unified feed ── */}
+        <div className="flex-1 overflow-y-auto p-16">
+          {feed.length === 0 ? (
+            <div className="text-center p-24 text-secondary">
+              <div className="fs-14">Geen notificaties</div>
+            </div>
+          ) : (
+            <div className="flex-col gap-8">
+              {feed.map((item) => (
+                <div
+                  key={item.id}
+                  className={`p-12 rounded-8 ${styles.notifItem}`}
+                  data-read={item.isRead}
+                  onClick={item.actionUrl ? () => { onClose(); onNavigate(item.actionUrl!); } : undefined}
+                  style={item.actionUrl ? { cursor: 'pointer' } : undefined}
+                  role={item.actionUrl ? 'button' : undefined}
+                  tabIndex={item.actionUrl ? 0 : undefined}
+                  onKeyDown={item.actionUrl ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClose(); onNavigate(item.actionUrl!); } } : undefined}
+                >
+                  <div className="flex items-start gap-8">
+                    {item.type === 'activity' && (
+                      <span className={styles.verbDot} data-category={item.verbCategory} aria-hidden="true" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className={`${s.notifMessage} ${styles.notifMessageText}`} data-read={item.isRead}>
+                        {item.text}
                       </div>
-                      {notif.message && notif.title && (
-                        <div className={s.notifDetail}>{notif.message}</div>
-                      )}
-                      <div className={s.textSecondary10}>{new Date(notif.created_at).toLocaleString()}</div>
+                      {item.subtext && <div className={s.notifDetail}>{item.subtext}</div>}
+                      <div className={s.textSecondary10}>{formatRelativeTime(item.timestamp)}</div>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              )}
-            </>
+              ))}
+            </div>
           )}
+        </div>
 
-          {activeTab === 'activity' && (
-            <>
-              {activityItems.length === 0 ? (
-                <div className="text-center p-24 text-secondary">
-                  <div className={`mb-8 ${s.emptyIcon32}`}>{'\u{1F4CA}'}</div>
-                  <div className="fs-14">Nog geen activiteit</div>
-                </div>
-              ) : (
-                <div className="flex-col gap-4">
-                  {activityItems.slice(0, 10).map((item) => (
-                    <div key={item.id} className={`${styles.activityItem}`}>
-                      <div className={styles.activityIcon} data-verb={getVerbIcon(item.verb)} aria-hidden="true">
-                        {getVerbIconChar(item.verb)}
-                      </div>
-                      <div className={styles.activityContent}>
-                        <div className={styles.activityText}>
-                          <span className={styles.activityActor}>
-                            {item.actor_email?.split('@')[0] ?? 'Systeem'}
-                          </span>
-                          {' '}
-                          <span className={styles.activityVerb}>{getVerbLabel(item.verb)}</span>
-                        </div>
-                        <div className={s.textSecondary10}>{formatRelativeTime(item.created_at)}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
+        {/* ── Footer: safe-tap link to full page ── */}
+        <div className={styles.modalFooterLink}>
+          <button
+            onClick={() => { onClose(); onNavigate('/notifications'); }}
+            className={s.btnGhost}
+          >
+            Alle notificaties {'\u2192'}
+          </button>
         </div>
       </div>
     </div>
   );
-}
-
-/** Simple emoji icon for activity verb (lightweight, no icon lib dependency in modal) */
-function getVerbIconChar(verb: string): string {
-  const map: Record<string, string> = {
-    'content.created': '\u{1F4DD}',
-    'content.approved': '\u2705',
-    'content.rejected': '\u274C',
-    'member.added': '\u{1F464}',
-    'member.confirmed': '\u2714\uFE0F',
-    'match.created': '\u{1F3C6}',
-    'match.lineup_set': '\u{1F465}',
-    'season.started': '\u{1F3AC}',
-    'lineup.published': '\u{1F4E2}',
-  };
-  return map[verb] ?? '\u{1F4CB}';
 }

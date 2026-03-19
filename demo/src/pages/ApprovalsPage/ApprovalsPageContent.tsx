@@ -117,7 +117,7 @@ export function ApprovalsPageContent({
 
         {!loading && !aiLoading && !videoLoading && filteredInstances.length === 0 && visibleAiJobs.length === 0 && visibleVideoJobs.length === 0 && (
           <div className={s.emptyState}>
-            <div className={s.emptyIcon}>📭</div>
+            <div className={s.emptyIcon}></div>
             <div className={s.emptyTitle}>Geen items</div>
             <div className="fs-12">Er zijn geen items voor dit filter.</div>
           </div>

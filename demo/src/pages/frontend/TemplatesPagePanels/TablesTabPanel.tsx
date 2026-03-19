@@ -40,7 +40,7 @@ export function TablesTabPanel() {
         <Card className="p-0 overflow-hidden">
           <div className="p-4 border-b border-gray-100 font-medium">Empty State</div>
           <div className="p-8 text-center text-gray-500">
-            <div className="text-2xl mb-2">📭</div>
+            <div className="text-2xl mb-2"></div>
             <p>No data available</p>
           </div>
         </Card>

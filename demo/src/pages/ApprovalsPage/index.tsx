@@ -38,14 +38,14 @@ export default function ApprovalsPage() {
         videoFollowUp={data.videoFollowUp}
         onCloseVideoFollowUp={() => data.setVideoFollowUp(null)}
         onVideoFollowUpSubmitted={(count) => {
-          data.pushToast(`🎬 ${count} video${count > 1 ? "'s" : ''} in de wachtrij gezet!`, 'success');
+          data.pushToast(`${count} video${count > 1 ? "'s" : ''} in de wachtrij gezet`, 'success');
           data.setVideoFollowUp(null);
           data.refreshAiJobs();
         }}
         photoCompositeFollowUp={data.photoCompositeFollowUp}
         onClosePhotoCompositeFollowUp={() => data.setPhotoCompositeFollowUp(null)}
         onPhotoCompositeFollowUpSubmitted={() => {
-          data.pushToast('🎬 Video in de wachtrij gezet!', 'success');
+          data.pushToast('Video in de wachtrij gezet', 'success');
           data.setPhotoCompositeFollowUp(null);
           data.refreshAiJobs();
         }}

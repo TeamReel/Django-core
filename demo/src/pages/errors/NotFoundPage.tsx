@@ -8,7 +8,7 @@ export default function NotFoundPage() {
   return (
     <>
       <div className={styles.container}>
-        <div className={styles.emoji}>🔍</div>
+        <div className={styles.emoji}></div>
 
         <h1 className={styles.errorCode}>
           404
