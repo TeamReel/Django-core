@@ -2,7 +2,7 @@
 
 **Priority:** 🔥 Bouwen
 **Phase:** 15
-**Status:** 📋 ROADMAP
+**Status:** ✅ IMPLEMENTED
 **Module ID:** 310
 **Category:** Backend (TeamReel Product Feature)
 
@@ -55,7 +55,7 @@
 - `GET /api/v1/activity-feed/?verb=content.created` — Feed gefilterd op type
 - `GET /api/v1/activity-feed/unread-count/` — Aantal ongelezen events
 
-**Status**: 📋 ROADMAP
+**Status**: ✅ IMPLEMENTED
 
 **Specify Prompt**:
 ```

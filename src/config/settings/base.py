@@ -89,6 +89,8 @@ INSTALLED_APPS = [
     "navigation.apps.NavigationConfig",
     # B55: Video Processing Pipeline
     "src.video.apps.VideoConfig",
+    # B62: Activity Feed
+    "activity_feed.apps.ActivityFeedConfig",
 ]
 
 MIDDLEWARE = [

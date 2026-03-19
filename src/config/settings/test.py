@@ -47,6 +47,11 @@ LOGGING = {
 # Webhook settings for testing
 WEBHOOK_SECRET_KEY = "test-secret-key"
 
+# Celery: run tasks synchronously in tests (no broker needed)
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_BROKER_URL = "memory://"
+
 # Disable rate limiting/throttling in tests (Cluster A fix)
 # Tests run multiple auth requests rapidly which would trigger rate limits
 REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = []
