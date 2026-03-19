@@ -58,13 +58,23 @@ The project is divided into **18 Development Phases**. Click a phase to see its 
 *   15 — [Frontend UX Debt](done/15_frontend-ux-debt/index.md) (15/15 ✅)
 *   16 — [Frontend Technical Debt](done/16_frontend-technical-debt/index.md) (15/15 ✅)
 
-### 🚧 Active Roadmaps
+### Frontend Improvement Roadmaps 17–31 — Done
 
-*   17 — [Frontend Performance & Accessibility](17_frontend-performance-a11y/index.md) (0/9 🚧)
-
-### ✅ Recently Completed
-
-*   23 — [Dashboard Match Status & Past Matches](done/23_dashboard-match-status/index.md) (4/4 ✅)
+*   17 — [Frontend Performance & Accessibility](done/17_frontend-performance-a11y/index.md) (9/9)
+*   18 — [Navigation UX Consistency](done/18_navigation-ux-consistency/index.md)
+*   19 — [Dashboard Inline Sheets](done/19_dashboard-inline-sheets/index.md)
+*   20 — [Dashboard Command Center](done/20_dashboard-command-center/index.md)
+*   21 — [Dashboard UX Gamification](done/21_dashboard-ux-gamification/index.md)
+*   22 — [Frontend Quality Hardening](done/22_frontend-quality-hardening/index.md)
+*   23 — [Dashboard Match Status](done/23_dashboard-match-status/index.md)
+*   24 — [Dashboard UI Polish](done/24_dashboard-ui-polish/index.md)
+*   25 — [Team Page Mobile](done/25_team-page-mobile/index.md)
+*   26 — [My Team Hub](done/26_my-team-hub/index.md)
+*   27 — [Engagement Features](done/27_engagement-features/index.md)
+*   28 — [My Team Page Fixes](done/28_my-team-page-fixes/index.md)
+*   29 — [My Team UX Hardening](done/29_my-team-ux-hardening/index.md)
+*   30 — [Premium UX Modules](done/30_premium-ux-modules/index.md)
+*   31 — [Activity Feed Integration](done/31_activity-feed-integration/index.md)
 
 ### Planned Phases
 *   **[Phase 11: Frontend & Visual Development](deployment-phases/planned/phase-11-frontend-and-visual-development.md)** (Modules 045-047) 📋

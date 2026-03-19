@@ -1,7 +1,7 @@
 # Afgeronde Frontend Refactorings — Overzicht
 
-**Totaal:** 17 roadmaps, ~184 fases uitgevoerd
-**Periode:** 2025-Q4 — 2026-03-13
+**Totaal:** 31 roadmaps uitgevoerd
+**Periode:** 2025-Q4 — 2026-03-19
 
 ---
 
@@ -26,6 +26,20 @@
 | 15 | [Frontend UX Debt](15_frontend-ux-debt/) | 15/15 | ✅ | 2026-03-12 |
 | 16 | [Frontend Technical Debt (Type Safety)](16_frontend-technical-debt/) | 15/15 | ✅ | 2026-03-13 |
 | 17 | [Frontend Performance & Accessibility](17_frontend-performance-a11y/) | 9/9 | ✅ | 2026-03-13 |
+| 18 | [Navigation UX Consistency](18_navigation-ux-consistency/) | — | ✅ | 2026-03 |
+| 19 | [Dashboard Inline Sheets](19_dashboard-inline-sheets/) | — | ✅ | 2026-03 |
+| 20 | [Dashboard Command Center](20_dashboard-command-center/) | — | ✅ | 2026-03 |
+| 21 | [Dashboard UX Gamification](21_dashboard-ux-gamification/) | — | ✅ | 2026-03 |
+| 22 | [Frontend Quality Hardening](22_frontend-quality-hardening/) | — | ✅ | 2026-03 |
+| 23 | [Dashboard Match Status](23_dashboard-match-status/) | 4/4 | ✅ | 2026-03 |
+| 24 | [Dashboard UI Polish](24_dashboard-ui-polish/) | — | ✅ | 2026-03 |
+| 25 | [Team Page Mobile](25_team-page-mobile/) | — | ✅ | 2026-03 |
+| 26 | [My Team Hub](26_my-team-hub/) | — | ✅ | 2026-03 |
+| 27 | [Engagement Features](27_engagement-features/) | — | ✅ | 2026-03 |
+| 28 | [My Team Page Fixes](28_my-team-page-fixes/) | — | ✅ | 2026-03 |
+| 29 | [My Team UX Hardening](29_my-team-ux-hardening/) | — | ✅ | 2026-03 |
+| 30 | [Premium UX Modules](30_premium-ux-modules/) | — | ✅ | 2026-03 |
+| 31 | [Activity Feed Integration](31_activity-feed-integration/) | 4/4 | ✅ | 2026-03-19 |
 
 ---
 

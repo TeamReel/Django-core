@@ -20,10 +20,7 @@ De B62 Activity Feed API (`/api/v1/activity-feed/`) integreren in de webapp zoda
 - Role-based visibility via `useUserRole()`
 
 ### Wat ontbreekt ❌
-- Geen frontend hook voor `/api/v1/activity-feed/`
-- Notificatie modal toont alleen contextual notifications, geen activity feed events
-- Geen aparte /activity pagina met volledige timeline
-- Geen role-gating (admin/coach only)
+- Niets — alle features geimplementeerd via unified notification feed
 
 ## Design beslissingen
 
@@ -40,22 +37,22 @@ De B62 Activity Feed API (`/api/v1/activity-feed/`) integreren in de webapp zoda
 
 | Fase | Titel | Effort | Status | Doc |
 |------|-------|--------|--------|-----|
-| H0 | Hook + Types | ~1 uur | 📋 todo | [H0](phases/todo/H0_hook-and-types.md) |
-| H1 | Notificatie Modal Integratie | ~2 uur | 📋 todo | [H1](phases/todo/H1_notification-modal-integration.md) |
-| H2 | Activity Pagina | ~2 uur | 📋 todo | [H2](phases/todo/H2_activity-page.md) |
-| H3 | Polish + Tests | ~1 uur | 📋 todo | [H3](phases/todo/H3_polish-and-tests.md) |
+| H0 | Hook + Types | ~1 uur | Voltooid | — |
+| H1 | Notificatie Modal Integratie | ~2 uur | Voltooid | — |
+| H2 | Activity Pagina | ~2 uur | Voltooid | — |
+| H3 | Polish + Tests | ~1 uur | Voltooid | — |
 
 > Wanneer een fase klaar is → verplaats doc van `phases/todo/` naar `phases/done/`.
 
 ## Acceptatiecriteria (geheel)
 
-- [ ] Coaches/admins zien activity feed tab in notificatie modal
-- [ ] Coaches/admins kunnen `/activity` pagina bezoeken met filters
-- [ ] Spelers/supporters zien geen activity tab of pagina
-- [ ] Events komen van B62 API (`/api/v1/activity-feed/`)
-- [ ] Cursor-based paginatie werkt
-- [ ] Build passes (`npx tsc --noEmit` + `npx vite build`)
-- [ ] No new `any` types
-- [ ] All interactive elements accessible (keyboard + screen reader)
-- [ ] Mobile-first responsive design
-- [ ] Design tokens only (geen hardcoded kleuren/spacing)
+- [x] Coaches/admins zien activity feed in notificatie modal (unified feed)
+- [x] Coaches/admins kunnen `/activity` pagina bezoeken met filters
+- [x] Spelers/supporters zien geen activity tab of pagina
+- [x] Events komen van B62 API (`/api/v1/activity-feed/`)
+- [x] Cursor-based paginatie werkt
+- [x] Build passes (`npx tsc --noEmit` + `npx vite build`)
+- [x] No new `any` types
+- [x] All interactive elements accessible (keyboard + screen reader)
+- [x] Mobile-first responsive design
+- [x] Design tokens only (geen hardcoded kleuren/spacing)
