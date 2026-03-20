@@ -16,6 +16,7 @@ import { organisationsApi, projectsApi } from '@/api';
 import { canDeleteProject, canEditProject } from '@/utils/permissions';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { formReducer, makeSetter } from '@/utils/formReducer';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 
@@ -69,6 +70,7 @@ export interface UseClubsDataReturn {
 
 export function useClubsData(preselectedOrgId?: string): UseClubsDataReturn {
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -294,14 +296,15 @@ export function useClubsData(preselectedOrgId?: string): UseClubsDataReturn {
   // ── CRUD handlers ──
 
   const handleDeleteProject = async (orgSlugOrId: string, projectSlugOrId: string, projectName: string) => {
-    if (!window.confirm(`Are you sure you want to delete ${projectName}?`)) return;
+    const ok = await confirm({ title: 'Club verwijderen', message: `"${projectName}" verwijderen?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       await api.delete(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`);
       setClubs((prev) => prev.filter((p) => String(p.id) !== String(projectSlugOrId) && String(p.slug) !== String(projectSlugOrId)));
       if (String(s.selectedClubId) === String(projectSlugOrId)) setSelectedClubId('');
     } catch (e) {
       logger.error('Error deleting club', e);
-      pushToast({ message: 'Error deleting club', type: 'error' });
+      pushToast({ message: 'Club verwijderen mislukt', type: 'error' });
     }
   };
 

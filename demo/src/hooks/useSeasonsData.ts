@@ -11,6 +11,7 @@ import { getApiV1BaseUrl } from '../utils/apiFetch';
 import { api, trashApi } from '@/api';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import {
   chunkArray,
   sortKey,
@@ -90,6 +91,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
   } = filters;
 
   const { pushToast } = useToast();
+  const confirm = useConfirm();
 
   // ── State ─────────────────────────────────────────────────────────
   const [seasons, setSeasons] = useState<Period[]>([]);
@@ -294,9 +296,9 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
   }, [selectedOrgId, selectedTeamId, triggerRefresh]);
 
   const handleDeleteSeason = useCallback(async (orgId: string, seasonId: string | undefined, seasonName: string) => {
-    if (!seasonId || !window.confirm(`Weet je zeker dat je seizoen "${seasonName}" wilt verwijderen?`)) {
-      return;
-    }
+    if (!seasonId) return;
+    const ok = await confirm({ title: 'Seizoen verwijderen', message: `"${seasonName}" wordt verplaatst naar de prullenbak.`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       // Optimistic update
       const deletedSeason = seasons.find((s) => s.id === seasonId);
@@ -334,7 +336,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
       // Revert optimistic update
       triggerRefresh();
     }
-  }, [seasons, pushToast, triggerRefresh]);
+  }, [seasons, pushToast, confirm, triggerRefresh]);
 
   // ── Filtered & Sorted ─────────────────────────────────────────────
 

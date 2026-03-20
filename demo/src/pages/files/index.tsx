@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FileUpload, Card, Stack, Text, Button, Badge, Alert } from '@django-core/design-system';
 import type { FileUploadFile } from '@django-core/design-system';
 import { api } from '@/api';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { logger } from '@/utils/logger';
 import { getErrorMessage } from '@/utils/errorHelpers';
 import styles from './index.module.css';
@@ -26,6 +27,7 @@ interface FileUploadResponse {
 }
 
 const FilesPage: React.FC = () => {
+  const confirm = useConfirm();
   const [files, setFiles] = useState<FileAsset[]>([]);
   const [activeUploads, setActiveUploads] = useState<FileUploadFile[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -223,9 +225,8 @@ const FilesPage: React.FC = () => {
 
   // Handle file deletion
   const handleDelete = async (file: FileAsset) => {
-    if (!window.confirm(`Are you sure you want to delete "${file.original_filename}"?`)) {
-      return;
-    }
+    const ok = await confirm({ title: 'Bestand verwijderen', message: `"${file.original_filename}" verwijderen?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
 
     try {
       // Demo mode: Simulate successful deletion

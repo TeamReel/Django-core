@@ -16,6 +16,7 @@ import { clickableProps } from '@/utils/a11y';
 import styles from './MediaAssetCard.module.css';
 import { getAssetUrl } from '../hooks/useBrandProfile';
 import { getStateDisplay } from '../hooks/useWorkflows';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 // ============================================================================
 // Types
@@ -84,6 +85,7 @@ export const MediaAssetCard = memo(function MediaAssetCard({
   aspectRatio = '16 / 9',
   icon,
 }: MediaAssetCardProps) {
+  const confirm = useConfirm();
   const [showHistory, setShowHistory] = useState(false);
 
   const url = useMemo(() => {
@@ -240,9 +242,9 @@ export const MediaAssetCard = memo(function MediaAssetCard({
           {/* Delete */}
           {mediaItem && onDelete && (
             <button
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                if (window.confirm('Weet je zeker dat je dit asset wilt verwijderen?')) {
+                if (await confirm({ title: 'Asset verwijderen', message: 'Weet je zeker dat je dit asset wilt verwijderen?', confirmLabel: 'Verwijderen', variant: 'danger' })) {
                   onDelete(mediaItem);
                 }
               }}
@@ -336,8 +338,8 @@ export const MediaAssetCard = memo(function MediaAssetCard({
                       </div>
                       {onRestore && (
                         <button
-                          onClick={() => {
-                            if (window.confirm('Wil je deze versie herstellen?')) {
+                          onClick={async () => {
+                            if (await confirm({ title: 'Versie herstellen', message: 'Wil je deze versie herstellen?', confirmLabel: 'Herstellen' })) {
                               onRestore(item);
                               setShowHistory(false);
                             }

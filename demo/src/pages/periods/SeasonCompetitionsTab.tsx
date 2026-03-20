@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert, Badge, Card } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { Table } from '../../shims/design-system';
 import { api } from '@/api';
 import { trashApi } from '@/api/trash';
@@ -40,6 +41,7 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
   setCompetitions,
 }) => {
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   return (
   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div className="lg:col-span-3">
@@ -130,7 +132,8 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
                             onClick={async () => {
                               const compName = competition.name || '';
                               const compId = String(competition.id);
-                              if (!window.confirm(`Competitie "${compName}" verwijderen? Het wordt verplaatst naar de prullenbak.`)) return;
+                              const ok = await confirm({ title: 'Competitie verwijderen', message: `"${compName}" wordt verplaatst naar de prullenbak.`, confirmLabel: 'Verwijderen', variant: 'danger' });
+                              if (!ok) return;
                               try {
                                 const deletedComp = competition;
                                 setCompetitions((prev) => prev.filter((c) => c.id !== competition.id));

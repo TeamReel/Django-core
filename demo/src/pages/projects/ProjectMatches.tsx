@@ -146,7 +146,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
                    </Badge>
                 </td>
                  <td className="text-right">
-                   <Button size="sm" variant="secondary" onClick={() => navigate(routes.matchById({ matchId: match.slug || match.id }))}>View</Button>
+                   <Button size="sm" variant="secondary" onClick={() => navigate(routes.matchById({ matchId: match.slug || match.id }))}>Bekijken</Button>
                  </td>
               </tr>
             );

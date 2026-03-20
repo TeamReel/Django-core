@@ -251,10 +251,10 @@ export function ContentTemplateModal({
         {/* Actions */}
         <div className={`flex-row gap-8 mt-24 ${styles.modalActions}`}>
           <Button variant="secondary" onClick={onClose} disabled={saving}>
-            Cancel
+            Annuleren
           </Button>
           <Button variant="primary" onClick={onSave} disabled={saving || !editForm.name}>
-            {saving ? 'Saving...' : (editingTemplate ? 'Save Changes' : 'Create Template')}
+            {saving ? 'Opslaan...' : (editingTemplate ? 'Wijzigingen opslaan' : 'Template aanmaken')}
           </Button>
         </div>
       </Card>

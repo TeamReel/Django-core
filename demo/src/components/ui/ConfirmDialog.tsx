@@ -61,7 +61,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
         <Modal
           isOpen
           onClose={() => handleClose(false)}
-          title={state.title || 'Confirm'}
+          title={state.title || 'Bevestigen'}
           size="sm"
         >
           <div className={styles.contentWrapper}>
@@ -75,14 +75,14 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
               onClick={() => handleClose(false)}
               className={`rounded-8 cursor-pointer fs-13 fw-600 ${styles.cancelButton}`}
             >
-              {state.cancelLabel || 'Cancel'}
+              {state.cancelLabel || 'Annuleren'}
             </button>
             <button
               type="button"
               onClick={() => handleClose(true)}
               className={`rounded-8 cursor-pointer fs-13 fw-600 ${styles.confirmButton} ${isDanger ? styles.confirmButtonDanger : styles.confirmButtonPrimary}`}
             >
-              {state.confirmLabel || 'Confirm'}
+              {state.confirmLabel || 'Bevestigen'}
             </button>
           </div>
         </Modal>

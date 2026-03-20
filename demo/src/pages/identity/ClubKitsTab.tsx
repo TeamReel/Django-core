@@ -140,7 +140,7 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
                     {uploadingType === kitType.id ? 'Uploading...' : kit ? 'Replace' : 'Upload'}
                   </Button>
                   {kit && (
-                    <Button size="sm" variant="outline" onClick={() => { if (imageUrl) window.open(imageUrl, '_blank'); }}>View</Button>
+                    <Button size="sm" variant="outline" onClick={() => { if (imageUrl) window.open(imageUrl, '_blank'); }}>Bekijken</Button>
                   )}
                 </div>
                 {kit && <div className="mt-8 fs-11 text-muted"><strong>File:</strong> {kit.file_details?.name || 'Unknown'}</div>}

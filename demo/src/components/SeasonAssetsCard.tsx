@@ -169,7 +169,7 @@ export default function SeasonAssetsCard({
             onClick={handleSave}
             disabled={saving || !hasChanges}
           >
-            {saving ? 'Saving...' : 'Save'}
+            {saving ? 'Opslaan...' : 'Opslaan'}
           </Button>
           {hasSeasonOverride && (
             <Button

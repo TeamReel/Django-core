@@ -9,6 +9,7 @@ import { invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import type { Period } from '../../utils/directoryHelpers';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 interface UseCompetitionHandlersParams {
   selectedOrgId: string;
@@ -26,6 +27,7 @@ export function useCompetitionHandlers({
   setCompetitions,
 }: UseCompetitionHandlersParams) {
   const { pushToast } = useToast();
+  const confirm = useConfirm();
 
   const savePeriodEdits = useCallback(async (periodId: string, payload: Record<string, unknown>) => {
     await api.patch(`/periods/${periodId}/`, payload);
@@ -63,9 +65,9 @@ export function useCompetitionHandlers({
   }, [selectedOrgId, selectedTeamId, selectedSeasonIds, triggerRefresh]);
 
   const handleDeleteCompetition = useCallback(async (orgId: string, compId: string, compName: string) => {
-    if (!compId || !window.confirm(`Weet je zeker dat je competitie "${compName}" wilt verwijderen?`)) {
-      return;
-    }
+    if (!compId) return;
+    const ok = await confirm({ title: 'Competitie verwijderen', message: `"${compName}" wordt verplaatst naar de prullenbak.`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       // Optimistic update
       let deletedCompetition: Period | undefined;
@@ -106,7 +108,7 @@ export function useCompetitionHandlers({
       // Revert optimistic update by refreshing
       triggerRefresh();
     }
-  }, [setCompetitions, pushToast, triggerRefresh]);
+  }, [setCompetitions, pushToast, confirm, triggerRefresh]);
 
   return {
     savePeriodEdits,

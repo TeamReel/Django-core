@@ -162,7 +162,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
                 {canManageOrgSettings && (
                   <div className="mt-12 flex-row gap-12 flex-wrap">
                     <Button size="sm" variant="secondary" onClick={() => setIsEditingBalance(v => !v)}>
-                      {isEditingBalance ? 'Cancel' : 'Edit policy'}
+                      {isEditingBalance ? 'Annuleren' : 'Beleid bewerken'}
                     </Button>
                   </div>
                 )}
@@ -214,7 +214,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
 
                     <div className="flex-row gap-12 flex-wrap">
                       <Button size="sm" onClick={saveBalancePolicy} disabled={balanceSaving}>
-                        {balanceSaving ? 'Saving…' : 'Save'}
+                        {balanceSaving ? 'Opslaan…' : 'Opslaan'}
                       </Button>
                     </div>
                   </div>

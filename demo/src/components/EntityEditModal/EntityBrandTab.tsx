@@ -62,7 +62,7 @@ function TokenEditor({
       <button
         onClick={onDelete}
         className={`p-8 border-none cursor-pointer rounded-4 ${styles.deleteButton}`}
-        title="Delete token"
+        title="Token verwijderen"
       >
         <Trash2 size={16} />
       </button>

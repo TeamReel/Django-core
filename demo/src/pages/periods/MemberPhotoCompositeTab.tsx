@@ -171,7 +171,7 @@ export function MemberPhotoCompositeTab({
                             }
                           }
                         }} className={s.btnCancelOrange}>
-                          {compositeVideoNormalized?.processing_state === 'cancelling' ? 'Force Cancel' : 'Cancel'}
+                          {compositeVideoNormalized?.processing_state === 'cancelling' ? 'Forceer annuleren' : 'Annuleren'}
                         </Button>
                       )}
                       {compositeVideoLineupReady && <span className={s.readyIndicator}>Ready</span>}

@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { Card, Badge, Button, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import { useAppBackgroundsData } from './useAppBackgroundsData';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import styles from './AppBackgroundsPage.module.css';
 
 interface AppBackgroundForm {
@@ -27,6 +28,7 @@ const EMPTY_FORM: AppBackgroundForm = {
 
 export const AppBackgroundsPage: React.FC = () => {
   const d = useAppBackgroundsData();
+  const confirm = useConfirm();
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<AppBackgroundForm>(EMPTY_FORM);
@@ -66,7 +68,8 @@ export const AppBackgroundsPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Weet je zeker dat je deze achtergrond wilt verwijderen?')) return;
+    const ok = await confirm({ title: 'Achtergrond verwijderen', message: 'Weet je zeker dat je deze achtergrond wilt verwijderen?', confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     await d.remove(id);
   };
 

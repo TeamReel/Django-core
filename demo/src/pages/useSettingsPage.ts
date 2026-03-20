@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useTrash } from '@/hooks/useTrash';
 import { useUserRole } from '@/hooks/useUserRole';
 import { contentTypeLabel } from '@/utils/contentTypeLabels';
@@ -13,7 +14,7 @@ export function useSettingsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { pushToast } = useToast();
-
+  const confirm = useConfirm();
   // Initialize activeSection from URL hash, fallback to localStorage, then 'profile'
   const getInitialSection = () => {
     const hash = location.hash.replace('#', '');
@@ -169,17 +170,19 @@ export function useSettingsPage() {
 
   // Handle permanent delete with confirmation
   const handleTrashPermanentDelete = useCallback(async (id: string, objectRepr?: string) => {
-    if (window.confirm(`Weet je zeker dat je "${objectRepr || 'dit item'}" definitief wilt verwijderen? Dit kan niet ongedaan worden gemaakt.`)) {
+    const ok = await confirm({ title: 'Definitief verwijderen', message: `"${objectRepr || 'dit item'}" definitief verwijderen? Dit kan niet ongedaan worden gemaakt.`, confirmLabel: 'Definitief verwijderen', variant: 'danger' });
+    if (ok) {
       await trash.permanentDelete(id, objectRepr);
     }
-  }, [trash]);
+  }, [trash, confirm]);
 
   // Handle empty trash with confirmation
   const handleEmptyTrash = useCallback(async () => {
-    if (window.confirm('Weet je zeker dat je de hele prullenbak wilt legen? Dit kan niet ongedaan worden gemaakt.')) {
+    const ok = await confirm({ title: 'Prullenbak legen', message: 'Alle items definitief verwijderen? Dit kan niet ongedaan worden gemaakt.', confirmLabel: 'Alles verwijderen', variant: 'danger' });
+    if (ok) {
       await trash.emptyTrash();
     }
-  }, [trash]);
+  }, [trash, confirm]);
 
   return {
     activeSection, setActiveSection,

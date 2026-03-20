@@ -146,7 +146,7 @@ export function CompetitionMembershipEditModal({
                   onClose();
                 } catch (e) {
                   logger.error('Failed to save', e);
-                  setError(e instanceof Error ? e.message : 'Failed to save');
+                  setError(e instanceof Error ? e.message : 'Opslaan mislukt');
                 } finally {
                   setSaving(false);
                 }
@@ -155,7 +155,7 @@ export function CompetitionMembershipEditModal({
               className={styles.saveButton}
               data-saving={saving}
             >
-              {saving ? 'Saving…' : 'Save'}
+              {saving ? 'Opslaan…' : 'Opslaan'}
             </button>
           </div>
         </div>

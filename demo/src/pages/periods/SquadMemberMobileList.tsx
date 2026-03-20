@@ -158,13 +158,13 @@ const SquadMemberMobileList: React.FC<SquadMemberMobileListProps> = ({
                         if (!membershipId) return;
                         onEditMember?.(m);
                       }}
-                    >Edit</button>
+                    >Bewerken</button>
                     <button
                       type="button"
                       className="app-action-button action-btn action-btn-danger"
                       disabled={!membershipId || bulkSubmitting}
                       onClick={async () => { if (membershipId) await unassignMembershipsFromSeasonSquad?.([membershipId]); }}
-                    >Unassign</button>
+                    >Ontkoppelen</button>
                   </div>
                 </div>
               )}

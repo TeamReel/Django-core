@@ -4,6 +4,7 @@ import { Card, Input } from '@django-core/design-system';
 import { api, activitiesApi, trashApi } from '@/api';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { periodPathKey } from '../../utils/periodPath';
 import type { Period } from '../../types/season';
 import { getMatchParticipantsCount } from './seasonDetailUtils';
@@ -86,6 +87,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
 }) => {
   const navigate = useNavigate();
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   // ── Tab-local state ──
   const [hierarchySearch, setHierarchySearch] = useState('');
 
@@ -217,7 +219,8 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                             onClick={async () => {
                               const compName = competition.name || '';
                               const compId = String(competition.id);
-                              if (!window.confirm(`Competitie "${compName}" verwijderen? Het wordt verplaatst naar de prullenbak.`)) return;
+                              const ok = await confirm({ title: 'Competitie verwijderen', message: `"${compName}" wordt verplaatst naar de prullenbak.`, confirmLabel: 'Verwijderen', variant: 'danger' });
+                              if (!ok) return;
                               try {
                                 const deletedComp = competition;
                                 setCompetitions((prev) => prev.filter((c) => String(c.id) !== compId));
@@ -300,7 +303,8 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                                       className="app-action-button action-btn action-btn-danger"
                                       onClick={async () => {
                                         const matchTitle = match.title || match.name || 'Wedstrijd';
-                                        if (!window.confirm(`${matchTitle} verwijderen?`)) return;
+                                        const ok = await confirm({ title: 'Wedstrijd verwijderen', message: `"${matchTitle}" verwijderen?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+                                        if (!ok) return;
                                         const matchId = match.id;
                                         const deletedMatch = match;
                                         try {

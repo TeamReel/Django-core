@@ -93,7 +93,7 @@ export default function MatchEditModal({ opened, onClose, match, onSave, apiBase
       mode={mode}
       apiBaseUrl={apiBaseUrl}
       headerText="Edit Match"
-      submitText="Save"
+      submitText="Opslaan"
       initialIds={{
         organisationId: organisationId,
         teamId: teamId,

@@ -128,7 +128,7 @@ export const ContentCard = memo(function ContentCard({
           <div className={`mt-8 gap-4 border-top flex-row ${styles.actionsRow}`}>
             <button onClick={(e) => { e.stopPropagation(); onDownload?.(item); }} title="Download" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8"><Download size={14} aria-hidden="true" /></button>
             <button onClick={(e) => { e.stopPropagation(); onShare?.(item); }} title="Share" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8"><Share2 size={14} aria-hidden="true" /></button>
-            <button onClick={(e) => { e.stopPropagation(); onDelete?.(item); }} title="Delete" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">Verwijder</button>
+            <button onClick={(e) => { e.stopPropagation(); onDelete?.(item); }} title="Verwijderen" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">Verwijder</button>
           </div>
         </div>
       </div>

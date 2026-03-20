@@ -212,13 +212,13 @@ export default function ProjectSeasonSquadPage() {
                               <td className="detail-td">
                                 <div className="detail-actions">
                                   {userId ? (
-                                    <button onClick={() => d.navigate(routes.userDetail({ userId: String(userId) }))} className="action-btn action-btn-primary">View</button>
+                                    <button onClick={() => d.navigate(routes.userDetail({ userId: String(userId) }))} className="action-btn action-btn-primary">Bekijken</button>
                                   ) : <span className="text-muted">—</span>}
                                   {d.userCanEditProject && (
-                                    <button onClick={() => { d.setSelectedMembership(m); d.setIsMembershipEditModalOpen(true); }} className="action-btn action-btn-warning">Edit</button>
+                                    <button onClick={() => { d.setSelectedMembership(m); d.setIsMembershipEditModalOpen(true); }} className="action-btn action-btn-warning">Bewerken</button>
                                   )}
                                   {d.userCanDeleteProject && (
-                                    <button onClick={() => d.deleteMembership(m)} className="action-btn action-btn-danger">Delete</button>
+                                    <button onClick={() => d.deleteMembership(m)} className="action-btn action-btn-danger">Verwijderen</button>
                                   )}
                                 </div>
                               </td>

@@ -152,7 +152,7 @@ export const ProjectsPage: React.FC = () => {
               ))}
             </div>
             <div className="mt-16 text-right">
-              <Button variant="outline" size="md" onClick={() => setIsOrgSelectionModalOpen(false)}>Cancel</Button>
+              <Button variant="outline" size="md" onClick={() => setIsOrgSelectionModalOpen(false)}>Annuleren</Button>
             </div>
           </div>
         </div>

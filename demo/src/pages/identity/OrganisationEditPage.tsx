@@ -137,7 +137,7 @@ export const OrganisationEditPage: React.FC = () => {
             ),
             onClick: () => navigate(routes.orgDetailLegacy({ orgId: resolvedOrg?.slug || id! })),
           },
-          { label: 'Edit', current: true },
+          { label: 'Bewerken', current: true },
         ]}
       />
       <PageContent>
@@ -194,10 +194,10 @@ export const OrganisationEditPage: React.FC = () => {
 
             <div className={styles.buttonGroup}>
               <Button type="submit" variant="primary" disabled={saving}>
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? 'Opslaan...' : 'Wijzigingen opslaan'}
               </Button>
               <Button type="button" variant="secondary" onClick={() => navigate(routes.orgDetailLegacy({ orgId: id! }))} disabled={saving}>
-                Cancel
+                Annuleren
               </Button>
             </div>
           </form>

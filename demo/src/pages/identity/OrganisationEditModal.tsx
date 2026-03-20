@@ -118,7 +118,7 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
               className={`py-8 px-16 rounded-4 border bg-surface-2 text-primary ${styles.cancelBtn}`}
               data-saving={saving || undefined}
             >
-              Cancel
+              Annuleren
             </button>
             <button
               type="submit"
@@ -126,7 +126,7 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
               className={`py-8 px-16 rounded-4 border-none ${styles.submitBtn}`}
               data-saving={saving || undefined}
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? 'Opslaan...' : 'Wijzigingen opslaan'}
             </button>
           </div>
         </form>

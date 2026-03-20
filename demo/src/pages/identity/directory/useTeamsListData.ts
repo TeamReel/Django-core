@@ -9,6 +9,7 @@ import { api } from '@/api/client';
 import { organisationsApi, projectsApi } from '@/api';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { formReducer, makeSetter } from '@/utils/formReducer';
 import type { Organisation } from '@/types/api/organisation';
 import type { Project } from '@/types/api/project';
@@ -74,6 +75,7 @@ export interface UseTeamsListDataReturn {
 
 export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsListHookProps): UseTeamsListDataReturn {
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -348,14 +350,15 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
   // ── Actions ──
 
   const handleDeleteProject = async (orgSlugOrId: string, teamId: string, teamName: string) => {
-    if (!window.confirm(`Are you sure you want to delete ${teamName}?`)) return;
+    const ok = await confirm({ title: 'Team verwijderen', message: `"${teamName}" verwijderen?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       await api.delete(`/organisations/${orgSlugOrId}/projects/${teamId}/`);
       setTeams((prev) => prev.filter((p) => String(p.id) !== String(teamId)));
       if (String(s.selectedTeamId) === String(teamId)) setSelectedTeamId('');
     } catch (e) {
       logger.error('Error deleting team', e);
-      pushToast({ message: 'Error deleting team', type: 'error' });
+      pushToast({ message: 'Team verwijderen mislukt', type: 'error' });
     }
   };
 

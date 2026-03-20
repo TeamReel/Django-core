@@ -64,9 +64,9 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
               Back to Season
             </Button>
             <Button variant="secondary" size="sm" onClick={() => d.setIsMatchCreateModalOpen(true)}>Create Match</Button>
-            <Button variant="secondary" size="sm" onClick={() => { d.setSelectedDetailPeriod(d.competition); d.setIsPeriodDetailModalOpen(true); }}>View</Button>
-            <Button variant="secondary" size="sm" onClick={() => { d.setSelectedEditPeriod(d.competition); d.setIsPeriodEditModalOpen(true); }}>Edit</Button>
-            <Button variant="secondary" size="sm" onClick={d.deleteCompetition} className={pc.dangerText}>Delete</Button>
+            <Button variant="secondary" size="sm" onClick={() => { d.setSelectedDetailPeriod(d.competition); d.setIsPeriodDetailModalOpen(true); }}>Bekijken</Button>
+            <Button variant="secondary" size="sm" onClick={() => { d.setSelectedEditPeriod(d.competition); d.setIsPeriodEditModalOpen(true); }}>Bewerken</Button>
+            <Button variant="secondary" size="sm" onClick={d.deleteCompetition} className={pc.dangerText}>Verwijderen</Button>
           </div>
         }
       />

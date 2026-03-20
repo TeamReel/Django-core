@@ -7,6 +7,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Trash2, RotateCcw, AlertCircle, AlertTriangle } from 'lucide-react';
 import { useTrash } from '../../hooks/useTrash';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useUserRole } from '../../components/PermissionGuards';
 import { contentTypeLabel } from '../../utils/contentTypeLabels';
 import s from './TrashSheetContent.module.css';
@@ -14,6 +15,7 @@ import s from './TrashSheetContent.module.css';
 export function TrashSheetContent() {
   const trash = useTrash();
   const { isSystemAdmin } = useUserRole();
+  const confirm = useConfirm();
 
   // Content type filter state (filters by content_type string, e.g. "activities.activity")
   const [contentTypeFilter, setContentTypeFilter] = useState<string | undefined>(undefined);
@@ -48,7 +50,7 @@ export function TrashSheetContent() {
   }, [trash]);
 
   const handlePermanentDelete = useCallback(async (id: string, label: string) => {
-    if (!confirm(`"${label}" definitief verwijderen? Dit kan niet ongedaan worden.`)) return;
+    if (!await confirm({ title: 'Definitief verwijderen', message: `"${label}" definitief verwijderen? Dit kan niet ongedaan worden.`, confirmLabel: 'Definitief verwijderen', variant: 'danger' })) return;
     try {
       await trash.permanentDelete(id, label);
     } catch {
@@ -57,7 +59,7 @@ export function TrashSheetContent() {
   }, [trash]);
 
   const handleEmptyTrash = useCallback(async () => {
-    if (!confirm('Alle items in de prullenbak definitief verwijderen? Dit kan niet ongedaan worden.')) return;
+    if (!await confirm({ title: 'Prullenbak legen', message: 'Alle items definitief verwijderen? Dit kan niet ongedaan worden.', confirmLabel: 'Alles verwijderen', variant: 'danger' })) return;
     try {
       await trash.emptyTrash();
     } catch {

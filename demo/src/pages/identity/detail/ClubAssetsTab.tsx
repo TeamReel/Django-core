@@ -189,7 +189,7 @@ export default function ClubAssetsTab({
               onClick={handleSave}
               disabled={saving || !hasChanges}
             >
-              {saving ? 'Saving...' : 'Save Assets'}
+              {saving ? 'Opslaan...' : 'Assets opslaan'}
             </Button>
           </div>
         </div>

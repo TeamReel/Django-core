@@ -168,7 +168,7 @@ export default function ProjectSeasonMemberDetailPage() {
             )}
             <Button variant={userCanEditProject ? 'primary' : 'secondary'} disabled={!userCanEditProject || saving || loading}
               onClick={() => save(media.form, media.videoVariants)}>
-              {saving ? 'Saving…' : 'Save'}
+              {saving ? 'Opslaan…' : 'Opslaan'}
             </Button>
           </div>
         }
@@ -284,7 +284,7 @@ export default function ProjectSeasonMemberDetailPage() {
       {!loading && !error && membership && userCanEditProject && (
         <div className="mobile-action-bar show-mobile-only">
           <Button variant="primary" onClick={() => save(media.form, media.videoVariants)} disabled={saving} className={s.mobileActionSave}>
-            {saving ? 'Saving…' : 'Save'}
+            {saving ? 'Opslaan…' : 'Opslaan'}
           </Button>
           <Button variant="secondary" onClick={() => { if (seasonKeyForLinks) navigate(`${seasonsBasePath}/${seasonKeyForLinks}?tab=selectie`); }} className={s.mobileActionSquad}>
             ← Squad

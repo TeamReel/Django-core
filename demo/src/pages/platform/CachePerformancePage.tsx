@@ -91,7 +91,7 @@ export const CachePerformancePage: React.FC = () => {
       setError(null);
 
       const result = await api.post<{ cleared_keys: number }>('/system/cache/clear/');
-      pushToast({ message: `Cache cleared successfully! ${result.cleared_keys} keys removed.`, type: 'success' });
+      pushToast({ message: `Cache succesvol geleegd! ${result.cleared_keys} keys verwijderd.`, type: 'success' });
 
       // Refresh metrics
       await fetchMetrics();

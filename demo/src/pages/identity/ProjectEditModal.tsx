@@ -36,7 +36,7 @@ export default function ProjectEditModal({ opened, onClose, project, onSave }: P
       onClose();
     } catch (error) {
       logger.error('Failed to save changes', error);
-      const message = error instanceof Error ? error.message : 'Failed to save changes';
+      const message = error instanceof Error ? error.message : 'Wijzigingen opslaan mislukt';
       setError(message);
     } finally {
       setSaving(false);
@@ -98,7 +98,7 @@ export default function ProjectEditModal({ opened, onClose, project, onSave }: P
               className={styles.cancelButton}
               data-disabled={saving}
             >
-              Cancel
+              Annuleren
             </button>
             <button
               type="submit"
@@ -106,7 +106,7 @@ export default function ProjectEditModal({ opened, onClose, project, onSave }: P
               className={styles.submitButton}
               data-disabled={saving}
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? 'Opslaan...' : 'Wijzigingen opslaan'}
             </button>
           </div>
         </form>

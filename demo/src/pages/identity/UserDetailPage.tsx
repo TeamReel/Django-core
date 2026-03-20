@@ -54,9 +54,9 @@ const UserDetailPage: React.FC = () => {
               setIsCreateTxnModalOpen(true);
             }} className="app-action-button cta-btn cta-btn-primary" disabled={!user}>Create transaction</button>
             <button type="button" className="app-action-button cta-btn" onClick={() => setIsLinkModalOpen(true)} disabled={!user}>Add to…</button>
-            <Button variant="secondary" size="sm" onClick={() => setIsViewModalOpen(true)}>View</Button>
-            <Button variant="secondary" size="sm" onClick={() => setIsEditModalOpen(true)}>Edit</Button>
-            <Button variant="secondary" size="sm" onClick={handleDeleteUser}>Delete</Button>
+            <Button variant="secondary" size="sm" onClick={() => setIsViewModalOpen(true)}>Bekijken</Button>
+            <Button variant="secondary" size="sm" onClick={() => setIsEditModalOpen(true)}>Bewerken</Button>
+            <Button variant="secondary" size="sm" onClick={handleDeleteUser}>Verwijderen</Button>
           </div>
         }
       />

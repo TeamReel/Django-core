@@ -235,10 +235,10 @@ export default function EditClubModal({
         {/* Actions */}
         <div className={`gap-12 mt-24 ${styles.actions}`}>
           <Button variant="outline" onClick={onClose} disabled={saving}>
-            Cancel
+            Annuleren
           </Button>
           <Button onClick={handleSave} disabled={saving || uploading}>
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? 'Opslaan...' : 'Wijzigingen opslaan'}
           </Button>
         </div>
       </div>

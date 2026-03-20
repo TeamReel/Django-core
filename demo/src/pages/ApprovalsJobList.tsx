@@ -294,10 +294,10 @@ export function ApprovalsJobList({
               {(isActive || vJob.status === 'failed') && (
                 <div className={s.actionsRow}>
                   {isActive && (
-                    <button onClick={(e) => { e.stopPropagation(); cancelVideoJob(vJob.id); }} className={s.btnCancel}>Cancel</button>
+                    <button onClick={(e) => { e.stopPropagation(); cancelVideoJob(vJob.id); }} className={s.btnCancel}>Annuleren</button>
                   )}
                   {vJob.status === 'failed' && (
-                    <button onClick={(e) => { e.stopPropagation(); retryVideoJob(vJob.id); }} className={s.btnRetry}>Retry</button>
+                    <button onClick={(e) => { e.stopPropagation(); retryVideoJob(vJob.id); }} className={s.btnRetry}>Opnieuw</button>
                   )}
                 </div>
               )}

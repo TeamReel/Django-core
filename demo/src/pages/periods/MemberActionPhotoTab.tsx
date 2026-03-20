@@ -10,6 +10,7 @@ import {
 import { ProcessingBadge } from './MemberProcessingBadge';
 import s from './ProjectSeasonMemberDetailPage.module.css';
 import m from './MemberActionPhotoTab.module.css';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 export function MemberActionPhotoTab({
   membership,
@@ -24,6 +25,7 @@ export function MemberActionPhotoTab({
   handleMetadataUpdate,
   effectiveKits,
 }: MemberTabCommonProps) {
+  const confirm = useConfirm();
   const actionVariants = videoVariants.action_photo || {};
   const styleVariants = ['dribbling', 'shooting', 'ball_at_feet', 'celebrating', 'heading', 'sliding_tackle', 'karate_kick'];
   const styleLabels: Record<string, string> = {
@@ -127,7 +129,7 @@ export function MemberActionPhotoTab({
                           {isProcessed && <span className={s.readyIndicator}>Ready</span>}
                           {url && userCanEditProject && (
                             <Button size="sm" variant="ghost" onClick={async () => {
-                              if (!confirm('Weet je zeker dat je deze actiefoto wilt verwijderen?')) return;
+                              if (!await confirm({ title: 'Actiefoto verwijderen', message: 'Weet je zeker dat je deze actiefoto wilt verwijderen?', confirmLabel: 'Verwijderen', variant: 'danger' })) return;
                               const newVV = { ...videoVariants, action_photo: { ...videoVariants.action_photo } };
                               delete newVV.action_photo[variantKey];
                               setVideoVariants(newVV);

@@ -83,10 +83,10 @@ export const FederationsList: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     const ok = await confirm({
-      title: 'Delete Organisation',
-      message: 'Are you sure you want to delete this organisation?',
+      title: 'Organisatie verwijderen',
+      message: 'Weet je zeker dat je deze organisatie wilt verwijderen?',
       variant: 'danger',
-      confirmLabel: 'Delete',
+      confirmLabel: 'Verwijderen',
     });
     if (!ok) return;
 
@@ -96,7 +96,7 @@ export const FederationsList: React.FC = () => {
       setRefreshKey(k => k + 1);
     } catch (err) {
       logger.error('Delete error', err);
-      pushToast({ message: 'Failed to delete organisation', type: 'error' });
+      pushToast({ message: 'Organisatie verwijderen mislukt', type: 'error' });
     }
   };
 

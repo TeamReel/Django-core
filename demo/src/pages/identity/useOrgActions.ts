@@ -6,6 +6,7 @@ import { getApiV1BaseUrl } from './orgDataHelpers';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -51,6 +52,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
   } = params;
 
   const { pushToast } = useToast();
+  const confirm = useConfirm();
 
   const handleActivateContext = async () => {
     try {
@@ -95,14 +97,15 @@ export function useOrgActions(params: UseOrgActionsParams) {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this organisation? This action cannot be undone.')) return;
+    const ok = await confirm({ title: 'Organisatie verwijderen', message: 'Weet je zeker dat je deze organisatie wilt verwijderen? Dit kan niet ongedaan worden gemaakt.', confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       setDeleteLoading(true);
       await api.delete(`/organisations/${currentOrgSlug}/`);
       navigate('/federations');
     } catch (err) {
       logger.error('Delete error', err);
-      pushToast({ message: 'Failed to delete organisation', type: 'error' });
+      pushToast({ message: 'Organisatie verwijderen mislukt', type: 'error' });
     } finally {
       setDeleteLoading(false);
     }

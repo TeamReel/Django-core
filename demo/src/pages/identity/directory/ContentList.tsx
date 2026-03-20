@@ -247,7 +247,7 @@ export const ContentList: React.FC = () => {
                   <td className="dir-td text-right">{job.variant_count ?? 0}</td>
                   <td className="dir-td">
                     {job.output_url
-                      ? <a href={job.output_url} target="_blank" rel="noopener noreferrer" className="action-btn action-btn-primary text-decoration-none fs-11">View</a>
+                      ? <a href={job.output_url} target="_blank" rel="noopener noreferrer" className="action-btn action-btn-primary text-decoration-none fs-11">Bekijken</a>
                       : <span className={cl.dash}>—</span>}
                   </td>
                 </tr>

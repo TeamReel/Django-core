@@ -10,13 +10,16 @@ import { KIT_ROLES } from '../../hooks/useBrandProfile';
 import { AssetCard, Section, AssetGrid } from './AssetSubComponents';
 import type { AssetsTabData } from './useAssetsTabData';
 import s from './AssetsTab.module.css';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 interface Props {
   d: AssetsTabData;
   readOnly: boolean;
 }
 
-export const AssetsTabSeasonLevel: React.FC<Props> = ({ d, readOnly }) => (
+export const AssetsTabSeasonLevel: React.FC<Props> = ({ d, readOnly }) => {
+  const confirm = useConfirm();
+  return (
   <div className="p-16">
     <Section title="Seizoen Assets" description="Visuele assets voor dit seizoen. Tenue en sponsor kunnen per seizoen wijzigen.">
       {/* Logo - always inherited */}
@@ -81,7 +84,7 @@ export const AssetsTabSeasonLevel: React.FC<Props> = ({ d, readOnly }) => (
                   </div>
                   {!readOnly && isOverridden && (
                     <button
-                      onClick={() => { if(window.confirm('Aangepast tenue verwijderen en weer erven van club?')) { d.handleDelete(uploadType); d.handleDelete(processedType); } }}
+                      onClick={async () => { if(await confirm({ title: 'Tenue herstellen', message: 'Aangepast tenue verwijderen en weer erven van club?', confirmLabel: 'Herstellen', variant: 'danger' })) { d.handleDelete(uploadType); d.handleDelete(processedType); } }}
                       className={s.resetLink}
                     >
                       Herstel
@@ -146,4 +149,5 @@ export const AssetsTabSeasonLevel: React.FC<Props> = ({ d, readOnly }) => (
       </div>
     </Section>
   </div>
-);
+  );
+};

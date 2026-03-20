@@ -7,6 +7,7 @@ import type { Activity } from '../../types/api/activity';
 import styles from './CompetitionHierarchyTab.module.css';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 export interface CompetitionMatchModals {
   setIsMatchCreateModalOpen: (v: boolean) => void;
@@ -58,6 +59,7 @@ export function CompetitionHierarchyTab({
   getCsrfToken,
 }: CompetitionHierarchyTabProps) {
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   return (
     <Card>
       <div className={styles.root}>
@@ -169,7 +171,8 @@ export function CompetitionHierarchyTab({
                               type="button"
                               className="app-action-button action-btn action-btn-danger"
                               onClick={async () => {
-                                if (!window.confirm(`Wedstrijd ${matchDisplayTitle(m)} verwijderen?`)) return;
+                                const ok = await confirm({ title: 'Wedstrijd verwijderen', message: `"${matchDisplayTitle(m)}" verwijderen?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+                                if (!ok) return;
                                 const matchId = String(m.id);
                                 const matchTitle = matchDisplayTitle(m);
                                 const deletedMatch = m;

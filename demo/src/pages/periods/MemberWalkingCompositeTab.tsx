@@ -198,7 +198,7 @@ export function MemberWalkingCompositeTab({
                             }
                           }
                         }} className={s.btnCancelOrange}>
-                          {walkingVideoNormalized?.processing_state === 'cancelling' ? 'Force Cancel' : 'Cancel'}
+                          {walkingVideoNormalized?.processing_state === 'cancelling' ? 'Forceer annuleren' : 'Annuleren'}
                         </Button>
                       )}
                       {walkingVideoLineupReady && <span className={s.readyIndicator}>Ready</span>}

@@ -9,6 +9,7 @@ import { routes } from '@/routes';
 import { resolveRowContext } from '@/utils/directoryHelpers';
 import type { Activity, Period, RowContextConfig } from '@/utils/directoryHelpers';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 export interface MatchRowProps {
   match: Activity;
@@ -37,6 +38,7 @@ export const MatchRow: React.FC<MatchRowProps> = ({
 }) => {
   const row = resolveRowContext(m, rowConfig);
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   const competition = m.period;
   const compName = competition?.name || '-';
   const season = competition?.parent_period;
@@ -180,15 +182,15 @@ export const MatchRow: React.FC<MatchRowProps> = ({
             Edit
           </button>
           <button
-            onClick={(e) => {
+            onClick={async (e) => {
               e.preventDefault();
-              if (window.confirm('Are you sure you want to delete this match?')) {
-                pushToast({ message: 'Delete functionality not yet implemented', type: 'info' });
+              if (await confirm({ title: 'Wedstrijd verwijderen', message: 'Weet je zeker dat je deze wedstrijd wilt verwijderen?', confirmLabel: 'Verwijderen', variant: 'danger' })) {
+                pushToast({ message: 'Verwijderen nog niet beschikbaar', type: 'info' });
               }
             }}
             className="action-btn action-btn-danger"
           >
-            Delete
+            Verwijderen
           </button>
         </div>
       </td>

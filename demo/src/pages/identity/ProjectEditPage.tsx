@@ -163,7 +163,7 @@ export const ProjectEditPage: React.FC = () => {
             ),
             onClick: () => navigate(routes.orgProjectDetailLegacy({ orgId: resolvedOrg?.slug || resolvedOrg?.id!, projectId: projectId! })),
           },
-          { label: 'Edit', current: true },
+          { label: 'Bewerken', current: true },
         ]}
       />
       <PageContent>
@@ -243,10 +243,10 @@ export const ProjectEditPage: React.FC = () => {
                 type="button"
                 onClick={() => navigate(routes.orgProjectDetailLegacy({ orgId: resolvedOrg?.slug || resolvedOrg?.id!, projectId: projectId! }))}
               >
-                Cancel
+                Annuleren
               </Button>
               <Button type="submit" variant="primary" disabled={saving}>
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? 'Opslaan...' : 'Wijzigingen opslaan'}
               </Button>
             </div>
           </form>

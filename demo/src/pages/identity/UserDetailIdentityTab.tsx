@@ -120,17 +120,17 @@ export function UserDetailIdentityTab({ data }: Props) {
                     setTimeout(() => setIdentitySaveSuccess(false), 3000);
                   } catch (e) {
                     logger.error('Failed to save', e);
-                    setIdentitySaveError(e instanceof Error ? e.message : 'Failed to save');
+                    setIdentitySaveError(e instanceof Error ? e.message : 'Opslaan mislukt');
                   } finally {
                     setIdentitySaving(false);
                   }
                 }}
                 className={`cta-btn cta-btn-primary ${styles.saveButton}`} data-saving={identitySaving}
               >
-                {identitySaving ? 'Saving…' : 'Save Changes'}
+                {identitySaving ? 'Opslaan…' : 'Wijzigingen opslaan'}
               </button>
               <button type="button" disabled={identitySaving} onClick={() => { setIdentityEditing(false); setIdentitySaveError(null); }} className="cta-btn">
-                Cancel
+                Annuleren
               </button>
             </div>
           </div>

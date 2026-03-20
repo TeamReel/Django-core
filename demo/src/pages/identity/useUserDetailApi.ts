@@ -14,6 +14,7 @@ import type { NavigateFunction } from 'react-router-dom';
 import { api, trashApi } from '@/api';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import type { Organisation, Project } from '../../types';
 
@@ -36,6 +37,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
     const { apiBaseUrl, userId, orgId, navigate } = params;
 
     const { pushToast } = useToast();
+    const confirm = useConfirm();
 
     /* ---------- core state --------------------------------------- */
     const [user, setUser] = useState<Record<string, unknown> | null>(null);
@@ -83,7 +85,8 @@ export function useUserDetailApi(params: UserDetailApiParams) {
 
     const handleDeleteUser = async () => {
         if (!userId) return;
-        if (!window.confirm('Delete this user? This cannot be undone.')) return;
+        const ok = await confirm({ title: 'Gebruiker verwijderen', message: 'Gebruiker verwijderen? Dit kan niet ongedaan worden gemaakt.', confirmLabel: 'Verwijderen', variant: 'danger' });
+        if (!ok) return;
         try {
             await api.delete(
                 `/admin/users/${encodeURIComponent(String(userId))}/`,
@@ -91,7 +94,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
             navigate(orgId ? `/organisations/${orgId}/users` : '/users');
         } catch (e) {
           logger.error('Failed to delete user', e);
-            pushToast({ message: e instanceof Error ? e.message : 'Failed to delete user', type: 'error' });
+            pushToast({ message: e instanceof Error ? e.message : 'Gebruiker verwijderen mislukt', type: 'error' });
         }
     };
 

@@ -14,6 +14,7 @@ import {
 import { ProcessingBadge } from './MemberProcessingBadge';
 import s from './ProjectSeasonMemberDetailPage.module.css';
 import m from './MemberAssetsTab.module.css';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 export interface MemberAssetsTabProps extends MemberTabCommonProps {
   croppingCloseup: Record<string, boolean>;
@@ -46,6 +47,7 @@ export function MemberAssetsTab({
   club,
   project,
 }: MemberAssetsTabProps) {
+  const confirm = useConfirm();
   return (
     <Card>
       <div className={s.cardPadding}>
@@ -131,7 +133,7 @@ export function MemberAssetsTab({
                       {fbUrl && fbLineupReady && <span className={s.readyIndicator}>Ready</span>}
                       {fbUrl && (
                         <Button size="sm" variant="ghost" onClick={async () => {
-                          if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
+                          if (!await confirm({ title: 'Asset verwijderen', message: 'Weet je zeker dat je deze asset wilt verwijderen?', confirmLabel: 'Verwijderen', variant: 'danger' })) return;
                           const newVV = { ...videoVariants, fullbody: { ...videoVariants.fullbody } };
                           delete newVV.fullbody[kit.id];
                           setVideoVariants(newVV);
@@ -170,7 +172,7 @@ export function MemberAssetsTab({
                       </Button>
                       {hbUrl && (
                         <Button size="sm" variant="ghost" onClick={async () => {
-                          if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
+                          if (!await confirm({ title: 'Asset verwijderen', message: 'Weet je zeker dat je deze asset wilt verwijderen?', confirmLabel: 'Verwijderen', variant: 'danger' })) return;
                           const newVV = { ...videoVariants, halfbody: { ...videoVariants.halfbody } };
                           delete newVV.halfbody[kit.id];
                           setVideoVariants(newVV);
@@ -219,7 +221,7 @@ export function MemberAssetsTab({
                       )}
                       {cuUrl && (
                         <Button size="sm" variant="ghost" onClick={async () => {
-                          if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
+                          if (!await confirm({ title: 'Asset verwijderen', message: 'Weet je zeker dat je deze asset wilt verwijderen?', confirmLabel: 'Verwijderen', variant: 'danger' })) return;
                           const newVV = { ...videoVariants, closeup: { ...videoVariants.closeup } };
                           delete newVV.closeup[kit.id];
                           setVideoVariants(newVV);

@@ -5,6 +5,7 @@ import { ShareButton } from '../../components/ShareButton';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { api } from '@/api';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import type { Project } from './teamDetailTypes';
 import s from './TeamOrganisationDetailPage.module.css';
 
@@ -41,6 +42,7 @@ export function TeamPageHeader({
 }: TeamPageHeaderProps) {
   const navigate = useNavigate();
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   const [overflowOpen, setOverflowOpen] = useState(false);
   const overflowRef = useRef<HTMLDivElement>(null);
 
@@ -127,7 +129,7 @@ export function TeamPageHeader({
                   type="button"
                   className={s.overflowDanger}
                   onClick={async () => {
-                    if (!window.confirm(`Weet je zeker dat je team ${team.name} wilt verwijderen?`)) return;
+                    if (!await confirm({ title: 'Team verwijderen', message: `"${team.name}" verwijderen?`, confirmLabel: 'Verwijderen', variant: 'danger' })) return;
                     try {
                       await api.delete(`/projects/${encodeURIComponent(String(team.id))}/`);
                       navigate(backToClubHref);

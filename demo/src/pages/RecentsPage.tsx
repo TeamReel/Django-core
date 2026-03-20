@@ -80,17 +80,17 @@ export default function RecentsPage() {
                     title={isFav ? 'Unfavorite' : 'Add to favorites'}
                   >
                     <AppIcon icon={Star} size={14} />
-                    {isFav ? 'Saved' : 'Save'}
+                    {isFav ? 'Opgeslagen' : 'Opslaan'}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => removeRecent(item.path)}
                     className={`border bg-surface-2 rounded-8 cursor-pointer inline-flex gap-6 fs-12 fw-600 text-primary ${s.removeButton}`}
-                    title="Remove"
+                    title="Verwijderen"
                   >
                     <AppIcon icon={X} size={14} />
-                    Remove
+                    Verwijderen
                   </button>
                 </div>
               </div>

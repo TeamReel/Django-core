@@ -95,16 +95,16 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
             </div>
 
             <div className={styles.cardActions}>
-              <button onClick={() => onView(team)} className="action-btn action-btn-primary">View</button>
+              <button onClick={() => onView(team)} className="action-btn action-btn-primary">Bekijken</button>
               {userCanEditProject && (
-                <button onClick={() => onEdit(team)} className="action-btn action-btn-warning">Edit</button>
+                <button onClick={() => onEdit(team)} className="action-btn action-btn-warning">Bewerken</button>
               )}
               {userCanDeleteProject && (
                 <button
                   onClick={() => onDelete(String(resolved.orgSlugOrId), String(team.id), String(team.name))}
                   className="action-btn action-btn-danger"
                 >
-                  Delete
+                  Verwijderen
                 </button>
               )}
             </div>
@@ -197,16 +197,16 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
                 </td>
                 <td className="dir-td">
                   <div className="dir-actions">
-                    <button onClick={() => onView(team)} className="action-btn action-btn-primary">View</button>
+                    <button onClick={() => onView(team)} className="action-btn action-btn-primary">Bekijken</button>
                     {userCanEditProject && (
-                      <button onClick={() => onEdit(team)} className="action-btn action-btn-warning">Edit</button>
+                      <button onClick={() => onEdit(team)} className="action-btn action-btn-warning">Bewerken</button>
                     )}
                     {userCanDeleteProject && (
                       <button
                         onClick={() => onDelete(String(resolved.orgSlugOrId), String(team.id), String(team.name))}
                         className="action-btn action-btn-danger"
                       >
-                        Delete
+                        Verwijderen
                       </button>
                     )}
                   </div>

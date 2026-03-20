@@ -17,6 +17,7 @@ import {
 import { ProcessingBadge } from './MemberProcessingBadge';
 import s from './ProjectSeasonMemberDetailPage.module.css';
 import styles from './MemberThenVsNowTab.module.css';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 export function MemberThenVsNowTab({
   membership,
@@ -34,6 +35,7 @@ export function MemberThenVsNowTab({
   setVideoPreviewUrl,
   setMembership,
 }: MemberTabCommonProps) {
+  const confirm = useConfirm();
   const legacyFullbodyUrl =
     resolveDisplayUrl(getBestUrl(videoVariants.fullbody.legacy)) || null;
   const currentFullbodyUrl =
@@ -168,12 +170,12 @@ export function MemberThenVsNowTab({
                                 }
                               }
                             }} className={s.btnCancelOrange}>
-                              {normalizedVariant?.processing_state === 'cancelling' ? 'Force Cancel' : 'Cancel'}
+                              {normalizedVariant?.processing_state === 'cancelling' ? 'Forceer annuleren' : 'Annuleren'}
                             </Button>
                           )}
                           {variantLineupReady && <span className={s.readyIndicator}>Ready</span>}
                           <Button size="sm" variant="ghost" onClick={async () => {
-                            if (!confirm('Weet je zeker dat je deze video wilt verwijderen?')) return;
+                            if (!await confirm({ title: 'Video verwijderen', message: 'Weet je zeker dat je deze video wilt verwijderen?', confirmLabel: 'Verwijderen', variant: 'danger' })) return;
                             const newVV: VideoVariantsMap = { ...videoVariants, then_vs_now: { ...videoVariants.then_vs_now } };
                             delete newVV.then_vs_now[compositeKey];
                             setVideoVariants(newVV);

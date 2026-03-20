@@ -17,6 +17,11 @@ vi.mock('../../../pages/identity/orgDataHelpers', () => ({
 }));
 vi.mock('@/utils/logger', () => ({ logger: { error: vi.fn() } }));
 
+const mockConfirm = vi.fn<[], Promise<boolean>>();
+vi.mock('@/components/ui/ConfirmDialog', () => ({
+  useConfirm: () => mockConfirm,
+}));
+
 import { useOrgActions } from '@/pages/identity/useOrgActions';
 import type { Organisation } from '@/types';
 
@@ -82,23 +87,21 @@ describe('useOrgActions', () => {
   it('handleDelete calls API and navigates', async () => {
     const { api } = await import('@/api');
     vi.mocked(api.delete).mockResolvedValue(undefined as any);
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    mockConfirm.mockResolvedValue(true);
     const params = makeParams();
     const { result } = renderHook(() => useOrgActions(params));
     await act(async () => { await result.current.handleDelete(); });
     expect(api.delete).toHaveBeenCalledWith('/organisations/test-org/');
     expect(params.navigate).toHaveBeenCalledWith('/federations');
-    vi.mocked(window.confirm).mockRestore();
   });
 
   it('handleDelete aborts when user cancels confirm', async () => {
     const { api } = await import('@/api');
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    mockConfirm.mockResolvedValue(false);
     const params = makeParams();
     const { result } = renderHook(() => useOrgActions(params));
     await act(async () => { await result.current.handleDelete(); });
     expect(api.delete).not.toHaveBeenCalled();
-    vi.mocked(window.confirm).mockRestore();
   });
 
   it('handleInvite posts member and resets email', async () => {

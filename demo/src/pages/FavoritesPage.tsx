@@ -67,10 +67,10 @@ export default function FavoritesPage() {
                 type="button"
                 onClick={() => removeFavorite(item.path)}
                 className={`inline-flex gap-6 rounded-8 border bg-surface-2 cursor-pointer fs-12 fw-600 ${styles.removeButton}`}
-                title="Remove"
+                title="Verwijderen"
               >
                 <AppIcon icon={X} size={14} />
-                Remove
+                Verwijderen
               </button>
             </div>
           ))

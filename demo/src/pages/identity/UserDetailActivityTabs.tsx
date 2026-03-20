@@ -7,6 +7,7 @@ import { periodPathKey } from '../../utils/periodPath';
 import type { UserDetailDataReturn } from './useUserDetailData';
 import type { Activity } from '../../types';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 interface Props {
   data: UserDetailDataReturn;
@@ -14,6 +15,7 @@ interface Props {
 
 export function UserDetailActivityTabs({ data }: Props) {
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   const {
     activeTab, navigate,
     teamMemberships, clubSlugById, primaryOrgSlug,
@@ -51,14 +53,14 @@ export function UserDetailActivityTabs({ data }: Props) {
                   <td className="detail-td">
                     <div className="detail-actions">
                       {r.teamPath ? (
-                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => navigate(r.teamPath)}>View Team</button>
+                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => navigate(r.teamPath)}>Team bekijken</button>
                       ) : (
-                        <button type="button" className="app-action-button action-btn action-btn-primary" disabled>View Team</button>
+                        <button type="button" className="app-action-button action-btn action-btn-primary" disabled>Team bekijken</button>
                       )}
                       {r.seasonPath ? (
-                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => navigate(r.seasonPath)}>View Season</button>
+                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => navigate(r.seasonPath)}>Seizoen bekijken</button>
                       ) : (
-                        <button type="button" className="app-action-button action-btn action-btn-primary" disabled>View Season</button>
+                        <button type="button" className="app-action-button action-btn action-btn-primary" disabled>Seizoen bekijken</button>
                       )}
                     </div>
                   </td>
@@ -104,7 +106,7 @@ export function UserDetailActivityTabs({ data }: Props) {
                     </td>
                     <td className="detail-td">
                       <div className="detail-actions">
-                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => seasonPath && navigate(seasonPath)} disabled={!seasonPath}>View</button>
+                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => seasonPath && navigate(seasonPath)} disabled={!seasonPath}>Bekijken</button>
                       </div>
                     </td>
                   </tr>
@@ -155,7 +157,7 @@ export function UserDetailActivityTabs({ data }: Props) {
                     </td>
                     <td className="detail-td">
                       <div className="detail-actions">
-                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => competitionPath && navigate(competitionPath)} disabled={!competitionPath}>View</button>
+                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => competitionPath && navigate(competitionPath)} disabled={!competitionPath}>Bekijken</button>
                       </div>
                     </td>
                   </tr>
@@ -216,13 +218,14 @@ export function UserDetailActivityTabs({ data }: Props) {
                     <td className="detail-td-text">{renderNavLink(teamName, teamPath)}</td>
                     <td className="detail-td">
                       <div className="detail-actions">
-                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => { if (matchPath) navigate(matchPath); }} disabled={!matchPath}>View</button>
-                        <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => { setSelectedEditMatch(m as Activity); setIsMatchEditModalOpen(true); }}>Edit</button>
+                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => { if (matchPath) navigate(matchPath); }} disabled={!matchPath}>Bekijken</button>
+                        <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => { setSelectedEditMatch(m as Activity); setIsMatchEditModalOpen(true); }}>Bewerken</button>
                         <button type="button" className="app-action-button action-btn action-btn-danger" onClick={async () => {
                           if (!m?.id) return;
-                          if (!window.confirm(`Delete match ${m.title || m.id}?`)) return;
-                          try { await deleteMatch(m as Activity); } catch (e) { pushToast({ message: e instanceof Error ? e.message : 'Failed', type: 'error' }); }
-                        }}>Delete</button>
+                          const ok = await confirm({ title: 'Wedstrijd verwijderen', message: `"${m.title || m.id}" verwijderen?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+                          if (!ok) return;
+                          try { await deleteMatch(m as Activity); } catch (e) { pushToast({ message: e instanceof Error ? e.message : 'Mislukt', type: 'error' }); }
+                        }}>Verwijderen</button>
                       </div>
                     </td>
                   </tr>

@@ -149,7 +149,7 @@ export function MembershipEditModal({ opened, onClose, membership, onSave }: Mem
                   onClose();
                 } catch (e) {
                   logger.error('Failed to save membership', e);
-                  setError(e instanceof Error ? e.message : 'Failed to save');
+                  setError(e instanceof Error ? e.message : 'Opslaan mislukt');
                 } finally {
                   setSaving(false);
                 }
@@ -158,7 +158,7 @@ export function MembershipEditModal({ opened, onClose, membership, onSave }: Mem
               className={styles.saveButton}
               data-saving={saving ? 'true' : undefined}
             >
-              {saving ? 'Saving…' : 'Save'}
+              {saving ? 'Opslaan…' : 'Opslaan'}
             </button>
           </div>
         </div>

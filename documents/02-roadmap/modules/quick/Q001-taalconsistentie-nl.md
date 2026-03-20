@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | ✅ DONE |
 | Bron | UI Review (trash UX audit) |
 | Impact | 🟡 important |
 | Effort | ~3 uur |
@@ -20,12 +20,12 @@ Dit zorgt voor een inconsistente gebruikerservaring.
 Alleen de frontend (`demo/src/`). Backend API responses blijven Engels (standaard voor APIs).
 
 ## Checklist
-- [ ] Alle `window.confirm()` berichten vertalen naar Nederlands
-- [ ] Alle knoplabels vertalen (View→Bekijken, Edit→Bewerken, Delete→Verwijderen, Cancel→Annuleren)
-- [ ] Foutmeldingen in catch-blokken vertalen
-- [ ] Overige UI-teksten (pills, loading states, empty states) vertalen
-- [ ] Verify: grep op veelvoorkomende Engelse termen om restanten te vinden
-- [ ] Tests: `npx tsc --noEmit` + `npx vite build`
+- [x] Alle `window.confirm()` berichten vertalen naar Nederlands
+- [x] Alle knoplabels vertalen (View→Bekijken, Edit→Bewerken, Delete→Verwijderen, Cancel→Annuleren)
+- [x] Foutmeldingen in catch-blokken vertalen
+- [x] Overige UI-teksten (pills, loading states, empty states) vertalen
+- [x] Verify: grep op veelvoorkomende Engelse termen om restanten te vinden
+- [x] Tests: `npx tsc --noEmit` + `npx vite build`
 
 ## Bekende locaties (uit audit)
 | Bestand | Wat |

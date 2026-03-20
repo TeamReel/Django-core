@@ -8,6 +8,7 @@ import { api } from '@/api';
 import { trashApi } from '@/api/trash';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
@@ -80,6 +81,7 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
   } = deps;
 
   const { pushToast } = useToast();
+  const confirm = useConfirm();
 
   const apiV1 = getApiV1BaseUrl();
 
@@ -108,11 +110,12 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
     if (!mid || !pid) return;
     const u = membership.user;
     const name = u?.name || `${u?.first_name || ''} ${u?.last_name || ''}`.trim() || u?.email || 'this member';
-    if (!window.confirm(`Remove ${name} from this team?`)) return;
+    const ok = await confirm({ title: 'Lid verwijderen', message: `${name} verwijderen uit dit team?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       await api.delete(`/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(mid)}/`);
       setMembers((prev) => prev.filter((m: MemberRef) => String(m.id) !== mid));
-    } catch (e) { logger.error('Error removing member', e); pushToast({ message: e instanceof Error ? e.message : 'Error removing member', type: 'error' }); }
+    } catch (e) { logger.error('Error removing member', e); pushToast({ message: e instanceof Error ? e.message : 'Lid verwijderen mislukt', type: 'error' }); }
   };
 
   const saveMembershipRole = async (membership: MemberRef, role: string) => {
@@ -147,7 +150,8 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
     const cid = String(resolvedCompetitionId || competition?.id || '').trim();
     if (!cid) return;
     const compName = competition?.name || '';
-    if (!window.confirm(`Competitie "${compName}" verwijderen? Het wordt verplaatst naar de prullenbak.`)) return;
+    const ok = await confirm({ title: 'Competitie verwijderen', message: `"${compName}" wordt verplaatst naar de prullenbak.`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       await api.delete(`/periods/${encodeURIComponent(cid)}/`);
       pushToast({

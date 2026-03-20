@@ -187,10 +187,10 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         <div className={s.modalActions}>
           {saveError && <div style={{ color: 'var(--app-error, #ef4444)', fontSize: 'var(--text-sm)', marginBottom: 8, width: '100%' }}>{saveError}</div>}
           <button onClick={onClose} className={s.btnCancel}>
-            Cancel
+            Annuleren
           </button>
           <button onClick={handleSave} className={s.btnSave}>
-            Save Changes
+            Wijzigingen opslaan
           </button>
         </div>
       </div>

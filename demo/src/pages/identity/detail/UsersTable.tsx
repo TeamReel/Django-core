@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Badge, Card } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
 import styles from './UsersTable.module.css';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import type { UsersTableProps } from './UsersTable.types';
 import {
   noBorderBadgeStyle,
@@ -32,6 +33,7 @@ export default function UsersTable({
   onEditMembership,
   onRemoveMembership,
 }: UsersTableProps) {
+  const confirm = useConfirm();
   return (
     <Card>
       <Table className="detail-table">
@@ -218,7 +220,8 @@ export default function UsersTable({
                         disabled={!hasOrgMembership}
                         onClick={async () => {
                           if (!hasOrgMembership) return;
-                          if (!window.confirm(`Remove ${userObj.email} from federation?`)) return;
+                          const ok = await confirm({ title: 'Lid verwijderen', message: `${userObj.email} verwijderen uit de federatie?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+                          if (!ok) return;
                           await onRemoveMembership(membershipId, String(userObj.email || ''));
                         }}
                         className="app-action-button action-btn action-btn-danger"

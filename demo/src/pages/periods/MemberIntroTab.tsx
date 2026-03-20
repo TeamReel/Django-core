@@ -18,6 +18,7 @@ import {
 import { ProcessingBadge } from './MemberProcessingBadge';
 import s from './ProjectSeasonMemberDetailPage.module.css';
 import styles from './MemberIntroTab.module.css';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 export function MemberIntroTab({
   membership,
@@ -36,6 +37,7 @@ export function MemberIntroTab({
   setMembership,
   effectiveKits,
 }: MemberTabCommonProps) {
+  const confirm = useConfirm();
   return (
     <Card>
       <div className={s.cardPadding}>
@@ -165,12 +167,12 @@ export function MemberIntroTab({
                                     }
                                   }
                                 }} className={s.btnCancelOrange}>
-                                  {normalizedVariant?.processing_state === 'cancelling' ? 'Force Cancel' : 'Cancel'}
+                                  {normalizedVariant?.processing_state === 'cancelling' ? 'Forceer annuleren' : 'Annuleren'}
                                 </Button>
                               )}
                               {variantLineupReady && <span className={s.readyIndicator}>Ready</span>}
                               <Button size="sm" variant="ghost" onClick={async () => {
-                                if (!confirm('Weet je zeker dat je deze video wilt verwijderen?')) return;
+                                if (!await confirm({ title: 'Video verwijderen', message: 'Weet je zeker dat je deze video wilt verwijderen?', confirmLabel: 'Verwijderen', variant: 'danger' })) return;
                                 const newVV: VideoVariantsMap = { ...videoVariants, intro: { ...videoVariants.intro } };
                                 delete newVV.intro[compositeKey];
                                 setVideoVariants(newVV);

@@ -33,6 +33,7 @@ import { GalleryMatchTimeline } from './GalleryMatchTimeline';
 import { useContentLibraryData } from './useContentLibraryData';
 import { getAssetTypeLabel } from './contentLibraryTypes';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import styles from './ContentLibraryPage.module.css';
 
 // ============================================================================
@@ -59,6 +60,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
   const userRole = String(user?.role || '').toLowerCase();
   const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
   const { pushToast } = useToast();
+  const confirm = useConfirm();
 
   // URL params
   const params = new URLSearchParams(location.search);
@@ -95,7 +97,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
   const handleShare = (item: ContentItem) => setShareItem(item);
 
   const handleDelete = async (item: ContentItem) => {
-    if (confirm(`Weet je zeker dat je "${item.title || 'dit item'}" wilt verwijderen?`)) {
+    if (await confirm({ title: 'Verwijderen', message: `"${item.title || 'dit item'}" verwijderen?`, confirmLabel: 'Verwijderen', variant: 'danger' })) {
       try {
         const { api: apiClient } = await import('../../api');
         await apiClient.delete(`/media/items/${item.id}/`);

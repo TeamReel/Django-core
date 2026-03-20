@@ -8,6 +8,7 @@ import type { Period as ApiPeriod, Activity } from '../../types/api/activity';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import type { MatchRecord } from './SeasonMatchesTab';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -44,6 +45,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
   } = params;
 
   const { pushToast } = useToast();
+  const confirm = useConfirm();
 
   // ── Save period edits ──
 
@@ -75,7 +77,8 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
   const handleDeleteSeason = useCallback(async () => {
     const seasonName = season?.name || '';
     const seasonId = String(resolvedSeasonId || effectiveSeasonId || '');
-    if (!window.confirm(`Seizoen "${seasonName}" verwijderen? Het wordt verplaatst naar de prullenbak.`)) return;
+    const ok = await confirm({ title: 'Seizoen verwijderen', message: `"${seasonName}" wordt verplaatst naar de prullenbak.`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       await api.delete(
         `/periods/${encodeURIComponent(seasonId)}/`,
@@ -104,7 +107,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
       logger.error('Error deleting season', e);
       pushToast({ message: 'Verwijderen mislukt', type: 'error' });
     }
-  }, [resolvedSeasonId, effectiveSeasonId, season?.name, seasonsBasePath, navigate]);
+  }, [resolvedSeasonId, effectiveSeasonId, season?.name, seasonsBasePath, navigate, confirm]);
 
   // ── Activate context handler ──
 

@@ -9,6 +9,7 @@ import type { SubmitParams } from '@/hooks/useAssetGeneration';
 import { UPLOAD_OUTPUT_TYPE, UPLOAD_TO_AI_TEMPLATE } from '../assetsTabHelpers';
 import type { AssetsLevel } from './types';
 import type { HistoryItem } from '../AssetSubComponents';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 interface UseAssetHandlersParams {
   level: AssetsLevel;
@@ -70,6 +71,7 @@ export function useAssetHandlers({
   setLoadingHistory,
   historyAssetType,
 }: UseAssetHandlersParams) {
+  const confirm = useConfirm();
 
   const handleShowHistory = useCallback(async (assetType: string) => {
     setHistoryAssetType(assetType);
@@ -82,12 +84,12 @@ export function useAssetHandlers({
 
   const handleRestore = useCallback(async (fileAssetId: string) => {
     if (!historyAssetType) return;
-    if (confirm('Weet je zeker dat je deze versie wilt herstellen? De huidige versie wordt overschreven (maar blijft in de geschiedenis).')) {
+    if (await confirm({ title: 'Versie herstellen', message: 'Weet je zeker dat je deze versie wilt herstellen? De huidige versie wordt overschreven (maar blijft in de geschiedenis).', confirmLabel: 'Herstellen' })) {
       await restoreAsset(fileAssetId, historyAssetType);
       setShowHistoryModal(false);
       refresh();
     }
-  }, [historyAssetType, restoreAsset, refresh, setShowHistoryModal]);
+  }, [historyAssetType, restoreAsset, refresh, setShowHistoryModal, confirm]);
 
   const handleUpload = useCallback(async (file: File, assetType: string) => {
     setUploading(assetType);

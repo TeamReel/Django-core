@@ -288,13 +288,13 @@ export const MemberDetailPage: React.FC = () => {
                                             <option value="admin">Admin</option>
                                         </select>
                                         <Button onClick={handleSave} disabled={saving}>
-                                            {saving ? 'Saving...' : 'Save Changes'}
+                                            {saving ? 'Opslaan...' : 'Wijzigingen opslaan'}
                                         </Button>
                                         <Button variant="secondary" onClick={() => {
                                             setIsEditing(false);
                                             setRole(member.role); // Reset role
                                         }}>
-                                            Cancel
+                                            Annuleren
                                         </Button>
                                     </div>
                                 ) : (

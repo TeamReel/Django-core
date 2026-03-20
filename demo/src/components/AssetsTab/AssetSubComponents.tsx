@@ -9,6 +9,7 @@ import React, { useRef } from 'react';
 import { Sparkles } from 'lucide-react';
 import { getAssetUrl, type BrandAsset } from '../../hooks/useBrandProfile';
 import s from './AssetsTab.module.css';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import sc from './AssetSubComponents.module.css';
 
 // ============================================================================
@@ -47,6 +48,7 @@ export function AssetCard({
   aspectRatio = '3 / 4',
   isProcessing = false,
 }: AssetCardProps) {
+  const confirm = useConfirm();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const url = asset ? getAssetUrl(asset.url) : null;
 
@@ -196,8 +198,8 @@ export function AssetCard({
 
         {!readOnly && onDelete && url && (
           <button
-            onClick={() => {
-              if (window.confirm('Weet je zeker dat je dit asset wilt verwijderen?')) {
+            onClick={async () => {
+              if (await confirm({ title: 'Asset verwijderen', message: 'Weet je zeker dat je dit asset wilt verwijderen?', confirmLabel: 'Verwijderen', variant: 'danger' })) {
                 onDelete(assetType);
               }
             }}

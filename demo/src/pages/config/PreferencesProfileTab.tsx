@@ -103,7 +103,7 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
               setProfileTwoFactorEnabled(Boolean(u?.two_factor_enabled));
               setProfileCurrentPassword('');
               setIsProfileModalOpen(true);
-            }}>Edit</Button>
+            }}>Bewerken</Button>
             <Button variant="secondary" size="sm" onClick={() => { setAvatarError(null); setAvatarFile(null); setIsAvatarModalOpen(true); }}>Photo</Button>
             <Button variant="secondary" size="sm" onClick={() => {
               setPasswordError(null); setPasswordSuccess(false);
@@ -186,7 +186,7 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
             onChange={(v) => { setHasEditedContext(true); setSelectedMatchId(v); applyContext({ matchId: v }); }}
           />
 
-          {savingContext && <div className="text-xs text-gray-500 mt-4">Saving…</div>}
+          {savingContext && <div className="text-xs text-gray-500 mt-4">Opslaan…</div>}
         </div>
       </Card>
     </>

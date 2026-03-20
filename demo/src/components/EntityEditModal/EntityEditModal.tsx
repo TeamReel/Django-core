@@ -180,19 +180,19 @@ export default function EntityEditModal({
         <div
           className={`flex-between border-top ${styles.footer}`}
         >
-          <div>{hasChanges && <Text size="sm" color="secondary">You have unsaved changes</Text>}</div>
+          <div>{hasChanges && <Text size="sm" color="secondary">Je hebt niet-opgeslagen wijzigingen</Text>}</div>
           <div className="flex-row gap-8">
-            <Button variant="ghost" onClick={onClose} disabled={saving}>Cancel</Button>
+            <Button variant="ghost" onClick={onClose} disabled={saving}>Annuleren</Button>
             <Button variant="primary" onClick={onSaveClick} disabled={saving || !hasChanges}>
               {saving ? (
                 <>
                   <Loader2 size={14} className={styles.spinner} />
-                  Saving...
+                  Opslaan...
                 </>
               ) : (
                 <>
                   <Save size={14} />
-                  Save Changes
+                  Wijzigingen opslaan
                 </>
               )}
             </Button>

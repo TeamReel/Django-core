@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { formReducer, makeSetter } from '@/utils/formReducer';
 import {
   TEMPLATE_CATEGORIES,
@@ -99,6 +100,7 @@ export interface UseContentTemplatesDataReturn {
 
 export function useContentTemplatesData(): UseContentTemplatesDataReturn {
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -334,7 +336,8 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
   };
 
   const handleDelete = async (template: ContentTemplate) => {
-    if (!window.confirm(`Are you sure you want to delete "${template.name}"?`)) return;
+    const ok = await confirm({ title: 'Template verwijderen', message: `"${template.name}" verwijderen?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       await api.delete(`/content-generation/templates/${template.id}/`);
       setTemplates(prev => prev.filter(t => t.id !== template.id));

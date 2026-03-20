@@ -239,10 +239,10 @@ export function MemberIdentityTab({
                 </div>
                 <div className="flex-row gap-8 mt-8">
                   <Button size="sm" onClick={handleSave} disabled={saving}>
-                    {saving ? 'Saving...' : 'Save'}
+                    {saving ? 'Opslaan...' : 'Opslaan'}
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => setIsEditing(false)} disabled={saving}>
-                    Cancel
+                    Annuleren
                   </Button>
                 </div>
               </div>

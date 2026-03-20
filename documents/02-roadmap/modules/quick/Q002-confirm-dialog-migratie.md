@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | ✅ DONE |
 | Bron | UI Review (trash UX audit) |
 | Impact | 🟡 important |
 | Effort | ~2 uur |
@@ -25,13 +25,13 @@ Alle `window.confirm()` calls in `demo/src/` vervangen door `useConfirm()`.
 **Let op:** Q001 (taalconsistentie) kan gelijktijdig worden uitgevoerd — bij de migratie meteen de Nederlandse teksten gebruiken.
 
 ## Checklist
-- [ ] Alle `window.confirm()` calls inventariseren (grep)
-- [ ] Per bestand: `import { useConfirm } from '@/components/ui/ConfirmDialog'` toevoegen
-- [ ] `window.confirm(msg)` → `await confirm({ title, message, confirmLabel, cancelLabel, variant })`
-- [ ] Specifiek voor danger-acties (delete): `variant: 'danger'` gebruiken
-- [ ] ConfirmDialog default labels aanpassen naar Nederlands ("Bevestigen" / "Annuleren")
-- [ ] Tests: `npx tsc --noEmit` + `npx vite build`
-- [ ] Verify: grep op `window.confirm` — 0 resultaten
+- [x] Alle `window.confirm()` calls inventariseren (grep)
+- [x] Per bestand: `import { useConfirm } from '@/components/ui/ConfirmDialog'` toevoegen
+- [x] `window.confirm(msg)` → `await confirm({ title, message, confirmLabel, cancelLabel, variant })`
+- [x] Specifiek voor danger-acties (delete): `variant: 'danger'` gebruiken
+- [x] ConfirmDialog default labels aanpassen naar Nederlands ("Bevestigen" / "Annuleren")
+- [x] Tests: `npx tsc --noEmit` + `npx vite build`
+- [x] Verify: grep op `window.confirm` — 0 resultaten
 
 ## Bekende locaties (30+ calls)
 | Bestand | Aantal | Context |

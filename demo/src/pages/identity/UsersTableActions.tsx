@@ -5,6 +5,7 @@ import React from 'react';
 import { api } from '@/api/client';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { type User } from './useUsersData';
 import type { UserRowItem, TableContext } from './UsersTable.types';
 import { routes } from '../../routes';
@@ -62,6 +63,7 @@ export const UserActions: React.FC<UserActionsProps> = ({
   const effectiveOrgSlug = String(orgIdParam || selectedOrg?.slug || context.organisation?.slug || '').toLowerCase();
   const effectiveOrgId = String(selectedOrg?.id || orgIdParam || context.organisation?.id || '');
   const { pushToast } = useToast();
+  const confirm = useConfirm();
 
   const orgEntry = userOrgs.find((o) => {
     const slugMatches = o?.slug && effectiveOrgSlug && String(o.slug).toLowerCase() === effectiveOrgSlug;
@@ -73,24 +75,26 @@ export const UserActions: React.FC<UserActionsProps> = ({
   const orgMembershipId = orgEntry?.membership_id || null;
 
   const handleDelete = async () => {
-    if (!window.confirm(`Are you sure you want to delete user ${user.email}? This action cannot be undone.`)) return;
+    const ok = await confirm({ title: 'Gebruiker verwijderen', message: `Weet je zeker dat je ${user.email} wilt verwijderen? Dit kan niet ongedaan worden gemaakt.`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       await api.delete(`/admin/users/${user.id}/`);
       fetchUsers();
     } catch (e) {
       logger.error('Error deleting user', e);
-      pushToast({ message: 'Error deleting user', type: 'error' });
+      pushToast({ message: 'Gebruiker verwijderen mislukt', type: 'error' });
     }
   };
 
   const handleUnassign = async () => {
-    if (!window.confirm(`Remove ${user.email} from organisation?`)) return;
+    const ok = await confirm({ title: 'Lid verwijderen', message: `${user.email} verwijderen uit de organisatie?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       await api.delete(`/organisations/${effectiveOrgSlug}/members/${orgMembershipId}/`);
       fetchUsers();
     } catch (e) {
       logger.error('Error removing member', e);
-      pushToast({ message: 'Error removing member', type: 'error' });
+      pushToast({ message: 'Lid verwijderen mislukt', type: 'error' });
     }
   };
 

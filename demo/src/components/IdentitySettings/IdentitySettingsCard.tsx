@@ -89,15 +89,15 @@ export default function IdentitySettingsCard({
                   }}
                   disabled={saving}
                 >
-                  Cancel
+                  Annuleren
                 </Button>
                 <Button variant="primary" size="sm" onClick={handleSave} disabled={saving}>
-                  {saving ? 'Saving…' : 'Save'}
+                  {saving ? 'Opslaan…' : 'Opslaan'}
                 </Button>
               </>
             ) : (
               <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
-                Edit
+                Bewerken
               </Button>
             )}
           </div>

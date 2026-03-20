@@ -6,6 +6,7 @@ import { api } from '@/api/client';
 import type { User, ProjectOption } from '../usersListTypes';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 export interface UserRow extends User {
   user?: User;
@@ -49,6 +50,7 @@ export function useUsersListHandlers(params: UseUsersListHandlersParams) {
   } = params;
 
   const { pushToast } = useToast();
+  const confirm = useConfirm();
 
   // ── Helpers ──────────────────────────────────────────────
   const getSelectedOrgSlug = useCallback(() => {
@@ -137,16 +139,17 @@ export function useUsersListHandlers(params: UseUsersListHandlersParams) {
   ) => {
     const orgSlug = getSelectedOrgSlug();
     if (!orgSlug) {
-      pushToast({ message: 'Select a federation first.', type: 'warning' });
+      pushToast({ message: 'Selecteer eerst een federatie.', type: 'warning' });
       return;
     }
-    if (!window.confirm(`Remove ${usernameLabel} from ${orgName}?`)) return;
+    const ok = await confirm({ title: 'Lid verwijderen', message: `${usernameLabel} verwijderen uit ${orgName}?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
 
     try {
       await api.delete(`/organisations/${orgSlug}/members/${membershipId}/`);
     } catch (_err: unknown) {
       const err = _err as { message?: string };
-      pushToast({ message: err?.message || 'Failed to delete member', type: 'error' });
+      pushToast({ message: err?.message || 'Lid verwijderen mislukt', type: 'error' });
       return;
     }
 
@@ -157,21 +160,22 @@ export function useUsersListHandlers(params: UseUsersListHandlersParams) {
         return String(rowMembershipId) !== String(membershipId);
       }),
     );
-  }, [getSelectedOrgSlug, setUsers]);
+  }, [getSelectedOrgSlug, setUsers, confirm]);
 
   const handleDeleteTeamMember = useCallback(async (
     projectMembershipId: string,
     usernameLabel: string,
     teamName: string,
   ) => {
-    if (!window.confirm(`Remove ${usernameLabel} from ${teamName}?`)) return;
+    const ok = await confirm({ title: 'Lid verwijderen', message: `${usernameLabel} verwijderen uit ${teamName}?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
 
     try {
       await api.delete(`/projects/${preselectedTeamId}/members/${projectMembershipId}/`);
     } catch (_err: unknown) {
       const err = _err as { message?: string };
       logger.error('Delete team member failed', err);
-      pushToast({ message: err?.message || 'Failed to remove member', type: 'error' });
+      pushToast({ message: err?.message || 'Lid verwijderen mislukt', type: 'error' });
       return;
     }
 
@@ -180,7 +184,7 @@ export function useUsersListHandlers(params: UseUsersListHandlersParams) {
         (row: UserRow) => String(row?.project_membership_id) !== String(projectMembershipId),
       ),
     );
-  }, [preselectedTeamId, setUsers]);
+  }, [preselectedTeamId, setUsers, confirm]);
 
   return {
     getSelectedOrgSlug,

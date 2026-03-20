@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { Badge } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { Table } from '../../shims/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
 import ct from './CompetitionMatchesTable.module.css';
@@ -39,6 +40,7 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
   setIsMatchEditModalOpen,
 }) => {
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   if (matchesLoading && !rows.length) {
     return <div className="text-sm text-gray-500 py-4 text-center">Loading matches…</div>;
   }
@@ -98,7 +100,8 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
                     type="button"
                     className="app-action-button action-btn action-btn-danger"
                     onClick={async () => {
-                      if (!window.confirm(`Wedstrijd ${matchDisplayTitle(m)} verwijderen?`)) return;
+                      const ok = await confirm({ title: 'Wedstrijd verwijderen', message: `"${matchDisplayTitle(m)}" verwijderen?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+                      if (!ok) return;
                       const matchId = String(m.id);
                       const matchTitle = matchDisplayTitle(m);
                       const deletedMatch = m;

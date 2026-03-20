@@ -3,6 +3,7 @@
  */
 import { Table } from '../../shims/design-system';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 import type { UserDetailDataReturn } from './useUserDetailData';
 
@@ -12,6 +13,7 @@ interface Props {
 
 export function UserDetailMembershipTabs({ data }: Props) {
   const { pushToast } = useToast();
+  const confirm = useConfirm();
   const {
     activeTab, navigate, user,
     userOrgs, clubsForTab, teamMemberships, clubSlugById,
@@ -49,26 +51,27 @@ export function UserDetailMembershipTabs({ data }: Props) {
                       const next = window.prompt('Set federation role (admin/member):', currentRole) || '';
                       const role = next.trim().toLowerCase();
                       if (!role) return;
-                      try { await updateOrganisationMembershipRole(orgSlugOrId, role); } catch (e) { pushToast({ message: e instanceof Error ? e.message : 'Failed to update role', type: 'error' }); }
+                      try { await updateOrganisationMembershipRole(orgSlugOrId, role); } catch (e) { pushToast({ message: e instanceof Error ? e.message : 'Rol bijwerken mislukt', type: 'error' }); }
                     }} className="border-none bg-transparent p-0 fw-700" style={{ color: orgSlugOrId ? 'var(--app-primary)' : 'var(--app-muted-text)', cursor: orgSlugOrId ? 'pointer' : 'not-allowed', textDecoration: orgSlugOrId ? 'underline' : 'none' }} title={orgSlugOrId ? 'Click to edit role' : 'Missing federation id'}>
                       {currentRole}
                     </button>
                   </td>
                   <td className="detail-td">
                     <div className="detail-actions">
-                      <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => orgPath && navigate(orgPath)} disabled={!orgPath}>View</button>
+                      <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => orgPath && navigate(orgPath)} disabled={!orgPath}>Bekijken</button>
                       <button type="button" className="app-action-button action-btn action-btn-warning" disabled={!orgSlugOrId} onClick={async () => {
                         if (!orgSlugOrId) return;
                         const next = window.prompt('Set federation role (admin/member):', currentRole) || '';
                         const role = next.trim().toLowerCase();
                         if (!role) return;
-                        try { await updateOrganisationMembershipRole(orgSlugOrId, role); } catch (e) { pushToast({ message: e instanceof Error ? e.message : 'Failed to update role', type: 'error' }); }
-                      }}>Edit</button>
+                        try { await updateOrganisationMembershipRole(orgSlugOrId, role); } catch (e) { pushToast({ message: e instanceof Error ? e.message : 'Rol bijwerken mislukt', type: 'error' }); }
+                      }}>Bewerken</button>
                       <button type="button" className="app-action-button action-btn action-btn-danger" disabled={!orgSlugOrId} onClick={async () => {
                         if (!orgSlugOrId) return;
-                        if (!window.confirm('Unlink this user from the federation?')) return;
-                        try { await removeOrganisationMembership(orgSlugOrId); } catch (e) { pushToast({ message: e instanceof Error ? e.message : 'Failed to unlink federation', type: 'error' }); }
-                      }}>Delete</button>
+                        const ok = await confirm({ title: 'Ontkoppelen', message: 'Gebruiker ontkoppelen van de federatie?', confirmLabel: 'Ontkoppelen', variant: 'danger' });
+                        if (!ok) return;
+                        try { await removeOrganisationMembership(orgSlugOrId); } catch (e) { pushToast({ message: e instanceof Error ? e.message : 'Ontkoppelen mislukt', type: 'error' }); }
+                      }}>Verwijderen</button>
                     </div>
                   </td>
                 </tr>
@@ -121,17 +124,18 @@ export function UserDetailMembershipTabs({ data }: Props) {
                   </td>
                   <td className="detail-td">
                     <div className="detail-actions">
-                      <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => clubPath && navigate(clubPath)} disabled={!clubPath}>View</button>
+                      <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => clubPath && navigate(clubPath)} disabled={!clubPath}>Bekijken</button>
                       <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => {
                         if (!projectId || !direct) return;
                         setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(direct?.role || 'viewer'), membershipId });
                         setIsEditMembershipModalOpen(true);
-                      }} disabled={!projectId || !direct}>Edit</button>
+                      }} disabled={!projectId || !direct}>Bewerken</button>
                       <button type="button" className="app-action-button action-btn action-btn-danger" disabled={!projectId || !direct} onClick={async () => {
                         if (!projectId || !direct) return;
-                        if (!window.confirm('Remove this user from the club?')) return;
-                        try { await removeProjectMembership(projectId, membershipId); } catch (e) { pushToast({ message: e instanceof Error ? e.message : 'Failed to remove membership', type: 'error' }); }
-                      }}>Delete</button>
+                        const ok = await confirm({ title: 'Lid verwijderen', message: 'Gebruiker verwijderen uit de club?', confirmLabel: 'Verwijderen', variant: 'danger' });
+                        if (!ok) return;
+                        try { await removeProjectMembership(projectId, membershipId); } catch (e) { pushToast({ message: e instanceof Error ? e.message : 'Lidmaatschap verwijderen mislukt', type: 'error' }); }
+                      }}>Verwijderen</button>
                     </div>
                   </td>
                 </tr>
@@ -184,17 +188,18 @@ export function UserDetailMembershipTabs({ data }: Props) {
                   </td>
                   <td className="detail-td">
                     <div className="detail-actions">
-                      <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => teamPath && navigate(teamPath)} disabled={!teamPath}>View</button>
+                      <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => teamPath && navigate(teamPath)} disabled={!teamPath}>Bekijken</button>
                       <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => {
                         if (!projectId) return;
                         setEditingMembership({ projectId, projectName: String(t?.name || 'Team'), currentRole: String(t?.role || 'viewer'), membershipId });
                         setIsEditMembershipModalOpen(true);
-                      }} disabled={!projectId}>Edit</button>
+                      }} disabled={!projectId}>Bewerken</button>
                       <button type="button" className="app-action-button action-btn action-btn-danger" disabled={!projectId} onClick={async () => {
                         if (!projectId) return;
-                        if (!window.confirm('Remove this user from the team?')) return;
-                        try { await removeProjectMembership(projectId, membershipId); } catch (e) { pushToast({ message: e instanceof Error ? e.message : 'Failed to remove membership', type: 'error' }); }
-                      }}>Delete</button>
+                        const ok = await confirm({ title: 'Lid verwijderen', message: 'Gebruiker verwijderen uit het team?', confirmLabel: 'Verwijderen', variant: 'danger' });
+                        if (!ok) return;
+                        try { await removeProjectMembership(projectId, membershipId); } catch (e) { pushToast({ message: e instanceof Error ? e.message : 'Lidmaatschap verwijderen mislukt', type: 'error' }); }
+                      }}>Verwijderen</button>
                     </div>
                   </td>
                 </tr>

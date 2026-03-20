@@ -11,6 +11,7 @@ import { api } from '@/api';
 import { trashApi } from '@/api/trash';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
@@ -119,6 +120,7 @@ export function useSquadPageData(): UseSquadPageDataReturn {
   const { user } = useAuth();
   const { context, organisations: myOrganisations } = useContextSwitcher();
   const { pushToast } = useToast();
+  const confirm = useConfirm();
 
   const apiBaseUrl = getApiV1BaseUrl();
 
@@ -299,7 +301,8 @@ export function useSquadPageData(): UseSquadPageDataReturn {
     const seasonUuid = String(resolvedSeasonId || '').trim();
     if (!seasonUuid) return;
     const seasonName = season?.name || '';
-    if (!window.confirm(`Seizoen "${seasonName}" verwijderen? Het wordt verplaatst naar de prullenbak.`)) return;
+    const ok = await confirm({ title: 'Seizoen verwijderen', message: `"${seasonName}" wordt verplaatst naar de prullenbak.`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       await api.delete(`/periods/${encodeURIComponent(seasonUuid)}/`);
       pushToast({
@@ -331,13 +334,14 @@ export function useSquadPageData(): UseSquadPageDataReturn {
     if (!membershipId || !projectId) return;
     const u = membership.user || {};
     const displayName = u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email || 'this member';
-    if (!window.confirm(`Remove ${displayName} from this team?`)) return;
+    const ok = await confirm({ title: 'Lid verwijderen', message: `${displayName} verwijderen uit dit team?`, confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       await api.delete(
         `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
       );
       setMembers((prev) => prev.filter((m) => String(m.id) !== membershipId));
-    } catch (e) { logger.error('Error removing member', e); pushToast({ message: e instanceof Error ? e.message : 'Error removing member', type: 'error' }); }
+    } catch (e) { logger.error('Error removing member', e); pushToast({ message: e instanceof Error ? e.message : 'Lid verwijderen mislukt', type: 'error' }); }
   };
 
   const savePeriodEdit = async (payload: Record<string, unknown>) => {

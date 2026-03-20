@@ -11,6 +11,7 @@ import { Project } from '../../types';
 import { canCreateProject, canEditProject, canDeleteProject } from '../../utils/permissions';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { OrganisationOption, ProjectOption } from '../work/WorkFilterBar';
 import { routes } from '../../routes';
 import { api } from '@/api';
@@ -78,6 +79,7 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
   const { context, organisations, switchContext } = useContextSwitcher();
   const { user } = useAuth();
   const { pushToast } = useToast();
+  const confirm = useConfirm();
 
   // Resolve org from URL
   const resolvedOrg = orgId
@@ -283,17 +285,18 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
 
       setIsEditModalOpen(false);
       setSelectedProject(null);
-      setSuccessMessage('Project updated successfully');
+      setSuccessMessage('Project bijgewerkt');
       setTimeout(() => setSuccessMessage(null), 3000);
       await fetchProjects();
     } catch (err) {
       logger.error('Failed to update project', err);
-      pushToast({ message: err instanceof Error ? err.message : 'Failed to update project', type: 'error' });
+      pushToast({ message: err instanceof Error ? err.message : 'Project bijwerken mislukt', type: 'error' });
     }
   };
 
   const handleDelete = async (projectId: string) => {
-    if (!confirm('Are you sure you want to delete this project?')) return;
+    const ok = await confirm({ title: 'Project verwijderen', message: 'Weet je zeker dat je dit project wilt verwijderen?', confirmLabel: 'Verwijderen', variant: 'danger' });
+    if (!ok) return;
     try {
       const projectToDelete = s.projects.find(p => p.id === projectId);
       const projectSlug = projectToDelete?.slug || projectId;

@@ -352,7 +352,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
               className={`rounded-6 border bg-surface-2 text-primary cursor-pointer ${styles.cancelBtn}`}
               data-saving={saving || undefined}
             >
-              Cancel
+              Annuleren
             </button>
             <button
               type="button"
@@ -361,7 +361,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
               className={`rounded-6 cursor-pointer ${styles.saveBtn}`}
               data-saving={saving || undefined}
             >
-              {saving ? 'Saving…' : 'Save'}
+              {saving ? 'Opslaan…' : 'Opslaan'}
             </button>
           </div>
         </div>

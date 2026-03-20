@@ -279,7 +279,7 @@ export default function ProfileHubPage() {
         <button className={s.row} onClick={() => setContextOpen((p) => !p)}>
           <Layers size={20} />
           <span className={s.rowLabel}>
-            {d.savingContext ? 'Saving…' : (
+            {d.savingContext ? 'Opslaan…' : (
               [d.selectedOrgId && d.organisations.find((o) => o.id === d.selectedOrgId)?.name,
                d.selectedClubId && d.clubs.find((c) => c.id === d.selectedClubId)?.name,
                d.selectedTeamId && d.teams.find((t) => t.id === d.selectedTeamId)?.name,

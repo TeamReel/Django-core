@@ -219,9 +219,9 @@ export default function UserEditModal({
 
           {/* Footer */}
           <div className={`border-top flex-row gap-12 px-16 py-12 ${styles.justifyEnd}`}>
-            <button type="button" onClick={onClose} disabled={isBusy} className="btn-modal btn-modal-secondary">Cancel</button>
+            <button type="button" onClick={onClose} disabled={isBusy} className="btn-modal btn-modal-secondary">Annuleren</button>
             <button type="submit" disabled={isBusy} className="btn-modal btn-modal-primary">
-              {d.saving ? 'Saving…' : 'Save changes'}
+              {d.saving ? 'Opslaan…' : 'Wijzigingen opslaan'}
             </button>
           </div>
         </form>

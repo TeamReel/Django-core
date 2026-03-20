@@ -3,6 +3,7 @@ import { logger } from '@/utils/logger';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { api, ApiError } from '@/api';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import type { OrgMembershipListItem } from '@/types/api/organisation';
 import type { ProjectMembership } from '@/types/api/project';
 import type { Organisation, ProjectOption, User, PeriodOption, LinkUserModalProps } from './linkUserModalTypes';
@@ -19,6 +20,7 @@ export function useLinkUserModal({
   onSuccess,
   onClose,
 }: HookProps) {
+  const confirm = useConfirm();
   // ── state ──────────────────────────────────────────────────
   const [organisationId, setOrganisationId] = useState('');
   const [orgRole, setOrgRole] = useState<'admin' | 'member'>('member');
@@ -331,8 +333,9 @@ export function useLinkUserModal({
 
   // ── unlink handler (DRY helper for the 3 unlink buttons) ──
   const handleUnlink = async (kind: 'federation' | 'club' | 'team', projectId?: string) => {
-    const confirmMsg = `Unlink this user from the selected ${kind}?`;
-    if (!window.confirm(confirmMsg)) return;
+    const kindLabel = kind === 'federation' ? 'federatie' : kind === 'club' ? 'club' : 'team';
+    const ok = await confirm({ title: 'Ontkoppelen', message: `Gebruiker ontkoppelen van ${kindLabel}?`, confirmLabel: 'Ontkoppelen', variant: 'danger' });
+    if (!ok) return;
     setSaving(true);
     setError(null);
     setSuccessNote(null);
@@ -342,7 +345,7 @@ export function useLinkUserModal({
       } else {
         await unlinkProjectMembership(String(projectId));
       }
-      setSuccessNote(`Unlinked ${kind} successfully.`);
+      setSuccessNote(`${kindLabel} ontkoppeld`);
       onSuccess();
       onClose();
     } catch (err) {
