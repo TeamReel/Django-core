@@ -1,6 +1,7 @@
 import { Settings } from '@django-core/page-templates';
 import { useSetBackNavigation } from '../providers/BackNavigationProvider';
 import { useSettingsPage } from './useSettingsPage';
+import { contentTypeLabel } from '@/utils/contentTypeLabels';
 import styles from './SettingsPage.module.css';
 
 export default function SettingsPage() {
@@ -301,7 +302,7 @@ export default function SettingsPage() {
                       key={stat.content_type}
                       className="px-12 py-4 rounded-16 fs-12 fw-600 bg-surface border"
                     >
-                      {stat.content_type.split('.').pop()}: {stat.count}
+                      {contentTypeLabel(stat.content_type)}: {stat.count}
                     </span>
                   ))}
                 </div>

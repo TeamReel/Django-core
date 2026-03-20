@@ -7,6 +7,7 @@ import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
 import { useTrash } from '@/hooks/useTrash';
 import { useUserRole } from '@/hooks/useUserRole';
+import { contentTypeLabel } from '@/utils/contentTypeLabels';
 
 export function useSettingsPage() {
   const location = useLocation();
@@ -157,7 +158,7 @@ export function useSettingsPage() {
   // Get unique content types from stats for filter dropdown
   const trashContentTypes = trash.stats.map(s => ({
     id: s.content_type,
-    label: s.content_type.split('.').pop() || s.content_type,
+    label: contentTypeLabel(s.content_type),
     count: s.count,
   }));
 

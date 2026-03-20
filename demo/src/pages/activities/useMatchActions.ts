@@ -1,8 +1,10 @@
 import { useCallback } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { api } from '@/api';
+import { trashApi } from '@/api/trash';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import type { MatchDetail, Participation, ContentItem } from './matchDetailTypes';
 import type { ContentTemplate } from '../identity/ContentGenerationModal';
 import { getEnvelopeData } from './matchDetailTypes';
@@ -53,6 +55,7 @@ export function useMatchActions(params: UseMatchActionsParams) {
   } = params;
 
   const { pushToast } = useToast();
+  const confirm = useConfirm();
 
   // ── Media CRUD ──
   const handleDeleteMediaItem = useCallback(async (item: MatchMediaItem) => {
@@ -149,10 +152,47 @@ export function useMatchActions(params: UseMatchActionsParams) {
   // ── Delete match ──
   const handleDeleteMatch = async () => {
     if (!match?.id) return;
-    if (!window.confirm(`Are you sure you want to delete match ${match.title || match.id}?`)) return;
-    await api.delete(`/activities/${encodeURIComponent(String(match.id))}/`);
-    if (competitionBasePath) navigate(`${competitionBasePath}?tab=matches`);
-    else navigate(-1);
+    const matchTitle = match.title || String(match.id);
+    const matchId = String(match.id);
+
+    const ok = await confirm({
+      title: 'Wedstrijd verwijderen',
+      message: `"${matchTitle}" wordt verplaatst naar de prullenbak. Je kunt dit binnen 30 dagen ongedaan maken.`,
+      confirmLabel: 'Verwijderen',
+      cancelLabel: 'Annuleren',
+      variant: 'danger',
+    });
+    if (!ok) return;
+
+    try {
+      await api.delete(`/activities/${encodeURIComponent(matchId)}/`);
+
+      pushToast({
+        message: `"${matchTitle}" verplaatst naar prullenbak`,
+        type: 'info',
+        actions: [{
+          label: 'Ongedaan maken',
+          onClick: async () => {
+            try {
+              const trashItem = await trashApi.findByObjectId(matchId);
+              if (trashItem) {
+                await trashApi.restore(trashItem.id);
+                pushToast({ message: `"${matchTitle}" hersteld`, type: 'success' });
+              }
+            } catch (err) {
+              logger.error('Failed to restore match', err);
+              pushToast({ message: 'Herstellen mislukt', type: 'error' });
+            }
+          },
+        }],
+      });
+
+      if (competitionBasePath) navigate(`${competitionBasePath}?tab=matches`);
+      else navigate(-1);
+    } catch (err) {
+      logger.error('Failed to delete match', err);
+      pushToast({ message: 'Verwijderen mislukt', type: 'error' });
+    }
   };
 
   // ── Participation state helpers ──

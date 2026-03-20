@@ -8,6 +8,7 @@ import { useState, useMemo, useCallback } from 'react';
 import { Trash2, RotateCcw, AlertCircle } from 'lucide-react';
 import { useTrash } from '../../hooks/useTrash';
 import { useUserRole } from '../../components/PermissionGuards';
+import { contentTypeLabel } from '../../utils/contentTypeLabels';
 import s from './TrashSheetContent.module.css';
 
 export function TrashSheetContent() {
@@ -23,7 +24,7 @@ export function TrashSheetContent() {
     if (!Array.isArray(trash.stats)) return [];
     return trash.stats.map((stat) => ({
       value: stat.content_type,
-      label: stat.content_type.split('.').pop() || stat.content_type,
+      label: contentTypeLabel(stat.content_type),
       count: stat.count,
     }));
   }, [trash.stats]);
@@ -89,7 +90,7 @@ export function TrashSheetContent() {
         <div className={s.stats}>
           {statsArray.map((stat) => (
             <span key={stat.content_type} className={s.statBadge}>
-              {stat.content_type.split('.').pop()}: {stat.count}
+              {contentTypeLabel(stat.content_type)}: {stat.count}
             </span>
           ))}
         </div>
@@ -149,7 +150,7 @@ export function TrashSheetContent() {
                 </div>
                 <div className={s.itemMeta}>
                   <span className={s.itemType}>
-                    {item.content_type_detail.label}
+                    {contentTypeLabel(`${item.content_type_detail.app_label}.${item.content_type_detail.model}`)}
                   </span>
                   <span className={s.itemDate}>
                     {new Date(item.deleted_at).toLocaleDateString('nl-NL', {
