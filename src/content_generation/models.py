@@ -340,6 +340,22 @@ class ContentItem(SoftDeleteMixin, models.Model):
     def __str__(self):
         return f"Content #{self.id} - {self.template.name} ({self.status})"
 
+    def get_organisation(self):
+        """Return the organisation this content item belongs to."""
+        return self.project.organisation if self.project else None
+
+    def get_trash_metadata(self) -> dict:
+        """Return metadata for the TrashItem display."""
+        return {
+            "object_repr": f"{self.template.name} ({self.status})",
+            "original_data": {
+                "template_name": self.template.name if self.template else None,
+                "status": self.status,
+                "project_id": str(self.project_id) if self.project_id else None,
+                "activity_id": str(self.activity_id) if self.activity_id else None,
+            },
+        }
+
     def clean(self):
         """Validate state transitions and field requirements"""
         super().clean()

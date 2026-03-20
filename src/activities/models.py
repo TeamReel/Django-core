@@ -121,6 +121,22 @@ class Period(SoftDeleteMixin, models.Model):
     def __str__(self):
         return f"{self.name} ({self.start_date} - {self.end_date})"
 
+    def get_organisation(self):
+        """Return the organisation this period belongs to."""
+        return self.organisation
+
+    def get_trash_metadata(self) -> dict:
+        """Return metadata for the TrashItem display."""
+        return {
+            "object_repr": f"{self.name} ({self.start_date} - {self.end_date})",
+            "original_data": {
+                "name": self.name,
+                "start_date": self.start_date.isoformat() if self.start_date else None,
+                "end_date": self.end_date.isoformat() if self.end_date else None,
+                "project_id": str(self.project_id) if self.project_id else None,
+            },
+        }
+
     def clean(self):
         """Application-level validation"""
         if self.end_date and self.start_date and self.end_date <= self.start_date:
@@ -215,6 +231,22 @@ class Activity(SoftDeleteMixin, models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.start_time.date()})"
+
+    def get_organisation(self):
+        """Return the organisation this activity belongs to."""
+        return self.project.organisation if self.project else None
+
+    def get_trash_metadata(self) -> dict:
+        """Return metadata for the TrashItem display."""
+        return {
+            "object_repr": f"{self.title} ({self.start_time.date()})",
+            "original_data": {
+                "title": self.title,
+                "activity_type": self.activity_type,
+                "start_time": self.start_time.isoformat() if self.start_time else None,
+                "project_id": str(self.project_id) if self.project_id else None,
+            },
+        }
 
     def _generate_unique_slug(self, base_slug: str | None = None) -> str:
         base = (base_slug or slugify(self.title or "") or "activity").strip("-")
@@ -355,6 +387,33 @@ class Participation(SoftDeleteMixin, models.Model):
         elif self.period:
             return f"{self.member} - {self.period.name} ({self.role})"
         return f"{self.member} - Unknown"
+
+    def get_organisation(self):
+        """Return the organisation this participation belongs to."""
+        if self.activity:
+            return self.activity.project.organisation if self.activity.project else None
+        if self.period:
+            return self.period.organisation
+        return None
+
+    def get_trash_metadata(self) -> dict:
+        """Return metadata for the TrashItem display."""
+        if self.activity:
+            context = self.activity.title
+        elif self.period:
+            context = self.period.name
+        else:
+            context = "onbekend"
+
+        return {
+            "object_repr": f"{self.member} - {self.role} ({context})",
+            "original_data": {
+                "role": self.role,
+                "member_id": str(self.member_id) if self.member_id else None,
+                "activity_id": str(self.activity_id) if self.activity_id else None,
+                "period_id": str(self.period_id) if self.period_id else None,
+            },
+        }
 
     def clean(self):
         """Application-level validation"""

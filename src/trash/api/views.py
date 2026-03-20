@@ -58,10 +58,15 @@ class TrashViewSet(viewsets.GenericViewSet):
     def get_queryset(self):
         """Org-scoped trash items with related data prefetched."""
         user = self.request.user
-        org = getattr(user, "current_org", None)
-        if org is None:
-            return TrashItem.objects.none()
-        return TrashItem.objects.filter(organisation=org).select_related(
+
+        # Get all organisations the user is a member of
+        from organisations.models import Membership
+
+        user_org_ids = Membership.objects.filter(user=user, is_active=True).values_list(
+            "organisation_id", flat=True
+        )
+
+        return TrashItem.objects.filter(organisation_id__in=user_org_ids).select_related(
             "content_type", "deleted_by", "organisation"
         )
 
@@ -121,22 +126,16 @@ class TrashViewSet(viewsets.GenericViewSet):
         """Permanently delete all expired trash items (admin only)."""
         from organisations.models import Membership
 
-        org = getattr(request.user, "current_org", None)
-        if org is None:
-            return Response(
-                {"detail": "No organisation context."}, status=status.HTTP_400_BAD_REQUEST
-            )
+        # Get organisations where user is admin
+        admin_org_ids = Membership.objects.filter(
+            user=request.user, role="admin", is_active=True
+        ).values_list("organisation_id", flat=True)
 
-        # Only org admins can empty trash
-        is_admin = Membership.objects.filter(
-            organisation=org, user=request.user, role="admin"
-        ).exists()
-        if not is_admin:
+        if not admin_org_ids:
             return Response({"detail": "Admin access required."}, status=status.HTTP_403_FORBIDDEN)
 
-        queryset = self.get_queryset().filter(is_expired=False)  # All items, not just expired
-        # Actually empty ALL trash for the org
-        queryset = self.get_queryset()
+        # Delete all trash for orgs where user is admin
+        queryset = TrashItem.objects.filter(organisation_id__in=admin_org_ids)
         count = 0
         for item in queryset.iterator():
             self._permanent_delete_item(item)

@@ -16,9 +16,15 @@ Usage:
         all_objects = AllObjectsManager()
 """
 
+from datetime import timedelta
+
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
+
+# Default retention period for trashed items (30 days)
+TRASH_RETENTION_DAYS = 30
 
 
 class SoftDeleteMixin(models.Model):
@@ -66,6 +72,80 @@ class SoftDeleteMixin(models.Model):
         """Check if this record is soft-deleted."""
         return self.deleted_at is not None
 
+    def get_organisation(self):
+        """
+        Return the organisation this object belongs to.
+        Override in subclass if the field has a different name.
+        """
+        # Try common field names
+        if hasattr(self, "organisation"):
+            return self.organisation
+        if hasattr(self, "project"):
+            project = self.project
+            if project and hasattr(project, "organisation"):
+                return project.organisation
+        if hasattr(self, "period"):
+            period = self.period
+            if period and hasattr(period, "project"):
+                return period.project.organisation if period.project else None
+        if hasattr(self, "activity"):
+            activity = self.activity
+            if activity and hasattr(activity, "period"):
+                return (
+                    activity.period.project.organisation
+                    if activity.period and activity.period.project
+                    else None
+                )
+        return None
+
+    def get_trash_metadata(self) -> dict:
+        """
+        Return metadata for the TrashItem. Override for custom fields.
+        Returns dict with 'object_repr' and 'original_data'.
+        """
+        return {
+            "object_repr": str(self)[:255],
+            "original_data": {},
+        }
+
+    def _create_trash_item(self, user=None) -> None:
+        """Create a TrashItem record for this soft-deleted object."""
+        # Import here to avoid circular imports
+        from src.trash.models import TrashItem
+
+        organisation = self.get_organisation()
+        if organisation is None:
+            # Can't create trash item without organisation (org-scoped requirement)
+            return
+
+        metadata = self.get_trash_metadata()
+        content_type = ContentType.objects.get_for_model(self.__class__)
+        expires_at = timezone.now() + timedelta(days=TRASH_RETENTION_DAYS)
+
+        TrashItem.objects.update_or_create(
+            content_type=content_type,
+            object_id=self.pk,
+            defaults={
+                "organisation": organisation,
+                "deleted_at": self.deleted_at,
+                "deleted_by": user,
+                "expires_at": expires_at,
+                "object_repr": metadata.get("object_repr", str(self)[:255]),
+                "original_data": metadata.get("original_data", {}),
+            },
+        )
+
+    def _delete_trash_item(self) -> None:
+        """Remove the TrashItem record when restoring."""
+        # Import here to avoid circular imports
+        from src.trash.models import TrashItem
+
+        content_type = ContentType.objects.get_for_model(self.__class__)
+        TrashItem.objects.filter(
+            content_type=content_type,
+            object_id=self.pk,
+        ).delete()
+
     def soft_delete(self, user=None) -> None:
         """
         Soft-delete this record and optionally cascade to related objects.
@@ -79,6 +159,9 @@ class SoftDeleteMixin(models.Model):
         self.deleted_at = timezone.now()
         self.deleted_by = user
         self.save(update_fields=["deleted_at", "deleted_by"])
+
+        # Create TrashItem for unified trash view
+        self._create_trash_item(user=user)
 
         # Cascade soft-delete to configured related objects
         for field_name in self.soft_delete_cascade_fields:
@@ -104,6 +187,9 @@ class SoftDeleteMixin(models.Model):
         self.deleted_at = None
         self.deleted_by = None
         self.save(update_fields=["deleted_at", "deleted_by"])
+
+        # Remove from trash
+        self._delete_trash_item()
 
         # Cascade restore
         for field_name in self.soft_delete_cascade_fields:
