@@ -58,14 +58,17 @@ def main():
                 except Exception:
                     pass
 
-    # Build Daphne command FIRST (bind immediately for Railway healthchecks)
+    # Build Gunicorn command with UvicornWorker for ASGI support (HTTP + WebSocket)
+    # Daphne fails to start on Railway; Gunicorn + UvicornWorker is the proven
+    # production pattern for Django Channels deployments.
     cmd = [
-        "daphne",
-        "-b",
-        "0.0.0.0",
-        "-p",
-        port,
+        "gunicorn",
         "config.asgi:application",
+        "-k", "uvicorn.workers.UvicornWorker",
+        "-b", f"0.0.0.0:{port}",
+        "--workers", "2",
+        "--timeout", "300",
+        "--access-logfile", "-",
     ]
 
     print(f"Executing: {' '.join(cmd)}", flush=True)
@@ -74,8 +77,8 @@ def main():
     # Start DB tasks in background so health checks can pass quickly
     threading.Thread(target=_run_startup_db_tasks, daemon=True).start()
 
-    # Spawn Daphne as child process so this script can run background tasks.
-    # Forward termination signals to Daphne.
+    # Spawn Gunicorn as child process so this script can run background tasks.
+    # Forward termination signals to Gunicorn.
     proc = subprocess.Popen(cmd, cwd="/app", stdout=sys.stdout, stderr=sys.stderr)
 
     def _terminate(*_args):
@@ -88,7 +91,7 @@ def main():
     signal.signal(signal.SIGINT, _terminate)
 
     exit_code = proc.wait()
-    print(f"Daphne exited with code {exit_code}", flush=True)
+    print(f"Gunicorn exited with code {exit_code}", flush=True)
     sys.exit(exit_code)
 
 
