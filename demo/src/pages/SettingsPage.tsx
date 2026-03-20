@@ -311,6 +311,7 @@ export default function SettingsPage() {
               {isSystemAdmin && trash.items.length > 0 && (
                 <div className="mb-24">
                   <button
+                    type="button"
                     onClick={handleEmptyTrash}
                     disabled={trash.mutating}
                     className={`border-none rounded-4 fs-14 fw-600 text-white ${styles.dangerButton}`}
@@ -342,7 +343,7 @@ export default function SettingsPage() {
 
               {/* Loading state */}
               {trash.loading && (
-                <div className="p-24 text-center text-muted">
+                <div className="p-24 text-center text-muted" role="status" aria-live="polite">
                   Laden...
                 </div>
               )}
@@ -350,7 +351,7 @@ export default function SettingsPage() {
               {/* Empty state */}
               {!trash.loading && trash.items.length === 0 && (
                 <div className="p-24 text-center text-muted border rounded-8 bg-surface">
-                  <div className="fs-32 mb-8">🗑️</div>
+                  <div className="fs-32 mb-8" aria-hidden="true">🗑️</div>
                   <div>Prullenbak is leeg</div>
                 </div>
               )}
@@ -389,6 +390,7 @@ export default function SettingsPage() {
                         </div>
                         <div className="flex-row gap-8 flex-shrink-0">
                           <button
+                            type="button"
                             onClick={() => handleTrashRestore(item.id, item.object_repr)}
                             disabled={trash.mutating}
                             className={`border-none rounded-4 fs-12 fw-600 text-white ${styles.restoreButton}`}
@@ -397,6 +399,7 @@ export default function SettingsPage() {
                           </button>
                           {isSystemAdmin && (
                             <button
+                              type="button"
                               onClick={() => handleTrashPermanentDelete(item.id, item.object_repr)}
                               disabled={trash.mutating}
                               className={`border rounded-4 fs-12 fw-600 ${styles.deleteButton}`}
@@ -415,16 +418,18 @@ export default function SettingsPage() {
               {trash.count > 20 && (
                 <div className="flex-row justify-center gap-8 mt-24">
                   <button
+                    type="button"
                     onClick={() => trash.setPage(trash.page - 1)}
                     disabled={trash.page === 1 || trash.mutating}
                     className={`border rounded-4 fs-12 fw-600 px-12 py-8 ${styles.paginationButton}`}
                   >
                     Vorige
                   </button>
-                  <span className="px-12 py-8 fs-12">
+                  <span className="px-12 py-8 fs-12" aria-current="page">
                     Pagina {trash.page} van {Math.ceil(trash.count / 20)}
                   </span>
                   <button
+                    type="button"
                     onClick={() => trash.setPage(trash.page + 1)}
                     disabled={trash.page >= Math.ceil(trash.count / 20) || trash.mutating}
                     className={`border rounded-4 fs-12 fw-600 px-12 py-8 ${styles.paginationButton}`}
