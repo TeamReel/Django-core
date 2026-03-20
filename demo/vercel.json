@@ -3,10 +3,13 @@
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
   "framework": "vite",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
   "env": {
     "VITE_API_BASE_URL": {
-      "description": "Backend API URL (e.g., https://django-core-app.onrender.com)",
-      "value": "https://django-core-app.onrender.com"
+      "description": "Backend API URL",
+      "value": "https://api.teamreel.app"
     }
   }
 }
