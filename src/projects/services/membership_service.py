@@ -3,7 +3,6 @@ from typing import Optional
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.utils import timezone
 
 from audit.api import audit_log
 from notifications.services.notification_service import create_notification
@@ -282,9 +281,8 @@ class MembershipService:
                         "Please assign another admin first or ensure an Organisation Admin is available."
                     )
 
-        # Soft delete
-        membership.deleted_at = timezone.now()
-        membership.save()
+        # Soft delete (use the mixin's method to also set deleted_by)
+        membership.soft_delete(user=actor)
 
         # Audit log
         audit_log.record(

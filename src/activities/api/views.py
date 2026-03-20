@@ -289,7 +289,7 @@ class PeriodViewSet(viewsets.ModelViewSet):
         return queryset
 
     def destroy(self, request, *args, **kwargs):
-        """Override destroy to prevent deletion if children or activities exist"""
+        """Override destroy to prevent deletion if children or activities exist, and use soft-delete."""
         instance = self.get_object()
 
         # Check if period has children
@@ -318,7 +318,9 @@ class PeriodViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        return super().destroy(request, *args, **kwargs)
+        # Soft-delete instead of hard-delete
+        instance.soft_delete(user=request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["get"])
     def children(self, request, pk=None):
@@ -567,6 +569,10 @@ class ActivityViewSet(viewsets.ModelViewSet):
         )
         serializer = ActivityEventSerializer(events, many=True)
         return Response(serializer.data)
+
+    def perform_destroy(self, instance):
+        """Soft-delete the activity instead of hard-deleting."""
+        instance.soft_delete(user=self.request.user)
 
 
 class ActivityEventViewSet(viewsets.ModelViewSet):
@@ -928,7 +934,7 @@ class ParticipationViewSet(viewsets.ModelViewSet):
         errors: list[dict] = []
         for p in qs:
             try:
-                p.delete()
+                p.soft_delete(user=request.user)
                 removed += 1
             except Exception as e:
                 errors.append({"participation_id": str(p.id), "detail": str(e)})
@@ -983,3 +989,7 @@ class ParticipationViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(status=status_param)
 
         return queryset
+
+    def perform_destroy(self, instance):
+        """Soft-delete the participation instead of hard-deleting."""
+        instance.soft_delete(user=self.request.user)

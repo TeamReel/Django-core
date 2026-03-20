@@ -585,6 +585,10 @@ class ContentItemViewSet(ContentItemPermissionMixin, viewsets.ModelViewSet):
         # Redirect to the file URL
         return HttpResponseRedirect(item.output_file.file.url)
 
+    def perform_destroy(self, instance):
+        """Soft-delete the content item instead of hard-deleting."""
+        instance.soft_delete(user=self.request.user)
+
 
 class ContentApprovalViewSet(ContentApprovalPermissionMixin, viewsets.ModelViewSet):
     """
