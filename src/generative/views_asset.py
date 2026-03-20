@@ -4238,6 +4238,34 @@ def review_generation_job_view(request: Request, task_id: str) -> Response:
                 propagate_exc,
             )
 
+    # B64: Publish approval decided event
+    try:
+        from rtc_websockets.events import (
+            ApprovalDecidedPayload,
+            EventType,
+            build_event,
+        )
+        from rtc_websockets.services import RealtimeEventPublisher
+
+        publisher = RealtimeEventPublisher()
+        reviewer = request.user if request.user and request.user.is_authenticated else None
+        event = build_event(
+            EventType.APPROVAL_DECIDED,
+            ApprovalDecidedPayload(
+                content_item_id=int(str(job.task_id)[:8], 16) if job.task_id else 0,
+                project_id=job.project_id or 0,
+                decision="approved" if action == "approve" else "rejected",
+                reviewer_name=(reviewer.get_full_name() or reviewer.username)
+                if reviewer
+                else "system",
+            ),
+            actor_id=reviewer.id if reviewer else None,
+        )
+        if job.project_id:
+            publisher.publish_to_project(job.project_id, event)
+    except Exception:
+        pass
+
     return Response(
         {
             "task_id": str(job.task_id),

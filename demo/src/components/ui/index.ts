@@ -75,3 +75,7 @@ export type { ProgressBarProps } from './ProgressBar';
 // DisclosureSection — accessible expandable section primitive
 export { DisclosureSection } from './DisclosureSection';
 export type { DisclosureSectionProps } from './DisclosureSection';
+
+// ConnectionStatus — real-time connection status indicator
+export { ConnectionStatus } from './ConnectionStatus';
+export type { ConnectionStatusProps } from './ConnectionStatus';

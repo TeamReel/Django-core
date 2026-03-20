@@ -413,3 +413,211 @@ class ActivityConsumer(BaseConsumer):
             ).exists()
         except Project.DoesNotExist:
             return False
+
+
+class ContentUpdateConsumer(BaseConsumer):
+    """
+    B64 — Consumer for real-time content & project updates.
+
+    Clients connect once and dynamically subscribe/unsubscribe to channels:
+    - ``content:{content_item_id}`` — status updates for a single content item
+    - ``project:{project_id}`` — all events for a project
+
+    Protocol (client → server)::
+
+        {"action": "subscribe",   "channel": "project:123"}
+        {"action": "unsubscribe", "channel": "project:123"}
+        {"type": "ping"}
+
+    Protocol (server → client)::
+
+        {"type": "subscribed",   "channel": "project:123"}
+        {"type": "unsubscribed", "channel": "project:123"}
+        {"type": "error", ...}
+        {event envelope from RealtimeEventPublisher}
+    """
+
+    consumer_type = "content_update"
+    MAX_SUBSCRIPTIONS = 20
+
+    async def connect(self):
+        await super().connect()
+        user = self.scope.get("user")
+        if user and user.is_authenticated:
+            self.user = user
+            self.subscribed_groups: list[str] = []
+            self.connection_record = await self._create_connection_record()
+            logger.info(f"ContentUpdateConsumer connected for user {user.id}")
+
+    async def disconnect(self, close_code):
+        # Leave all subscribed groups
+        for group in getattr(self, "subscribed_groups", []):
+            try:
+                await self.channel_layer.group_discard(group, self.channel_name)
+            except Exception as e:
+                logger.error(f"Error leaving group {group}: {e}")
+        # Clean up connection record
+        await self._delete_connection_record()
+        await super().disconnect(close_code)
+
+    async def handle_json(self, content, **kwargs):
+        """Route incoming messages by action type."""
+        action = content.get("action")
+        channel = content.get("channel", "")
+
+        if action == "subscribe":
+            await self._handle_subscribe(channel)
+        elif action == "unsubscribe":
+            await self._handle_unsubscribe(channel)
+        elif content.get("type") == "ping":
+            await self.send_json({"type": "pong"})
+        else:
+            await self.send_error(4001, "Unknown action")
+
+    # ── Subscribe / Unsubscribe ─────────────────────────────────────
+
+    async def _handle_subscribe(self, channel: str) -> None:
+        """Subscribe to a content or project channel after permission check."""
+        if not channel or ":" not in channel:
+            await self.send_error(
+                4002, "Invalid channel format. Use 'content:{id}' or 'project:{id}'"
+            )
+            return
+
+        if len(self.subscribed_groups) >= self.MAX_SUBSCRIPTIONS:
+            from .metrics import inc_websocket_rate_limit_violations
+
+            inc_websocket_rate_limit_violations(self.consumer_type)
+            await self.send_error(
+                4003, f"Max {self.MAX_SUBSCRIPTIONS} subscriptions per connection"
+            )
+            return
+
+        channel_type, _, channel_id = channel.partition(":")
+        if not channel_id:
+            await self.send_error(4002, "Missing channel ID")
+            return
+
+        # Permission check
+        has_access = False
+        if channel_type == "project":
+            has_access = await self._check_project_access(channel_id)
+        elif channel_type == "content":
+            has_access = await self._check_content_access(channel_id)
+        else:
+            await self.send_error(4002, "Unsupported channel type. Use 'content' or 'project'")
+            return
+
+        if not has_access:
+            await self.send_error(4003, "Access denied")
+            return
+
+        group_name = f"{channel_type}_{channel_id}"
+
+        if group_name in self.subscribed_groups:
+            await self.send_json({"type": "subscribed", "channel": channel})
+            return
+
+        await self.channel_layer.group_add(group_name, self.channel_name)
+        self.subscribed_groups.append(group_name)
+        from .metrics import inc_subscriptions
+
+        inc_subscriptions(self.consumer_type)
+        await self.send_json({"type": "subscribed", "channel": channel})
+        logger.info(
+            "User %s subscribed to %s (total: %d)",
+            self.user.id,
+            group_name,
+            len(self.subscribed_groups),
+            extra={"user_id": self.user.id, "group": group_name},
+        )
+
+    async def _handle_unsubscribe(self, channel: str) -> None:
+        """Unsubscribe from a channel."""
+        if not channel or ":" not in channel:
+            await self.send_error(4002, "Invalid channel format")
+            return
+
+        channel_type, _, channel_id = channel.partition(":")
+        group_name = f"{channel_type}_{channel_id}"
+
+        if group_name in self.subscribed_groups:
+            await self.channel_layer.group_discard(group_name, self.channel_name)
+            self.subscribed_groups.remove(group_name)
+            from .metrics import dec_subscriptions
+
+            dec_subscriptions(self.consumer_type)
+
+        await self.send_json({"type": "unsubscribed", "channel": channel})
+        logger.info(
+            "User %s unsubscribed from %s (total: %d)",
+            self.user.id,
+            group_name,
+            len(self.subscribed_groups),
+            extra={"user_id": self.user.id, "group": group_name},
+        )
+
+    # ── Permission checks ───────────────────────────────────────────
+
+    @database_sync_to_async
+    def _check_project_access(self, project_id: str) -> bool:
+        """Check user has membership in the project's organisation."""
+        try:
+            project = Project.objects.get(id=project_id)
+            return Membership.objects.filter(
+                user=self.user, organisation=project.organisation, is_active=True
+            ).exists()
+        except (Project.DoesNotExist, ValueError):
+            return False
+
+    @database_sync_to_async
+    def _check_content_access(self, content_item_id: str) -> bool:
+        """Check user has membership in the content item's organisation."""
+        try:
+            from content_generation.models import ContentItem
+
+            item = ContentItem.objects.select_related("project__organisation").get(
+                id=content_item_id
+            )
+            if not item.project:
+                return False
+            return Membership.objects.filter(
+                user=self.user, organisation=item.project.organisation, is_active=True
+            ).exists()
+        except (ContentItem.DoesNotExist, ValueError):
+            return False
+
+    # ── Channel layer event handlers ────────────────────────────────
+
+    async def notification_message(self, event):
+        """Handle events sent via NotificationService / RealtimeEventPublisher."""
+        await self.send_json(event["message"])
+
+    async def content_status_update(self, event):
+        """Handle legacy content_status_update events from broadcast_content_status()."""
+        await self.send_json(
+            {
+                "event_type": "content.status_changed",
+                "data": {
+                    "content_item_id": event.get("content_item_id"),
+                    "status": event.get("status"),
+                    "progress_percent": event.get("progress_percent"),
+                    "error_message": event.get("error"),
+                },
+            }
+        )
+
+    # ── Connection record management ────────────────────────────────
+
+    @database_sync_to_async
+    def _create_connection_record(self):
+        return WebSocketConnection.objects.create(
+            user=self.user,
+            channel_name=self.channel_name,
+            last_heartbeat=timezone.now(),
+        )
+
+    @database_sync_to_async
+    def _delete_connection_record(self):
+        if hasattr(self, "connection_record") and self.connection_record:
+            self.connection_record.delete()

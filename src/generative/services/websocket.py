@@ -79,3 +79,38 @@ class GenerationWebSocketService:
                 extra={"request_id": request.id, "status": request.status},
                 exc_info=True,
             )
+
+        # ── B64: Publish typed realtime event ──
+        try:
+            from rtc_websockets.events import (
+                EventType,
+                GenerationStatusPayload,
+                build_event,
+            )
+            from rtc_websockets.services import RealtimeEventPublisher
+
+            gen_payload = GenerationStatusPayload(
+                request_id=request.id,
+                status=request.status,
+                project_id=request.project_id or "",
+                retry_count=request.retry_count,
+                error_message=request.error_message,
+                error_category=request.error_category,
+            )
+            event = build_event(
+                EventType.GENERATION_STATUS_CHANGED,
+                gen_payload,
+                actor_id=request.requester_id,
+            )
+
+            publisher = RealtimeEventPublisher()
+            # Publish to user channel; also to project if available
+            publisher.publish_to_user(request.requester_id, event)
+            if request.project_id:
+                publisher.publish_to_project(request.project_id, event)
+
+        except Exception as e:
+            logger.warning(
+                f"Failed to publish B64 generation event: {e}",
+                extra={"request_id": request.id},
+            )

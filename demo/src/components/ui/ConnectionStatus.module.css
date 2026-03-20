@@ -1,0 +1,40 @@
+.connectionStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm, 0.8125rem);
+  color: var(--app-muted-text);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.connected {
+  background-color: var(--app-success);
+}
+
+.connecting,
+.reconnecting {
+  background-color: var(--app-warning);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.disconnected {
+  background-color: var(--app-error);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connecting,
+  .reconnecting {
+    animation: none;
+  }
+}

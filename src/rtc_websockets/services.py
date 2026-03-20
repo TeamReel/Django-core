@@ -5,6 +5,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.utils import timezone
 
+from .events import RealtimeEvent
 from .metrics import inc_websocket_messages_sent
 
 logger = logging.getLogger(__name__)
@@ -164,3 +165,84 @@ class ActivityService:
             logger.info(f"Broadcast activity {action_type} to {group_name}")
         except Exception as e:
             logger.error(f"Failed to broadcast activity: {e}")
+
+
+class RealtimeEventPublisher:
+    """High-level publisher for typed real-time events.
+
+    Wraps NotificationService with structured RealtimeEvent envelopes.
+    Provides convenience methods for each event domain (content, video,
+    generation, activity, approval) so Celery tasks can publish events
+    with a single call.
+
+    Usage::
+
+        from rtc_websockets.services import RealtimeEventPublisher
+        from rtc_websockets.events import (
+            EventType, ContentStatusPayload, build_event,
+        )
+
+        publisher = RealtimeEventPublisher()
+        event = build_event(
+            EventType.CONTENT_STATUS_CHANGED,
+            ContentStatusPayload(content_item_id=1, ...),
+            actor_id=user.id,
+        )
+        publisher.publish_to_project(project_id, event)
+    """
+
+    def __init__(self) -> None:
+        self._notification_service = NotificationService()
+
+    # ── Targeted publishing methods ────────────────────────────────
+
+    def publish_to_user(self, user_id: int, event: RealtimeEvent) -> None:
+        """Send an event to a specific user's personal channel."""
+        self._notification_service.send_user_notification(
+            user_id=user_id,
+            message_type=event.event_type,
+            payload=event.to_dict(),
+        )
+        from .metrics import inc_event_published
+
+        inc_event_published(event.event_type)
+        logger.info(
+            "Published %s to user_%s",
+            event.event_type,
+            user_id,
+            extra={"event_type": event.event_type, "target": f"user_{user_id}"},
+        )
+
+    def publish_to_org(self, org_id: int | str, event: RealtimeEvent) -> None:
+        """Broadcast an event to all users in an organisation."""
+        self._notification_service.send_org_notification(
+            org_id=org_id,
+            message_type=event.event_type,
+            payload=event.to_dict(),
+        )
+        from .metrics import inc_event_published
+
+        inc_event_published(event.event_type)
+        logger.info(
+            "Published %s to org_%s",
+            event.event_type,
+            org_id,
+            extra={"event_type": event.event_type, "target": f"org_{org_id}"},
+        )
+
+    def publish_to_project(self, project_id: int | str, event: RealtimeEvent) -> None:
+        """Broadcast an event to all users in a project."""
+        self._notification_service.send_project_notification(
+            project_id=project_id,
+            message_type=event.event_type,
+            payload=event.to_dict(),
+        )
+        from .metrics import inc_event_published
+
+        inc_event_published(event.event_type)
+        logger.info(
+            "Published %s to project_%s",
+            event.event_type,
+            project_id,
+            extra={"event_type": event.event_type, "target": f"project_{project_id}"},
+        )

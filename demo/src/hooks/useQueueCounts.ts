@@ -137,7 +137,13 @@ function handleVisibility() {
   }
 }
 
-function handleOptimisticUpdate() {
+function handleOptimisticUpdate(evt: Event) {
+  // B64: When driven by a real-time WS event, do a full re-fetch
+  // instead of blind increment (the server has the accurate counts)
+  if ((evt as CustomEvent).detail?.source === 'realtime') {
+    fetchCounts();
+    return;
+  }
   const prev = snapshot;
   snapshot = { ...prev, active: prev.active + 1, all: prev.all + 1 };
   notify();

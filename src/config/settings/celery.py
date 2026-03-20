@@ -200,6 +200,14 @@ CELERY_BEAT_SCHEDULE = {
             "expires": 3600,
         },
     },
+    # B64: Cleanup stale WebSocket connections every 30 minutes
+    "cleanup-stale-websocket-connections": {
+        "task": "rtc_websockets.tasks.cleanup_stale_connections",
+        "schedule": crontab(minute="*/30"),  # Every 30 minutes
+        "options": {
+            "expires": 900,  # Task expires if not run within 15 minutes
+        },
+    },
     # B46: Cleanup expired trash items daily at 3:15 AM UTC
     "cleanup-expired-trash": {
         "task": "trash.tasks.cleanup_expired_trash",

@@ -414,6 +414,30 @@ class ContentItemViewSet(ContentItemPermissionMixin, viewsets.ModelViewSet):
 
             logging.warning(f"Failed to send approval notification: {e}")
 
+        # B64: Publish approval event
+        try:
+            from rtc_websockets.events import (
+                ApprovalDecidedPayload,
+                EventType,
+                build_event,
+            )
+            from rtc_websockets.services import RealtimeEventPublisher
+
+            publisher = RealtimeEventPublisher()
+            event = build_event(
+                EventType.APPROVAL_DECIDED,
+                ApprovalDecidedPayload(
+                    content_item_id=item.id,
+                    project_id=item.project_id,
+                    decision="approved",
+                    reviewer_name=request.user.get_full_name() or request.user.username,
+                ),
+                actor_id=request.user.id,
+            )
+            publisher.publish_to_project(item.project_id, event)
+        except Exception:
+            pass
+
         return Response(
             {
                 "id": item.id,
@@ -483,6 +507,31 @@ class ContentItemViewSet(ContentItemPermissionMixin, viewsets.ModelViewSet):
             import logging
 
             logging.warning(f"Failed to send rejection notification: {e}")
+
+        # B64: Publish rejection event
+        try:
+            from rtc_websockets.events import (
+                ApprovalDecidedPayload,
+                EventType,
+                build_event,
+            )
+            from rtc_websockets.services import RealtimeEventPublisher
+
+            publisher = RealtimeEventPublisher()
+            event = build_event(
+                EventType.APPROVAL_DECIDED,
+                ApprovalDecidedPayload(
+                    content_item_id=item.id,
+                    project_id=item.project_id,
+                    decision="rejected",
+                    reviewer_name=request.user.get_full_name() or request.user.username,
+                    comment=feedback_text,
+                ),
+                actor_id=request.user.id,
+            )
+            publisher.publish_to_project(item.project_id, event)
+        except Exception:
+            pass
 
         return Response(
             {
@@ -555,6 +604,31 @@ class ContentItemViewSet(ContentItemPermissionMixin, viewsets.ModelViewSet):
             import logging
 
             logging.warning(f"Failed to send revision request notification: {e}")
+
+        # B64: Publish revision_requested event
+        try:
+            from rtc_websockets.events import (
+                ApprovalDecidedPayload,
+                EventType,
+                build_event,
+            )
+            from rtc_websockets.services import RealtimeEventPublisher
+
+            publisher = RealtimeEventPublisher()
+            event = build_event(
+                EventType.APPROVAL_DECIDED,
+                ApprovalDecidedPayload(
+                    content_item_id=item.id,
+                    project_id=item.project_id,
+                    decision="revision_requested",
+                    reviewer_name=request.user.get_full_name() or request.user.username,
+                    comment=feedback_text,
+                ),
+                actor_id=request.user.id,
+            )
+            publisher.publish_to_project(item.project_id, event)
+        except Exception:
+            pass
 
         return Response(
             {

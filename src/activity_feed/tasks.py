@@ -65,6 +65,32 @@ def log_event(
             verb,
             organisation_id,
         )
+
+        # B64: Publish real-time activity.created event
+        if project_id:
+            try:
+                from rtc_websockets.events import (
+                    ActivityCreatedPayload,
+                    EventType,
+                    build_event,
+                )
+                from rtc_websockets.services import RealtimeEventPublisher
+
+                rt_event = build_event(
+                    EventType.ACTIVITY_CREATED,
+                    ActivityCreatedPayload(
+                        activity_id=str(event.id),
+                        action_type=verb,
+                        resource_type=str(target_content_type_id) if target_content_type_id else "",
+                        resource_id=str(target_object_id) if target_object_id else "",
+                        project_id=project_id,
+                    ),
+                    actor_id=int(actor_id) if actor_id else None,
+                )
+                RealtimeEventPublisher().publish_to_project(project_id, rt_event)
+            except Exception as rt_exc:
+                logger.debug("B64: Failed to publish activity event: %s", rt_exc)
+
         return str(event.id)
     except Exception as exc:
         logger.exception("Failed to create ActivityLog: %s", exc)

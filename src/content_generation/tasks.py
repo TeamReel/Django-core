@@ -50,12 +50,21 @@ def generate_content_task(self, content_item_id: int):
             self.soft_time_limit = timeout_seconds
 
         # Update status to generating
+        old_status = item.status
         item.status = ContentStatus.GENERATING
         item.metadata["generation_started_at"] = timezone.now().isoformat()
         item.save()
 
         # Broadcast status update via WebSocket
-        broadcast_content_status(item.id, item.status, progress_percent=0)
+        broadcast_content_status(
+            item.id,
+            item.status,
+            progress_percent=0,
+            old_status=old_status,
+            project_id=item.project_id,
+            template_name=item.template.name,
+            actor_id=item.created_by_id,
+        )
         logger.info(
             "Content generation started",
             extra={
@@ -103,7 +112,15 @@ def generate_content_task(self, content_item_id: int):
         item.save()
 
         # Broadcast completion
-        broadcast_content_status(item.id, item.status, progress_percent=100)
+        broadcast_content_status(
+            item.id,
+            item.status,
+            progress_percent=100,
+            old_status=ContentStatus.GENERATING,
+            project_id=item.project_id,
+            template_name=item.template.name,
+            actor_id=item.created_by_id,
+        )
         logger.info(
             "Content generation completed",
             extra={
@@ -146,7 +163,15 @@ def generate_content_task(self, content_item_id: int):
         item.metadata["generation_failed_at"] = timezone.now().isoformat()
         item.save()
 
-        broadcast_content_status(item.id, item.status, error="Generation timed out")
+        broadcast_content_status(
+            item.id,
+            item.status,
+            error="Generation timed out",
+            old_status=ContentStatus.GENERATING,
+            project_id=item.project_id,
+            template_name=item.template.name,
+            actor_id=item.created_by_id,
+        )
         send_notification_b17(
             user=item.created_by,
             notification_type="content_generation_failed",
@@ -174,7 +199,15 @@ def generate_content_task(self, content_item_id: int):
             item.metadata["generation_failed_at"] = timezone.now().isoformat()
             item.save()
 
-            broadcast_content_status(item.id, item.status, error=str(e))
+            broadcast_content_status(
+                item.id,
+                item.status,
+                error=str(e),
+                old_status=ContentStatus.GENERATING,
+                project_id=item.project_id,
+                template_name=item.template.name,
+                actor_id=item.created_by_id,
+            )
             send_notification_b17(
                 user=item.created_by,
                 notification_type="content_generation_failed",
@@ -222,16 +255,27 @@ def broadcast_content_status(
     status: str,
     progress_percent: int = None,
     error: str = None,
+    *,
+    old_status: str = "",
+    project_id: int | str = "",
+    template_name: str = "",
+    actor_id: int | None = None,
 ):
     """
-    Broadcast content status update via WebSocket (B23 integration).
+    Broadcast content status update via WebSocket (B23 integration)
+    and publish typed realtime event (B64).
 
     Args:
         content_item_id: ContentItem ID
         status: Current status
         progress_percent: Optional progress percentage
         error: Optional error message
+        old_status: Previous status (for B64 event)
+        project_id: Project ID (for B64 event scoping)
+        template_name: Template name (for B64 event)
+        actor_id: User ID that triggered the change
     """
+    # ── Legacy channel-layer broadcast (existing B23 behaviour) ──
     try:
         from asgiref.sync import async_to_sync
         from channels.layers import get_channel_layer
@@ -255,6 +299,50 @@ def broadcast_content_status(
             logger.warning("Channel layer not configured - WebSocket broadcast skipped")
     except Exception as e:
         logger.warning(f"Failed to broadcast WebSocket update: {e}")
+
+    # ── B64: Typed realtime event via RealtimeEventPublisher ──
+    if project_id:
+        try:
+            from rtc_websockets.events import (
+                ContentStatusPayload,
+                EventType,
+                build_event,
+            )
+            from rtc_websockets.services import RealtimeEventPublisher
+
+            payload = ContentStatusPayload(
+                content_item_id=content_item_id,
+                old_status=old_status,
+                new_status=status,
+                project_id=project_id,
+                template_name=template_name,
+                progress_percent=progress_percent,
+                error_message=error,
+            )
+            event = build_event(
+                EventType.CONTENT_STATUS_CHANGED,
+                payload,
+                actor_id=actor_id,
+            )
+            RealtimeEventPublisher().publish_to_project(project_id, event)
+
+            # B64: Also publish approval.requested when content reaches COMPLETED
+            if status == "completed":
+                from rtc_websockets.events import ApprovalRequestedPayload
+
+                approval_event = build_event(
+                    EventType.APPROVAL_REQUESTED,
+                    ApprovalRequestedPayload(
+                        content_item_id=content_item_id,
+                        project_id=project_id,
+                        requester_name="",
+                        template_name=template_name,
+                    ),
+                    actor_id=actor_id,
+                )
+                RealtimeEventPublisher().publish_to_project(project_id, approval_event)
+        except Exception as e:
+            logger.warning(f"Failed to publish B64 content event: {e}")
 
 
 def send_notification_b17(

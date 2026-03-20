@@ -14,6 +14,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { useRealtimeChannel } from '@/hooks/useRealtimeChannel';
+import type { RealtimeEvent } from '@/hooks/useRealtimeChannel';
 
 // ============================================================================
 // Types
@@ -203,6 +205,16 @@ export function useVideoJobs(options: UseVideoJobsOptions): UseVideoJobsReturn {
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
+  // Real-time: subscribe to project channel for instant video updates
+  const VIDEO_EVENT_TYPES = new Set(['video.progress', 'video.completed']);
+  const { status: wsStatus } = useRealtimeChannel({
+    channelType: 'project',
+    channelId: projectId || null,
+    onEvent: useCallback((event: RealtimeEvent) => {
+      if (VIDEO_EVENT_TYPES.has(event.event_type)) refresh();
+    }, [refresh]),
+  });
+
   useEffect(() => {
     let cancelled = false;
 
@@ -249,7 +261,7 @@ export function useVideoJobs(options: UseVideoJobsOptions): UseVideoJobsReturn {
     return () => { cancelled = true; };
   }, [projectId, status, jobType, refreshKey]);
 
-  // Auto-refresh when there are active jobs
+  // Auto-refresh when there are active jobs (slower when WS connected)
   useEffect(() => {
     if (!autoRefresh) return;
 
@@ -262,11 +274,12 @@ export function useVideoJobs(options: UseVideoJobsOptions): UseVideoJobsReturn {
       return;
     }
 
-    intervalRef.current = setInterval(refresh, refreshInterval);
+    const effectiveInterval = wsStatus === 'connected' ? Math.max(refreshInterval, 60_000) : refreshInterval;
+    intervalRef.current = setInterval(refresh, effectiveInterval);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [jobs, autoRefresh, refreshInterval, refresh]);
+  }, [jobs, autoRefresh, refreshInterval, refresh, wsStatus]);
 
   // ── Mutations ────────────────────────────────────────────────────
 

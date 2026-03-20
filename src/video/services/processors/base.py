@@ -54,6 +54,9 @@ class BaseVideoProcessor(ABC):
         self.job.started_at = timezone.now()
         self.job.save(update_fields=["status", "started_at", "updated_at"])
 
+        # B64: publish processing-started event
+        self._publish_video_progress(0)
+
         try:
             logger.info("Downloading source file", extra={"job_id": str(self.job.id)})
             input_path = self._download_source()
@@ -62,6 +65,9 @@ class BaseVideoProcessor(ABC):
             def progress_callback(percent: int) -> None:
                 self.job.progress_percent = percent
                 self.job.save(update_fields=["progress_percent", "updated_at"])
+                # B64: publish progress event (throttled to every 10%)
+                if percent % 10 == 0:
+                    self._publish_video_progress(percent)
 
             command = self.build_command(input_path, output_path)
             logger.info(
@@ -87,6 +93,13 @@ class BaseVideoProcessor(ABC):
             )
 
             logger.info("Video processing completed", extra={"job_id": str(self.job.id)})
+
+            # B64: publish completion event
+            self._publish_video_completed(
+                status="completed",
+                output_file_id=str(output_file.id) if output_file else None,
+            )
+
             return output_file
         except JobCancelledError:
             # Preserve CANCELLED status and mark completion time.
@@ -143,6 +156,62 @@ class BaseVideoProcessor(ABC):
     def _cleanup(self) -> None:
         if self.temp_dir.exists():
             shutil.rmtree(self.temp_dir, ignore_errors=True)
+
+    # ── B64: Realtime event helpers ─────────────────────────────────
+
+    def _publish_video_progress(self, percent: int) -> None:
+        """Publish a video.progress event to the project channel."""
+        try:
+            from rtc_websockets.events import EventType, VideoProgressPayload, build_event
+            from rtc_websockets.services import RealtimeEventPublisher
+
+            payload = VideoProgressPayload(
+                job_id=str(self.job.id),
+                progress_percent=percent,
+                job_type=self.job.job_type,
+                project_id=self.job.project_id,
+            )
+            event = build_event(
+                EventType.VIDEO_PROGRESS,
+                payload,
+                actor_id=self.job.created_by_id,
+            )
+            RealtimeEventPublisher().publish_to_project(self.job.project_id, event)
+        except Exception as e:
+            logger.warning("Failed to publish B64 video progress event: %s", e)
+
+    def _publish_video_completed(
+        self,
+        status: str,
+        output_file_id: str | None = None,
+        error_message: str | None = None,
+    ) -> None:
+        """Publish a video.completed event to the project channel."""
+        try:
+            from rtc_websockets.events import EventType, VideoCompletedPayload, build_event
+            from rtc_websockets.services import RealtimeEventPublisher
+
+            duration: float | None = None
+            if self.job.started_at and self.job.completed_at:
+                duration = (self.job.completed_at - self.job.started_at).total_seconds()
+
+            payload = VideoCompletedPayload(
+                job_id=str(self.job.id),
+                status=status,
+                job_type=self.job.job_type,
+                project_id=self.job.project_id,
+                output_file_id=output_file_id,
+                error_message=error_message,
+                duration_seconds=duration,
+            )
+            event = build_event(
+                EventType.VIDEO_COMPLETED,
+                payload,
+                actor_id=self.job.created_by_id,
+            )
+            RealtimeEventPublisher().publish_to_project(self.job.project_id, event)
+        except Exception as e:
+            logger.warning("Failed to publish B64 video completed event: %s", e)
 
     def _run_ffmpeg(self, command: list[str], progress_callback: ProgressCallback) -> None:
         """Execute FFmpeg with progress tracking."""
@@ -223,4 +292,6 @@ class BaseVideoProcessor(ABC):
                     "error": stderr[:4000],
                 },
             )
+            # B64: publish failure event
+            self._publish_video_completed(status="failed", error_message=stderr[:500])
             raise RuntimeError("FFmpeg failed")

@@ -67,4 +67,22 @@ export const queryKeys = {
   queue: {
     counts: () => ['queue', 'counts'] as const,
   },
+
+  // Content items
+  content: {
+    all: ['content'] as const,
+    byProject: (projectId: string) =>
+      ['content', 'project', projectId] as const,
+    item: (contentId: string) =>
+      ['content', 'item', contentId] as const,
+  },
+
+  // Video jobs
+  videoJobs: {
+    all: ['videoJobs'] as const,
+    byProject: (projectId: string) =>
+      ['videoJobs', 'project', projectId] as const,
+    job: (jobId: string) =>
+      ['videoJobs', 'job', jobId] as const,
+  },
 } as const;

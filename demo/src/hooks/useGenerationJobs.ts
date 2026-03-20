@@ -9,6 +9,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { useRealtimeChannel } from '@/hooks/useRealtimeChannel';
+import type { RealtimeEvent } from '@/hooks/useRealtimeChannel';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -142,10 +144,24 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}): UseGe
     fetchJobs();
   }, [fetchJobs]);
 
-  // Polling — pauses when tab is hidden, resumes + fetches on visibility
+  // Real-time: subscribe to project channel for instant status updates
+  const REALTIME_EVENT_TYPES = new Set([
+    'content.status_changed', 'content.approved', 'content.rejected',
+    'generation.status_changed',
+  ]);
+  const { status: wsStatus } = useRealtimeChannel({
+    channelType: 'project',
+    channelId: project_id || null,
+    onEvent: useCallback((event: RealtimeEvent) => {
+      if (REALTIME_EVENT_TYPES.has(event.event_type)) fetchJobs();
+    }, [fetchJobs]),
+  });
+
+  // Polling — slower when WS is connected, normal when disconnected
+  const effectivePollInterval = wsStatus === 'connected' ? Math.max(pollInterval, 60_000) : pollInterval;
   useEffect(() => {
-    if (!pollInterval) return;
-    let timer = setInterval(fetchJobs, pollInterval);
+    if (!effectivePollInterval) return;
+    let timer = setInterval(fetchJobs, effectivePollInterval);
     const onVisibility = () => {
       if (document.hidden) {
         clearInterval(timer);
@@ -156,7 +172,7 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}): UseGe
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => { clearInterval(timer); document.removeEventListener('visibilitychange', onVisibility); };
-  }, [fetchJobs, pollInterval]);
+  }, [fetchJobs, effectivePollInterval]);
 
   // Derived counts
   const activeJobs = jobs.filter((j) => j.status === 'queued' || j.status === 'waiting' || j.status === 'processing' || j.status === 'retrying');

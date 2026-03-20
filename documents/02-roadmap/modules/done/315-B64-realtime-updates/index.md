@@ -2,7 +2,7 @@
 
 **Priority:** 🔥 Bouwen
 **Phase:** 16
-**Status:** � READY
+**Status:** ✅ DONE
 **Module ID:** 315
 **Category:** Backend (TeamReel Product Feature)
 
@@ -94,11 +94,11 @@
 
 | Fase | Titel | Effort | Status |
 |------|-------|--------|--------|
-| H0 | Event Schema & Publisher | ~4 uur | 📋 Todo |
-| H1 | Content Consumer & Channel Subscriptions | ~3 uur | 📋 Todo |
-| H2 | Frontend WebSocket Hook | ~4 uur | 📋 Todo |
-| H3 | Approval & Activity Events | ~2 uur | 📋 Todo |
-| H4 | Hardening & Monitoring | ~2 uur | 📋 Todo |
+| H0 | Event Schema & Publisher | ~4 uur | ✅ Done |
+| H1 | Content Consumer & Channel Subscriptions | ~3 uur | ✅ Done |
+| H2 | Frontend WebSocket Hook | ~4 uur | ✅ Done |
+| H3 | Approval & Activity Events | ~2 uur | ✅ Done |
+| H4 | Hardening & Monitoring | ~2 uur | ✅ Done |
 
 > Fase-specs: `phases/todo/` → verplaats naar `phases/done/` bij voltooiing.
 
