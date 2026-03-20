@@ -8,7 +8,7 @@
 # Web server (Gunicorn with production settings)
 # This is the default process type that Railway runs automatically.
 # IMPORTANT: ensure migrations run in production so new DB columns exist.
-web: python manage.py migrate --noinput || echo 'Migration failed, starting server anyway'; gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --timeout 300
+web: python manage.py migrate --noinput || echo 'Migration failed, starting server anyway'; gunicorn config.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --workers 2 --timeout 300 --access-logfile -
 
 # Celery Beat scheduler (metrics collection every 10 minutes)
 # SETUP REQUIRED: Create a separate Railway service with custom start command
