@@ -6,7 +6,7 @@
   },
   "deploy": {
     "numReplicas": 1,
-    "startCommand": "python manage.py migrate --noinput && echo '=== MIGRATE OK ===' && python -u /app/scripts/diagnose.py",
+    "startCommand": "python -u /app/scripts/diagnose.py",
     "healthcheckPath": "/health/",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
