@@ -25,6 +25,19 @@ def main():
 
     print(f"Starting Django Core-App on port {port}...", flush=True)
     print(f"DJANGO_SETTINGS_MODULE: {os.environ.get('DJANGO_SETTINGS_MODULE', 'NOT SET')}", flush=True)
+    print(f"PYTHONPATH: {os.environ.get('PYTHONPATH', 'NOT SET')}", flush=True)
+    print(f"PATH: {os.environ.get('PATH', 'NOT SET')}", flush=True)
+
+    # Pre-flight: verify ASGI app imports correctly before starting gunicorn
+    print("\n[Pre-flight] Testing ASGI app import...", flush=True)
+    try:
+        from config.asgi import application as _app  # noqa: F401
+        print(f"[Pre-flight] ASGI app loaded OK: {type(_app).__name__}", flush=True)
+    except Exception as e:
+        print(f"[Pre-flight] ASGI app import FAILED: {e}", flush=True)
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
     def _run_startup_db_tasks():
         """Run optional DB tasks without blocking web server startup."""
@@ -69,6 +82,8 @@ def main():
         "--workers", "2",
         "--timeout", "300",
         "--access-logfile", "-",
+        "--error-logfile", "-",
+        "--log-level", "info",
     ]
 
     print(f"Executing: {' '.join(cmd)}", flush=True)

@@ -6,7 +6,7 @@
   },
   "deploy": {
     "numReplicas": 1,
-    "startCommand": "python manage.py migrate --noinput; gunicorn config.asgi:application -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT --workers 2 --timeout 300 --access-logfile -",
+    "startCommand": "python manage.py migrate --noinput 2>&1; exec python /app/scripts/start.py 2>&1",
     "healthcheckPath": "/health/",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
