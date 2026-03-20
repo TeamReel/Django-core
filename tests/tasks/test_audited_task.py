@@ -72,7 +72,10 @@ class TestAuditedTask:
         def failing_audited_task(user_id, org_id):
             raise ValueError("Test failure")
 
-        result = failing_audited_task.apply(kwargs={"user_id": test_user.id, "org_id": test_org.id})
+        # Use throw=False to capture the exception result instead of raising
+        result = failing_audited_task.apply(
+            kwargs={"user_id": test_user.id, "org_id": test_org.id}, throw=False
+        )
         assert result.failed()
 
         # Verify failed event created
@@ -134,7 +137,8 @@ class TestAuditedTask:
                 "org_id": test_org.id,
                 "export_format": "csv",
                 # Missing user_id - required positional argument
-            }
+            },
+            throw=False,
         )
 
         # Task should fail due to missing required argument
@@ -150,7 +154,8 @@ class TestAuditedTask:
                 "org_id": test_org.id,
                 "export_format": "json",
                 "password": "secret123",  # Unexpected argument
-            }
+            },
+            throw=False,
         )
 
         # Task should fail due to unexpected keyword argument

@@ -294,34 +294,34 @@ class TestCreateSport:
     def test_create_sport_staff_success(self, staff_client):
         """Staff users can create sports."""
         data = {
-            "name": "Basketball",
-            "slug": "basketball",
+            "name": "Basketball Create Test",
+            "slug": "basketball-create-test",
             "sport_icon": "🏀",
         }
         response = staff_client.post("/api/v1/sports/", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data["name"] == "Basketball"
-        assert response.data["slug"] == "basketball"
+        assert response.data["name"] == "Basketball Create Test"
+        assert response.data["slug"] == "basketball-create-test"
 
         # Verify sport was created in database
-        assert Sport.objects.filter(slug="basketball").exists()
+        assert Sport.objects.filter(slug="basketball-create-test").exists()
 
     def test_create_sport_auto_creates_configuration(self, staff_client):
         """Creating a sport automatically creates its configuration."""
-        data = {"name": "Futsal", "slug": "futsal"}
+        data = {"name": "Futsal Auto Config Test", "slug": "futsal-auto-config-test"}
         response = staff_client.post("/api/v1/sports/", data, format="json")
         assert response.status_code == status.HTTP_201_CREATED
 
         # Verify configuration exists
-        sport = Sport.objects.get(slug="futsal")
+        sport = Sport.objects.get(slug="futsal-auto-config-test")
         assert hasattr(sport, "configuration")
         assert sport.configuration is not None
 
     def test_create_sport_with_custom_configuration(self, staff_client):
         """Sport can be created with custom configuration values."""
         data = {
-            "name": "Handball",
-            "slug": "handball",
+            "name": "Handball Custom Config Test",
+            "slug": "handball-custom-config-test",
             "configuration": {
                 "team_size_min": 5,
                 "team_size_max": 7,

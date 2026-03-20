@@ -30,8 +30,8 @@ class TestSportModel:
     def test_create_sport_full(self):
         """Sport can be created with all fields."""
         sport = Sport.objects.create(
-            name="Handball",
-            slug="handball",
+            name="Handball Test",
+            slug="handball-test-full",
             federation_metadata={"code": "NHV", "country": "NL"},
             sport_icon="🤾",
             is_active=True,
@@ -46,18 +46,22 @@ class TestSportModel:
 
     def test_sport_slug_unique(self):
         """Sport slug must be unique."""
-        Sport.objects.create(name="Football", slug="football")
+        Sport.objects.create(name="UniqueTest", slug="unique-test-slug")
         with pytest.raises(IntegrityError):
-            Sport.objects.create(name="Football Copy", slug="football")
+            Sport.objects.create(name="UniqueTest Copy", slug="unique-test-slug")
 
     def test_sport_ordering(self):
         """Sports are ordered by name."""
-        Sport.objects.create(name="Handball", slug="handball")
-        Sport.objects.create(name="Basketball", slug="basketball")
-        Sport.objects.create(name="Football", slug="football")
+        # Create with unique slugs and filter by these specific ones
+        Sport.objects.create(name="Aaa Test", slug="aaa-ordering-test")
+        Sport.objects.create(name="Bbb Test", slug="bbb-ordering-test")
+        Sport.objects.create(name="Ccc Test", slug="ccc-ordering-test")
 
-        sports = list(Sport.objects.values_list("name", flat=True))
-        assert sports == ["Basketball", "Football", "Handball"]
+        # Filter to only our test sports to avoid seed data interference
+        sports = list(
+            Sport.objects.filter(slug__endswith="-ordering-test").values_list("name", flat=True)
+        )
+        assert sports == ["Aaa Test", "Bbb Test", "Ccc Test"]
 
     def test_sport_timestamps(self):
         """Sport has created_at and updated_at timestamps."""
@@ -162,11 +166,11 @@ class TestSportConfigurationModel:
 
     def test_configuration_cascade_delete(self, sport):
         """Deleting sport cascades to configuration."""
-        SportConfiguration.objects.create(sport=sport)
-        assert SportConfiguration.objects.count() == 1
+        config = SportConfiguration.objects.create(sport=sport)
+        config_pk = config.pk
 
         sport.delete()
-        assert SportConfiguration.objects.count() == 0
+        assert not SportConfiguration.objects.filter(pk=config_pk).exists()
 
     def test_configuration_related_name(self, sport):
         """Sport.configuration returns the associated configuration."""
@@ -450,12 +454,12 @@ class TestProjectSportIntegration:
     @pytest.fixture
     def sport(self):
         """Create a test sport."""
-        return Sport.objects.create(name="Football", slug="football")
+        return Sport.objects.create(name="Football Test", slug="football-project-test")
 
     @pytest.fixture
     def futsal(self):
         """Create a futsal sport."""
-        return Sport.objects.create(name="Futsal", slug="futsal")
+        return Sport.objects.create(name="Futsal Test", slug="futsal-project-test")
 
     def test_project_sport_nullable(self, organisation, user):
         """Project.sport is nullable."""

@@ -21,6 +21,9 @@ class TestFeatureFlagAPIEndpoints(APITestCase):
 
     def setUp(self):
         """Set up test data."""
+        # Clear any existing flags to ensure clean test state
+        FeatureFlag.objects.all().delete()
+
         self.superuser = User.objects.create_superuser(
             email="admin@example.com", password="adminpass123"
         )

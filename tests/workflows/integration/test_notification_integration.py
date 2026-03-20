@@ -209,7 +209,7 @@ class TestNotificationIntegration:
             # Register custom notification hook
             @HookRegistry.hook("on_enter", "approved")
             def notify_approval(instance, transition):
-                from notifications.services import notification_service
+                from src.notifications.services import notification_service
 
                 notification_service.send_notification(
                     recipient_ids=[instance.created_by_id],

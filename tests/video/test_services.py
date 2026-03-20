@@ -15,12 +15,14 @@ def video_service():
 
 @pytest.mark.django_db
 class TestVideoService:
+    @patch("src.video.services.video_service.transaction.on_commit", side_effect=lambda fn: fn())
     @patch("src.video.tasks.transcode_video.delay")
     @patch("src.video.services.video_service.get_storage_backend")
     def test_create_transcode_job_success(
         self,
         mock_get_backend,
         mock_transcode_task,
+        mock_on_commit,
         video_service,
         project,
         user,
@@ -45,10 +47,18 @@ class TestVideoService:
         assert job.preset == video_preset
         mock_transcode_task.assert_called_once_with(str(job.id))
 
+    @patch("src.video.services.video_service.transaction.on_commit", side_effect=lambda fn: fn())
     @patch("src.video.tasks.generate_thumbnail.delay")
     @patch("src.video.services.video_service.get_storage_backend")
     def test_create_thumbnail_job_success(
-        self, mock_get_backend, mock_thumbnail_task, video_service, project, user, video_file
+        self,
+        mock_get_backend,
+        mock_thumbnail_task,
+        mock_on_commit,
+        video_service,
+        project,
+        user,
+        video_file,
     ):
         """Test creating a thumbnail job."""
         backend = MagicMock()
@@ -133,8 +143,9 @@ class TestVideoService:
         video_job.refresh_from_db()
         assert video_job.status == JobStatus.PROCESSING
 
+    @patch("src.video.services.video_service.transaction.on_commit", side_effect=lambda fn: fn())
     @patch("src.video.tasks.transcode_video.delay")
-    def test_retry_job(self, mock_transcode, video_service, video_job):
+    def test_retry_job(self, mock_transcode, mock_on_commit, video_service, video_job):
         """Test retrying a failed job."""
         video_job.status = JobStatus.FAILED
         video_job.job_type = JobType.TRANSCODE

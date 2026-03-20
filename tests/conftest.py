@@ -162,6 +162,15 @@ def redis_config(celery_app):
             # Celery now using Redis for this test
             pass
     """
+    import redis
+
+    # Check if Redis is available
+    try:
+        client = redis.Redis(host="localhost", port=6379, db=15)
+        client.ping()
+    except (redis.ConnectionError, redis.exceptions.ConnectionError):
+        pytest.skip("Redis not available - skipping integration test")
+
     # Save original config
     original_broker = celery_app.conf.broker_url
     original_backend = celery_app.conf.result_backend

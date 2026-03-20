@@ -51,13 +51,18 @@ def authenticated_client(api_client, user):
 
 @pytest.fixture
 def football_sport(db):
-    """Create a football sport with configuration for testing."""
-    sport = Sport.objects.create(
-        name="Football",
+    """Create or get a football sport with configuration for testing."""
+    # Use get_or_create since migrations may have seeded this sport
+    sport, _ = Sport.objects.get_or_create(
         slug="football",
-        sport_icon="⚽",
-        federation_metadata={"code": "KNVB", "country": "NL"},
+        defaults={
+            "name": "Football",
+            "sport_icon": "⚽",
+            "federation_metadata": {"code": "KNVB", "country": "NL"},
+        },
     )
+    # Ensure configuration exists with our test values
+    SportConfiguration.objects.filter(sport=sport).delete()
     SportConfiguration.objects.create(
         sport=sport,
         team_size_min=7,

@@ -16,7 +16,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 
-from sport_configuration.models import Formation, OutfitConfiguration, Sport
+from sport_configuration.models import Formation, OutfitConfiguration, Sport, SportConfiguration
 from sport_configuration.serializers import (
     FormationListSerializer,
     FormationSerializer,
@@ -368,7 +368,14 @@ class ValidationViewSet(viewsets.ViewSet):
         """
         try:
             sport = Sport.objects.select_related("configuration").get(slug=sport_slug)
-            return sport.configuration, None
+            # Check if sport has a configuration (OneToOne may not exist)
+            try:
+                return sport.configuration, None
+            except SportConfiguration.DoesNotExist:
+                return None, Response(
+                    {"error": f"Sport '{sport_slug}' has no configuration"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
         except Sport.DoesNotExist:
             return None, Response(
                 {"error": f"Sport '{sport_slug}' not found"},

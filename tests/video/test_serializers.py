@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -20,14 +21,25 @@ if TYPE_CHECKING:
 class TestVideoJobCreateSerializer:
     """Tests for VideoJobCreateSerializer."""
 
+    @patch("src.video.services.video_service.transaction.on_commit", side_effect=lambda fn: fn())
+    @patch("src.video.services.video_service.get_storage_backend")
+    @patch("src.video.tasks.transcode_video.delay")
     def test_valid_transcode_job_creation(
         self,
+        mock_task,
+        mock_get_backend,
+        mock_on_commit,
         video_preset_factory,
         project_factory,
         file_factory,
         user_factory,
     ):
         """Test creating a valid transcode job."""
+        # Setup backend mock
+        backend = MagicMock()
+        backend.exists.return_value = True
+        mock_get_backend.return_value = backend
+
         preset = video_preset_factory()
         project = project_factory()
         file = file_factory(organization=project.organisation)
@@ -77,14 +89,25 @@ class TestVideoJobCreateSerializer:
         assert not serializer.is_valid()
         assert "overlays" in serializer.errors
 
+    @patch("src.video.services.video_service.transaction.on_commit", side_effect=lambda fn: fn())
+    @patch("src.video.services.video_service.get_storage_backend")
+    @patch("src.video.tasks.compose_video.delay")
     def test_valid_compose_job_with_overlays(
         self,
+        mock_task,
+        mock_get_backend,
+        mock_on_commit,
         project_factory,
         file_factory,
         user_factory,
         video_preset_factory,
     ):
         """Test creating a compose job with overlays."""
+        # Setup backend mock
+        backend = MagicMock()
+        backend.exists.return_value = True
+        mock_get_backend.return_value = backend
+
         project = project_factory()
         file = file_factory(organization=project.organisation)
         preset = video_preset_factory()

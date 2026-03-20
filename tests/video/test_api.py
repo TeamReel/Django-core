@@ -82,6 +82,11 @@ class TestVideoJobAPI:
         # Mock VideoService task dispatch
         mock_task = mocker.patch("src.video.tasks.transcode_video.delay")
 
+        # Mock storage backend to return True for exists check
+        mocker.patch(
+            "src.video.services.video_service.get_storage_backend"
+        ).return_value.exists.return_value = True
+
         # Pass project via query param to ensure it's picked up
         response = api_client.post(f"{url}?project={project.id}", data)
 
