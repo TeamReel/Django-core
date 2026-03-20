@@ -154,6 +154,13 @@
   background-color: var(--color-amber-400);
 }
 
+/* ── Connection Status indicator ── */
+.connectionStatus {
+  padding: 8px 12px;
+  font-size: var(--font-size-xs, 11px);
+  color: var(--sidebar-a-muted, var(--alpha-white-60));
+}
+
 /* ── Expand button (collapsed state) ── */
 .expandButton {
   top: 64px;

@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { PanelLeftClose, PanelLeft } from 'lucide-react';
 import { AppIcon } from './AppIcon';
+import { ConnectionStatus } from './ui/ConnectionStatus';
 import { useSidebarData } from './useSidebarData';
 import { preloadRoute } from '../utils/preloadRoute';
 import { routes } from '../routes';
@@ -214,6 +215,9 @@ const Sidebar = memo(function Sidebar({ isOpen, toggle }: SidebarProps) {
                         );
                     })}
                 </div>
+
+                {/* Real-time connection indicator */}
+                <ConnectionStatus showLabel={isOpen} className={styles.connectionStatus} />
 
                 {/* Expand button when collapsed */}
                 {!isOpen && (
