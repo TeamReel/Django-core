@@ -23,8 +23,8 @@ def main():
         print(f"ERROR: PORT env var is not numeric: '{port}', using 8080")
         port = "8080"
 
-    print(f"Starting Django Core-App on port {port}...")
-    print(f"DJANGO_SETTINGS_MODULE: {os.environ.get('DJANGO_SETTINGS_MODULE', 'NOT SET')}")
+    print(f"Starting Django Core-App on port {port}...", flush=True)
+    print(f"DJANGO_SETTINGS_MODULE: {os.environ.get('DJANGO_SETTINGS_MODULE', 'NOT SET')}", flush=True)
 
     def _run_startup_db_tasks():
         """Run optional DB tasks without blocking web server startup."""
@@ -68,26 +68,15 @@ def main():
         "config.asgi:application",
     ]
 
-    print(f"Executing: {' '.join(cmd)}")
-    print("NOTE: DB migrations will run in background after server binds\n")
+    print(f"Executing: {' '.join(cmd)}", flush=True)
+    print("NOTE: DB migrations will run in background after server binds\n", flush=True)
 
     # Start DB tasks in background so health checks can pass quickly
     threading.Thread(target=_run_startup_db_tasks, daemon=True).start()
 
-    # Rebuild search index (ensure demo data is searchable)
-    # NOTE: Disabled for now to prevent DB connection exhaustion on startup
-    # Should be run manually via Railway CLI: railway run python manage.py rebuild_search_index
-    # print("\nRebuilding search index...")
-    # try:
-    #     subprocess.run(["python", "manage.py", "rebuild_search_index"], check=True, cwd="/app")
-    #     print("✓ Search index rebuilt successfully")
-    # except subprocess.CalledProcessError as e:
-    #     print(f"Warning: Search index rebuild failed: {e}")
-    # Don't exit, app can still run
-
     # Spawn Daphne as child process so this script can run background tasks.
     # Forward termination signals to Daphne.
-    proc = subprocess.Popen(cmd, cwd="/app")
+    proc = subprocess.Popen(cmd, cwd="/app", stdout=sys.stdout, stderr=sys.stderr)
 
     def _terminate(*_args):
         try:
@@ -99,6 +88,7 @@ def main():
     signal.signal(signal.SIGINT, _terminate)
 
     exit_code = proc.wait()
+    print(f"Daphne exited with code {exit_code}", flush=True)
     sys.exit(exit_code)
 
 
