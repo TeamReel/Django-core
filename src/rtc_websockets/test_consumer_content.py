@@ -219,3 +219,38 @@ class TestDisconnect:
         with patch.object(ContentUpdateConsumer.__bases__[0], "disconnect", new_callable=AsyncMock):
             _run(consumer.disconnect(1000))
         assert consumer.channel_layer.group_discard.call_count == 2
+
+
+# ── Auth Guard Tests ───────────────────────────────────────────────
+
+
+class TestAuthGuard:
+    """Verify connect() does not proceed when user is unauthenticated."""
+
+    def test_unauthenticated_user_no_setup(self):
+        """Unauthenticated user should not get subscribed_groups or connection_record."""
+        consumer = ContentUpdateConsumer()
+        consumer.scope = {
+            "user": MagicMock(is_authenticated=False),
+            "client": ("127.0.0.1", 12345),
+        }
+        consumer.channel_name = "test.channel.anon"
+        consumer.channel_layer = AsyncMock()
+
+        with patch.object(ContentUpdateConsumer.__bases__[0], "connect", new_callable=AsyncMock):
+            _run(consumer.connect())
+
+        assert not hasattr(consumer, "subscribed_groups")
+        assert not hasattr(consumer, "connection_record")
+
+    def test_no_user_no_setup(self):
+        """Missing user in scope should not proceed."""
+        consumer = ContentUpdateConsumer()
+        consumer.scope = {"client": ("127.0.0.1", 12345)}
+        consumer.channel_name = "test.channel.none"
+        consumer.channel_layer = AsyncMock()
+
+        with patch.object(ContentUpdateConsumer.__bases__[0], "connect", new_callable=AsyncMock):
+            _run(consumer.connect())
+
+        assert not hasattr(consumer, "subscribed_groups")

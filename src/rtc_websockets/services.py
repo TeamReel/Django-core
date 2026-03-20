@@ -10,8 +10,9 @@ from .metrics import inc_websocket_messages_sent
 
 logger = logging.getLogger(__name__)
 
-# In-memory queue for failed messages
+# In-memory queue for failed messages (capped to prevent memory leaks)
 FAILED_MESSAGE_QUEUE = []
+FAILED_MESSAGE_QUEUE_MAX_SIZE = 1000
 
 
 class NotificationService:
@@ -99,10 +100,17 @@ class NotificationService:
 
         except Exception as e:
             logger.error(f"Failed to send notification to {group_name}: {e}")
-            # Queue for retry
-            FAILED_MESSAGE_QUEUE.append(
-                {"group": group_name, "envelope": envelope, "timestamp": timezone.now()}
-            )
+            # Queue for retry (capped to prevent unbounded memory growth)
+            if len(FAILED_MESSAGE_QUEUE) < FAILED_MESSAGE_QUEUE_MAX_SIZE:
+                FAILED_MESSAGE_QUEUE.append(
+                    {"group": group_name, "envelope": envelope, "timestamp": timezone.now()}
+                )
+            else:
+                logger.warning(
+                    "FAILED_MESSAGE_QUEUE is full (%d items), dropping message for %s",
+                    FAILED_MESSAGE_QUEUE_MAX_SIZE,
+                    group_name,
+                )
 
     def retry_failed_messages(self):
         """

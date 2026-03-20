@@ -442,12 +442,15 @@ class ContentUpdateConsumer(BaseConsumer):
 
     async def connect(self):
         await super().connect()
+        # BaseConsumer.connect() closes with 4003 if unauthenticated,
+        # but the close is async — guard against proceeding on a rejected connection.
         user = self.scope.get("user")
-        if user and user.is_authenticated:
-            self.user = user
-            self.subscribed_groups: list[str] = []
-            self.connection_record = await self._create_connection_record()
-            logger.info(f"ContentUpdateConsumer connected for user {user.id}")
+        if not user or not user.is_authenticated:
+            return
+        self.user = user
+        self.subscribed_groups: list[str] = []
+        self.connection_record = await self._create_connection_record()
+        logger.info(f"ContentUpdateConsumer connected for user {user.id}")
 
     async def disconnect(self, close_code):
         # Leave all subscribed groups

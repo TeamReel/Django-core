@@ -59,6 +59,16 @@ class JWTAuthMiddleware:
 
                 # Decode token
                 payload = jwt.decode(token, key, algorithms=[algorithm])
+
+                # Validate token_type to prevent reuse of access/refresh tokens
+                token_type = payload.get("token_type")
+                if token_type != "websocket":
+                    logger.warning(
+                        "JWT token_type mismatch: expected 'websocket', got '%s'",
+                        token_type,
+                    )
+                    return await self.app(scope, receive, send)
+
                 user_id = payload.get("user_id")
 
                 if user_id:

@@ -19,7 +19,11 @@ def get_websocket_token(request):
     algorithm = simple_jwt_settings.get("ALGORITHM", "HS256")
 
     # Token valid for 5 minutes
-    payload = {"user_id": user.id, "exp": int(time.time()) + 300}
+    payload = {
+        "user_id": user.id,
+        "token_type": "websocket",
+        "exp": int(time.time()) + 300,
+    }
 
     token = jwt.encode(payload, key, algorithm=algorithm)
 
