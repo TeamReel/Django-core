@@ -111,7 +111,7 @@ class SoftDeleteMixin(models.Model):
     def _create_trash_item(self, user=None) -> None:
         """Create a TrashItem record for this soft-deleted object."""
         # Import here to avoid circular imports
-        from src.trash.models import TrashItem
+        from trash.models import TrashItem
 
         organisation = self.get_organisation()
         if organisation is None:
@@ -138,7 +138,7 @@ class SoftDeleteMixin(models.Model):
     def _delete_trash_item(self) -> None:
         """Remove the TrashItem record when restoring."""
         # Import here to avoid circular imports
-        from src.trash.models import TrashItem
+        from trash.models import TrashItem
 
         content_type = ContentType.objects.get_for_model(self.__class__)
         TrashItem.objects.filter(
@@ -160,8 +160,15 @@ class SoftDeleteMixin(models.Model):
         self.deleted_by = user
         self.save(update_fields=["deleted_at", "deleted_by"])
 
-        # Create TrashItem for unified trash view
-        self._create_trash_item(user=user)
+        # Create TrashItem for unified trash view (non-fatal)
+        try:
+            self._create_trash_item(user=user)
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).warning(
+                "Failed to create TrashItem for %s pk=%s", self.__class__.__name__, self.pk
+            )
 
         # Cascade soft-delete to configured related objects
         for field_name in self.soft_delete_cascade_fields:
@@ -188,8 +195,15 @@ class SoftDeleteMixin(models.Model):
         self.deleted_by = None
         self.save(update_fields=["deleted_at", "deleted_by"])
 
-        # Remove from trash
-        self._delete_trash_item()
+        # Remove from trash (non-fatal)
+        try:
+            self._delete_trash_item()
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).warning(
+                "Failed to delete TrashItem for %s pk=%s", self.__class__.__name__, self.pk
+            )
 
         # Cascade restore
         for field_name in self.soft_delete_cascade_fields:
