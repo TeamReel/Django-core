@@ -19,6 +19,8 @@ export function TrashSheetContent() {
 
   // Get unique content types from stats for filter dropdown
   const contentTypes = useMemo(() => {
+    // Defensive: stats might not be an array during loading
+    if (!Array.isArray(trash.stats)) return [];
     return trash.stats.map((stat) => ({
       value: stat.content_type,
       label: stat.content_type.split('.').pop() || stat.content_type,
@@ -72,6 +74,9 @@ export function TrashSheetContent() {
     );
   }
 
+  // Safely access stats array
+  const statsArray = Array.isArray(trash.stats) ? trash.stats : [];
+
   return (
     <div className={s.container}>
       {/* Header description */}
@@ -80,9 +85,9 @@ export function TrashSheetContent() {
       </p>
 
       {/* Stats badges */}
-      {trash.stats.length > 0 && (
+      {statsArray.length > 0 && (
         <div className={s.stats}>
-          {trash.stats.map((stat) => (
+          {statsArray.map((stat) => (
             <span key={stat.content_type} className={s.statBadge}>
               {stat.content_type.split('.').pop()}: {stat.count}
             </span>
