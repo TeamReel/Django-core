@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   User, KeyRound, Camera, Wallet, Sun, Moon,
   Globe, ChevronRight, ChevronDown, LogOut, Shield,
-  Bell, Mail, Megaphone, Layers,
+  Bell, Mail, Megaphone, Layers, Trash2,
 } from 'lucide-react';
 import { useSignOut } from '@django-core/auth-ui';
 import { usePreferencesData } from './config/usePreferencesData';
@@ -24,6 +24,7 @@ import s from './ProfileHubPage.module.css';
 const CreditsSheetContent = lazy(() => import('./config/CreditsSheetContent').then(m => ({ default: m.CreditsSheetContent })));
 const NotificationsSheetContent = lazy(() => import('./config/NotificationsSheetContent').then(m => ({ default: m.NotificationsSheetContent })));
 const MembershipsSheetContent = lazy(() => import('./config/MembershipsSheetContent').then(m => ({ default: m.MembershipsSheetContent })));
+const TrashSheetContent = lazy(() => import('./config/TrashSheetContent').then(m => ({ default: m.TrashSheetContent })));
 
 /* ── Language / timezone option maps ─────────────────────────────────── */
 const LANGUAGES = [
@@ -56,6 +57,7 @@ export default function ProfileHubPage() {
   const [creditsOpen, setCreditsOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [membershipsOpen, setMembershipsOpen] = useState(false);
+  const [trashOpen, setTrashOpen] = useState(false);
 
   const { user, preferences, setPreferences, handleSavePreferences } = d;
 
@@ -329,6 +331,11 @@ export default function ProfileHubPage() {
           <span className={s.rowLabel}>Memberships</span>
           <ChevronRight size={16} className={s.chevron} />
         </button>
+        <button className={s.row} onClick={() => setTrashOpen(true)}>
+          <Trash2 size={20} />
+          <span className={s.rowLabel}>Prullenbak</span>
+          <ChevronRight size={16} className={s.chevron} />
+        </button>
       </div>
 
       {/* ── Sign Out ─────────────────────────────────────────────────── */}
@@ -358,6 +365,12 @@ export default function ProfileHubPage() {
       <ProfileSheet title="Memberships" isOpen={membershipsOpen} onClose={() => setMembershipsOpen(false)}>
         <Suspense fallback={<div className={s.loading}>Loading…</div>}>
           <MembershipsSheetContent />
+        </Suspense>
+      </ProfileSheet>
+
+      <ProfileSheet title="Prullenbak" isOpen={trashOpen} onClose={() => setTrashOpen(false)}>
+        <Suspense fallback={<div className={s.loading}>Loading…</div>}>
+          <TrashSheetContent />
         </Suspense>
       </ProfileSheet>
     </div>
