@@ -215,17 +215,40 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                             type="button"
                             className="app-action-button action-btn action-btn-danger"
                             onClick={async () => {
-                              if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
+                              const compName = competition.name || '';
+                              const compId = String(competition.id);
+                              if (!window.confirm(`Competitie "${compName}" verwijderen? Het wordt verplaatst naar de prullenbak.`)) return;
                               try {
+                                const deletedComp = competition;
+                                setCompetitions((prev) => prev.filter((c) => String(c.id) !== compId));
                                 await api.delete(`/periods/${competition.id}/`);
-                                setCompetitions((prev) => prev.filter((c) => String(c.id) !== String(competition.id)));
+                                pushToast({
+                                  message: `"${compName}" verplaatst naar prullenbak`,
+                                  type: 'info',
+                                  actions: [{
+                                    label: 'Ongedaan maken',
+                                    onClick: async () => {
+                                      try {
+                                        const trashItem = await trashApi.findByObjectId(compId);
+                                        if (trashItem) {
+                                          await trashApi.restore(trashItem.id);
+                                          setCompetitions((prev) => [...prev, deletedComp]);
+                                          pushToast({ message: `"${compName}" hersteld`, type: 'success' });
+                                        }
+                                      } catch (err) {
+                                        logger.error('Failed to restore competition', err);
+                                        pushToast({ message: 'Herstellen mislukt', type: 'error' });
+                                      }
+                                    },
+                                  }],
+                                });
                               } catch (e) {
                                 logger.error('Error deleting competition', e);
-                                pushToast({ message: 'Error deleting competition', type: 'error' });
+                                pushToast({ message: 'Verwijderen mislukt', type: 'error' });
                               }
                             }}
                           >
-                            Delete
+                            Verwijderen
                           </button>
                         )}
                       </div>

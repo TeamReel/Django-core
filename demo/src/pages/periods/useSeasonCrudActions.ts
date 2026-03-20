@@ -3,6 +3,7 @@ import type { Period, SeasonProject, SeasonOrganisation } from '../../types/seas
 import type { SeasonSquadAddMemberPayload } from '../identity/seasonSquadAddMember.types';
 import { api } from '@/api/client';
 import { periodsApi, activitiesApi } from '@/api';
+import { trashApi } from '@/api/trash';
 import type { Period as ApiPeriod, Activity } from '../../types/api/activity';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { logger } from '@/utils/logger';
@@ -72,15 +73,36 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
   // ── Delete season handler ──
 
   const handleDeleteSeason = useCallback(async () => {
-    if (!window.confirm(`Are you sure you want to delete season ${season?.name}?`)) return;
+    const seasonName = season?.name || '';
+    const seasonId = String(resolvedSeasonId || effectiveSeasonId || '');
+    if (!window.confirm(`Seizoen "${seasonName}" verwijderen? Het wordt verplaatst naar de prullenbak.`)) return;
     try {
       await api.delete(
-        `/periods/${encodeURIComponent(String(resolvedSeasonId || effectiveSeasonId || ''))}/`,
+        `/periods/${encodeURIComponent(seasonId)}/`,
       );
+      pushToast({
+        message: `"${seasonName}" verplaatst naar prullenbak`,
+        type: 'info',
+        actions: [{
+          label: 'Ongedaan maken',
+          onClick: async () => {
+            try {
+              const trashItem = await trashApi.findByObjectId(seasonId);
+              if (trashItem) {
+                await trashApi.restore(trashItem.id);
+                pushToast({ message: `"${seasonName}" hersteld`, type: 'success' });
+              }
+            } catch (err) {
+              logger.error('Failed to restore season', err);
+              pushToast({ message: 'Herstellen mislukt', type: 'error' });
+            }
+          },
+        }],
+      });
       navigate(seasonsBasePath);
     } catch (e) {
       logger.error('Error deleting season', e);
-      pushToast({ message: 'Error deleting season', type: 'error' });
+      pushToast({ message: 'Verwijderen mislukt', type: 'error' });
     }
   }, [resolvedSeasonId, effectiveSeasonId, season?.name, seasonsBasePath, navigate]);
 

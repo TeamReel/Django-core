@@ -8,6 +8,7 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 
 import { api } from '@/api';
+import { trashApi } from '@/api/trash';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
 import { getApiV1BaseUrl } from '../../utils/apiFetch';
@@ -297,11 +298,31 @@ export function useSquadPageData(): UseSquadPageDataReturn {
   const deleteSeason = async () => {
     const seasonUuid = String(resolvedSeasonId || '').trim();
     if (!seasonUuid) return;
-    if (!window.confirm(`Are you sure you want to delete season ${season?.name || ''}?`)) return;
+    const seasonName = season?.name || '';
+    if (!window.confirm(`Seizoen "${seasonName}" verwijderen? Het wordt verplaatst naar de prullenbak.`)) return;
     try {
       await api.delete(`/periods/${encodeURIComponent(seasonUuid)}/`);
+      pushToast({
+        message: `"${seasonName}" verplaatst naar prullenbak`,
+        type: 'info',
+        actions: [{
+          label: 'Ongedaan maken',
+          onClick: async () => {
+            try {
+              const trashItem = await trashApi.findByObjectId(seasonUuid);
+              if (trashItem) {
+                await trashApi.restore(trashItem.id);
+                pushToast({ message: `"${seasonName}" hersteld`, type: 'success' });
+              }
+            } catch (err) {
+              logger.error('Failed to restore season', err);
+              pushToast({ message: 'Herstellen mislukt', type: 'error' });
+            }
+          },
+        }],
+      });
       navigate(seasonsBasePath);
-    } catch (e) { logger.error('Error deleting season', e); pushToast({ message: 'Error deleting season', type: 'error' }); }
+    } catch (e) { logger.error('Error deleting season', e); pushToast({ message: 'Verwijderen mislukt', type: 'error' }); }
   };
 
   const deleteMembership = async (membership: Membership) => {

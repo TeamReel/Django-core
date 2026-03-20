@@ -5,6 +5,7 @@
  */
 import type React from 'react';
 import { api } from '@/api';
+import { trashApi } from '@/api/trash';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
 import { getApiV1BaseUrl } from '../../utils/apiFetch';
@@ -145,11 +146,31 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
   const deleteCompetition = async () => {
     const cid = String(resolvedCompetitionId || competition?.id || '').trim();
     if (!cid) return;
-    if (!window.confirm(`Are you sure you want to delete competition ${competition?.name}?`)) return;
+    const compName = competition?.name || '';
+    if (!window.confirm(`Competitie "${compName}" verwijderen? Het wordt verplaatst naar de prullenbak.`)) return;
     try {
       await api.delete(`/periods/${encodeURIComponent(cid)}/`);
+      pushToast({
+        message: `"${compName}" verplaatst naar prullenbak`,
+        type: 'info',
+        actions: [{
+          label: 'Ongedaan maken',
+          onClick: async () => {
+            try {
+              const trashItem = await trashApi.findByObjectId(cid);
+              if (trashItem) {
+                await trashApi.restore(trashItem.id);
+                pushToast({ message: `"${compName}" hersteld`, type: 'success' });
+              }
+            } catch (err) {
+              logger.error('Failed to restore competition', err);
+              pushToast({ message: 'Herstellen mislukt', type: 'error' });
+            }
+          },
+        }],
+      });
       navigate(`${seasonsBasePath}/${seasonKeyOrId}?tab=competitions`);
-    } catch (e) { logger.error('Error deleting competition', e); pushToast({ message: 'Error deleting competition', type: 'error' }); }
+    } catch (e) { logger.error('Error deleting competition', e); pushToast({ message: 'Verwijderen mislukt', type: 'error' }); }
   };
 
   const createMatchInCompetition = async (payload: CreateMatchPayload) => {

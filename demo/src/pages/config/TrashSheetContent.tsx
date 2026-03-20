@@ -5,7 +5,7 @@
  * Lazy-loaded when trash sheet opens.
  */
 import { useState, useMemo, useCallback } from 'react';
-import { Trash2, RotateCcw, AlertCircle } from 'lucide-react';
+import { Trash2, RotateCcw, AlertCircle, AlertTriangle } from 'lucide-react';
 import { useTrash } from '../../hooks/useTrash';
 import { useUserRole } from '../../components/PermissionGuards';
 import { contentTypeLabel } from '../../utils/contentTypeLabels';
@@ -71,6 +71,16 @@ export function TrashSheetContent() {
       <div className={s.loading} role="status" aria-live="polite">
         <div className={s.spinner} />
         <span>Laden...</span>
+      </div>
+    );
+  }
+
+  // Error state
+  if (trash.error && trash.items.length === 0) {
+    return (
+      <div className={s.emptyState} role="alert">
+        <AlertTriangle size={40} className={s.emptyIcon} aria-hidden="true" />
+        <span>Kon prullenbak niet laden</span>
       </div>
     );
   }
@@ -141,7 +151,7 @@ export function TrashSheetContent() {
 
       {/* Trash items list */}
       {filteredItems.length > 0 && (
-        <ul className={s.list}>
+        <ul className={s.list} aria-label="Verwijderde items">
           {filteredItems.map((item) => (
             <li key={item.id} className={s.item}>
               <div className={s.itemContent}>
