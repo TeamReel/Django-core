@@ -1,10 +1,12 @@
 /**
  * State & handlers for SettingsPage, extracted so the page file focuses on JSX.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
+import { useTrash } from '@/hooks/useTrash';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export function useSettingsPage() {
   const location = useLocation();
@@ -14,7 +16,7 @@ export function useSettingsPage() {
   // Initialize activeSection from URL hash, fallback to localStorage, then 'profile'
   const getInitialSection = () => {
     const hash = location.hash.replace('#', '');
-    if (hash && ['profile', 'security', 'notifications', 'preferences'].includes(hash)) {
+    if (hash && ['profile', 'security', 'notifications', 'preferences', 'trash'].includes(hash)) {
       return hash;
     }
     return localStorage.getItem('demo_settings_section') || 'profile';
@@ -144,7 +146,39 @@ export function useSettingsPage() {
     { id: 'security', label: 'Beveiliging' },
     { id: 'notifications', label: 'Meldingen' },
     { id: 'preferences', label: 'Voorkeuren' },
+    { id: 'trash', label: 'Prullenbak' },
   ];
+
+  // Trash management
+  const { isSystemAdmin } = useUserRole();
+  const [trashContentTypeFilter, setTrashContentTypeFilter] = useState<number | undefined>(undefined);
+  const trash = useTrash({ contentType: trashContentTypeFilter });
+
+  // Get unique content types from stats for filter dropdown
+  const trashContentTypes = trash.stats.map(s => ({
+    id: s.content_type,
+    label: s.content_type.split('.').pop() || s.content_type,
+    count: s.count,
+  }));
+
+  // Handle restore with confirmation
+  const handleTrashRestore = useCallback(async (id: string, objectRepr?: string) => {
+    await trash.restore(id, objectRepr);
+  }, [trash]);
+
+  // Handle permanent delete with confirmation
+  const handleTrashPermanentDelete = useCallback(async (id: string, objectRepr?: string) => {
+    if (window.confirm(`Weet je zeker dat je "${objectRepr || 'dit item'}" definitief wilt verwijderen? Dit kan niet ongedaan worden gemaakt.`)) {
+      await trash.permanentDelete(id, objectRepr);
+    }
+  }, [trash]);
+
+  // Handle empty trash with confirmation
+  const handleEmptyTrash = useCallback(async () => {
+    if (window.confirm('Weet je zeker dat je de hele prullenbak wilt legen? Dit kan niet ongedaan worden gemaakt.')) {
+      await trash.emptyTrash();
+    }
+  }, [trash]);
 
   return {
     activeSection, setActiveSection,
@@ -155,5 +189,11 @@ export function useSettingsPage() {
     handleProfileChange, handleSaveProfile,
     handleChangePassword, handleEnable2FA,
     handleNotificationChange, handleSaveNotifications,
+    // Trash
+    isSystemAdmin,
+    trash,
+    trashContentTypeFilter, setTrashContentTypeFilter,
+    trashContentTypes,
+    handleTrashRestore, handleTrashPermanentDelete, handleEmptyTrash,
   };
 }

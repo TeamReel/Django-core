@@ -4,7 +4,7 @@
  */
 
 import { useCallback } from 'react';
-import { api } from '@/api';
+import { api, trashApi } from '@/api';
 import { invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import type { Period } from '../../utils/directoryHelpers';
 import { logger } from '@/utils/logger';
@@ -63,17 +63,50 @@ export function useCompetitionHandlers({
   }, [selectedOrgId, selectedTeamId, selectedSeasonIds, triggerRefresh]);
 
   const handleDeleteCompetition = useCallback(async (orgId: string, compId: string, compName: string) => {
-    if (!compId || !window.confirm(`Are you sure you want to delete competition "${compName}"?`)) {
+    if (!compId || !window.confirm(`Weet je zeker dat je competitie "${compName}" wilt verwijderen?`)) {
       return;
     }
     try {
+      // Optimistic update
+      let deletedCompetition: Period | undefined;
+      setCompetitions((prev) => {
+        deletedCompetition = prev.find((c) => c.id === compId);
+        return prev.filter((c) => c.id !== compId);
+      });
+
       await api.delete(`/periods/${compId}/`);
-      setCompetitions((prev) => prev.filter((c) => c.id !== compId));
+
+      // Show toast with undo action
+      pushToast({
+        message: `"${compName}" verplaatst naar prullenbak`,
+        type: 'info',
+        actions: [{
+          label: 'Ongedaan maken',
+          onClick: async () => {
+            try {
+              const trashItem = await trashApi.findByObjectId(compId);
+              if (trashItem) {
+                await trashApi.restore(trashItem.id);
+                // Restore to list
+                if (deletedCompetition) {
+                  setCompetitions((prev) => [...prev, deletedCompetition!]);
+                }
+                pushToast({ message: `"${compName}" hersteld`, type: 'success' });
+              }
+            } catch (err) {
+              logger.error('Failed to restore competition', err);
+              pushToast({ message: 'Herstellen mislukt', type: 'error' });
+            }
+          },
+        }],
+      });
     } catch (err) {
       logger.error('Failed to delete competition', err);
-      pushToast({ message: 'Failed to delete competition', type: 'error' });
+      pushToast({ message: 'Verwijderen mislukt', type: 'error' });
+      // Revert optimistic update by refreshing
+      triggerRefresh();
     }
-  }, [setCompetitions]);
+  }, [setCompetitions, pushToast, triggerRefresh]);
 
   return {
     savePeriodEdits,

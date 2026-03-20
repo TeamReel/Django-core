@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Input } from '@django-core/design-system';
-import { api, activitiesApi } from '@/api';
+import { api, activitiesApi, trashApi } from '@/api';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
 import { periodPathKey } from '../../utils/periodPath';
@@ -276,17 +276,40 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                                       type="button"
                                       className="app-action-button action-btn action-btn-danger"
                                       onClick={async () => {
-                                        if (!window.confirm(`Delete match ${match.title || match.name}?`)) return;
+                                        const matchTitle = match.title || match.name || 'Wedstrijd';
+                                        if (!window.confirm(`${matchTitle} verwijderen?`)) return;
+                                        const matchId = match.id;
+                                        const deletedMatch = match;
                                         try {
-                                          await activitiesApi.delete(match.id);
-                                          setMatches((prev) => prev.filter((m) => String(m.id) !== String(match.id)));
+                                          setMatches((prev) => prev.filter((m) => String(m.id) !== String(matchId)));
+                                          await activitiesApi.delete(matchId);
+                                          pushToast({
+                                            message: `"${matchTitle}" verplaatst naar prullenbak`,
+                                            type: 'info',
+                                            actions: [{
+                                              label: 'Ongedaan maken',
+                                              onClick: async () => {
+                                                try {
+                                                  const trashItem = await trashApi.findByObjectId(matchId);
+                                                  if (trashItem) {
+                                                    await trashApi.restore(trashItem.id);
+                                                    setMatches((prev) => [...prev, deletedMatch]);
+                                                    pushToast({ message: `"${matchTitle}" hersteld`, type: 'success' });
+                                                  }
+                                                } catch (err) {
+                                                  logger.error('Failed to restore match', err);
+                                                  pushToast({ message: 'Herstellen mislukt', type: 'error' });
+                                                }
+                                              },
+                                            }],
+                                          });
                                         } catch (e) {
                                           logger.error('Error deleting match', e);
-                                          pushToast({ message: 'Error deleting match', type: 'error' });
+                                          pushToast({ message: 'Verwijderen mislukt', type: 'error' });
                                         }
                                       }}
                                     >
-                                      Delete
+                                      Verwijderen
                                     </button>
                                   )}
                                 </div>

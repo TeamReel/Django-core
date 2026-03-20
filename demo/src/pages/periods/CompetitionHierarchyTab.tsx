@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, Input } from '@django-core/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
-import { activitiesApi } from '@/api';
+import { activitiesApi, trashApi } from '@/api';
 import type { Activity } from '../../types/api/activity';
 import styles from './CompetitionHierarchyTab.module.css';
 import { logger } from '@/utils/logger';
@@ -169,17 +169,40 @@ export function CompetitionHierarchyTab({
                               type="button"
                               className="app-action-button action-btn action-btn-danger"
                               onClick={async () => {
-                                if (!window.confirm(`Delete match ${matchDisplayTitle(m)}?`)) return;
+                                if (!window.confirm(`Wedstrijd ${matchDisplayTitle(m)} verwijderen?`)) return;
+                                const matchId = String(m.id);
+                                const matchTitle = matchDisplayTitle(m);
+                                const deletedMatch = m;
                                 try {
-                                  await activitiesApi.delete(String(m.id));
-                                  setMatches((prev) => prev.filter((x) => String(x.id) !== String(m.id)));
+                                  setMatches((prev) => prev.filter((x) => String(x.id) !== matchId));
+                                  await activitiesApi.delete(matchId);
+                                  pushToast({
+                                    message: `"${matchTitle}" verplaatst naar prullenbak`,
+                                    type: 'info',
+                                    actions: [{
+                                      label: 'Ongedaan maken',
+                                      onClick: async () => {
+                                        try {
+                                          const trashItem = await trashApi.findByObjectId(matchId);
+                                          if (trashItem) {
+                                            await trashApi.restore(trashItem.id);
+                                            setMatches((prev) => [...prev, deletedMatch]);
+                                            pushToast({ message: `"${matchTitle}" hersteld`, type: 'success' });
+                                          }
+                                        } catch (err) {
+                                          logger.error('Failed to restore match', err);
+                                          pushToast({ message: 'Herstellen mislukt', type: 'error' });
+                                        }
+                                      },
+                                    }],
+                                  });
                                 } catch (e) {
                                   logger.error('Error deleting match', e);
-                                  pushToast({ message: 'Error deleting match', type: 'error' });
+                                  pushToast({ message: 'Verwijderen mislukt', type: 'error' });
                                 }
                               }}
                             >
-                              Delete
+                              Verwijderen
                             </button>
                           </div>
                         </div>

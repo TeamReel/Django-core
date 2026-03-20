@@ -23,3 +23,4 @@ export { videoApi } from './video';
 export { creditsApi, transactionsApi } from './credits';
 export { workflowsApi } from './workflows';
 export { filesApi } from './files';
+export { trashApi } from './trash';

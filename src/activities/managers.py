@@ -1,16 +1,20 @@
 """
 Custom QuerySet managers for Activities module.
 Implements PostgreSQL recursive CTE for period hierarchy navigation.
+Integrates with SoftDeleteMixin for soft-delete support.
 """
 
 from django.db import models, connection
 import uuid
 
+from src.common.managers import SoftDeleteQuerySet
 
-class PeriodQuerySet(models.QuerySet):
+
+class PeriodQuerySet(SoftDeleteQuerySet):
     """
     Custom QuerySet for Period model with tree navigation methods.
     Uses PostgreSQL recursive CTE for efficient descendant queries.
+    Inherits from SoftDeleteQuerySet for soft-delete support.
     """
 
     def get_descendants(self, period_id: uuid.UUID):
@@ -83,3 +87,45 @@ class PeriodQuerySet(models.QuerySet):
     def children_of(self, period):
         """Return direct children of a period"""
         return self.filter(parent_period=period)
+
+
+class PeriodSoftDeleteManager(models.Manager):
+    """
+    Manager for Period model that excludes soft-deleted records by default.
+    Provides CTE methods via PeriodQuerySet while filtering out deleted items.
+
+    Usage:
+        Period.objects.all()          # Only active (non-deleted) periods
+        Period.objects.deleted_only() # Only soft-deleted periods
+        Period.objects.with_deleted() # All periods including deleted
+        Period.objects.roots()        # Root periods (no parent)
+        Period.objects.get_descendants(id)  # CTE-based descendants
+    """
+
+    def get_queryset(self):
+        return PeriodQuerySet(self.model, using=self._db).filter(deleted_at__isnull=True)
+
+    def deleted_only(self):
+        """Return only soft-deleted periods."""
+        return PeriodQuerySet(self.model, using=self._db).filter(deleted_at__isnull=False)
+
+    def with_deleted(self):
+        """Return all periods including soft-deleted."""
+        return PeriodQuerySet(self.model, using=self._db)
+
+    # Delegate CTE methods to queryset
+    def get_descendants(self, period_id):
+        """Return all descendants of a period using recursive CTE."""
+        return self.get_queryset().get_descendants(period_id)
+
+    def get_ancestors(self, period):
+        """Return all ancestors of a period (iterative climb)."""
+        return self.get_queryset().get_ancestors(period)
+
+    def roots(self):
+        """Return all root periods (parent_period is NULL)."""
+        return self.get_queryset().roots()
+
+    def children_of(self, period):
+        """Return direct children of a period."""
+        return self.get_queryset().children_of(period)

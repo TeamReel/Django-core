@@ -88,25 +88,45 @@
 
 | Fase | Titel | Effort | Status |
 |------|-------|--------|--------|
-| H0 | SoftDeleteMixin | ~3 uur | 📋 Todo |
-| H1 | Migratie bestaande models | ~3 uur | 📋 Todo |
-| H2 | TrashItem Model & API | ~4 uur | 📋 Todo |
-| H3 | Retention Policy & Cleanup | ~2 uur | 📋 Todo |
-| H4 | Audit Integration & Hardening | ~2 uur | 📋 Todo |
+| H0 | SoftDeleteMixin | ~3 uur | ✅ Done |
+| H1 | Migratie bestaande models | ~3 uur | ✅ Done |
+| H2 | TrashItem Model & API | ~4 uur | ✅ Done |
+| H3 | Retention Policy & Cleanup | ~2 uur | ✅ Done |
+| H4 | Audit Integration & Hardening | ~2 uur | ✅ Done |
+| H5 | Backend Soft-Delete Uitbreiding | ~2 uur | ✅ Done |
+| H6 | Frontend Trash Integratie | ~4 uur | 📋 Todo |
 
 > Fase-specs: `phases/todo/` → verplaats naar `phases/done/` bij voltooiing.
 
 ## Acceptatiecriteria (geheel)
 
-- [ ] `SoftDeleteMixin` is beschikbaar en gedocumenteerd in `src/common/`
-- [ ] ContentItem en ProjectMembership gebruiken de mixin
-- [ ] Trash API endpoints werken met org-scoping en permission checks
-- [ ] Retention policy ruimt expired items automatisch op via Celery beat
-- [ ] Soft delete/restore events worden gelogd in audit trail (B09)
-- [ ] Geen regressie op bestaande functionaliteit (API's, admin, frontend)
-- [ ] Build passes (`python manage.py check` + `pytest`)
-- [ ] Migration is backward compatible (geen data loss)
-- [ ] README in `src/trash/README.md` met usage examples
+### Backend ✅
+- [x] `SoftDeleteMixin` is beschikbaar en gedocumenteerd in `src/common/`
+- [x] ContentItem en ProjectMembership gebruiken de mixin
+- [x] Trash API endpoints werken met org-scoping en permission checks
+- [x] Retention policy ruimt expired items automatisch op via Celery beat
+- [x] Soft delete/restore events worden gelogd in audit trail (B09)
+- [x] Geen regressie op bestaande functionaliteit (API's, admin, frontend)
+- [x] Build passes (`python manage.py check` + `pytest`)
+- [x] Migration is backward compatible (geen data loss)
+- [x] README in `src/trash/README.md` met usage examples
+
+### Backend Uitbreiding ✅
+- [x] Period model heeft SoftDeleteMixin (dekt Season + Competition)
+- [x] Activity model heeft SoftDeleteMixin (dekt Match + andere event types)
+- [x] Participation model heeft SoftDeleteMixin
+- [x] Audit signals werken correct met soft-delete
+
+### Frontend 📋
+- [ ] Settings pagina heeft "Prullenbak" sectie
+- [ ] Sectie toont trashed items van huidige organisatie
+- [ ] Restore functie werkt via UI
+- [ ] Permanent delete werkt (admin only)
+- [ ] Empty trash werkt (admin only)
+- [ ] Filter op content type
+- [ ] Pagination
+- [ ] Delete acties tonen toast met "Ongedaan maken" knop
+- [ ] Undo restored item succesvol
 
 ## Notes
 <!-- Add progress notes here -->

@@ -12,15 +12,19 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
-from .managers import PeriodQuerySet
+
+from src.common.managers import SoftDeleteManager, AllObjectsManager
+from src.common.mixins import SoftDeleteMixin
+from .managers import PeriodQuerySet, PeriodSoftDeleteManager
 
 User = get_user_model()
 
 
-class Period(models.Model):
+class Period(SoftDeleteMixin, models.Model):
     """
     Time-bound cycle for organizing activities and resources.
     Supports unlimited-depth hierarchies via self-referential parent_period.
+    Supports soft-delete with automatic TrashItem tracking.
 
     Examples:
         - Organisation → Season → Month → Week
@@ -37,6 +41,9 @@ class Period(models.Model):
             - KNVB Beker (Football 11v11)
             - Summer Tournament (Football 7v7)
     """
+
+    # Cascade soft-delete to child periods and activities
+    soft_delete_cascade_fields = ["children", "activities"]
 
     class PeriodType(models.TextChoices):
         REGULAR = "regular", "Regulier"
@@ -89,7 +96,8 @@ class Period(models.Model):
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name="created_periods"
     )
 
-    objects = PeriodQuerySet.as_manager()  # Custom manager with CTE methods
+    objects = PeriodSoftDeleteManager()  # Excludes soft-deleted, includes CTE methods
+    all_objects = PeriodQuerySet.as_manager()  # All records including soft-deleted
 
     class Meta:
         db_table = "activities_period"
@@ -98,6 +106,7 @@ class Period(models.Model):
             models.Index(fields=["organisation", "project"]),
             models.Index(fields=["parent_period"]),
             models.Index(fields=["start_date", "end_date"]),
+            models.Index(fields=["deleted_at"]),  # For soft-delete queries
         ]
         constraints = [
             models.CheckConstraint(
@@ -135,16 +144,20 @@ class Period(models.Model):
         return depth
 
 
-class Activity(models.Model):
+class Activity(SoftDeleteMixin, models.Model):
     """
     Scheduled event within a project and period.
     Supports flexible activity_type and JSON outcome data storage.
+    Supports soft-delete with automatic TrashItem tracking.
 
     Examples:
         - Sports: match, training, team meeting
         - Business: sprint planning, review, retrospective
         - Education: lecture, lab session, exam
     """
+
+    # Cascade soft-delete to participations
+    soft_delete_cascade_fields = ["participations"]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
@@ -182,6 +195,9 @@ class Activity(models.Model):
         User, on_delete=models.SET_NULL, null=True, blank=True, related_name="created_activities"
     )
 
+    objects = SoftDeleteManager()  # Excludes soft-deleted by default
+    all_objects = AllObjectsManager()  # All records including soft-deleted
+
     class Meta:
         db_table = "activities_activity"
         ordering = ["start_time"]
@@ -189,6 +205,7 @@ class Activity(models.Model):
         indexes = [
             models.Index(fields=["project", "period", "start_time"]),
             models.Index(fields=["activity_type"]),
+            models.Index(fields=["deleted_at"]),  # For soft-delete queries
         ]
         constraints = [
             models.CheckConstraint(
@@ -247,10 +264,11 @@ class Activity(models.Model):
             raise ValidationError("Period must belong to same organisation as activity project")
 
 
-class Participation(models.Model):
+class Participation(SoftDeleteMixin, models.Model):
     """
     Links members to periods or activities with roles.
     Enforces exclusive OR: exactly one of (activity_id, period_id) must be set.
+    Supports soft-delete with automatic TrashItem tracking.
 
     Period participation examples: squad member, team captain, coordinator
     Activity participation examples: starter, substitute, attendee, organizer
@@ -305,6 +323,9 @@ class Participation(models.Model):
         related_name="created_participations",
     )
 
+    objects = SoftDeleteManager()  # Excludes soft-deleted by default
+    all_objects = AllObjectsManager()  # All records including soft-deleted
+
     class Meta:
         db_table = "activities_participation"
         ordering = ["created_at"]
@@ -312,6 +333,7 @@ class Participation(models.Model):
             models.Index(fields=["member", "period"]),
             models.Index(fields=["member", "activity"]),
             models.Index(fields=["role", "status"]),
+            models.Index(fields=["deleted_at"]),  # For soft-delete queries
         ]
         constraints = [
             models.CheckConstraint(

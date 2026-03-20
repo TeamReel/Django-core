@@ -74,6 +74,11 @@ class TrashViewSet(viewsets.GenericViewSet):
         if ct_id:
             queryset = queryset.filter(content_type_id=ct_id)
 
+        # Optional filter by original object ID (for undo operations)
+        object_id = request.query_params.get("object_id")
+        if object_id:
+            queryset = queryset.filter(object_id=object_id)
+
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

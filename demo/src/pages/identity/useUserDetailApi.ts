@@ -11,7 +11,7 @@
  */
 import { useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
-import { api } from '@/api';
+import { api, trashApi } from '@/api';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
 import { fetchAllPages } from '../../utils/fetchAllPages';
@@ -270,11 +270,34 @@ export function useUserDetailApi(params: UserDetailApiParams) {
 
     const deleteMatch = async (matchToDelete: Record<string, unknown>) => {
         const matchIdValue = String(matchToDelete?.id || '').trim();
+        const matchTitle = String(matchToDelete?.title || matchToDelete?.name || 'Wedstrijd').trim();
         if (!matchIdValue) throw new Error('Missing match id');
 
         await api.delete(
             `/activities/${encodeURIComponent(matchIdValue)}/`,
         );
+
+        // Show toast with undo action
+        pushToast({
+            message: `"${matchTitle}" verplaatst naar prullenbak`,
+            type: 'info',
+            actions: [{
+                label: 'Ongedaan maken',
+                onClick: async () => {
+                    try {
+                        const trashItem = await trashApi.findByObjectId(matchIdValue);
+                        if (trashItem) {
+                            await trashApi.restore(trashItem.id);
+                            setRelationsReloadToken((t) => t + 1);
+                            pushToast({ message: `"${matchTitle}" hersteld`, type: 'success' });
+                        }
+                    } catch (err) {
+                        logger.error('Failed to restore match', err);
+                        pushToast({ message: 'Herstellen mislukt', type: 'error' });
+                    }
+                },
+            }],
+        });
 
         setRelationsReloadToken((t) => t + 1);
     };

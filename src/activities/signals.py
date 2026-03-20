@@ -316,13 +316,15 @@ def participation_pre_save(sender, instance, **kwargs):
     """Capture previous state before save for change tracking"""
     if instance.pk:
         try:
-            old_instance = Participation.objects.get(pk=instance.pk)
+            # Use all_objects to get even soft-deleted records
+            old_instance = Participation.all_objects.get(pk=instance.pk)
             _participation_previous_state[instance.pk] = {
                 "role": old_instance.role,
                 "status": old_instance.status,
                 "activity_id": old_instance.activity_id,
                 "period_id": old_instance.period_id,
                 "member_id": old_instance.member_id,
+                "deleted_at": old_instance.deleted_at,  # Track soft-delete state
             }
         except Participation.DoesNotExist:
             pass
@@ -330,10 +332,14 @@ def participation_pre_save(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Participation)
 def participation_post_save(sender, instance, created, **kwargs):
-    """Emit B09 audit event for participation creation/update"""
+    """Emit B09 audit event for participation creation/update/soft-delete"""
     try:
         # Attempt B09 integration
         from audit.models import AuditEvent
+
+        # Check for soft-delete (deleted_at changed from None to timestamp)
+        old_state = _participation_previous_state.get(instance.pk, {})
+        was_soft_deleted = old_state.get("deleted_at") is None and instance.deleted_at is not None
 
         if created:
             event_type = "participation.created"
@@ -344,9 +350,18 @@ def participation_post_save(sender, instance, created, **kwargs):
                 "activity_id": str(instance.activity_id) if instance.activity_id else None,
                 "period_id": str(instance.period_id) if instance.period_id else None,
             }
+        elif was_soft_deleted:
+            # Soft-delete detected - emit as "deleted" event
+            event_type = "participation.deleted"
+            changes = {
+                "role": instance.role,
+                "activity_id": str(instance.activity_id) if instance.activity_id else None,
+                "period_id": str(instance.period_id) if instance.period_id else None,
+            }
+            # Clean up previous state
+            _participation_previous_state.pop(instance.pk, None)
         else:
             event_type = "participation.updated"
-            old_state = _participation_previous_state.get(instance.pk, {})
             changes = {}
 
             # Track field changes
@@ -386,9 +401,16 @@ def participation_post_save(sender, instance, created, **kwargs):
             proj = instance.period.project
             org = instance.period.organisation
 
+        # Determine the actor (user who performed the action)
+        if was_soft_deleted:
+            # For soft-delete, use deleted_by or _deleted_by attribute
+            actor = instance.deleted_by or getattr(instance, "_deleted_by", None)
+        else:
+            actor = instance.created_by
+
         AuditEvent.objects.create(
             event_type=event_type,
-            user=instance.created_by,
+            user=actor,
             organization=org,
             project=proj,
             metadata={

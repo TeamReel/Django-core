@@ -174,3 +174,100 @@
     font-size: var(--text-base);
   }
 }
+
+/* ────────────────── Trash Section ────────────────── */
+.trashItem {
+  transition: background-color var(--duration-normal);
+}
+
+.trashItem:hover {
+  background-color: var(--app-surface-hover, var(--color-neutral-100));
+}
+
+.restoreButton {
+  background-color: var(--app-primary);
+  padding: var(--space-2) var(--space-3);
+  min-height: 32px;
+  cursor: pointer;
+  transition: background-color var(--duration-normal);
+}
+
+.restoreButton:hover:not(:disabled) {
+  background-color: var(--app-primary-hover, var(--color-primary-600));
+}
+
+.restoreButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.deleteButton {
+  background-color: transparent;
+  color: var(--app-error);
+  border-color: var(--app-error);
+  padding: var(--space-2) var(--space-3);
+  min-height: 32px;
+  cursor: pointer;
+  transition: background-color var(--duration-normal), color var(--duration-normal);
+}
+
+.deleteButton:hover:not(:disabled) {
+  background-color: var(--app-error);
+  color: white;
+}
+
+.deleteButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dangerButton {
+  background-color: var(--app-error);
+  padding: var(--space-3) var(--space-4);
+  min-height: 44px;
+  cursor: pointer;
+  transition: background-color var(--duration-normal);
+}
+
+.dangerButton:hover:not(:disabled) {
+  background-color: var(--app-error-hover, var(--color-error-600));
+}
+
+.dangerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.paginationButton {
+  background-color: var(--app-surface);
+  cursor: pointer;
+  transition: background-color var(--duration-normal);
+}
+
+.paginationButton:hover:not(:disabled) {
+  background-color: var(--app-surface-hover, var(--color-neutral-100));
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Trash mobile styles ── */
+@media (max-width: 768px) {
+  .trashItem .flex-row {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .trashItem .flex-row:last-child {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .restoreButton,
+  .deleteButton {
+    flex: 1;
+    text-align: center;
+  }
+}

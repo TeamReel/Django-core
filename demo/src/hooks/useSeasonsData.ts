@@ -8,7 +8,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../utils/fetchAllPages';
 import { getApiV1BaseUrl } from '../utils/apiFetch';
-import { api } from '@/api';
+import { api, trashApi } from '@/api';
 import { logger } from '@/utils/logger';
 import { useToast } from '@/components/ui/Toast';
 import {
@@ -294,17 +294,47 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
   }, [selectedOrgId, selectedTeamId, triggerRefresh]);
 
   const handleDeleteSeason = useCallback(async (orgId: string, seasonId: string | undefined, seasonName: string) => {
-    if (!seasonId || !window.confirm(`Are you sure you want to delete season "${seasonName}"?`)) {
+    if (!seasonId || !window.confirm(`Weet je zeker dat je seizoen "${seasonName}" wilt verwijderen?`)) {
       return;
     }
     try {
-      await api.delete(`/periods/${seasonId}/`);
+      // Optimistic update
+      const deletedSeason = seasons.find((s) => s.id === seasonId);
       setSeasons((prev) => prev.filter((s) => s.id !== seasonId));
+
+      await api.delete(`/periods/${seasonId}/`);
+
+      // Show toast with undo action
+      pushToast({
+        message: `"${seasonName}" verplaatst naar prullenbak`,
+        type: 'info',
+        actions: [{
+          label: 'Ongedaan maken',
+          onClick: async () => {
+            try {
+              const trashItem = await trashApi.findByObjectId(seasonId);
+              if (trashItem) {
+                await trashApi.restore(trashItem.id);
+                // Restore to list
+                if (deletedSeason) {
+                  setSeasons((prev) => [...prev, deletedSeason]);
+                }
+                pushToast({ message: `"${seasonName}" hersteld`, type: 'success' });
+              }
+            } catch (err) {
+              logger.error('Failed to restore season', err);
+              pushToast({ message: 'Herstellen mislukt', type: 'error' });
+            }
+          },
+        }],
+      });
     } catch (err) {
       logger.error('useSeasonsData delete error', err);
-      pushToast({ message: 'Failed to delete season', type: 'error' });
+      pushToast({ message: 'Verwijderen mislukt', type: 'error' });
+      // Revert optimistic update
+      triggerRefresh();
     }
-  }, []);
+  }, [seasons, pushToast, triggerRefresh]);
 
   // ── Filtered & Sorted ─────────────────────────────────────────────
 
