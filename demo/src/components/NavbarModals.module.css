@@ -182,7 +182,7 @@
 
 .notificationsPanel {
   max-width: 480px;
-  max-height: 70vh;
+  max-height: 80vh;
 }
 
 /* === Notification item === */
@@ -307,6 +307,7 @@
 
 .creditsPanel {
   max-width: 400px;
+  max-height: 80vh;
 }
 
 /* === Close button (mobile-friendly, prominent) === */

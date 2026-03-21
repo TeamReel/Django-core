@@ -12,12 +12,12 @@ export function NavbarCreditsModal({ myCreditsBalance, onClose, onNavigate }: Cr
   useEscapeKey(onClose);
   return (
     <div onClick={onClose} className={s.modalOverlay} role="presentation">
-        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.creditsPanel}`} role="dialog">
+        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.creditsPanel}`} role="dialog" aria-label="Credits">
         <div className={s.modalHeaderRow}>
           <div className="flex-1">
             <div className={s.modalTitle15}>Credits</div>
           </div>
-          <button onClick={onClose} className={s.closeBtn}>{'\u2715'}</button>
+          <button onClick={onClose} className={styles.closeBtnMobile} aria-label="Sluiten">{'\u2715'}</button>
         </div>
         <div className="p-24 text-center">
           <div className={s.creditsBalance}>{myCreditsBalance}</div>

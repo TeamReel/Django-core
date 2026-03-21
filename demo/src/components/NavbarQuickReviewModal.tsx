@@ -323,9 +323,9 @@ export function NavbarQuickReviewModal({
       >
         {/* Header */}
         <div className={s.modalHeader}>
-          <div className="flex-between mb-12">
-            <div className={s.modalTitle}>Queue</div>
-            <button onClick={onClose} className={s.closeBtn}>{'\u2715'}</button>
+          <div className="flex-between mb-8">
+            <div className={s.modalTitle15}>Queue</div>
+            <button onClick={onClose} className={styles.closeBtnMobile} aria-label="Sluiten">{'✕'}</button>
           </div>
           <div className={s.tabsRow}>
             <button
