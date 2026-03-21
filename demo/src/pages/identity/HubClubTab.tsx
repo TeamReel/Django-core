@@ -16,6 +16,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Pencil, LayoutGrid, Users, Shield, Palette } from 'lucide-react';
+import { SegmentedControl } from '../../components/SegmentedControl';
 import { ClubOverviewTab } from './ClubOverviewTab';
 import { TeamsList } from './directory/TeamsList';
 import { UsersList } from './directory/UsersList';
@@ -199,29 +200,16 @@ export function HubClubTab({
         {activeSubTab === 'identity' && (
           <div>
             {/* Identity sub-sub-tabs: Assets | Kits | Brand */}
-            <div className={s.identityToggle}>
-              <button
-                type="button"
-                className={`${s.identityToggleBtn} ${identitySubtab === 'assets' ? s.identityToggleBtnActive : ''}`}
-                onClick={() => setIdentitySubtab('assets')}
-              >
-                Assets
-              </button>
-              <button
-                type="button"
-                className={`${s.identityToggleBtn} ${identitySubtab === 'kits' ? s.identityToggleBtnActive : ''}`}
-                onClick={() => setIdentitySubtab('kits')}
-              >
-                Kits
-              </button>
-              <button
-                type="button"
-                className={`${s.identityToggleBtn} ${identitySubtab === 'brand' ? s.identityToggleBtnActive : ''}`}
-                onClick={() => setIdentitySubtab('brand')}
-              >
-                Brand
-              </button>
-            </div>
+            <SegmentedControl
+              options={[
+                { value: 'assets', label: 'Assets' },
+                { value: 'kits', label: 'Kits' },
+                { value: 'brand', label: 'Brand' },
+              ]}
+              value={identitySubtab}
+              onChange={(v) => setIdentitySubtab(v as 'assets' | 'kits' | 'brand')}
+              aria-label="Identity sectie"
+            />
             {identitySubtab === 'assets' && (
               <AssetsTab
                 level="club"

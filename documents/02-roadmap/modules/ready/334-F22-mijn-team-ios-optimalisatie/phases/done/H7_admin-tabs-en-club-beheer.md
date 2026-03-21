@@ -181,9 +181,9 @@ Optioneel: sommige admin-rijen kunnen beter naar sheets navigeren in plaats van 
 - [x] `useUserRole()` import in MobileBottomNav
 - [x] `isOrgAdmin` → "Mijn Club", anders → "Mijn Team"
 
-### Nog te doen (Deel B)
-- [ ] `HubClubTab` refactoren naar ListSection grouped sections (Identiteit, Assets, Tenues)
-- [ ] Tappable rows openen bestaande editors
+### Nog te doen (Deel B — volledig iOS redesign)
+- [ ] `HubClubTab` Identity: ListSection grouped rows (Identiteit, Assets, Tenues) — vereist AssetsTab/ClubKitsTab als modal-editors te refactoren
+- [x] `HubClubTab` Identity: SegmentedControl i.p.v. custom button-group (iOS-consistent)
 
 ### Verificatie
 - [x] `npx tsc --noEmit` → zero errors

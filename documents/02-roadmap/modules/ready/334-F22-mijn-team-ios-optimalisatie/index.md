@@ -3,9 +3,9 @@
 | | |
 |---|---|
 | Code | F22 |
-| Status | READY |
+| Status | ✅ DONE — Ronde 2 geïmplementeerd |
 | Prioriteit | Hoog |
-| Geschatte effort | ~12 uur |
+| Geschatte effort | ~14 uur |
 | Afhankelijkheden | F21 (done) — huidige 4-tab structuur |
 | Doelgroep | **Team Admins** (primair), Players (secundair) |
 
@@ -15,18 +15,26 @@
 
 De MyTeamHubPage (gebouwd in F21) werkt functioneel maar voelt als een desktop-pagina op mobiel. De 4 tabs zijn correct, maar de content binnen elke tab mist de iOS-native feel die gebruikers verwachten op hun telefoon.
 
-**Huidige staat:**
-- 4 tabs: Overview, Wedstrijden, Media, Selectie
-- Beheer (admin) ingeklapt als "Instellingen" in Overview
-- Werkt responsive maar is geen native mobiele ervaring
-- Geen visuele hierarchie of grouped sections
+### Ronde 1 (done): iOS Grouped Sections
+- ListSection component gebouwd (iOS Settings-stijl)
+- 4 tabs: Overview, Wedstrijden, Media, Selectie — alle met grouped sections
+- Asset-status helpers, score badges, SegmentedControl
+- Volledig responsive
+
+### Ronde 2 (nu): In-page Sheets + Volledig Beheer
+Na Ronde 1 navigeert alles nog **weg** van de hub. Tap op een wedstrijd → hele pagina weg. Tap op een lid → hele pagina weg. Dit breekt de iOS-feel en is inconsistent met Homepage (cards → sheets) en Profiel (rows → sheets).
+
+**Problemen:**
+1. **Navigeert weg**: match tap, member tap, "Bekijk wedstrijd" → verlaat de hub
+2. **Admin-tabs onbereikbaar op mobiel**: Beheer/Club tabs zijn `desktopOnly`, admin Overview-rijen werken niet
+3. **Club-level data niet beheerbaar**: clublogo, club assets, brand profiel niet vanuit de hub
 
 **Gewenste staat:**
-- iOS Settings / Apple Sports-achtige UI met grouped sections
-- Team admin als primaire persona — snel beheren, niet alleen bekijken
-- Een plek voor alles van je team — zonder heen en weer te navigeren
-- Premium uitstraling: clean, consistent, visueel rustig
-- Duidelijk onderscheid met Home (= overzichten, voortgang, quick actions)
+- `NavigationSheet`-patroon (zoals Homepage + Profiel) — tap opent sheet, niet nieuwe pagina
+- Mobiel: full-screen slide-up | Desktop: side-panel van rechts (560px)
+- Alle team- en club-data beheerbaar vanuit de hub
+- Admin-tabs ook op mobiel bereikbaar
+- iOS-consistente UX door hele app heen
 
 ---
 
@@ -117,6 +125,8 @@ Het datamodel kent geen voetbal-posities. Wel:
 
 ## Beslissingen (Fine-Tuned)
 
+### Ronde 1
+
 | Keuze | Besluit |
 |-------|---------|
 | Hero-sectie Overview | Volgende wedstrijd card + seizoen stats eronder |
@@ -137,6 +147,33 @@ Het datamodel kent geen voetbal-posities. Wel:
 | "Niet in selectie" pool | Alle organisatie-leden die niet in dit team+seizoen zitten (met zoekbalk) |
 | "Komend" sectie | Max 3 wedstrijden — houdt het compact, rest valt in maand-groepen |
 | Asset-matrix mobiel | Responsive: mini-dots (5 stippen) naast naam op mobiel, volle matrix op desktop |
+
+### Ronde 2
+
+| Keuze | Besluit | Reden |
+|-------|---------|-------|
+| Sheet-component | `NavigationSheet` (niet `BottomSheet`) | Consistent met Homepage + Profiel; mobiel=full-screen slide-up, desktop=side-panel |
+| Match tap | Opens `MatchSummarySheet` met preview + "Ga naar wedstrijd" knop | Quick preview zonder hub te verlaten, optie voor volledige pagina |
+| Member tap | Opens `MemberSummarySheet` met profiel + assets + acties | Zelfde patroon als match; admin kan direct assets zien/beheren |
+| "Bekijk wedstrijd" (Overview) | Opent `MatchSummarySheet` | Consistent met Wedstrijden-tab gedrag |
+| Admin-tabs mobiel | `desktopOnly` weghalen, tabs tonen op alle viewports | Tab-bar scrollt al horizontaal; alle admin-functionaliteit bereikbaar |
+| Club-level data op Mijn Team | Read-only sectie in Overview: status clublogo, assets, brand profiel + "Beheer bij club >" link | Snel status checken zonder context te verliezen; bewerken op Club-pagina |
+| Club-pagina iOS-stijl | `HubClubTab` herstructureren met ListSection grouped sections | Consistent met team-hub; zelfde premium iOS-feel |
+| Member sheet | Read-only preview (naam, avatar, rol, assets) — geen edit-acties | Bewerken op MemberDetailPage; sheet is quick preview |
+| Bottom nav label | "Mijn Club" voor club-admins, "Mijn Team" voor team-admins/spelers | Past bij de hiërarchie; club-admin ziet zichzelf op club-niveau |
+| `onBack` stacking | Sheets kunnen child-sheets openen (iOS drill-down via `onBack` prop) | Dieper navigeren zonder pagina te verlaten |
+| Lazy loading | Sheet-content via `React.lazy` + `Suspense` | Performance: sheet JSX pas laden bij openen |
+| Browser back = sheet sluiten | `NavigationSheet` krijgt `history.pushState` — back-button sluit sheet | Huidige staat: geen enkele sheet doet dit. Essentieel voor iOS-native feel op web |
+| Haptic feedback | `haptic.light()` bij sheet open, `haptic.medium()` bij swipe-dismiss | Consistent met MobileBottomNav (light) en MobileFilterSheet (medium bij swipe) |
+| Swipe-to-dismiss | NavigationSheet krijgt touch-drag support op mobiel (100px drempel) | Consistent met MobileFilterSheet patroon; iOS standaard gesture |
+| Tab-switch sluit sheet | Open sheet sluit direct bij tab-wissel | Voorkomt visuele verwarring (sheet van ene tab bij andere tab actief) |
+| Member sheet header | < > nav bar in body, niet in NavigationSheet header | NavigationSheet header ondersteunt alleen title + close/back. MemberDetailPanel bouwt ook eigen nav-header |
+| Member crossfade | 150ms opacity transition bij < > navigatie | Vloeiende wissel i.p.v. harde knip |
+| Assets in sheet | Zichtbaar voor alle rollen (read-only) | Speler/supporter ziet wat er is, admin ziet wat mist |
+| "Bekijk profiel" actie | Sluit sheet + opent MemberDetailPanel (bestaand slide-in panel) | Hergebruik bestaande infra; niet naar losse pagina navigeren |
+| HubClubTab sub-tabs | Sub-tab structuur behouden, elk restylen met ListSection | Te veel content voor één scrollpagina; sub-tabs logisch |
+| Club-admin definitie | `useUserRole()` hook: `isOrgAdmin` = true (membership ≥ editor op club-level project) | Bestaande hook, geen nieuwe infra nodig |
+| MobileTabBar scroll-indicator | Gradient-fade aan rechterrand als tabs buiten beeld vallen | Visuele hint dat er meer tabs zijn bij 6 tabs op smal scherm |
 
 ---
 
@@ -386,17 +423,41 @@ Alle data is al beschikbaar via bestaande endpoints. Dit is puur frontend.
 
 ## Acceptatiecriteria
 
-- [ ] Overview tab toont iOS-style grouped sections: wedstrijd hero, seizoen stats, asset-status, beheer links
-- [ ] Asset-status visueel weergegeven op 3 niveaus (club/team/member completeness) met Lucide icons
-- [ ] Beheer-sectie altijd zichtbaar (niet ingeklapt), navigeert naar bestaande pagina's
-- [ ] Wedstrijden tab toont "Komend" sectie + matches grouped per maand met score badges
-- [ ] Selectie tab toont leden grouped als Keepers/Spelers/Staf met avatar + asset-status stip
-- [ ] Geen rugnummers of rol-badges in selectielijst
-- [ ] Media tab heeft segmented control: per wedstrijd (thumbnails) en per seizoen (asset-matrix)
-- [ ] Asset-matrix toont leden x asset-types met check/leeg indicatoren
-- [ ] `ListSection` component is herbruikbaar voor andere pagina's
-- [ ] Geen overlap met Home page qua content/functie
-- [ ] Content Streak widget verwijderd van deze pagina
+### Ronde 1 (done)
+- [x] Overview tab toont iOS-style grouped sections: wedstrijd hero, seizoen stats, asset-status, beheer links
+- [x] Asset-status visueel weergegeven op 3 niveaus (club/team/member completeness) met Lucide icons
+- [x] Beheer-sectie altijd zichtbaar (niet ingeklapt), navigeert naar bestaande pagina's
+- [x] Wedstrijden tab toont "Komend" sectie + matches grouped per maand met score badges
+- [x] Selectie tab toont leden grouped als Keepers/Spelers/Staf met avatar + asset-status stip
+- [x] Media tab heeft segmented control: per wedstrijd (thumbnails) en per seizoen (asset-matrix)
+- [x] `ListSection` component is herbruikbaar voor andere pagina's
+
+### Ronde 2
+- [ ] Tap op wedstrijd opent `MatchSummarySheet` (NavigationSheet) met preview — navigeert niet weg
+- [ ] Tap op lid opent `MemberSummarySheet` (NavigationSheet) met profiel + assets — navigeert niet weg
+- [ ] "Bekijk wedstrijd" in Overview opent MatchSummarySheet
+- [ ] Sheets gebruiken `NavigationSheet` — mobiel: full-screen slide-up, desktop: side-panel
+- [ ] Sheet bevat "Ga naar [detail]" knop voor volledige pagina (opt-in navigatie)
+- [ ] Admin-tabs (Beheer, Club) bereikbaar op mobiel — `desktopOnly` verwijderd
+- [ ] Admin Overview-rijen werken op mobiel (navigeren naar nu-zichtbare tabs)
+- [ ] Club-level data **read-only** in hub: status clublogo, assets, brand profiel + "Beheer bij club" link
+- [ ] Member sheet toont read-only preview: naam, avatar, rol, asset-status (geen edit-acties)
+- [ ] Club-pagina (`HubClubTab`) herstructureerd met ListSection — zelfde iOS-look als team-hub
+- [ ] Bottom navbar toont "Mijn Club" voor club-admins, "Mijn Team" voor team-admins/spelers
+- [ ] Match sheet toont score, teams, datum, locatie, status
+- [ ] Sheet-content lazy-loaded via `React.lazy` + `Suspense`
+- [ ] Consistent met Homepage (cards → sheets) en Profiel (rows → sheets) patterns
+- [ ] Browser back-button sluit open sheet (history state management in NavigationSheet)
+- [ ] Haptic feedback bij sheet open (light) en swipe-dismiss (medium)
+- [ ] Swipe-to-dismiss op mobiel (≤640px, 100px drag drempel)
+- [ ] Tab-switch sluit eventueel open sheet direct
+- [ ] Member sheet < > navigatie met crossfade transition (150ms)
+- [ ] Member sheet assets zichtbaar voor alle rollen (read-only)
+- [ ] "Bekijk profiel" opent MemberDetailPanel (bestaand slide-in), niet page-navigatie
+- [ ] MobileTabBar toont scroll-indicator (gradient fade) bij 6 tabs op mobiel
+- [ ] Club-pagina behoudt sub-tab structuur, elke sub-tab met ListSection
+
+### Beide rondes
 - [ ] Alle touch targets >= 44x44px
 - [ ] `:focus-visible` op alle interactieve elementen
 - [ ] `@media (prefers-reduced-motion: reduce)` op animaties
@@ -409,9 +470,20 @@ Alle data is al beschikbaar via bestaande endpoints. Dit is puur frontend.
 
 ## Fasering
 
+### Ronde 1 — iOS Grouped Sections (done)
+
+| Fase | Wat | Effort | Status | Spec |
+|------|-----|--------|--------|------|
+| **H0** | `ListSection` component + Overview tab redesign + asset-status helpers | ~3.5 uur | done | `phases/done/H0_listsection-en-overview.md` |
+| **H1** | Wedstrijden tab iOS-list + score badges + "Komend" sectie | ~2.5 uur | done | `phases/done/H1_wedstrijden-tab.md` |
+| **H2** | Selectie tab Keepers/Spelers/Staf + avatar + asset-status stip | ~3 uur | done | `phases/done/H2_selectie-tab.md` |
+| **H3** | Media tab segmented control + wedstrijd-view + asset-matrix + polish | ~3 uur | done | `phases/done/H3_media-tab-en-asset-matrix.md` |
+
+### Ronde 2 — In-page Sheets + Volledig Beheer (todo)
+
 | Fase | Wat | Effort | Prio | Spec |
 |------|-----|--------|------|------|
-| **H0** | `ListSection` component + Overview tab redesign + asset-status helpers | ~3.5 uur | Must | `phases/todo/H0_listsection-en-overview.md` |
-| **H1** | Wedstrijden tab iOS-list + score badges + "Komend" sectie | ~2.5 uur | Must | `phases/todo/H1_wedstrijden-tab.md` |
-| **H2** | Selectie tab Keepers/Spelers/Staf + avatar + asset-status stip | ~3 uur | Must | `phases/todo/H2_selectie-tab.md` |
-| **H3** | Media tab segmented control + wedstrijd-view + asset-matrix + polish | ~3 uur | Should | `phases/todo/H3_media-tab-en-asset-matrix.md` |
+| **H4** | `MatchSummarySheet` + NavigationSheet infra-upgrade (history, haptics, swipe) | ~3 uur | Must | `phases/todo/H4_match-summary-sheet.md` |
+| **H5** | `MemberSummarySheet` — lid-preview in NavigationSheet (read-only, crossfade) | ~3 uur | Must | `phases/todo/H5_member-summary-sheet.md` |
+| **H6** | Integratie: alle tabs gebruiken sheets i.p.v. navigatie + edge cases | ~2 uur | Must | `phases/todo/H6_sheet-integratie-tabs.md` |
+| **H7** | Admin-tabs op mobiel + club read-only + Club-pagina iOS-stijl + dynamic nav | ~5 uur | Must | `phases/todo/H7_admin-tabs-en-club-beheer.md` |
