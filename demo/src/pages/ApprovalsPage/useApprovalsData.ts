@@ -132,7 +132,7 @@ export function useApprovalsData() {
 
   const openModal = (job: GenerationJob) => setModalJob(job);
 
-  const handleModalAction = useCallback(async (taskId: string, action: 'approve' | 'reject') => {
+  const handleModalAction = useCallback(async (taskId: string, action: 'approve' | 'reject', variantSelections?: Record<number, boolean | null>) => {
     if (taskId === '__prev__') {
       const cur = modalJob ? needsReviewJobs.findIndex(j => j.task_id === modalJob.task_id) : 0;
       const prev = needsReviewJobs[cur - 1];
@@ -159,7 +159,14 @@ export function useApprovalsData() {
     }
 
     try {
-      const result = await reviewJob(taskId, action);
+      let variantIndices: number[] | undefined;
+      if (variantSelections) {
+        const indices = Object.entries(variantSelections)
+          .filter(([, v]) => (action === 'approve' ? v === true : v === false))
+          .map(([k]) => Number(k));
+        if (indices.length > 0) variantIndices = indices;
+      }
+      const result = await reviewJob(taskId, action, variantIndices);
       pushToast(action === 'approve' ? '✅ Goedgekeurd!' : '❌ Afgewezen', 'success');
 
       if (action === 'approve') {
@@ -194,12 +201,13 @@ export function useApprovalsData() {
           }
         }
       }
+      refreshAiJobs();
     } catch (e) {
       logger.error('Review failed', e);
       pushToast(e instanceof Error ? e.message : 'Review mislukt', 'error');
       setOptimisticApprovals(prev => { const n = { ...prev }; delete n[taskId]; return n; });
     }
-  }, [modalJob, mergedJobs, needsReviewJobs, pushToast]);
+  }, [modalJob, mergedJobs, needsReviewJobs, pushToast, refreshAiJobs]);
 
   const visibleAiJobs = filterAiJobsByTab(mergedJobs, filter);
   const visibleVideoJobs = useMemo(() => filterVideoJobsByTab(videoJobs, filter), [videoJobs, filter]);

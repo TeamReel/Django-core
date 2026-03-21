@@ -10,7 +10,7 @@ interface ReviewModalProps {
   job: GenerationJob;
   reviewList: GenerationJob[];
   onClose: () => void;
-  onReviewed: (taskId: string, action: 'approve' | 'reject') => void;
+  onReviewed: (taskId: string, action: 'approve' | 'reject', variantSelections?: Record<number, boolean | null>) => void;
 }
 
 export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps) {
@@ -53,7 +53,10 @@ export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModa
   const handleSubmit = async (action: 'approve' | 'reject') => {
     setReviewing(action);
     setReviewError(null);
-    try { onReviewed(job.task_id, action); } catch { /* handled externally */ } finally { setReviewing(null); }
+    try {
+      const variantSels = variants.length > 1 ? selections : undefined;
+      await onReviewed(job.task_id, action, variantSels);
+    } catch { /* handled externally */ } finally { setReviewing(null); }
   };
 
   const isVideo = (v: { mime_type: string; filename: string }) =>
