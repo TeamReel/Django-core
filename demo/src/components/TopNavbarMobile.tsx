@@ -96,7 +96,6 @@ export const NAV_INLINE_STYLES = `
     .mobile-menu-button { display: flex !important; }
     .desktop-nav { display: none !important; }
     .desktop-only { display: none !important; }
-    .nav-credits-button { display: none !important; }
     #mega-menu-panel { display: none !important; }
     .nav-search-container {
       width: auto !important; flex: 0 1 170px !important;
