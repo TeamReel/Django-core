@@ -191,6 +191,7 @@ Reviewer klikt "Approve":
 - [video-processing.md](video-processing.md) — VideoJob approval flow
 - [notification-routing.md](notification-routing.md) — Workflows triggeren notificaties
 - [rbac-permissions.md](rbac-permissions.md) — Permission checks in transities
+- [../security/permission-layers.md](../security/permission-layers.md) — De 3-laags permissieketen (auth → membership → workflow)
 
 ---
 

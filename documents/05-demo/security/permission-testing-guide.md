@@ -16,17 +16,7 @@ Organisation
 
 Elke gebruiker heeft een `ProjectMembership` met een rol (`admin`, `editor`, `viewer`) op een specifiek project. **Hiërarchie werkt alleen naar beneden**: een Club Admin kan team-video's goedkeuren, maar een Team Admin kan NIET bij club-level resources.
 
-## Permission Lagen
-
-Elke API-request doorloopt drie lagen:
-
-| Laag | Check | Effect bij falen |
-|------|-------|-----------------|
-| 1. `IsAuthenticated` | Ingelogd? | 401 Unauthorized |
-| 2. `IsProjectMember` | Membership op project of parent? | 403 / 404 |
-| 3. Workflow Engine | Rol in transition permissions? | Workflow transition faalt silently |
-
-**Let op**: Laag 2 (queryset filtering) geeft 404 (niet 403) als de gebruiker geen toegang heeft — het object bestaat simpelweg niet in de queryset.
+Zie [permission-layers.md](permission-layers.md) voor een uitgebreide uitleg van de drie permissielagen.
 
 ## Test Matrix Template
 
@@ -47,6 +37,8 @@ Gebruik deze matrix bij het testen van elke nieuwe endpoint met RBAC:
 │ Anonymous        │ n/a           │ action   │ 401           │ ❌ Blocked         │
 └─────────────────┴───────────────┴──────────┴───────────────┴────────────────────┘
 ```
+
+**Let op**: Queryset filtering geeft 404 (niet 403) als de gebruiker geen toegang heeft — het object bestaat simpelweg niet in de gefilterde set.
 
 ## Code Patronen
 
@@ -173,5 +165,11 @@ Bij het toevoegen van een nieuw endpoint met RBAC:
 - [ ] Queryset filtert op toegankelijke projecten (inclusief parent projecten)
 - [ ] Test met minimaal: admin, viewer, non-member, anonymous
 - [ ] Als hiërarchie relevant is: test club→team en team→club
-- [ ] Als workflow gekoppeld: test transition success + denialfor elke rol
+- [ ] Als workflow gekoppeld: test transition success + denial voor elke rol
 - [ ] Soft-delete check: `deleted_at__isnull=True` in membership queries
+
+## Gerelateerde docs
+
+- [permission-layers.md](permission-layers.md) — De 3-laags permissieketen
+- [../features/rbac-permissions.md](../features/rbac-permissions.md) — RBAC datamodel
+- [../features/project-hierarchy.md](../features/project-hierarchy.md) — Project hiërarchie & membership

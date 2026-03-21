@@ -123,6 +123,8 @@ results = check_permissions_batch(user_id, ["projects.view", "projects.delete"],
 - [project-hierarchy.md](project-hierarchy.md) — ProjectMembership.role bepaalt basis-toegang
 - [workflow-engine.md](workflow-engine.md) — Workflow transities checken permissies
 - [application-architecture.md](application-architecture.md) — App overzicht
+- [../security/permission-layers.md](../security/permission-layers.md) — De 3-laags permissieketen
+- [../security/permission-testing-guide.md](../security/permission-testing-guide.md) — Testpatronen voor RBAC-endpoints
 
 ---
 

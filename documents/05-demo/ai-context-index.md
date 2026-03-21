@@ -59,6 +59,14 @@ Reference this file when you need to find the right documentation for a task. Ea
 | Media readiness | [media-readiness-card.md](features/media-readiness-card.md) | Dashboard card: Club/Team/Member media completeness, drill-down navigation |
 | Seeding | [seeding-guide.md](features/seeding-guide.md) | Development data seeding |
 
+## Security & Access Control
+
+| Topic | Document | Key Content |
+|-------|----------|-------------|
+| Security overview | [index.md](security/index.md) | Navigatie naar alle security/RBAC docs |
+| Permission layers | [permission-layers.md](security/permission-layers.md) | 3-laags permissieketen: auth → membership → workflow |
+| Permission testing | [permission-testing-guide.md](security/permission-testing-guide.md) | Herbruikbare testpatronen voor RBAC-endpoints |
+
 ## Infrastructure
 
 | Topic | Document | Key Content |
