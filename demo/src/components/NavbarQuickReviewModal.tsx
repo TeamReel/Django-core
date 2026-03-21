@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useEscapeKey } from '../hooks/useEscapeKey';
+import { NavbarModalShell } from './NavbarModalShell';
 import s from './TopNavbarModals.module.css';
 import styles from './NavbarModals.module.css';
 import type { GenerationJob } from '../hooks/useGenerationJobs';
@@ -58,7 +58,6 @@ export function NavbarQuickReviewModal({
   onClose,
   onNavigate,
 }: QuickReviewModalProps) {
-  useEscapeKey(onClose);
 
   const totalInProgress = inProgressJobs.length + inProgressVideoJobs.length;
   const totalReview = pendingReviewJobs.length + pendingReviewVideoJobs.length;
@@ -313,52 +312,52 @@ export function NavbarQuickReviewModal({
 
   /* ── Render: single unified panel ────────────────────────────── */
 
-  return (
-    <div onClick={onClose} className={s.modalOverlay} role="presentation">
-      <div
-        onClick={e => e.stopPropagation()}
-        className={`w-full ${s.modalPanel} ${styles.inProgressPanel}`}
-        role="dialog"
-        aria-label="Queue"
-      >
-        {/* Header */}
-        <div className={s.modalHeader}>
-          <div className="flex-between mb-8">
-            <div className={s.modalTitle15}>Queue</div>
-            <button onClick={onClose} className={styles.closeBtnMobile} aria-label="Sluiten">{'✕'}</button>
-          </div>
-          <div className={s.tabsRow}>
-            <button
-              onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); setExpandedAiJobId(null); }}
-              className={`${s.tabBtn} ${queueModalTab === 'review' ? styles.tabBtnReview : styles.tabBtnInactive}`}
-              data-active={queueModalTab === 'review'}
-            >
-              Te Reviewen ({totalReview})
-            </button>
-            <button
-              onClick={() => setQueueModalTab('in-progress')}
-              className={`${s.tabBtn} ${queueModalTab === 'in-progress' ? styles.tabBtnAmberActive : styles.tabBtnInactive}`}
-              data-active={queueModalTab === 'in-progress'}
-            >
-              In behandeling ({totalInProgress})
-            </button>
-          </div>
-        </div>
-
-        {/* Content */}
-        {queueModalTab === 'review' ? renderReviewContent() : renderInProgressContent()}
-
-        {/* Footer */}
-        <div className={`flex-between ${s.modalFooter}`}>
-          <button
-            onClick={() => { onClose(); onNavigate(queueModalTab === 'review' ? '/approvals?tab=review' : '/approvals?tab=ai_queue'); }}
-            className={s.btnSecondary}
-          >
-            Open Queue {'\u2192'}
-          </button>
-          <button onClick={onClose} className={s.btnPrimary}>Sluiten</button>
-        </div>
+  const header = (
+    <div className={s.modalHeader}>
+      <div className="flex-between mb-8">
+        <div className={s.modalTitle}>Queue</div>
+        <button onClick={onClose} className={styles.closeBtnMobile} aria-label="Sluiten">{'✕'}</button>
+      </div>
+      <div className={s.tabsRow}>
+        <button
+          onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); setExpandedAiJobId(null); }}
+          className={`${s.tabBtn} ${queueModalTab === 'review' ? styles.tabBtnReview : styles.tabBtnInactive}`}
+          data-active={queueModalTab === 'review'}
+        >
+          Te Reviewen ({totalReview})
+        </button>
+        <button
+          onClick={() => setQueueModalTab('in-progress')}
+          className={`${s.tabBtn} ${queueModalTab === 'in-progress' ? styles.tabBtnAmberActive : styles.tabBtnInactive}`}
+          data-active={queueModalTab === 'in-progress'}
+        >
+          In behandeling ({totalInProgress})
+        </button>
       </div>
     </div>
+  );
+
+  const footer = (
+    <div className={styles.modalFooterLink}>
+      <button
+        onClick={() => { onClose(); onNavigate(queueModalTab === 'review' ? '/approvals?tab=review' : '/approvals?tab=ai_queue'); }}
+        className={s.btnGhost}
+      >
+        Open Queue {'\u2192'}
+      </button>
+    </div>
+  );
+
+  return (
+    <NavbarModalShell
+      onClose={onClose}
+      title="Queue"
+      panelClassName={styles.inProgressPanel}
+      desktopHeader={header}
+      footer={footer}
+    >
+      {/* Content */}
+      {queueModalTab === 'review' ? renderReviewContent() : renderInProgressContent()}
+    </NavbarModalShell>
   );
 }

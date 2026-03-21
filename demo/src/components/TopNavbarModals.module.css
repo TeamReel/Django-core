@@ -97,10 +97,9 @@
   color: var(--app-text);
 }
 
+/* modalTitle15 — alias for backward compat (same definition as modalTitle) */
 .modalTitle15 {
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
-  color: var(--app-text);
+  composes: modalTitle;
 }
 
 .modalSubtitle {

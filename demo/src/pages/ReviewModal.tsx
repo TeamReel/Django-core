@@ -72,7 +72,7 @@ export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModa
         {/* Header */}
         <div className={s.modalHeader}>
           <div className="flex-1">
-            <div className={s.modalTitle15}>{job.label || job.template_id}</div>
+            <div className={s.modalTitle}>{job.label || job.template_id}</div>
             <div className={s.modalSubtitle11}>
               {job.output_type} · {new Date(job.created_at).toLocaleString()}
               {reviewList.length > 0 && ` · ${currentIdx + 1} van ${reviewList.length}`}

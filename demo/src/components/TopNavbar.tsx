@@ -247,7 +247,7 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
               </button>
 
               {/* Credits Icon */}
-              {!isMobile && d.user ? (
+              {d.user ? (
                 <button
                   className={`nav-credits-button nav-icon-button ${s.creditsBtn}`}
                   onClick={() => d.setCreditsModalOpen(true)}

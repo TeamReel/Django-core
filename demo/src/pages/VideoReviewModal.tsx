@@ -61,7 +61,7 @@ export function VideoReviewModal({ job, onClose, onActionComplete, pushToast, ap
       <div className={`${s.modalPanel} ${styles.modalPanel}`}>
         <div className={s.modalHeader}>
           <div className="flex-1">
-            <div className={s.modalTitle15}>{typeDisplay.icon} {typeDisplay.label}</div>
+            <div className={s.modalTitle}>{typeDisplay.icon} {typeDisplay.label}</div>
             <div className={s.modalSubtitle11}>
               video · {new Date(job.created_at).toLocaleString('nl-NL')}
               {job.preset_name && <> · Preset: {job.preset_name}</>}
