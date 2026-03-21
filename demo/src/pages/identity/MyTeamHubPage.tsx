@@ -33,7 +33,6 @@ import { useTeamDetailData } from './useTeamDetailData';
 import { useTeamTabData } from './useTeamTabData';
 import { useSeasonDetailPageData } from '../periods/useSeasonDetailPageData';
 import SeasonDetailModals from '../periods/SeasonDetailModals';
-import { useIsMobile } from '../../hooks/useIsMobile';
 import type { MatchRecord } from '../periods/SeasonMatchesTab';
 
 // ── Tab components (reuse existing) ──
@@ -78,7 +77,7 @@ export const MyTeamHubPage: React.FC = () => {
   const isAdmin = !isPlayer && !isSupporter;
 
   // ── Responsive: 4 tabs on mobile, 6 on desktop ──
-  const isMobile = useIsMobile();
+  // (isMobile no longer gates admin tabs — admin sees all 6 everywhere)
 
   // ── Back navigation: Hub → Club ──
   useSetBackNavigation({
@@ -111,11 +110,9 @@ export const MyTeamHubPage: React.FC = () => {
       ? new Set(['overview', 'wedstrijden'])
       : isPlayer
         ? new Set(['overview', 'wedstrijden', 'media', 'selectie'])
-        : isMobile
-          ? new Set(['overview', 'wedstrijden', 'media', 'selectie'])
-          : new Set(['overview', 'wedstrijden', 'media', 'selectie', 'beheer', 'club']);
+        : new Set(['overview', 'wedstrijden', 'media', 'selectie', 'beheer', 'club']);
     return allowed.has(aliased) ? aliased : 'overview';
-  }, [searchParams, isPlayer, isSupporter, isMobile]);
+  }, [searchParams, isPlayer, isSupporter]);
 
   // ── Tab navigation ──
   const navigateToTab = useCallback(
@@ -427,8 +424,8 @@ export const MyTeamHubPage: React.FC = () => {
             { id: 'wedstrijden', label: 'Wedstrijden' },
             ...(!isSupporter ? [{ id: 'media', label: 'Media' }] : []),
             ...(!isSupporter ? [{ id: 'selectie', label: 'Selectie' }] : []),
-            ...(isAdmin ? [{ id: 'beheer', label: 'Beheer', desktopOnly: true }] : []),
-            ...(isAdmin ? [{ id: 'club', label: 'Club', desktopOnly: true }] : []),
+            ...(isAdmin ? [{ id: 'beheer', label: 'Beheer' }] : []),
+            ...(isAdmin ? [{ id: 'club', label: 'Club' }] : []),
           ]}
           activeTab={activeTab}
         />
@@ -539,6 +536,32 @@ export const MyTeamHubPage: React.FC = () => {
                     icon={Upload}
                     label="Assets uploaden"
                     onTap={() => navigateToTab('media')}
+                  />
+                </ListSection>
+              )}
+
+              {/* Club — admin-only, read-only status */}
+              {isAdmin && (
+                <ListSection title="Club">
+                  <ListSection.Row
+                    icon={Building2}
+                    label="Clublogo"
+                    status={Boolean((team.club as Record<string, unknown> | null)?.logo_url || (team.club as Record<string, unknown> | null)?.crest_url) ? 'success' : 'warning'}
+                  />
+                  <ListSection.Row
+                    icon={Palette}
+                    label="Brand profiel"
+                    status={Boolean(team.brandProfileId) ? 'success' : 'warning'}
+                  />
+                  <ListSection.Row
+                    icon={Camera}
+                    label="Club assets"
+                    status={clubAssetStatus === 'complete' ? 'success' : 'warning'}
+                  />
+                  <ListSection.Row
+                    icon={Settings}
+                    label="Beheer bij club"
+                    onTap={() => navigateToTab('club')}
                   />
                 </ListSection>
               )}
