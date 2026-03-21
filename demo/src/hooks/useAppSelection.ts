@@ -21,6 +21,8 @@ interface OrganisationRow {
   name?: string;
 }
 
+export const APP_SELECTION_VERSION = 'v4-own-teams';
+
 export function useAppSelection(): AppSelection {
   const location = useLocation();
   const { context } = useContextSwitcher();
