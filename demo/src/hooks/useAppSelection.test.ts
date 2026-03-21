@@ -112,4 +112,27 @@ describe('useAppSelection', () => {
     expect(result.current.seasonSlugOrId).toBeNull();
     expect(result.current.competitionSlugOrId).toBeNull();
   });
+
+  it('discards stale localStorage context from a different user', () => {
+    localStorage.setItem(
+      APP_LAST_CTX_KEY,
+      JSON.stringify({
+        orgSlug: 'other-org',
+        clubSlugOrId: 'other-club',
+        teamSlugOrId: 'other-team',
+        userEmail: 'other@test.com',
+        ts: Date.now(),
+      }),
+    );
+
+    const { result } = renderHook(() => useAppSelection(), {
+      wrapper: wrapper('/'),
+    });
+
+    // The stale context from 'other@test.com' should be discarded
+    // since current user is 'user@test.com' (from mock)
+    expect(result.current).toBeDefined();
+    // localStorage entry should be removed
+    expect(localStorage.getItem(APP_LAST_CTX_KEY)).toBeNull();
+  });
 });

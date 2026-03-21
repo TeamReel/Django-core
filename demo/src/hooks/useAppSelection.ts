@@ -42,12 +42,17 @@ export function useAppSelection(): AppSelection {
     matchId: null,
   });
 
-  const readLastAppContext = () => {
+  const readLastAppContext = (currentUserEmail?: string) => {
     try {
       const raw = localStorage.getItem(APP_LAST_CTX_KEY);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== 'object') return null;
+      // Discard stale context from a different user (prevents cross-account leaking)
+      if (currentUserEmail && parsed.userEmail && parsed.userEmail !== currentUserEmail) {
+        localStorage.removeItem(APP_LAST_CTX_KEY);
+        return null;
+      }
       return parsed as {
         orgSlug?: string;
         clubSlugOrId?: string;
@@ -55,6 +60,7 @@ export function useAppSelection(): AppSelection {
         seasonSlugOrId?: string;
         competitionSlugOrId?: string;
         matchId?: string;
+        userEmail?: string;
         ts?: number;
       };
     } catch {
@@ -75,6 +81,7 @@ export function useAppSelection(): AppSelection {
         APP_LAST_CTX_KEY,
         JSON.stringify({
           ...next,
+          userEmail: userEmail || undefined,
           ts: Date.now(),
         })
       );
@@ -97,7 +104,7 @@ export function useAppSelection(): AppSelection {
     if (!parsedPath) return;
 
     if (parsedPath.type === 'legacyMatch' && parsedPath.matchId) {
-        const last = readLastAppContext();
+        const last = readLastAppContext(userEmail);
         if (last?.orgSlug) {
           writeLastAppContext({
             orgSlug: String(last.orgSlug),
@@ -124,7 +131,7 @@ export function useAppSelection(): AppSelection {
             matchId: p.matchId,
         });
     }
-  }, [parsedPath]);
+  }, [parsedPath, userEmail]);
 
   // Compute best match
   useEffect(() => {
@@ -184,7 +191,7 @@ export function useAppSelection(): AppSelection {
         const ctxOrgSlugStr = String(contextOrgSlug || '');
         const ctxOrgIdStr = String(contextOrgId || '');
 
-          const last = readLastAppContext();
+          const last = readLastAppContext(userEmail);
 
           const orgFromQuery = orgFromQueryRaw;
           const orgFromLast = String(last?.orgSlug || '').trim();
