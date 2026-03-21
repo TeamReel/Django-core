@@ -68,15 +68,26 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         )
 
         ProjectMembership = apps.get_model("projects", "ProjectMembership")
-        membership_qs = ProjectMembership.objects.filter(user=self.request.user)
+        Project = apps.get_model("projects", "Project")
+        membership_qs = ProjectMembership.objects.filter(
+            user=self.request.user, deleted_at__isnull=True
+        )
 
         project_id = self._get_project_id(required=self.action in ["create"])
         if project_id:
-            if not membership_qs.filter(project_id=project_id).exists():
+            from src.video.permissions import _has_project_access
+
+            if not _has_project_access(self.request.user, project_id):
                 raise PermissionDenied("You must be a project member to access this project.")
             qs = qs.filter(project_id=project_id)
         else:
-            qs = qs.filter(project_id__in=membership_qs.values_list("project_id", flat=True))
+            # Direct project memberships
+            direct_ids = membership_qs.values_list("project_id", flat=True)
+            # Also include child projects where user is member of parent
+            child_ids = Project.objects.filter(parent_project_id__in=direct_ids).values_list(
+                "id", flat=True
+            )
+            qs = qs.filter(project_id__in=set(direct_ids) | set(child_ids))
 
         return qs
 
