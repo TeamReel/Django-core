@@ -95,7 +95,7 @@ class RealtimeConnection {
     this.setStatus(this._status === 'disconnected' ? 'connecting' : 'reconnecting');
 
     try {
-      const tokenResponse = await apiFetch('/api/ws/token/');
+      const tokenResponse = await apiFetch(`${getApiBaseUrl()}/api/ws/token/`);
       if (!tokenResponse.ok) {
         logger.error('Realtime: Failed to get WS token', tokenResponse.status);
         this.connecting = false;
