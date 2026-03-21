@@ -22,6 +22,8 @@ interface HubMediaTabProps {
   memberDetailHref: (mid: string) => string;
   /** Slot for the existing content tab (per wedstrijd view) */
   children: React.ReactNode;
+  /** If provided, tapping a member calls this instead of navigating away */
+  onMemberTap?: (m: SquadMember) => void;
 }
 
 const MEDIA_VIEW_OPTIONS = [
@@ -55,6 +57,7 @@ export const HubMediaTab: React.FC<HubMediaTabProps> = ({
   members,
   memberDetailHref,
   children,
+  onMemberTap,
 }) => {
   const [view, setView] = useState('match');
   const navigate = useNavigate();
@@ -109,7 +112,7 @@ export const HubMediaTab: React.FC<HubMediaTabProps> = ({
                         <button
                           type="button"
                           className={s.matrixNameBtn}
-                          onClick={() => navigate(memberDetailHref(mid))}
+                          onClick={() => onMemberTap ? onMemberTap(member) : navigate(memberDetailHref(mid))}
                         >
                           {name}
                         </button>
@@ -142,7 +145,7 @@ export const HubMediaTab: React.FC<HubMediaTabProps> = ({
                     key={mid}
                     type="button"
                     className={s.matrixRow}
-                    onClick={() => navigate(memberDetailHref(mid))}
+                    onClick={() => onMemberTap ? onMemberTap(member) : navigate(memberDetailHref(mid))}
                   >
                     <Avatar src={avatarUrl} name={name} size="sm" />
                     <span className={s.matrixRowName}>{name}</span>

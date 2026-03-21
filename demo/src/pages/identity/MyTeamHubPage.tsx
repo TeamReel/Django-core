@@ -46,6 +46,8 @@ import { TeamBeheerTab } from './TeamBeheerTab';
 import { HubClubTab } from './HubClubTab';
 import { HubSelectieTab } from './HubSelectieTab';
 import { HubMediaTab } from './HubMediaTab';
+import { MatchSummarySheet } from './MatchSummarySheet';
+import { MemberSummarySheet } from './MemberSummarySheet';
 
 import s from './MyTeamHubPage.module.css';
 
@@ -160,6 +162,43 @@ export const MyTeamHubPage: React.FC = () => {
   const [overflowOpen, setOverflowOpen] = useState(false);
   const overflowRef = useRef<HTMLDivElement>(null);
 
+  // ── Sheet state ──
+  const [selectedMatch, setSelectedMatch] = useState<MatchRecord | null>(null);
+  const [selectedMember, setSelectedMember] = useState<SquadMember | null>(null);
+
+  // Close sheets on tab switch
+  useEffect(() => {
+    setSelectedMatch(null);
+    setSelectedMember(null);
+  }, [activeTab]);
+
+  // Member navigation for MemberSummarySheet
+  const selectedMemberIndex = useMemo(() => {
+    if (!selectedMember) return -1;
+    return (d.members as SquadMember[]).findIndex((m) => String(m.id) === String(selectedMember.id));
+  }, [selectedMember, d.members]);
+
+  const handleMemberPrev = useCallback(() => {
+    if (selectedMemberIndex > 0)
+      setSelectedMember((d.members as SquadMember[])[selectedMemberIndex - 1]);
+  }, [selectedMemberIndex, d.members]);
+
+  const handleMemberNext = useCallback(() => {
+    if (selectedMemberIndex >= 0 && selectedMemberIndex < d.members.length - 1)
+      setSelectedMember((d.members as SquadMember[])[selectedMemberIndex + 1]);
+  }, [selectedMemberIndex, d.members]);
+
+  // Compute match detail path for selected match
+  const selectedMatchDetailPath = useMemo(() => {
+    if (!selectedMatch) return '';
+    const compId = String(selectedMatch.period_id || selectedMatch.period?.id || selectedMatch.period || '').trim();
+    const compKey = periodPathKey(selectedMatch.period || null) || compId;
+    const matchKey = selectedMatch.slug || selectedMatch.id;
+    return d.isTeamRoute
+      ? `${d.seasonsBasePath}/${d.seasonPathKey}/${compKey}/${String(matchKey)}`
+      : `/matches/${String(matchKey)}`;
+  }, [selectedMatch, d.isTeamRoute, d.seasonsBasePath, d.seasonPathKey]);
+
   // ── Overview: next match ──
   const nextMatch = useMemo<MatchRecord | null>(() => {
     const now = new Date();
@@ -183,16 +222,6 @@ export const MyTeamHubPage: React.FC = () => {
     const dt = new Date(raw);
     return dt.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
   }, [nextMatch]);
-
-  const nextMatchUrl = useMemo(() => {
-    if (!nextMatch) return '';
-    const compId = String(nextMatch.period_id || nextMatch.period?.id || nextMatch.period || '').trim();
-    const compKey = periodPathKey(nextMatch.period || null) || compId;
-    const matchKey = nextMatch.slug || nextMatch.id;
-    return d.isTeamRoute
-      ? `${d.seasonsBasePath}/${d.seasonPathKey}/${compKey}/${String(matchKey)}`
-      : `/matches/${String(matchKey)}`;
-  }, [nextMatch, d.isTeamRoute, d.seasonsBasePath, d.seasonPathKey]);
 
   // ── Overview: asset status ──
   const clubAssetStatus = useMemo(
@@ -429,7 +458,7 @@ export const MyTeamHubPage: React.FC = () => {
                   <button
                     type="button"
                     className={s.nextMatchAction}
-                    onClick={() => navigate(nextMatchUrl)}
+                    onClick={() => setSelectedMatch(nextMatch)}
                   >
                     <span>Bekijk wedstrijd</span>
                     <AppIcon icon={ChevronRight} size={16} />
@@ -527,6 +556,7 @@ export const MyTeamHubPage: React.FC = () => {
               userCanEditProject={d.userCanEditProject}
               matchDisplayTitle={d.matchDisplayTitle}
               setIsCreateMatchModalOpen={d.setIsCreateMatchModalOpen}
+              onMatchTap={setSelectedMatch}
             />
           )}
 
@@ -538,6 +568,7 @@ export const MyTeamHubPage: React.FC = () => {
                 const base = d.memberDetailHref(mid);
                 return base ? `${base}?from=media` : base;
               }}
+              onMemberTap={setSelectedMember}
             >
               <SeasonContentTab
                 org={d.org}
@@ -564,6 +595,7 @@ export const MyTeamHubPage: React.FC = () => {
               teamRoster={d.teamRoster as SquadMember[] | undefined}
               teamRosterLoading={d.teamRosterLoading}
               assignUsersToSeasonSquad={d.assignUsersToSeasonSquad}
+              onMemberTap={setSelectedMember}
             />
           )}
 
@@ -640,6 +672,27 @@ export const MyTeamHubPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* ── Sheets ── */}
+      <MatchSummarySheet
+        match={selectedMatch}
+        isOpen={!!selectedMatch}
+        onClose={() => setSelectedMatch(null)}
+        matchDisplayTitle={d.matchDisplayTitle}
+        matchDetailPath={selectedMatchDetailPath}
+      />
+      <MemberSummarySheet
+        member={selectedMember}
+        isOpen={!!selectedMember}
+        onClose={() => setSelectedMember(null)}
+        memberDetailPath={selectedMember ? d.memberDetailHref(String(selectedMember.id ?? '')) : ''}
+        onPrev={handleMemberPrev}
+        onNext={handleMemberNext}
+        hasPrev={selectedMemberIndex > 0}
+        hasNext={selectedMemberIndex >= 0 && selectedMemberIndex < d.members.length - 1}
+        currentIndex={selectedMemberIndex >= 0 ? selectedMemberIndex : undefined}
+        totalCount={d.members.length > 0 ? d.members.length : undefined}
+      />
 
       {/* Toast notifications */}
       {d.toasts.length > 0 && (

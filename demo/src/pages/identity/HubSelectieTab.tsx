@@ -27,6 +27,8 @@ interface HubSelectieTabProps {
   teamRoster?: SquadMember[];
   teamRosterLoading?: boolean;
   assignUsersToSeasonSquad?: (userIds: string[]) => Promise<void>;
+  /** If provided, tapping a member calls this instead of navigating away */
+  onMemberTap?: (m: SquadMember) => void;
 }
 
 type RoleGroup = 'keepers' | 'spelers' | 'staf';
@@ -82,6 +84,7 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
   teamRoster,
   teamRosterLoading,
   assignUsersToSeasonSquad,
+  onMemberTap,
 }) => {
   const navigate = useNavigate();
   const [rosterSearch, setRosterSearch] = useState('');
@@ -136,7 +139,7 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
                   key={mid}
                   label={name}
                   leading={<Avatar src={avatarUrl} name={name} size="sm" />}
-                  onTap={() => navigate(memberDetailHref(mid))}
+                  onTap={() => onMemberTap ? onMemberTap(m) : navigate(memberDetailHref(mid))}
                   trailing={
                     assetStatus ? (
                       <span

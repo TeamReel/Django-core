@@ -27,6 +27,8 @@ interface HubWedstrijdenTabProps {
   userCanEditProject: boolean;
   matchDisplayTitle: (m: MatchRecord) => string;
   setIsCreateMatchModalOpen: (v: boolean) => void;
+  /** If provided, tapping a match calls this instead of navigating away */
+  onMatchTap?: (m: MatchRecord) => void;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -158,14 +160,19 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
   userCanEditProject,
   matchDisplayTitle,
   setIsCreateMatchModalOpen,
+  onMatchTap,
 }) => {
   const navigate = useNavigate();
 
   const grouped = useMemo(() => groupMatches(matches), [matches]);
 
   const goToMatch = (m: MatchRecord) => {
-    const path = getMatchPath(m, isTeamRoute, seasonsBasePath, seasonPathKey);
-    navigate(path);
+    if (onMatchTap) {
+      onMatchTap(m);
+    } else {
+      const path = getMatchPath(m, isTeamRoute, seasonsBasePath, seasonPathKey);
+      navigate(path);
+    }
   };
 
   if (matchesLoading) {
