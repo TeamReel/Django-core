@@ -219,6 +219,22 @@
   .header {
     /* Top navbar already handles safe-area — just use normal padding */
     padding-top: var(--space-3);
+    /* Touch hint: drag handle pseudo-element */
+    position: relative;
+  }
+
+  /* Drag handle pill — iOS convention */
+  .header::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: var(--space-2);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    border-radius: var(--radius-full);
+    background: var(--app-border);
   }
 
   .body {

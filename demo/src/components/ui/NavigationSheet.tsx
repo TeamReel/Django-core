@@ -23,6 +23,7 @@
  */
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { X, ChevronLeft } from 'lucide-react';
+import { useHapticFeedback } from '../../hooks/useHapticFeedback';
 import styles from './NavigationSheet.module.css';
 
 export interface NavigationSheetProps {
@@ -75,6 +76,13 @@ export const NavigationSheet: React.FC<NavigationSheetProps> = ({
   const previousFocus = useRef<HTMLElement | null>(null);
   const [closing, setClosing] = useState(false);
 
+  // Swipe-to-dismiss state (mobile only)
+  const [dragY, setDragY] = useState(0);
+  const dragStartY = useRef(0);
+  const isDragging = useRef(false);
+
+  const haptic = useHapticFeedback();
+
   // ------ Animated close ------
   const handleClose = useCallback(() => {
     const duration = getCloseDuration();
@@ -88,6 +96,21 @@ export const NavigationSheet: React.FC<NavigationSheetProps> = ({
       onClose();
     }, duration);
   }, [onClose]);
+
+  // ------ Haptic on open ------
+  useEffect(() => {
+    if (isOpen) haptic.light();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // ------ Browser back = sheet sluiten ------
+  useEffect(() => {
+    if (!isOpen) return;
+    window.history.pushState({ navigationSheet: true }, '');
+    const handlePopState = () => handleClose();
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isOpen, handleClose]);
 
   // ------ Escape key (only when open) ------
   useEffect(() => {
@@ -156,6 +179,29 @@ export const NavigationSheet: React.FC<NavigationSheetProps> = ({
     };
   }, [isOpen]);
 
+  // ------ Swipe-to-dismiss (mobile only) ------
+  const handleDragStart = useCallback((e: React.TouchEvent) => {
+    dragStartY.current = e.touches[0].clientY;
+    isDragging.current = true;
+  }, []);
+
+  const handleDragMove = useCallback((e: React.TouchEvent) => {
+    if (!isDragging.current) return;
+    const diff = e.touches[0].clientY - dragStartY.current;
+    if (diff > 0) setDragY(diff);
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    isDragging.current = false;
+    if (dragY > 100) {
+      haptic.medium();
+      setDragY(0);
+      handleClose();
+    } else {
+      setDragY(0);
+    }
+  }, [dragY, haptic, handleClose]);
+
   if (!isOpen && !closing) return null;
 
   const overlayClass = `${styles.overlay} ${closing ? styles.overlayClosing : ''}`;
@@ -164,6 +210,12 @@ export const NavigationSheet: React.FC<NavigationSheetProps> = ({
     closing ? styles.sheetClosing : '',
     className,
   ].filter(Boolean).join(' ');
+
+  // Only apply drag transform on mobile (sheet slides up)
+  const isMobileSheet = typeof window !== 'undefined' && window.innerWidth < 640;
+  const dragStyle: React.CSSProperties = (isMobileSheet && dragY > 0)
+    ? { transform: `translateY(${dragY}px)`, transition: 'none' }
+    : {};
 
   return (
     <div className={overlayClass} role="presentation" onClick={handleClose}>
@@ -175,10 +227,18 @@ export const NavigationSheet: React.FC<NavigationSheetProps> = ({
         aria-label={title}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        style={desktopWidth ? { '--sheet-desktop-width': desktopWidth } as React.CSSProperties : undefined}
+        style={{
+          ...(desktopWidth ? { '--sheet-desktop-width': desktopWidth } as React.CSSProperties : {}),
+          ...dragStyle,
+        }}
       >
-        {/* Header */}
-        <div className={styles.header}>
+        {/* Drag handle + Header — touch handlers for swipe-to-dismiss (mobile) */}
+        <div
+          className={styles.header}
+          onTouchStart={handleDragStart}
+          onTouchMove={handleDragMove}
+          onTouchEnd={handleDragEnd}
+        >
           {onBack ? (
             <button
               className={styles.backButton}
