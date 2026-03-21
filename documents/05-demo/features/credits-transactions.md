@@ -171,5 +171,5 @@ Belangrijke functies:
 ## Gerelateerde docs
 
 - [generation-queue.md](generation-queue.md) — GenerationJob lifecycle (triggert credit reserve/settle)
-- [application-architecture.md](application-architecture.md) — Overzicht alle apps
+- [architecture.md](../architecture.md) — Overzicht alle apps
 - [../media/ai-models-pricing.md](../media/ai-models-pricing.md) — AI model kosten per provider

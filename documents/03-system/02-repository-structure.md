@@ -43,7 +43,7 @@ We follow a strict documentation hierarchy:
 *   **`02-roadmap/`**: The "When". Phasing and planning.
 *   **`03-system/`**: The "How". Architecture and global rules.
 *   **`04-modules/`**: The "What". Detailed specs for each module.
-*   **`05-demo/`**: Validation. Reports and status of the demo environment.
+*   **`05-demo/`**: Product documentation. Architecture, feature specs, design system, media pipeline, security, and data reference.
 *   **`06-workflow/`**: Developer guides.
 *   **`07-operations/`**: Deployment and runbooks.
 

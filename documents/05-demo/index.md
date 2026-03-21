@@ -1,7 +1,7 @@
 # TeamReel Web Application — Documentation
 
-**Last Updated:** 2026-03-12
-**Status:** v4.5
+**Last Updated:** 2026-03-21
+**Status:** v5.0
 
 ---
 
@@ -19,6 +19,12 @@ Complete documentation for the TeamReel web application — frontend design syst
 |----------|---------|
 | [getting-started.md](getting-started.md) | Integration guide, domain glossary, FK hierarchy, seeding patterns |
 
+### Architecture
+
+| Document | Purpose |
+|----------|---------|
+| [architecture.md](architecture.md) | **Full app architecture** — 33 apps, 67 models, 40 ViewSets, Celery tasks |
+
 ### Frontend Design System
 
 | Document | Purpose |
@@ -31,12 +37,12 @@ Complete documentation for the TeamReel web application — frontend design syst
 | [frontend-design/code-conventions.md](frontend-design/code-conventions.md) | Quality gates, review checklist, current metrics |
 | [frontend-design/refactoring-status.md](frontend-design/refactoring-status.md) | **Refactoring eindstatus** — 6 roadmaps, 69 fases, alle metrieken |
 | [frontend-design/mobile-app-blueprint.md](frontend-design/mobile-app-blueprint.md) | Mobile-first app design blueprint — richtlijnen vs huidige staat |
+| [frontend-design/ux-flows.md](frontend-design/ux-flows.md) | **UX Flows** — complete route map, navigation shell, create wizards, user journeys |
 
-### Features & Architecture
+### Features
 
 | Document | Purpose |
 |----------|---------|
-| [features/application-architecture.md](features/application-architecture.md) | **Full app architecture** — 33 apps, 67 models, 40 ViewSets, Celery tasks |
 | [features/generation-queue.md](features/generation-queue.md) | AI Generation Queue — GenerationJob lifecycle, Celery pipeline |
 | [features/member-asset-save-flow.md](features/member-asset-save-flow.md) | Asset save flow + stale closure fix pattern |
 | [features/members-batch-actions.md](features/members-batch-actions.md) | Batch operations on members + RBAC mapping |
@@ -51,8 +57,9 @@ Complete documentation for the TeamReel web application — frontend design syst
 | [features/project-hierarchy.md](features/project-hierarchy.md) | **Project hierarchy** — club→team nesting, membership, invites, functional roles |
 | [features/rbac-permissions.md](features/rbac-permissions.md) | **RBAC permissions** — Permission registry, role scopes, hierarchical evaluator |
 | [features/content-templates.md](features/content-templates.md) | **Content templates** — 25+ subtypes, generation lifecycle, approval workflow |
-| [features/ux-flows.md](features/ux-flows.md) | **UX Flows** — complete route map, navigation shell, create wizards, user journeys |
-| [features/optimalisatie-analyse.md](features/optimalisatie-analyse.md) | **Optimalisatie analyse** — codebase health scan, code splitting, a11y, actieplan |
+| [features/media-readiness-card.md](features/media-readiness-card.md) | **Media readiness** — 3-tier completeness view, drill-down navigation |
+| [features/api-reference.md](features/api-reference.md) | **API referentie** — ~130 endpoints, auth flow, common patterns |
+| [features/celery-tasks.md](features/celery-tasks.md) | **Celery & async taken** — 33 production tasks, 4 queues, beat schedule |
 
 ### Media & AI Pipeline
 
@@ -64,6 +71,14 @@ Complete documentation for the TeamReel web application — frontend design syst
 | [media/rvm-alpha-pipeline.md](media/rvm-alpha-pipeline.md) | RVM background removal: MOV alpha → MP4 preview |
 | [media/ai-providers.md](media/ai-providers.md) | Provider cascade architecture (MiniMax → Runway → Pika → Veo) |
 | [media/ai-models-pricing.md](media/ai-models-pricing.md) | AI model pricing reference |
+
+### Security & Access Control
+
+| Document | Purpose |
+|----------|---------|
+| [security/index.md](security/index.md) | Security overzicht — navigatie naar alle RBAC/auth docs |
+| [security/permission-layers.md](security/permission-layers.md) | 3-laags permissieketen: auth → membership → workflow |
+| [security/permission-testing-guide.md](security/permission-testing-guide.md) | Herbruikbare testpatronen voor RBAC-endpoints |
 
 ### Infrastructure
 
@@ -79,12 +94,14 @@ Complete documentation for the TeamReel web application — frontend design syst
 | [data/counts.md](data/counts.md) | Model counts snapshot | ✅ |
 | [data/hierarchy-compact.md](data/hierarchy-compact.md) | Org → Club → Team hierarchy | ✅ |
 
-### Plans
+### Plans & Analyses
 
 | Document | Purpose |
 |----------|---------|
 | [plans/package-audit-report.md](plans/package-audit-report.md) | Package relevance audit (keep/archive) |
 | [plans/mobile-ux-gamification-analyse.md](plans/mobile-ux-gamification-analyse.md) | Mobile UX analysis + gamification recommendations |
+| [plans/optimalisatie-analyse.md](plans/optimalisatie-analyse.md) | **Optimalisatie analyse** — codebase health scan, code splitting, a11y, actieplan |
+| [plans/optimalisatie-analyse-2026-03.md](plans/optimalisatie-analyse-2026-03.md) | **Frontend optimalisatie maart 2026** — request waterfalls, deduplicatie, image loading |
 
 ---
 
@@ -93,8 +110,10 @@ Complete documentation for the TeamReel web application — frontend design syst
 ```
 05-demo/
 ├── index.md                  # This file
+├── architecture.md           # Full app architecture overview
 ├── getting-started.md        # Integration guide + domain glossary
-├── frontend-design/          # Frontend design system (8 docs)
+├── ai-context-index.md       # AI agent quick-reference
+├── frontend-design/          # Frontend design system + UX (9 docs)
 │   ├── index.md
 │   ├── css-architecture.md
 │   ├── theming.md
@@ -102,23 +121,30 @@ Complete documentation for the TeamReel web application — frontend design syst
 │   ├── mobile-patterns.md
 │   ├── mobile-app-blueprint.md
 │   ├── refactoring-status.md
-│   └── code-conventions.md
-├── features/                 # Features & architecture (15 docs)
-│   ├── application-architecture.md
+│   ├── code-conventions.md
+│   └── ux-flows.md
+├── features/                 # Feature specs (15 docs)
+│   ├── active-context.md
+│   ├── api-reference.md
+│   ├── branding-tokens.md
+│   ├── celery-tasks.md
+│   ├── content-templates.md
+│   ├── credits-transactions.md
 │   ├── generation-queue.md
+│   ├── generative-pipeline.md
+│   ├── media-readiness-card.md
 │   ├── member-asset-save-flow.md
 │   ├── members-batch-actions.md
-│   ├── seeding-guide.md
-│   ├── credits-transactions.md
-│   ├── active-context.md
-│   ├── generative-pipeline.md
-│   ├── video-processing.md
 │   ├── notification-routing.md
-│   ├── branding-tokens.md
-│   ├── workflow-engine.md
 │   ├── project-hierarchy.md
 │   ├── rbac-permissions.md
-│   └── content-templates.md
+│   ├── seeding-guide.md
+│   ├── video-processing.md
+│   └── workflow-engine.md
+├── security/                 # Access control & auth (3 docs)
+│   ├── index.md
+│   ├── permission-layers.md
+│   └── permission-testing-guide.md
 ├── media/                    # Media & AI pipeline (6 docs)
 │   ├── media-architecture.md
 │   ├── media-templates.md
@@ -132,9 +158,11 @@ Complete documentation for the TeamReel web application — frontend design syst
 │   ├── tables.md
 │   ├── counts.md
 │   └── hierarchy-compact.md
-├── plans/                    # Active plans (2 docs)
+├── plans/                    # Plans & analyses (4 docs)
 │   ├── package-audit-report.md
-│   └── mobile-ux-gamification-analyse.md
+│   ├── mobile-ux-gamification-analyse.md
+│   ├── optimalisatie-analyse.md
+│   └── optimalisatie-analyse-2026-03.md
 └── archive/                  # Historical reference
 ```
 

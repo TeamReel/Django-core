@@ -3,7 +3,7 @@
 > **Status:** ✅ Voltooid
 > **Geschatte effort:** 4-6 uur
 > **Geschatte omvang:** ~200 regels nieuw + ~300 regels migratie
-> **Bron:** [optimalisatie-analyse.md — §1](../../../05-demo/features/optimalisatie-analyse.md)
+> **Bron:** [optimalisatie-analyse.md — §1](../../../05-demo/plans/optimalisatie-analyse.md)
 
 ## Doel
 

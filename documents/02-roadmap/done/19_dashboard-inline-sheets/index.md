@@ -3,7 +3,7 @@
 > **Status:** ✅ Afgerond (7/7 fases)
 > **Start:** 2026-03-14
 > **Scope:** `demo/src/` — dashboard, NavigationSheet, data fetching, caching
-> **Bron:** [optimalisatie-analyse.md](../../05-demo/features/optimalisatie-analyse.md), [ux-flows.md](../../05-demo/features/ux-flows.md)
+> **Bron:** [optimalisatie-analyse.md](../../05-demo/plans/optimalisatie-analyse.md), [ux-flows.md](../../05-demo/frontend-design/ux-flows.md)
 
 ---
 

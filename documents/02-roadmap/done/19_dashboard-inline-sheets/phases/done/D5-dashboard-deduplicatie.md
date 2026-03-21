@@ -3,7 +3,7 @@
 > **Status:** ✅ Afgerond (commit `ce44e1a8`)
 > **Geschatte effort:** 4-6 uur
 > **Geschatte omvang:** ~400 regels migratie
-> **Bron:** [optimalisatie-analyse.md — §1](../../../05-demo/features/optimalisatie-analyse.md)
+> **Bron:** [optimalisatie-analyse.md — §1](../../../05-demo/plans/optimalisatie-analyse.md)
 
 ## Doel
 

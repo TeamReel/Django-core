@@ -173,4 +173,4 @@ B16 Delivery (Celery tasks):
 ## Gerelateerde docs
 
 - [workflow-engine.md](workflow-engine.md) — Workflows triggeren notificaties bij state changes
-- [application-architecture.md](application-architecture.md) — App overzicht
+- [architecture.md](../architecture.md) — App overzicht

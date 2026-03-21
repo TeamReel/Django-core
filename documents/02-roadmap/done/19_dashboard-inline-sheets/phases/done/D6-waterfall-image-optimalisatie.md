@@ -3,7 +3,7 @@
 > **Status:** ✅ Afgerond (commit `63b57c4d`)
 > **Geschatte effort:** 2-3 uur
 > **Geschatte omvang:** ~100 regels wijzigingen
-> **Bron:** [optimalisatie-analyse.md — §2 & §3](../../../05-demo/features/optimalisatie-analyse.md)
+> **Bron:** [optimalisatie-analyse.md — §2 & §3](../../../05-demo/plans/optimalisatie-analyse.md)
 
 ## Doel
 

@@ -126,5 +126,5 @@ De active context stuurt:
 
 ## Gerelateerde docs
 
-- [application-architecture.md](application-architecture.md) — accounts app beschrijving
+- [architecture.md](../architecture.md) — accounts app beschrijving
 - [../data/tables.md](../data/tables.md) — FK relaties UserActiveContext (8 FK's)

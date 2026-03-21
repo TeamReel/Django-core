@@ -12,7 +12,7 @@ Reference this file when you need to find the right documentation for a task. Ea
 
 | Topic | Document | Key Content |
 |-------|----------|-------------|
-| Full system overview | [application-architecture.md](features/application-architecture.md) | Stack, 67 models, 40 ViewSets, Celery queues, service diagram |
+| Full system overview | [architecture.md](architecture.md) | Stack, 67 models, 40 ViewSets, Celery queues, service diagram |
 | Data hierarchy | [project-hierarchy.md](features/project-hierarchy.md) | Organisation → Project → Period → Activity nesting |
 | RBAC permissions | [rbac-permissions.md](features/rbac-permissions.md) | Permission registry, Role, RoleAssignment, hierarchy |
 | Workflow engine | [workflow-engine.md](features/workflow-engine.md) | State machine, transitions, approval flows |
@@ -28,7 +28,7 @@ Reference this file when you need to find the right documentation for a task. Ea
 | CSS architecture | [css-architecture.md](frontend-design/css-architecture.md) | Layered system, all token values, utility classes |
 | Theming | [theming.md](frontend-design/theming.md) | Light/dark, semantic tokens, brand colors |
 | Mobile patterns | [mobile-patterns.md](frontend-design/mobile-patterns.md) | Breakpoints, touch targets, safe areas, gestures |
-| UX flows | [ux-flows.md](features/ux-flows.md) | App shell, sidebar, navigation, all user flows |
+| UX flows | [ux-flows.md](frontend-design/ux-flows.md) | App shell, sidebar, navigation, all user flows |
 
 ## Content & Media
 
@@ -72,6 +72,8 @@ Reference this file when you need to find the right documentation for a task. Ea
 | Topic | Document | Key Content |
 |-------|----------|-------------|
 | Railway deployment | [railway-services.md](infrastructure/railway-services.md) | Services, environment, scaling |
+| API reference | [api-reference.md](features/api-reference.md) | ~130 endpoints, auth flow, permission patterns |
+| Celery tasks | [celery-tasks.md](features/celery-tasks.md) | 33 production tasks, 4 queues, beat schedule |
 
 ## Plans & Analysis
 
@@ -79,6 +81,8 @@ Reference this file when you need to find the right documentation for a task. Ea
 |-------|----------|-------------|
 | Mobile UX strategy | [mobile-ux-gamification-analyse.md](plans/mobile-ux-gamification-analyse.md) | Gamification, engagement features |
 | Package audit | [package-audit-report.md](plans/package-audit-report.md) | Dependency analysis |
+| Optimalisatie analyse | [optimalisatie-analyse.md](plans/optimalisatie-analyse.md) | Codebase health scan, code splitting, a11y, actieplan |
+| Frontend optimalisatie 2026-03 | [optimalisatie-analyse-2026-03.md](plans/optimalisatie-analyse-2026-03.md) | Request waterfalls, deduplicatie, image loading |
 
 ---
 

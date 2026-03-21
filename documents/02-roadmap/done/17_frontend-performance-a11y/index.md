@@ -2,7 +2,7 @@
 
 **Status:** ✅ Compleet (9/9 fases)
 **Aangemaakt:** 2026-03-13
-**Bron:** [optimalisatie-analyse.md](../../05-demo/features/optimalisatie-analyse.md)
+**Bron:** [optimalisatie-analyse.md](../../05-demo/plans/optimalisatie-analyse.md)
 
 ---
 
