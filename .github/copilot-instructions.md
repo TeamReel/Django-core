@@ -489,10 +489,10 @@ railway run python manage.py showmigrations --list
 All domain documentation mapped in: `documents/05-demo/ai-context-index.md`
 
 Quick pointers:
-- **Architecture**: `documents/05-demo/features/application-architecture.md`
-- **Frontend design**: `documents/05-demo/frontend-design/` (6 docs)
+- **Architecture**: `documents/05-demo/architecture.md`
+- **Frontend design**: `documents/05-demo/frontend-design/` (9 docs)
 - **Data tables**: `documents/05-demo/data/tables.md`
-- **UX flows**: `documents/05-demo/features/ux-flows.md`
+- **UX flows**: `documents/05-demo/frontend-design/ux-flows.md`
 - **Roadmap specs**: `documents/02-roadmap/`
 
 ---

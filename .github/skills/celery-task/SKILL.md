@@ -23,14 +23,16 @@ Scaffold, debug, and test Celery async tasks following TeamReel conventions.
 
 ## Queue Architecture
 
-TeamReel uses 4 Celery queues:
+TeamReel uses 4 Celery queues across 3 Railway workers:
 
-| Queue | Purpose | Concurrency | Use for |
-|-------|---------|-------------|---------|
-| `default` | General tasks | 4 workers | Emails, notifications, cleanup, cache warming |
-| `video` | Video processing | 2 workers | FFmpeg rendering, thumbnail generation, encoding |
-| `ai` | AI generation | 2 workers | OpenAI, Gemini, LangGraph requests |
-| `priority` | Time-sensitive tasks | 2 workers | Webhook delivery, real-time updates |
+| Queue | Purpose | Worker | Concurrency | Use for |
+|-------|---------|--------|-------------|---------|
+| `default` | General tasks | celery-worker | 2 | Notifications, cleanup, indexing, workflows |
+| `video_fast` | Quick video ops | celery-worker | 2 | Thumbnails, auto-crop, metadata extraction |
+| `video_slow` | Heavy FFmpeg work | celery-worker | 1 | Transcode, compose, lineup video, asset processing |
+| `ai_generation` | Rate-limited AI calls | worker-ai | 1 | OpenAI, Gemini, LangGraph, asset generation |
+
+> **Reference**: See `documents/05-demo/features/celery-tasks.md` for the full task inventory (33 production tasks) and beat schedule.
 
 ## Task Template
 

@@ -120,9 +120,11 @@ src/<app_name>/
 - Tests: pytest, factory_boy fixtures
 
 ## Documentation
-- Architecture: `documents/05-demo/features/application-architecture.md`
+- Architecture: `documents/05-demo/architecture.md`
 - RBAC: `documents/05-demo/features/rbac-permissions.md`
 - Media architecture: `documents/05-demo/media/media-architecture.md`
 - Video pipeline: `documents/05-demo/features/video-processing.md`
 - Generative: `documents/05-demo/features/generative-pipeline.md`
 - Workflow engine: `documents/05-demo/features/workflow-engine.md`
+- API reference: `documents/05-demo/features/api-reference.md`
+- Celery tasks: `documents/05-demo/features/celery-tasks.md`

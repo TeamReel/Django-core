@@ -81,10 +81,10 @@ Stack, Row, Section, SplitView, ResponsiveGrid, Card, Badge, Avatar, DataTable, 
 Interactive cards open `BottomSheet` (mobile) / inline panels. Use `React.lazy` + `Suspense` for sheet components. Cards use `role="button"`, `tabIndex={0}`, `aria-haspopup="dialog"`.
 
 ## Documentation
-- Architecture: `documents/05-demo/features/application-architecture.md`
+- Architecture: `documents/05-demo/architecture.md`
 - Component lib: `documents/05-demo/frontend-design/component-library.md`
 - CSS architecture: `documents/05-demo/frontend-design/css-architecture.md`
 - Code conventions: `documents/05-demo/frontend-design/code-conventions.md`
 - Mobile patterns: `documents/05-demo/frontend-design/mobile-patterns.md`
 - Theming: `documents/05-demo/frontend-design/theming.md`
-- UX flows: `documents/05-demo/features/ux-flows.md`
+- UX flows: `documents/05-demo/frontend-design/ux-flows.md`

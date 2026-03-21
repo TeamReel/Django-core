@@ -41,10 +41,10 @@ Always read that file first to find the right document for any topic.
 
 | Question about... | Read |
 |-------------------|------|
-| System overview, models, ViewSets | `documents/05-demo/features/application-architecture.md` |
+| System overview, models, ViewSets | `documents/05-demo/architecture.md` |
 | Data hierarchy (org → project → period → activity) | `documents/05-demo/features/project-hierarchy.md` |
 | Permissions, roles, access control | `documents/05-demo/features/rbac-permissions.md` |
-| UX flows, navigation, app shell | `documents/05-demo/features/ux-flows.md` |
+| UX flows, navigation, app shell | `documents/05-demo/frontend-design/ux-flows.md` |
 | Branding, club identity, tokens | `documents/05-demo/features/branding-tokens.md` |
 | Content templates, fields | `documents/05-demo/features/content-templates.md` |
 | AI generation pipeline | `documents/05-demo/features/generative-pipeline.md` |
@@ -53,6 +53,9 @@ Always read that file first to find the right document for any topic.
 | Credits & billing | `documents/05-demo/features/credits-transactions.md` |
 | Notifications | `documents/05-demo/features/notification-routing.md` |
 | Members & batch operations | `documents/05-demo/features/members-batch-actions.md` |
+| API endpoints & patterns | `documents/05-demo/features/api-reference.md` |
+| Celery tasks & queues | `documents/05-demo/features/celery-tasks.md` |
+| Security & permission layers | `documents/05-demo/security/permission-layers.md` |
 | All database tables | `documents/05-demo/data/tables.md` |
 | Frontend components | `documents/05-demo/frontend-design/component-library.md` |
 | CSS tokens & theming | `documents/05-demo/frontend-design/css-architecture.md` |

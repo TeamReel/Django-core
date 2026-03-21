@@ -13,23 +13,26 @@ You are a TeamReel domain expert. Answer questions about the application's archi
 
 ## Documentation Map
 
-### Architecture & Features (`documents/05-demo/features/`)
+### Architecture & Features (`documents/05-demo/`)
 | Document | Covers |
 |----------|--------|
-| `application-architecture.md` | Full system overview, 67 models, 40 ViewSets, Celery queues |
-| `rbac-permissions.md` | Permission registry, Role/RoleAssignment, hierarchical RBAC |
-| `project-hierarchy.md` | Organisation → Project → nested projects (club/team) |
-| `ux-flows.md` | All user-facing flows, dual-panel sidebar, mobile shell |
-| `branding-tokens.md` | BrandProfile, BrandAsset, club identity system |
-| `content-templates.md` | ContentTemplate, ContentField definitions |
-| `generative-pipeline.md` | AI generation: prompt → provider → result |
-| `video-processing.md` | FFmpeg pipeline, VideoJob, VideoPreset, overlays |
-| `workflow-engine.md` | State machine for approval flows |
-| `credits-transactions.md` | Credit system for AI generation |
-| `notification-routing.md` | Notification delivery system |
-| `members-batch-actions.md` | Bulk member operations |
-| `member-asset-save-flow.md` | Member photo/asset upload flow |
-| `seeding-guide.md` | Database seeding for development |
+| `architecture.md` | Full system overview, 67 models, 40 ViewSets, Celery queues |
+| `features/rbac-permissions.md` | Permission registry, Role/RoleAssignment, hierarchical RBAC |
+| `features/project-hierarchy.md` | Organisation → Project → nested projects (club/team) |
+| `frontend-design/ux-flows.md` | All user-facing flows, dual-panel sidebar, mobile shell |
+| `features/branding-tokens.md` | BrandProfile, BrandAsset, club identity system |
+| `features/content-templates.md` | ContentTemplate, ContentField definitions |
+| `features/generative-pipeline.md` | AI generation: prompt → provider → result |
+| `features/video-processing.md` | FFmpeg pipeline, VideoJob, VideoPreset, overlays |
+| `features/workflow-engine.md` | State machine for approval flows |
+| `features/credits-transactions.md` | Credit system for AI generation |
+| `features/notification-routing.md` | Notification delivery system |
+| `features/members-batch-actions.md` | Bulk member operations |
+| `features/member-asset-save-flow.md` | Member photo/asset upload flow |
+| `features/seeding-guide.md` | Database seeding for development |
+| `features/api-reference.md` | ~130 API endpoints, auth flow, permission patterns |
+| `features/celery-tasks.md` | 33 production tasks, 4 queues, beat schedule |
+| `security/permission-layers.md` | 3-layer permission chain (auth → membership → workflow) |
 
 ### Frontend Design (`documents/05-demo/frontend-design/`)
 | Document | Covers |
@@ -40,6 +43,7 @@ You are a TeamReel domain expert. Answer questions about the application's archi
 | `theming.md` | Light/dark themes, semantic tokens, brand colors |
 | `mobile-patterns.md` | Breakpoints, touch targets, safe areas, gestures |
 | `mobile-app-blueprint.md` | Mobile app strategy |
+| `ux-flows.md` | All user-facing flows, dual-panel sidebar, mobile shell |
 
 ### Data (`documents/05-demo/data/`)
 | Document | Covers |

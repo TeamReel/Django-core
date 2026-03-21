@@ -16,18 +16,24 @@ Generate, update, and audit TeamReel documentation to keep it in sync with the c
 documents/
 ├── 05-demo/
 │   ├── ai-context-index.md          ← Master index (ALWAYS update)
+│   ├── architecture.md              ← Full app architecture
 │   ├── features/                    ← Feature documentation
-│   │   ├── application-architecture.md
-│   │   ├── ux-flows.md
+│   │   ├── api-reference.md
+│   │   ├── celery-tasks.md
 │   │   └── [feature-name].md
 │   ├── frontend-design/             ← Design system docs
 │   │   ├── code-conventions.md
 │   │   ├── component-library.md
 │   │   ├── css-architecture.md
-│   │   └── theming.md
+│   │   ├── theming.md
+│   │   └── ux-flows.md
+│   ├── security/                    ← Access control docs
+│   │   ├── permission-layers.md
+│   │   └── permission-testing-guide.md
 │   ├── data/                        ← Data model docs
 │   │   └── tables.md
-│   └── media/                       ← Media/video pipeline docs
+│   ├── media/                       ← Media/video pipeline docs
+│   └── plans/                       ← Analyses & strategic plans
 ├── 02-roadmap/                      ← Active roadmap specs
 │   └── done/                        ← Completed roadmaps
 └── 04-modules/                      ← Module documentation
