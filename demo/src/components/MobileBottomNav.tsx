@@ -27,7 +27,7 @@ const MobileBottomNav = memo(function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const haptic = useHapticFeedback();
-  const { orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId } = useAppSelection();
+  const { orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId, myOrgSlug, myClubSlugOrId, myTeamSlugOrId, mySeasonSlugOrId } = useAppSelection();
   const { prefill: createPrefill } = useCreateContext();
 
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -63,16 +63,21 @@ const MobileBottomNav = memo(function MobileBottomNav() {
     return () => window.removeEventListener('teamreel:open-quick-create', handler);
   }, []);
 
-  // ── Path resolution ─────────────────────────────────────────────────
-  const teamPath = orgSlug && clubSlugOrId && teamSlugOrId
-    ? routes.team({ orgId: orgSlug, clubId: clubSlugOrId, projectId: teamSlugOrId })
-    : orgSlug && clubSlugOrId
-      ? routes.club({ orgId: orgSlug, clubId: clubSlugOrId })
+  // ── "Mijn Team" path — always the user's OWN team, never last-visited ──
+  const myOrg = myOrgSlug || orgSlug;
+  const myClub = myClubSlugOrId || clubSlugOrId;
+  const myTeam = myTeamSlugOrId || teamSlugOrId;
+  const mySeason = mySeasonSlugOrId || seasonSlugOrId;
+
+  const teamPath = myOrg && myClub && myTeam
+    ? routes.team({ orgId: myOrg, clubId: myClub, projectId: myTeam })
+    : myOrg && myClub
+      ? routes.club({ orgId: myOrg, clubId: myClub })
       : routes.dashboard();
 
-  // Season tab: active season under the current team, or fallback to directory
-  const seasonPath = seasonSlugOrId && teamPath !== routes.dashboard()
-    ? `${teamPath}/${encodeURIComponent(seasonSlugOrId)}`
+  // Season tab: active season under the user's team
+  const seasonPath = mySeason && teamPath !== routes.dashboard()
+    ? `${teamPath}/${encodeURIComponent(mySeason)}`
     : teamPath !== routes.dashboard()
       ? teamPath
       : '/directory?tab=clubs';
@@ -115,13 +120,13 @@ const MobileBottomNav = memo(function MobileBottomNav() {
     }
 
     if (tab.id === 'season') {
-      // Primary: teamPath resolved from useAppSelection
+      // Active when viewing the user's own team OR any hierarchy path
       if (teamPath !== routes.dashboard()) {
-        return currentPath === teamPath || currentPath.startsWith(teamPath + '/');
+        if (currentPath === teamPath || currentPath.startsWith(teamPath + '/')) return true;
       }
       // Fallback: directory page (when no team selected yet)
       if (currentPath.startsWith('/directory')) return true;
-      // Cold deeplinks: detect vanity hierarchy paths before useAppSelection resolves
+      // Any hierarchy (org/club/team/season) vanity path
       return looksLikeHierarchyPath(currentPath);
     }
 

@@ -49,6 +49,11 @@ export type AppSelection = {
   competitionName: string | null;
   competitionIdForApi: string | null;
   matchId: string | null;
+  /** User's own team — always from user.projects, never URL/localStorage. */
+  myOrgSlug: string | null;
+  myClubSlugOrId: string | null;
+  myTeamSlugOrId: string | null;
+  mySeasonSlugOrId: string | null;
 };
 
 // ============================================================================

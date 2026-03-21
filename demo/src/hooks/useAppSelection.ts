@@ -42,6 +42,10 @@ export function useAppSelection(): AppSelection {
     competitionName: null,
     competitionIdForApi: null,
     matchId: null,
+    myOrgSlug: null,
+    myClubSlugOrId: null,
+    myTeamSlugOrId: null,
+    mySeasonSlugOrId: null,
   });
 
   const readLastAppContext = (currentUserEmail?: string) => {
@@ -270,9 +274,14 @@ export function useAppSelection(): AppSelection {
             }
         }
 
-        // 2. If no URL match, try last visited
+        // 2. If no URL match, try last visited — but only if it's one of our own teams.
+        //    This prevents "poisoning" where visiting another team's URL overwrites
+        //    the context so "Mijn Team" points to the wrong team.
         if (!selectedTeam && last?.orgSlug && String(last.orgSlug) === String(orgSlug) && last.teamSlugOrId) {
-          selectedTeam = (teams || []).find((t) => String(t.slug) === String(last.teamSlugOrId)) || null;
+          const lastTeam = (teams || []).find((t) => String(t.slug) === String(last.teamSlugOrId)) || null;
+          if (lastTeam && (userTeamIds.size === 0 || userTeamIds.has(String(lastTeam.id)))) {
+            selectedTeam = lastTeam;
+          }
         }
 
         // 3. Fallback: prefer user's own teams, then best guess
@@ -304,9 +313,12 @@ export function useAppSelection(): AppSelection {
           selectedClub = clubsById.get(String(selectedTeam.parent_id)) || null;
         }
 
-        // 3. Last visited
+        // 3. Last visited — same ownership check as team step 2
         if (!selectedClub && last?.orgSlug && String(last.orgSlug) === String(orgSlug) && last.clubSlugOrId) {
-            selectedClub = clubsBySlug.get(String(last.clubSlugOrId)) || null;
+            const lastClub = clubsBySlug.get(String(last.clubSlugOrId)) || null;
+            if (lastClub && (userClubIds.size === 0 || userClubIds.has(String(lastClub.id)))) {
+              selectedClub = lastClub;
+            }
         }
 
         // 4. Fallback: prefer user's own clubs, then alphabetical
@@ -394,6 +406,44 @@ export function useAppSelection(): AppSelection {
            selectedCompetitionSlugOrId = String(last.competitionSlugOrId);
         }
 
+        // ── Resolve user's OWN team (for "Mijn Team" navigation) ────────
+        // Always from user.projects — never affected by URL or localStorage.
+        let myTeam: AppProjectRow | null = null;
+        let myClub: AppProjectRow | null = null;
+        let mySeasonKey: string | null = null;
+
+        const ownTeamsList = (teams || []).filter(t => userTeamIds.has(String(t.id)));
+        if (ownTeamsList.length === 1) {
+          myTeam = ownTeamsList[0];
+        } else if (ownTeamsList.length > 1) {
+          myTeam = pickBestByUpdatedOrName(ownTeamsList);
+        }
+
+        if (myTeam?.parent_id != null) {
+          myClub = clubsById.get(String(myTeam.parent_id)) || null;
+        }
+        if (!myClub) {
+          const ownClubsList = (clubs || []).filter(c => userClubIds.has(String(c.id)));
+          if (ownClubsList.length >= 1) myClub = ownClubsList[0] || null;
+        }
+
+        // Resolve season for own team (reuse cache if same as page team)
+        if (myTeam) {
+          if (String(myTeam.id) === String(selectedTeam?.id) && selectedSeasonKey) {
+            mySeasonKey = selectedSeasonKey;
+          } else {
+            try {
+              const mySeasons = await fetchAllPages<AppPeriodRow>(
+                `${apiBaseUrl}/periods/?page_size=250&project_id=${encodeURIComponent(String(myTeam.id))}&type=season`,
+                { credentials: 'include' },
+                { ttlMs: 120_000, cacheKey: `GET:seasons:${orgSlug}:${myTeam.id}` }
+              );
+              const best = pickMostRecentSeason(mySeasons || []);
+              if (best) mySeasonKey = periodPathKey(best) || String(best.id);
+            } catch { /* ignore */ }
+          }
+        }
+
         setAppSelection({
           orgSlug,
           clubSlugOrId: selectedClub ? String(selectedClub.slug || selectedClub.id) : null,
@@ -408,6 +458,10 @@ export function useAppSelection(): AppSelection {
           competitionName: null, // Not fetching competition names deeply yet
           competitionIdForApi: selectedCompetitionSlugOrId,
           matchId: selectedMatchId,
+          myOrgSlug: userPrimaryOrgSlug || orgSlug,
+          myClubSlugOrId: myClub ? String(myClub.slug || myClub.id) : null,
+          myTeamSlugOrId: myTeam ? String(myTeam.slug || myTeam.id) : null,
+          mySeasonSlugOrId: mySeasonKey,
         });
 
         // Persist validated context to localStorage (only after API resolution)
