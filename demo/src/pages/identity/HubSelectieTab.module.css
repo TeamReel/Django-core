@@ -1,0 +1,93 @@
+/* ============================================================================
+   HubSelectieTab — iOS-style grouped squad list
+   ============================================================================ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Asset status dot (8px circle) ── */
+.assetDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.assetDot[data-status="complete"] {
+  background: var(--app-success);
+}
+
+.assetDot[data-status="partial"] {
+  background: var(--app-warning);
+}
+
+.assetDot[data-status="empty"] {
+  background: var(--app-error);
+}
+
+/* ── Search row inside "Niet in selectie" ── */
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.searchIcon {
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  font-size: var(--text-sm);
+  color: var(--app-text);
+  font-family: inherit;
+  padding: var(--space-2) 0;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--app-muted-text);
+}
+
+/* ── Add button (Plus icon) ── */
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--app-surface-2);
+  color: var(--app-primary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.addBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .addBtn:hover {
+    background: var(--app-hover-bg, rgba(0, 0, 0, 0.08));
+  }
+}
+
+/* ── Loading state ── */
+.loadingRow {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+}

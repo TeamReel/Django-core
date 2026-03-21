@@ -16,6 +16,9 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Alert } from '@django-core/design-system';
 import {
   Pencil, Check, MoreHorizontal, Eye, Trash2,
+  Calendar, MapPin, Trophy, Users, Film,
+  Building2, Shirt, Camera, Palette, Upload, Settings,
+  ChevronRight,
 } from 'lucide-react';
 import { ShareButton } from '../../components/ShareButton';
 import MobileTabBar from '../../components/MobileTabBar';
@@ -23,26 +26,26 @@ import { SeasonSwitcher, type SeasonOption } from '../../components/SeasonSwitch
 import { isSeasonPeriod, useSeasonContext } from '../../providers/SeasonProvider';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { periodPathKey } from '../../utils/periodPath';
+import { ListSection } from '../../components/ListSection';
+import { AppIcon } from '../../components/AppIcon';
+import { getClubAssetStatus, getTeamAssetStatus, getMemberAssetSummary } from '../../utils/assetStatus';
 import { useTeamDetailData } from './useTeamDetailData';
 import { useTeamTabData } from './useTeamTabData';
 import { useSeasonDetailPageData } from '../periods/useSeasonDetailPageData';
 import SeasonDetailModals from '../periods/SeasonDetailModals';
-import { ContentStreakWidget } from '../../components/dashboard/ContentStreakWidget';
-import { useContentStreak } from '../../hooks/useContentStreak';
 import { useIsMobile } from '../../hooks/useIsMobile';
-import { Settings } from 'lucide-react';
+import type { MatchRecord } from '../periods/SeasonMatchesTab';
 
 // ── Tab components (reuse existing) ──
-import SeasonOverviewTab from '../periods/SeasonOverviewTab';
 import SeasonContentTab from '../periods/SeasonContentTab';
-import SeasonSquadTab from '../periods/SeasonSquadTab';
-import SeasonMediaTab from '../periods/SeasonMediaTab';
+import type { SquadMember } from '../periods/squadTabTypes';
 import SeasonCompetitionsTab from '../periods/SeasonCompetitionsTab';
-import SeasonMatchesTab from '../periods/SeasonMatchesTab';
 import SeasonAssetsSettingsTab from '../periods/SeasonAssetsSettingsTab';
-import { TeamOverviewTab } from './TeamOverviewTab';
+import { HubWedstrijdenTab } from './HubWedstrijdenTab';
 import { TeamBeheerTab } from './TeamBeheerTab';
 import { HubClubTab } from './HubClubTab';
+import { HubSelectieTab } from './HubSelectieTab';
+import { HubMediaTab } from './HubMediaTab';
 
 import s from './MyTeamHubPage.module.css';
 
@@ -67,10 +70,6 @@ export const MyTeamHubPage: React.FC = () => {
   // ── Season-level data (via SeasonProvider) ──
   const seasonCtx = useSeasonContext();
   const d = useSeasonDetailPageData();
-
-  // ── Content streak ──
-  const projectId = d.project?.id != null ? String(d.project.id) : undefined;
-  const { data: streakData, isLoading: streakLoading } = useContentStreak(projectId);
 
   // ── Unified RBAC ──
   const { isPlayer, isSupporter } = d;
@@ -159,8 +158,58 @@ export const MyTeamHubPage: React.FC = () => {
 
   // ── Overflow menu ──
   const [overflowOpen, setOverflowOpen] = useState(false);
-  const [adminSectionOpen, setAdminSectionOpen] = useState(false);
   const overflowRef = useRef<HTMLDivElement>(null);
+
+  // ── Overview: next match ──
+  const nextMatch = useMemo<MatchRecord | null>(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return (d.matches as MatchRecord[])
+      .filter((m) => {
+        const dt = m.start_time || m.date || m.metadata?.date;
+        return dt && new Date(dt) >= now;
+      })
+      .sort((a, b) => {
+        const da = new Date(a.start_time || a.date || a.metadata?.date || 0).getTime();
+        const db = new Date(b.start_time || b.date || b.metadata?.date || 0).getTime();
+        return da - db;
+      })[0] ?? null;
+  }, [d.matches]);
+
+  const fmtNextMatchDate = useMemo(() => {
+    if (!nextMatch) return '';
+    const raw = nextMatch.start_time || nextMatch.date || nextMatch.metadata?.date;
+    if (!raw) return '';
+    const dt = new Date(raw);
+    return dt.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+  }, [nextMatch]);
+
+  const nextMatchUrl = useMemo(() => {
+    if (!nextMatch) return '';
+    const compId = String(nextMatch.period_id || nextMatch.period?.id || nextMatch.period || '').trim();
+    const compKey = periodPathKey(nextMatch.period || null) || compId;
+    const matchKey = nextMatch.slug || nextMatch.id;
+    return d.isTeamRoute
+      ? `${d.seasonsBasePath}/${d.seasonPathKey}/${compKey}/${String(matchKey)}`
+      : `/matches/${String(matchKey)}`;
+  }, [nextMatch, d.isTeamRoute, d.seasonsBasePath, d.seasonPathKey]);
+
+  // ── Overview: asset status ──
+  const clubAssetStatus = useMemo(
+    () => getClubAssetStatus(d.brandLogoUrl, d.brandSponsorUrl),
+    [d.brandLogoUrl, d.brandSponsorUrl],
+  );
+  const teamAssetStatus = useMemo(
+    () => getTeamAssetStatus(d.batchBrandKits),
+    [d.batchBrandKits],
+  );
+  const memberAssetSummary = useMemo(
+    () => getMemberAssetSummary(d.members as Record<string, unknown>[]),
+    [d.members],
+  );
+  const memberPhotosStatus = memberAssetSummary.complete === memberAssetSummary.total && memberAssetSummary.total > 0
+    ? 'complete' as const
+    : 'incomplete' as const;
   useEffect(() => {
     if (!overflowOpen) return;
     const handler = (e: MouseEvent) => {
@@ -359,132 +408,137 @@ export const MyTeamHubPage: React.FC = () => {
         <div className={s.tabContent}>
           {d.error && <Alert variant="error">{d.error}</Alert>}
 
-          {/* Overview — merged team + season overview */}
+          {/* Overview — iOS-style grouped sections */}
           {activeTab === 'overview' && (
             <>
-              {streakData && (
-                <ContentStreakWidget
-                  streak={streakData}
-                  hasHistory={streakData.totalMatchesChecked >= 2}
-                  loading={streakLoading}
-                  compact
-                />
-              )}
-              <SeasonOverviewTab
-              season={d.season}
-              competitions={d.competitions}
-              members={d.members}
-              matches={d.matches}
-              matchesLoading={d.matchesLoading}
-              navigateToTab={navigateToTab}
-              isTeamRoute={d.isTeamRoute}
-              seasonsBasePath={d.seasonsBasePath}
-              seasonPathKey={d.seasonPathKey}
-              matchDisplayTitle={d.matchDisplayTitle}
-              teamRosterCount={d.teamRoster?.length}
-              brandLogoUrl={d.brandLogoUrl}
-              brandSponsorUrl={d.brandSponsorUrl}
-              batchBrandKits={d.batchBrandKits}
-            />
-
-            {/* Admin: inline Beheer section (mobile replacement for Beheer tab) */}
-            {isAdmin && (
-              <section className={s.adminSection}>
-                <button
-                  type="button"
-                  className={s.adminSectionToggle}
-                  onClick={() => setAdminSectionOpen((o) => !o)}
-                  aria-expanded={adminSectionOpen}
-                >
-                  <Settings size={16} />
-                  <span>Instellingen</span>
-                  <span className={s.adminSectionChevron} data-open={adminSectionOpen}>&#8250;</span>
-                </button>
-                {adminSectionOpen && (
-                  <div className={s.adminSectionContent}>
-                    {/* Competitions management */}
-                    <div className={s.beheerSection}>
-                      <h3 className={s.beheerSectionTitle}>Competities</h3>
-                      <SeasonCompetitionsTab
-                        competitions={d.competitions}
-                        competitionsLoading={d.competitionsLoading}
-                        userCanEditProject={d.userCanEditProject}
-                        userCanDeleteProject={d.userCanDeleteProject}
-                        apiBaseUrl={d.apiBaseUrl}
-                        getMatchCountForCompetition={d.getMatchCountForCompetition}
-                        getCompetitionParticipantsCount={d.getCompetitionParticipantsCount}
-                        setIsCreateCompetitionModalOpen={d.setIsCreateCompetitionModalOpen}
-                        setSelectedDetailPeriod={d.setSelectedDetailPeriod}
-                        setIsPeriodDetailModalOpen={d.setIsPeriodDetailModalOpen}
-                        setSelectedEditPeriod={d.setSelectedEditPeriod}
-                        setIsPeriodEditModalOpen={d.setIsPeriodEditModalOpen}
-                        setCompetitions={d.setCompetitions}
-                      />
-                    </div>
-
-                    {/* Season assets & settings */}
-                    {d.season && d.project && (
-                      <div className={s.beheerSection}>
-                        <h3 className={s.beheerSectionTitle}>Assets & Instellingen</h3>
-                        <SeasonAssetsSettingsTab
-                          season={d.season}
-                          project={d.project}
-                          org={d.org}
-                          orgSlugOrId={d.orgSlugOrId}
-                          club={d.club}
-                          userCanEditProject={d.userCanEditProject}
-                          apiBaseUrl={d.apiBaseUrl}
-                          onSeasonUpdate={d.setSeason}
-                        />
-                      </div>
-                    )}
-
-                    {/* Team-level admin */}
-                    {team.org && team.team && team.teamIdForDirectoryLists && (
-                      <div className={s.beheerSection}>
-                        <h3 className={s.beheerSectionTitle}>Team instellingen</h3>
-                        <TeamBeheerTab
-                          org={team.org}
-                          team={team.team}
-                          setTeam={team.setTeam}
-                          brandProfileId={team.brandProfileId ?? undefined}
-                          club={team.club}
-                          organisationId={team.orgIdForDirectoryLists}
-                          teamId={team.teamIdForDirectoryLists}
-                        />
-                      </div>
-                    )}
+              {/* Next match hero */}
+              {nextMatch && (
+                <div className={s.nextMatchHero}>
+                  <div className={s.nextMatchLabel}>Volgende wedstrijd</div>
+                  <div className={s.nextMatchTitle}>{d.matchDisplayTitle(nextMatch)}</div>
+                  <div className={s.nextMatchMeta}>
+                    <AppIcon icon={Calendar} size={14} />
+                    <span>{fmtNextMatchDate}</span>
                   </div>
+                  {nextMatch.metadata?.venue && (
+                    <div className={s.nextMatchMeta}>
+                      <AppIcon icon={MapPin} size={14} />
+                      <span>{nextMatch.metadata.venue}</span>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    className={s.nextMatchAction}
+                    onClick={() => navigate(nextMatchUrl)}
+                  >
+                    <span>Bekijk wedstrijd</span>
+                    <AppIcon icon={ChevronRight} size={16} />
+                  </button>
+                </div>
+              )}
+
+              {/* Seizoen stats */}
+              <ListSection title="Seizoen">
+                <ListSection.Row
+                  icon={Trophy}
+                  label="Wedstrijden"
+                  value={String(d.matches.length)}
+                  onTap={() => navigateToTab('wedstrijden')}
+                />
+                <ListSection.Row
+                  icon={Users}
+                  label="Selectie"
+                  value={String(d.members.length)}
+                  onTap={() => navigateToTab('selectie')}
+                />
+                {!isSupporter && (
+                  <ListSection.Row
+                    icon={Film}
+                    label="Content"
+                    onTap={() => navigateToTab('media')}
+                  />
                 )}
-              </section>
-            )}
+              </ListSection>
+
+              {/* Assets status */}
+              <ListSection title="Assets">
+                <ListSection.Row
+                  icon={Building2}
+                  label="Club assets"
+                  status={clubAssetStatus === 'complete' ? 'success' : 'warning'}
+                  onTap={() => navigateToTab('beheer')}
+                />
+                <ListSection.Row
+                  icon={Shirt}
+                  label="Team assets"
+                  status={teamAssetStatus === 'complete' ? 'success' : 'warning'}
+                  onTap={() => navigateToTab('beheer')}
+                />
+                <ListSection.Row
+                  icon={Camera}
+                  label="Ledenfoto's"
+                  value={`${memberAssetSummary.complete}/${memberAssetSummary.total}`}
+                  status={memberPhotosStatus === 'complete' ? 'success' : 'warning'}
+                  onTap={() => navigateToTab('media')}
+                />
+              </ListSection>
+
+              {/* Beheer — admin only, always visible */}
+              {isAdmin && (
+                <ListSection title="Beheer">
+                  <ListSection.Row
+                    icon={Settings}
+                    label="Team instellingen"
+                    onTap={() => navigateToTab('beheer')}
+                  />
+                  <ListSection.Row
+                    icon={Palette}
+                    label="Brand profiel"
+                    onTap={() => navigateToTab('club')}
+                  />
+                  <ListSection.Row
+                    icon={Trophy}
+                    label="Competities"
+                    onTap={() => navigateToTab('beheer')}
+                  />
+                  <ListSection.Row
+                    icon={Shirt}
+                    label="Kits & Tenues"
+                    onTap={() => navigateToTab('club')}
+                  />
+                  <ListSection.Row
+                    icon={Upload}
+                    label="Assets uploaden"
+                    onTap={() => navigateToTab('media')}
+                  />
+                </ListSection>
+              )}
             </>
           )}
 
-          {/* Wedstrijden — season matches */}
+          {/* Wedstrijden — iOS-style grouped list */}
           {activeTab === 'wedstrijden' && (
-            <SeasonMatchesTab
+            <HubWedstrijdenTab
               matches={d.matches}
               matchesLoading={d.matchesLoading}
               isTeamRoute={d.isTeamRoute}
               seasonsBasePath={d.seasonsBasePath}
               seasonPathKey={d.seasonPathKey}
               userCanEditProject={d.userCanEditProject}
-              userCanDeleteProject={d.userCanDeleteProject}
-              apiBaseUrl={d.apiBaseUrl}
               matchDisplayTitle={d.matchDisplayTitle}
               setIsCreateMatchModalOpen={d.setIsCreateMatchModalOpen}
-              setSelectedDetailMatch={d.setSelectedDetailMatch}
-              setIsMatchDetailModalOpen={d.setIsMatchDetailModalOpen}
-              setSelectedEditMatch={d.setSelectedEditMatch}
-              setIsMatchEditModalOpen={d.setIsMatchEditModalOpen}
-              setMatches={d.setMatches}
             />
           )}
 
-          {/* Media — content generations + media per member */}
+          {/* Media — segmented: per wedstrijd + per seizoen asset-matrix */}
           {activeTab === 'media' && !isSupporter && (
-            <>
+            <HubMediaTab
+              members={d.members as SquadMember[]}
+              memberDetailHref={(mid: string) => {
+                const base = d.memberDetailHref(mid);
+                return base ? `${base}?from=media` : base;
+              }}
+            >
               <SeasonContentTab
                 org={d.org}
                 projectId={String(d.project?.id || '')}
@@ -493,35 +547,23 @@ export const MyTeamHubPage: React.FC = () => {
                 members={d.members}
                 pushToast={d.pushToast}
               />
-            </>
+            </HubMediaTab>
           )}
 
-          {/* Selectie — season squad */}
+          {/* Selectie — iOS-style grouped squad */}
           {activeTab === 'selectie' && !isSupporter && (
-            <SeasonSquadTab
-              members={d.members}
+            <HubSelectieTab
+              members={d.members as SquadMember[]}
               membersLoading={d.membersLoading}
               membersError={d.membersError}
-              userCanEditProject={d.userCanEditProject}
-              bulkSubmitting={d.bulkSubmitting}
-              isTeamRoute={d.isTeamRoute}
-              apiBaseUrl={d.apiBaseUrl}
-              projectId={String(d.project?.id || '')}
+              isAdmin={isAdmin}
               memberDetailHref={(mid: string) => {
                 const base = d.memberDetailHref(mid);
                 return base ? `${base}?from=selectie` : base;
               }}
-              unassignMembershipsFromSeasonSquad={d.unassignMembershipsFromSeasonSquad}
-              setIsAddSquadMemberModalOpen={d.setIsAddSquadMemberModalOpen}
-              onMemberUpdated={() => d.setMembersReloadToken((t: number) => t + 1)}
-              teamRosterData={{
-                teamRoster: d.teamRoster,
-                teamRosterLoading: d.teamRosterLoading,
-                teamRosterError: d.teamRosterError,
-                assignUsersToSeasonSquad: d.assignUsersToSeasonSquad,
-                getBestRoleForUser: d.getBestRoleForUser,
-                getFunctionalRolesForUser: d.getFunctionalRolesForUser,
-              }}
+              teamRoster={d.teamRoster as SquadMember[] | undefined}
+              teamRosterLoading={d.teamRosterLoading}
+              assignUsersToSeasonSquad={d.assignUsersToSeasonSquad}
             />
           )}
 

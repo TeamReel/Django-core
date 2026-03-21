@@ -1,0 +1,68 @@
+/* ============================================================================
+   SegmentedControl — iOS-style segmented toggle
+   ============================================================================ */
+
+.root {
+  display: flex;
+  position: relative;
+  background: var(--app-surface-2);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+
+/* Sliding indicator behind the active segment */
+.indicator {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  bottom: 2px;
+  border-radius: calc(var(--radius-md) - 1px);
+  background: var(--app-surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-normal) var(--ease-default);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.segment {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: var(--space-1) var(--space-3);
+  border: none;
+  background: none;
+  color: var(--app-muted-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: calc(var(--radius-md) - 1px);
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--duration-fast);
+}
+
+.segment[data-active="true"] {
+  color: var(--app-text);
+  font-weight: var(--font-semibold);
+}
+
+.segment:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: -2px;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .indicator {
+    transition: none;
+  }
+
+  .segment {
+    transition: none;
+  }
+}

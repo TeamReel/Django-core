@@ -1,0 +1,112 @@
+/* ============================================================================
+   ListSection — iOS-style grouped list sections
+   ============================================================================ */
+
+/* ── Section wrapper ── */
+.section {
+  margin-bottom: var(--space-4);
+}
+
+/* ── Section title (uppercase label above card) ── */
+.sectionTitle {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--app-muted-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+/* ── Grouped card body ── */
+.sectionBody {
+  background: var(--app-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--app-border);
+  overflow: hidden;
+}
+
+/* ── Row (shared for button and div) ── */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  min-height: 44px;
+  border: none;
+  background: none;
+  color: var(--app-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  font-family: inherit;
+  text-align: left;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button.row {
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  button.row:hover {
+    background: var(--app-hover-bg, rgba(0, 0, 0, 0.04));
+  }
+}
+
+button.row:active {
+  background: var(--app-active-bg, rgba(0, 0, 0, 0.08));
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: -2px;
+}
+
+/* Divider between rows */
+.row + .row {
+  border-top: 1px solid var(--app-border);
+}
+
+/* ── Row parts ── */
+.rowIcon {
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+.rowLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.rowValue {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+}
+
+.statusSuccess {
+  color: var(--app-success);
+}
+
+.statusWarning {
+  color: var(--app-warning);
+}
+
+.rowChevron {
+  color: var(--app-muted-text);
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  button.row {
+    transition: none;
+  }
+}

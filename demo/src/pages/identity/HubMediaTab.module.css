@@ -1,0 +1,169 @@
+/* ============================================================================
+   HubMediaTab — Segmented media views + asset matrix
+   ============================================================================ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.controlBar {
+  margin-bottom: var(--space-4);
+}
+
+/* ── Asset matrix wrapper ── */
+.matrixWrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Desktop table ── */
+.matrixTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.matrixTable th,
+.matrixTable td {
+  padding: var(--space-2) var(--space-3);
+  text-align: center;
+  font-size: var(--text-sm);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.matrixTable th {
+  font-weight: var(--font-semibold);
+  color: var(--app-muted-text);
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+  letter-spacing: 0.03em;
+  background: var(--app-surface-2);
+}
+
+.matrixNameCol {
+  text-align: left !important;
+  min-width: 140px;
+}
+
+.matrixSlotCol {
+  width: 56px;
+}
+
+.matrixNameBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: var(--font-medium);
+  color: var(--app-link);
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.matrixNameBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.matrixCell {
+  vertical-align: middle;
+}
+
+.matrixCheck {
+  color: var(--app-success);
+}
+
+.matrixEmpty {
+  color: var(--app-muted-text);
+  opacity: 0.4;
+}
+
+/* ── Mobile compact view (mini-dots) ── */
+.matrixMobile {
+  display: flex;
+  flex-direction: column;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.matrixRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  min-height: 44px;
+  border: none;
+  background: none;
+  color: var(--app-text);
+  font-size: var(--text-sm);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.matrixRow + .matrixRow {
+  border-top: 1px solid var(--app-border);
+}
+
+.matrixRow:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .matrixRow:hover {
+    background: var(--app-hover-bg, rgba(0, 0, 0, 0.04));
+  }
+}
+
+.matrixRowName {
+  flex: 1;
+  min-width: 0;
+  font-weight: var(--font-medium);
+}
+
+/* Mini-dots container */
+.matrixDots {
+  display: flex;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.miniDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+.miniDot[data-filled="true"] {
+  background: var(--app-success);
+}
+
+.miniDot[data-filled="false"] {
+  background: var(--app-border);
+}
+
+/* ── Empty state ── */
+.emptyText {
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--app-muted-text);
+  font-size: var(--text-sm);
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .matrixRow {
+    transition: none;
+  }
+}
