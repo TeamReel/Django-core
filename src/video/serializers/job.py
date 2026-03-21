@@ -104,6 +104,8 @@ class VideoJobListSerializer(serializers.ModelSerializer):
 
     def get_approval_status(self, obj: VideoJob) -> str | None:
         """Derive approval status from workflow state or metadata fallback."""
+        meta = obj.metadata or {}
+        meta_status = meta.get("approval_status")
         if obj.workflow_instance:
             state = obj.workflow_instance.current_state
             name = state.name if hasattr(state, "name") else str(state)
@@ -117,8 +119,7 @@ class VideoJobListSerializer(serializers.ModelSerializer):
             # through to metadata so approve/reject actions persisted via
             # metadata are still surfaced to the frontend.
         # Fallback: check metadata (set by approve/reject endpoints)
-        meta = obj.metadata or {}
-        return meta.get("approval_status")
+        return meta_status
 
     def get_workflow_instance(self, obj: VideoJob) -> dict | None:
         """Return workflow instance info with available actions for approval UI."""
