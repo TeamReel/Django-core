@@ -171,6 +171,15 @@ export function useAppSelection(): AppSelection {
       const compute = async () => {
         if (!user) return;
 
+          // Build sets of user's own project IDs from /auth/me memberships.
+          // Teams have a parent (club), clubs don't.
+          const userTeamIds = new Set(
+            (user.projects || []).filter(p => p.parent != null).map(p => String(p.id))
+          );
+          const userClubIds = new Set(
+            (user.projects || []).filter(p => p.parent == null).map(p => String(p.id))
+          );
+
           const searchParams = new URLSearchParams(location.search || '');
           const orgFromQueryRaw = String(searchParams.get('org_id') || searchParams.get('orgId') || searchParams.get('org') || '').trim();
 
@@ -264,9 +273,14 @@ export function useAppSelection(): AppSelection {
           selectedTeam = (teams || []).find((t) => String(t.slug) === String(last.teamSlugOrId)) || null;
         }
 
-        // 3. Fallback to best guess
+        // 3. Fallback: prefer user's own teams, then best guess
         if (!selectedTeam) {
-          if ((teams || []).length === 1) {
+          const ownTeams = (teams || []).filter(t => userTeamIds.has(String(t.id)));
+          if (ownTeams.length === 1) {
+            selectedTeam = ownTeams[0];
+          } else if (ownTeams.length > 1) {
+            selectedTeam = pickBestByUpdatedOrName(ownTeams);
+          } else if ((teams || []).length === 1) {
             selectedTeam = (teams || [])[0] || null;
           } else if (!urlTeamSlug) {
             selectedTeam = pickBestByUpdatedOrName(teams || []);
@@ -293,9 +307,14 @@ export function useAppSelection(): AppSelection {
             selectedClub = clubsBySlug.get(String(last.clubSlugOrId)) || null;
         }
 
-        // 4. Fallback
+        // 4. Fallback: prefer user's own clubs, then alphabetical
         if (!selectedClub) {
-          if ((clubs || []).length === 1) {
+          const ownClubs = (clubs || []).filter(c => userClubIds.has(String(c.id)));
+          if (ownClubs.length === 1) {
+            selectedClub = ownClubs[0] || null;
+          } else if (ownClubs.length > 1) {
+            selectedClub = pickBestByUpdatedOrName(ownClubs);
+          } else if ((clubs || []).length === 1) {
             selectedClub = (clubs || [])[0] || null;
           } else {
             const clubsSorted = [...(clubs || [])].sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
