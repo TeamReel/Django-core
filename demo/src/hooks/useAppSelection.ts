@@ -100,6 +100,10 @@ export function useAppSelection(): AppSelection {
   const userEmail = user?.email;
 
   // Track last visited club/team/season context
+  // NOTE: We no longer write to localStorage here based on URL parsing alone.
+  // Writing happens in compute() after API validation, to prevent "poisoning"
+  // localStorage with teams the user doesn't have access to.
+  // The legacy match case still merges matchId into existing (validated) context.
   useEffect(() => {
     if (!parsedPath) return;
 
@@ -115,21 +119,6 @@ export function useAppSelection(): AppSelection {
             matchId: parsedPath.matchId,
           });
         }
-        return;
-    }
-
-    // Common write for all other types that have orgSlug
-    if ('orgSlug' in parsedPath && parsedPath.orgSlug) {
-        // Construct the object dynamically based on what's available
-        const p = parsedPath as ParsedPathFields;
-        writeLastAppContext({
-            orgSlug: parsedPath.orgSlug,
-            clubSlugOrId: p.clubSlugOrId,
-            teamSlugOrId: p.teamSlugOrId,
-            seasonSlugOrId: p.seasonSlugOrId,
-            competitionSlugOrId: p.competitionSlugOrId,
-            matchId: p.matchId,
-        });
     }
   }, [parsedPath, userEmail]);
 
@@ -397,6 +386,16 @@ export function useAppSelection(): AppSelection {
           competitionName: null, // Not fetching competition names deeply yet
           competitionIdForApi: selectedCompetitionSlugOrId,
           matchId: selectedMatchId,
+        });
+
+        // Persist validated context to localStorage (only after API resolution)
+        writeLastAppContext({
+          orgSlug,
+          clubSlugOrId: selectedClub ? String(selectedClub.slug || selectedClub.id) : undefined,
+          teamSlugOrId: selectedTeam ? String(selectedTeam.slug || selectedTeam.id) : undefined,
+          seasonSlugOrId: selectedSeasonKey || undefined,
+          competitionSlugOrId: selectedCompetitionSlugOrId || undefined,
+          matchId: selectedMatchId || undefined,
         });
 
         // Keep django-core:currentOrgId in sync with the resolved org so the
