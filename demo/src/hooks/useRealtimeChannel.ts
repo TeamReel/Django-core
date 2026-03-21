@@ -271,7 +271,7 @@ const realtimeConnection = new RealtimeConnection();
 // ============================================================================
 
 export interface UseRealtimeChannelOptions {
-  channelType: 'project' | 'content';
+  channelType: 'project' | 'content' | 'user';
   channelId: string | number | null;
   /** Disable WS for this hook instance (default: true) */
   enabled?: boolean;

@@ -422,10 +422,12 @@ class ContentUpdateConsumer(BaseConsumer):
     Clients connect once and dynamically subscribe/unsubscribe to channels:
     - ``content:{content_item_id}`` — status updates for a single content item
     - ``project:{project_id}`` — all events for a project
+    - ``user:{user_id}`` — personal events (approvals, notifications)
 
     Protocol (client → server)::
 
         {"action": "subscribe",   "channel": "project:123"}
+        {"action": "subscribe",   "channel": "user:456"}
         {"action": "unsubscribe", "channel": "project:123"}
         {"type": "ping"}
 
@@ -507,8 +509,12 @@ class ContentUpdateConsumer(BaseConsumer):
             has_access = await self._check_project_access(channel_id)
         elif channel_type == "content":
             has_access = await self._check_content_access(channel_id)
+        elif channel_type == "user":
+            has_access = await self._check_user_access(channel_id)
         else:
-            await self.send_error(4002, "Unsupported channel type. Use 'content' or 'project'")
+            await self.send_error(
+                4002, "Unsupported channel type. Use 'content', 'project', or 'user'"
+            )
             return
 
         if not has_access:
@@ -572,6 +578,11 @@ class ContentUpdateConsumer(BaseConsumer):
             ).exists()
         except (Project.DoesNotExist, ValueError):
             return False
+
+    @database_sync_to_async
+    def _check_user_access(self, user_id: str) -> bool:
+        """Users can only subscribe to their own user channel."""
+        return str(self.user.id) == user_id
 
     @database_sync_to_async
     def _check_content_access(self, content_item_id: str) -> bool:

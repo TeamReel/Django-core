@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '@django-core/auth-ui';
 import TopNavbar from '../components/TopNavbar';
 import Sidebar from '../components/Sidebar';
 import MobileBottomNav from '../components/MobileBottomNav';
 import OnboardingWizard from '../components/OnboardingWizard';
 import { ShortcutGuide } from '../components/ShortcutGuide';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { useRealtimeChannel } from '../hooks/useRealtimeChannel';
 import styles from './MainLayout.module.css';
 
 export default function MainLayout() {
@@ -18,6 +20,11 @@ export default function MainLayout() {
   const prevPathRef = useRef<string>('');
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Global WebSocket subscription — establishes a baseline WS connection
+  // for all authenticated pages so user-level events are delivered.
+  const { user } = useAuth();
+  useRealtimeChannel({ channelType: 'user', channelId: user?.id ?? null });
 
   // Register global keyboard shortcuts
   useKeyboardShortcuts([

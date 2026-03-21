@@ -219,7 +219,52 @@ class WorkflowEngine:
             {"from_state": old_state, "to_state": instance.current_state},
         )
 
+        # Publish real-time event (B64)
+        self._publish_transition_event(instance, action, old_state, instance.current_state, user)
+
         return history
+
+    def _publish_transition_event(
+        self,
+        instance: WorkflowInstance,
+        action: str,
+        from_state: str,
+        to_state: str,
+        user: User,
+    ) -> None:
+        """Publish real-time WebSocket event for workflow transitions (B64)."""
+        try:
+            from rtc_websockets.events import (
+                ApprovalDecidedPayload,
+                EventType,
+                build_event,
+            )
+            from rtc_websockets.services import RealtimeEventPublisher
+
+            # Determine decision label from action
+            decision_map = {
+                "approve": "approved",
+                "reject": "rejected",
+                "request_revision": "revision_requested",
+            }
+            decision = decision_map.get(action, action)
+
+            # Resolve content_item_id from the generic FK
+            content_item_id = instance.object_id if instance.object_id else 0
+
+            payload = ApprovalDecidedPayload(
+                content_item_id=content_item_id,
+                project_id=str(instance.project_id),
+                decision=decision,
+                reviewer_name=user.get_full_name() or user.email,
+            )
+            event = build_event(EventType.APPROVAL_DECIDED, payload, actor_id=user.id)
+
+            publisher = RealtimeEventPublisher()
+            publisher.publish_to_project(instance.project_id, event)
+        except Exception:
+            # Never let event publishing break the workflow transition
+            logger.exception("Failed to publish workflow transition event")
 
     def _get_transition(self, instance: WorkflowInstance, action: str) -> Optional[dict[str, Any]]:
         """Get transition definition by action."""
