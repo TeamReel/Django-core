@@ -185,15 +185,16 @@ export function useAppSelection(): AppSelection {
           const orgFromQuery = orgFromQueryRaw;
           const orgFromLast = String(last?.orgSlug || '').trim();
 
-        // Priority: URL path > query param > last-visited context > context-switcher org.
-        // orgFromLast (demo_app_last_context_v1) reflects the user's actual last
-        // navigation. ctxOrgSlugStr comes from django-core:currentOrgId which may
-        // be stale (pointing at a different org), causing a race where dashboard
-        // queries resolve to the wrong project.
+        // Derive the user's primary org slug from their memberships (/auth/me).
+        // This is more reliable than the context-switcher which may auto-select
+        // a different org (e.g. DFB) that the user only has read access to.
+        const userPrimaryOrgSlug = String(user.organisations?.[0]?.slug || '').trim();
+
+        // Priority: URL path > query param > last-visited > user's own org > context-switcher.
         let orgSlug =
           (orgFromPathStr && !isNumericId(orgFromPathStr) && !isUuid(orgFromPathStr))
             ? orgFromPathStr
-            : (orgFromQuery || orgFromLast || ctxOrgSlugStr || '');
+            : (orgFromQuery || orgFromLast || userPrimaryOrgSlug || ctxOrgSlugStr || '');
 
         if (!orgSlug) return;
 
