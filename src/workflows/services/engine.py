@@ -277,9 +277,20 @@ class WorkflowEngine:
         membership = ProjectMembership.objects.filter(
             user=user, project=instance.project, deleted_at__isnull=True
         ).first()
-        if not membership:
-            return False
-        return membership.role in required_roles
+        if membership and membership.role in required_roles:
+            return True
+
+        # Hierarchy: Club Admin can act on child team workflows
+        if instance.project.parent_project_id:
+            parent_membership = ProjectMembership.objects.filter(
+                user=user,
+                project_id=instance.project.parent_project_id,
+                deleted_at__isnull=True,
+            ).first()
+            if parent_membership and parent_membership.role in required_roles:
+                return True
+
+        return False
 
     def _execute_validators(self, instance: WorkflowInstance, transition: dict[str, Any]):
         """

@@ -369,3 +369,96 @@ class TestWorkflowEnginePermissionChecks:
 
         has_permission = engine._check_permission(workflow_instance, "approve", admin_user)
         assert has_permission is True
+
+    def test_club_admin_can_act_on_child_team_workflow(
+        self, db, engine, workflow_template, django_user_model, project
+    ):
+        """Club Admin (admin on parent project) can execute transitions on child team workflows."""
+        from projects.models import Project, ProjectMembership
+
+        club_admin = django_user_model.objects.create_user(
+            username="clubadmin", email="clubadmin@example.com", password="password"
+        )
+        # project = club, create child team
+        team = Project.objects.create(
+            name="Team A",
+            slug="team-a",
+            organisation=project.organisation,
+            creator=project.creator,
+            parent_project=project,
+        )
+        # Club Admin has admin on the CLUB, not the team
+        ProjectMembership.objects.create(
+            user=club_admin, project=project, role="admin", deleted_at=None
+        )
+        # Workflow instance on the TEAM project
+        instance = WorkflowInstanceFactory(
+            workflow=workflow_template,
+            workflow_snapshot=workflow_template.definition,
+            project=team,
+            current_state="review",
+            created_by=project.creator,
+        )
+        # Club Admin should be able to approve team workflows
+        assert engine._check_permission(instance, "approve", club_admin) is True
+
+    def test_team_admin_cannot_act_on_club_workflow(
+        self, db, engine, workflow_template, django_user_model, project
+    ):
+        """Team Admin (admin on child project) cannot execute transitions on parent club workflows."""
+        from projects.models import Project, ProjectMembership
+
+        team_admin = django_user_model.objects.create_user(
+            username="teamadmin", email="teamadmin@example.com", password="password"
+        )
+        team = Project.objects.create(
+            name="Team B",
+            slug="team-b",
+            organisation=project.organisation,
+            creator=project.creator,
+            parent_project=project,
+        )
+        # Team Admin has admin on the TEAM only
+        ProjectMembership.objects.create(
+            user=team_admin, project=team, role="admin", deleted_at=None
+        )
+        # Workflow instance on the CLUB project
+        instance = WorkflowInstanceFactory(
+            workflow=workflow_template,
+            workflow_snapshot=workflow_template.definition,
+            project=project,
+            current_state="review",
+            created_by=project.creator,
+        )
+        # Team Admin should NOT be able to approve club-level workflows
+        assert engine._check_permission(instance, "approve", team_admin) is False
+
+    def test_viewer_on_parent_cannot_approve_child(
+        self, db, engine, workflow_template, django_user_model, project
+    ):
+        """Viewer on parent club cannot approve child team workflows (role doesn't match)."""
+        from projects.models import Project, ProjectMembership
+
+        club_viewer = django_user_model.objects.create_user(
+            username="clubviewer", email="clubviewer@example.com", password="password"
+        )
+        team = Project.objects.create(
+            name="Team C",
+            slug="team-c",
+            organisation=project.organisation,
+            creator=project.creator,
+            parent_project=project,
+        )
+        # Viewer on the club
+        ProjectMembership.objects.create(
+            user=club_viewer, project=project, role="viewer", deleted_at=None
+        )
+        instance = WorkflowInstanceFactory(
+            workflow=workflow_template,
+            workflow_snapshot=workflow_template.definition,
+            project=team,
+            current_state="review",
+            created_by=project.creator,
+        )
+        # Viewer cannot approve (requires admin role)
+        assert engine._check_permission(instance, "approve", club_viewer) is False

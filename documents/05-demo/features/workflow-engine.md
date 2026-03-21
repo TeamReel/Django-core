@@ -104,7 +104,8 @@ Atomic met `select_for_update`:
    └─ Fallback: transition.permissions[] (lijst van geldige rollen)
    └─ Lege lijst = system transitie (geen auth nodig)
    └─ Project creators hebben impliciete toegang
-   └─ Anders: check ProjectMembership.role in permissions[]
+   └─ Check ProjectMembership.role op exact project
+   └─ Hiërarchie: als project een team is, check ook parent club membership
 3. Run validators (uit ValidatorRegistry)
 4. Fire hooks:
    └─ on_exit(old_state)
@@ -225,6 +226,24 @@ De workflow engine gebruikt **ProjectMembership.Role** waarden (`admin`, `editor
 | Team Admin | `admin` (team project) | ✅ | ✅ |
 | Team Member | `viewer` (team) | ❌ | ✅ |
 | Supporter | `viewer` (club) | ❌ | ❌ (geen project membership op team) |
+
+### Hiërarchie-enforcement
+
+De workflow engine respecteert de club/team hiërarchie:
+
+| Scenario | Resultaat |
+|----------|-----------|
+| Team Admin approvet video van eigen team | ✅ Direct membership match |
+| Club Admin approvet video van child team | ✅ Parent project membership check |
+| Team Admin approvet workflow op club-niveau | ❌ Geen upward traversal |
+| Club Viewer approvet video van child team | ❌ Role `viewer` ∉ `["admin", "editor"]` |
+
+De check werkt als volgt:
+1. Zoek `ProjectMembership(user, project)` op het exacte project
+2. Als niet gevonden EN project heeft een `parent_project` → zoek ook op parent
+3. In beide gevallen moet `membership.role in required_roles`
+
+Dit is consistent met hoe ViewSets (projecten, matches, leden) ook de hiërarchie checken.
 
 ### ProjectPermissionOverride
 
