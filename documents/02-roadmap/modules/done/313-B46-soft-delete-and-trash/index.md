@@ -50,7 +50,7 @@
 - `DELETE /api/v1/trash/` - Empty trash (bulk)
 - `GET /api/v1/trash/stats/` - Trash statistics
 
-**Status**: � IN UITVOERING
+**Status**: ✅ DONE
 
 ## Huidige staat
 
@@ -94,7 +94,7 @@
 | H3 | Retention Policy & Cleanup | ~2 uur | ✅ Done |
 | H4 | Audit Integration & Hardening | ~2 uur | ✅ Done |
 | H5 | Backend Soft-Delete Uitbreiding | ~2 uur | ✅ Done |
-| H6 | Frontend Trash Integratie | ~4 uur | 📋 Todo |
+| H6 | Frontend Trash Integratie | ~4 uur | ✅ Done |
 
 > Fase-specs: `phases/todo/` → verplaats naar `phases/done/` bij voltooiing.
 
@@ -117,10 +117,10 @@
 - [x] Participation model heeft SoftDeleteMixin
 - [x] Audit signals werken correct met soft-delete
 
-### Frontend 📋
-- [ ] Settings pagina heeft "Prullenbak" sectie
-- [ ] Sectie toont trashed items van huidige organisatie
-- [ ] Restore functie werkt via UI
+### Frontend ✅
+- [x] Settings pagina heeft "Prullenbak" sectie (sheet/dialog in Voorkeuren)
+- [x] Sectie toont trashed items van huidige organisatie
+- [x] Restore functie werkt via UI (herstel-knop per item)
 - [ ] Permanent delete werkt (admin only)
 - [ ] Empty trash werkt (admin only)
 - [ ] Filter op content type

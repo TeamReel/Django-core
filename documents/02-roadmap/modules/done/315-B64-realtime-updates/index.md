@@ -60,7 +60,7 @@
 - `GET /api/v1/realtime/status/` — Connection status + available channels
 - `POST /api/v1/realtime/test-event/` — Stuur test-event (dev/debug only)
 
-**Status**: � IN UITVOERING
+**Status**: ✅ DONE
 
 ## Huidige staat
 
