@@ -1,6 +1,6 @@
 # Workflow Engine
 
-> Last updated: 2026-03-12
+> Last updated: 2026-03-21
 
 ## Overview
 
@@ -18,8 +18,10 @@ Definieert states en transities als JSON.
 |------|------|------|
 | `name` | CharField(200) | Unique, indexed |
 | `version` | CharField(50) | |
-| `definition` | JSON | `{states: [{name, is_initial}], transitions: [{from_state, to_state, action, required_permission, validators}]}` |
+| `definition` | JSON | `{states: [{name, is_initial}], transitions: [{from_state, to_state, action, permissions, validators}]}` |
 | `is_active` | bool | Soft-delete (twee managers: `objects` = active, `all_objects` = alles) |
+
+> **Let op:** Het `permissions` veld in transities bevat `ProjectMembership.Role` waarden (`admin`, `editor`, `viewer`), NIET RBAC permissie-strings.
 
 Validatie: exact 1 `is_initial` state, alle transitie-states moeten bestaan in states lijst.
 
@@ -98,10 +100,11 @@ Atomic met `select_for_update`:
 ```
 1. Valideer huidige state
 2. Permission check:
-   └─ ProjectPermissionOverride eerst
-   └─ Fallback: transition.required_permission
+   └─ ProjectPermissionOverride eerst (per-project role override)
+   └─ Fallback: transition.permissions[] (lijst van geldige rollen)
+   └─ Lege lijst = system transitie (geen auth nodig)
    └─ Project creators hebben impliciete toegang
-   └─ Anders: check ProjectMembership.role
+   └─ Anders: check ProjectMembership.role in permissions[]
 3. Run validators (uit ValidatorRegistry)
 4. Fire hooks:
    └─ on_exit(old_state)
@@ -145,12 +148,17 @@ De video app is de primaire gebruiker:
 VideoJob aangemaakt
   → VideoService.create_job() maakt WorkflowInstance aan
   → Workflow template: "Video Approval"
-  → Initial state: "pending_review"
+  → Initial state: "processing"
+
+Video klaar:
+  → processing_complete (system transitie, geen auth)
+  → State: processing → ready_for_review
 
 Reviewer klikt "Approve":
   → VideoJobViewSet.approve()
   → WorkflowEngine.execute_transition(instance, "approve", user)
-  → State: pending_review → approved
+  → Permission check: user moet 'admin' of 'editor' role hebben
+  → State: ready_for_review → approved
   → Hook: auto-create MediaItem + link naar Activity
 ```
 
@@ -182,3 +190,54 @@ Reviewer klikt "Approve":
 - [video-processing.md](video-processing.md) — VideoJob approval flow
 - [notification-routing.md](notification-routing.md) — Workflows triggeren notificaties
 - [rbac-permissions.md](rbac-permissions.md) — Permission checks in transities
+
+---
+
+## RBAC ↔ Workflow Permission Alignment
+
+De workflow engine gebruikt **ProjectMembership.Role** waarden (`admin`, `editor`, `viewer`) in transitie-permissions — NIET de RBAC `Permission` strings uit de `permissions` app.
+
+### Twee permissie-systemen
+
+| Systeem | Check methode | Waarden |
+|---------|--------------|---------|
+| **RBAC (permissions app)** | `RoleAssignment` → `Role` → `Permission` | `content.approve`, `org.manage_settings`, etc. |
+| **Workflow Engine** | `ProjectMembership.role in transition.permissions[]` | `admin`, `editor`, `viewer` |
+
+### Workflow Permission Matrix
+
+| Workflow | Transitie | Permissions | Welke RBAC rollen? |
+|----------|-----------|-------------|-------------------|
+| **Video Approval** | `processing_complete` | `[]` (system) | Iedereen (automatisch) |
+| **Video Approval** | `approve` | `["admin", "editor"]` | Team/Club/Land Admin |
+| **Video Approval** | `reject` | `["admin", "editor"]` | Team/Club/Land Admin |
+| **Content Approval** | `submit` | `["admin", "editor", "viewer"]` | Alle leden |
+| **Content Approval** | `approve` / `reject` / `revise` | `["admin", "editor"]` | Team/Club/Land Admin |
+| **Invoice Approval** | `approve` / `reject` | `["admin"]` | Alleen Admin |
+| **Support Ticket** | alle | `[]` (system) | Iedereen |
+
+### Mapping naar RBAC rollen
+
+| RBAC Rol | ProjectMembership.role | Kan approven? | Kan submitten? |
+|----------|----------------------|---------------|----------------|
+| Land Admin | `admin` (org) | ✅ | ✅ |
+| Club Admin | `admin` (club project) | ✅ | ✅ |
+| Team Admin | `admin` (team project) | ✅ | ✅ |
+| Team Member | `viewer` (team) | ❌ | ✅ |
+| Supporter | `viewer` (club) | ❌ | ❌ (geen project membership op team) |
+
+### ProjectPermissionOverride
+
+Per-project overrides zijn mogelijk via `ProjectPermissionOverride`:
+
+```python
+# Stel dat een club wil dat alleen admins content submitten:
+ProjectPermissionOverride.objects.create(
+    project=club_project,
+    workflow=content_template,
+    action_name="submit",
+    required_roles=["admin"]
+)
+```
+
+Dit overschrijft de standaard permissions uit de workflow definitie.

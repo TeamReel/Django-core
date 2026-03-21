@@ -1,17 +1,28 @@
-"""Replace invalid 'can_approve' permission with ['admin', 'editor'] in
-WorkflowTemplate.definition and WorkflowInstance.workflow_snapshot."""
+"""Replace invalid permission strings with valid ProjectMembership roles in
+WorkflowTemplate.definition and WorkflowInstance.workflow_snapshot.
+
+Fixes: can_approve, can_submit, can_approve_invoice → valid roles."""
 
 import copy
 
 from django.db import migrations
 
+# Mapping from invalid permission strings to valid ProjectMembership roles.
+# Aligned with RBAC config (documents/05-demo/archive/teamreel-rbac-config.md):
+#   - content.approve → admin, editor (Team/Club/Land Admin)
+#   - content.create (submit) → admin, editor, viewer (all members)
+#   - invoice approve → admin only
+PERMISSION_REPLACEMENTS = {
+    "can_approve": ["admin", "editor"],
+    "can_submit": ["admin", "editor", "viewer"],
+    "can_approve_invoice": ["admin"],
+}
+
 
 def fix_permissions(apps, schema_editor):
-    """Walk transitions in definitions/snapshots and replace 'can_approve'."""
+    """Walk transitions in definitions/snapshots and replace invalid permissions."""
     WorkflowTemplate = apps.get_model("workflows", "WorkflowTemplate")
     WorkflowInstance = apps.get_model("workflows", "WorkflowInstance")
-
-    valid_replacement = ["admin", "editor"]
 
     def patch_definition(definition):
         """Return (patched_definition, changed) tuple."""
@@ -19,9 +30,10 @@ def fix_permissions(apps, schema_editor):
         patched = copy.deepcopy(definition)
         for transition in patched.get("transitions", []):
             perms = transition.get("permissions", [])
-            if "can_approve" in perms:
-                transition["permissions"] = valid_replacement
-                changed = True
+            for old_perm, new_roles in PERMISSION_REPLACEMENTS.items():
+                if old_perm in perms:
+                    transition["permissions"] = new_roles
+                    changed = True
         return patched, changed
 
     # Fix templates

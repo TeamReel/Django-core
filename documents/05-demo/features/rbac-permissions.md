@@ -1,6 +1,6 @@
 # RBAC Permission System
 
-> Last updated: 2026-03-12
+> Last updated: 2026-03-21
 
 ## Overview
 
@@ -123,3 +123,18 @@ results = check_permissions_batch(user_id, ["projects.view", "projects.delete"],
 - [project-hierarchy.md](project-hierarchy.md) — ProjectMembership.role bepaalt basis-toegang
 - [workflow-engine.md](workflow-engine.md) — Workflow transities checken permissies
 - [application-architecture.md](application-architecture.md) — App overzicht
+
+---
+
+## Workflow Engine Permissies
+
+> **Let op:** De workflow engine heeft een apart permissie-model. Zie [workflow-engine.md — RBAC Alignment](workflow-engine.md#rbac--workflow-permission-alignment) voor de volledige mapping.
+
+De workflow engine checkt **`ProjectMembership.role`** (niet RBAC `Permission` strings):
+
+| Actie | Geldige rollen | Match met RBAC |
+|-------|---------------|----------------|
+| Video/Content approve | `admin`, `editor` | ≈ `content.approve` (Team/Club/Land Admin) |
+| Content submit | `admin`, `editor`, `viewer` | ≈ `content.create` (alle leden) |
+| Invoice approve | `admin` | Alleen Admin |
+| System transities | `[]` (leeg) | Geen auth nodig |
