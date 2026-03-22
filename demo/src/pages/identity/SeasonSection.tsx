@@ -4,7 +4,7 @@
  * Renders the currently active season as a prominent card with stats,
  * and other seasons as a horizontally scrollable pill row.
  */
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import { type SeasonOption } from '../../components/SeasonSwitcher';
 import type { Period } from '../../types/season';
 import s from './SeasonSection.module.css';

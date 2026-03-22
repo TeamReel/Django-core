@@ -73,7 +73,7 @@
 
 .pill {
   flex-shrink: 0;
-  background: var(--app-surface-3);
+  background: var(--app-surface-alt);
   border: none;
   border-radius: var(--radius-full);
   padding: var(--space-1) var(--space-3);
@@ -100,7 +100,7 @@
 
 @media (hover: hover) {
   .pill:hover {
-    background: var(--app-surface-2);
+    background: var(--app-surface-hover);
   }
 }
 

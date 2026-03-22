@@ -69,6 +69,7 @@ export const CompetitionGrid: React.FC<CompetitionGridProps> = ({
                 key={String(comp.id)}
                 type="button"
                 className={s.card}
+                aria-label={String(comp.name || 'Competitie')}
                 onClick={() => setSelectedCompetition(comp)}
               >
                 <div className={s.cardName}>{String(comp.name || 'Competitie')}</div>

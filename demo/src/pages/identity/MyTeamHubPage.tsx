@@ -539,6 +539,7 @@ export const MyTeamHubPage: React.FC = () => {
               <button
                 type="button"
                 className={s.overviewCard}
+                aria-label="Bekijk team assets"
                 onClick={() => navigateToTab('assets')}
               >
                 <div className={s.overviewCardTitle}>
@@ -559,6 +560,7 @@ export const MyTeamHubPage: React.FC = () => {
                 <button
                   type="button"
                   className={s.overviewCard}
+                  aria-label="Bekijk club assets"
                   onClick={() => navigateToTab('assets')}
                 >
                   <div className={s.overviewCardTitle}>

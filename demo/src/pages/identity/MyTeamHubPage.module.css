@@ -453,7 +453,7 @@
 
 @media (hover: hover) {
   .overviewCard:hover {
-    background: var(--app-surface-3);
+    background: var(--app-surface-hover);
   }
 }
 
