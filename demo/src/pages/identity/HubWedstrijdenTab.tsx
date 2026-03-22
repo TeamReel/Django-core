@@ -7,13 +7,14 @@
  *
  * Tap navigates to MatchDetailPage. Admin FAB for creating matches.
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Plus } from 'lucide-react';
 import { AppIcon } from '../../components/AppIcon';
 import { ListSection } from '../../components/ListSection';
 import { periodPathKey } from '../../utils/periodPath';
 import type { MatchRecord } from '../periods/SeasonMatchesTab';
+import type { Period } from '../../types/season';
 import s from './HubWedstrijdenTab.module.css';
 
 // ── Props ────────────────────────────────────────────────────────────────────
@@ -31,6 +32,8 @@ interface HubWedstrijdenTabProps {
   onMatchTap?: (m: MatchRecord) => void;
   /** Current season name shown as context bar at the top */
   seasonName?: string;
+  /** Competitions in the active season — shown as filter pills */
+  competitions?: Period[];
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -164,10 +167,21 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
   setIsCreateMatchModalOpen,
   onMatchTap,
   seasonName,
+  competitions = [],
 }) => {
   const navigate = useNavigate();
+  const [selectedCompetitionId, setSelectedCompetitionId] = useState<string | null>(null);
 
-  const grouped = useMemo(() => groupMatches(matches), [matches]);
+  // Filter matches by selected competition
+  const filteredMatches = useMemo(() => {
+    if (!selectedCompetitionId) return matches;
+    return matches.filter((m) => {
+      const pid = String(m.period_id || (typeof m.period === 'object' ? m.period?.id : m.period) || '');
+      return pid === selectedCompetitionId;
+    });
+  }, [matches, selectedCompetitionId]);
+
+  const grouped = useMemo(() => groupMatches(filteredMatches), [filteredMatches]);
 
   const goToMatch = (m: MatchRecord) => {
     if (onMatchTap) {
@@ -207,6 +221,39 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
         <div className={s.seasonBar}>
           <span className={s.seasonBarLabel}>{seasonName}</span>
         </div>
+      )}
+
+      {/* Competition filter pills */}
+      {competitions.length > 0 && (
+        <div className={s.filterBar} role="toolbar" aria-label="Filter op competitie">
+          <button
+            type="button"
+            className={s.filterPill}
+            data-active={selectedCompetitionId === null ? 'true' : undefined}
+            onClick={() => setSelectedCompetitionId(null)}
+          >
+            Alle
+          </button>
+          {competitions.map((comp) => {
+            const cid = String(comp.id);
+            return (
+              <button
+                key={cid}
+                type="button"
+                className={s.filterPill}
+                data-active={selectedCompetitionId === cid ? 'true' : undefined}
+                onClick={() => setSelectedCompetitionId(selectedCompetitionId === cid ? null : cid)}
+              >
+                {String(comp.name || 'Competitie')}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Empty state when filter yields no results */}
+      {filteredMatches.length === 0 && (
+        <div className={s.empty}>Geen wedstrijden voor deze competitie.</div>
       )}
 
       {/* Upcoming matches */}

@@ -16,7 +16,7 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import { Alert } from '@django-core/design-system';
 import {
   Pencil, MoreHorizontal, Eye, Trash2, Plus,
-  Calendar, MapPin, Trophy, Users, Wallet,
+  Calendar, MapPin, Trophy, Wallet,
   Building2, Shirt, Camera, Palette, Upload, Settings,
   ChevronRight, ChevronDown,
 } from 'lucide-react';
@@ -53,8 +53,7 @@ import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { formatCredits } from './detail/useTeamCreditsData';
 import { creditsApi, projectsApi } from '../../api';
 import type { ProjectCreditsBalance } from '../../types/api/credits';
-import { SeasonSection } from './SeasonSection';
-import { CompetitionGrid } from './CompetitionGrid';
+
 
 const MatchSummarySheet = React.lazy(() =>
   import('./MatchSummarySheet').then((m) => ({ default: m.MatchSummarySheet })),
@@ -198,8 +197,7 @@ export const MyTeamHubPage: React.FC = () => {
   }, [d.project?.id, isAdmin]);
 
   // ── Overview: in-place expand state ──
-  const [showAllMembers, setShowAllMembers] = useState(false);
-  const [showAllMatches, setShowAllMatches] = useState(false);
+
 
   // Close sheets on tab switch
   useEffect(() => {
@@ -517,109 +515,19 @@ export const MyTeamHubPage: React.FC = () => {
                 </div>
               )}
 
-              {/* H2: Season hero card + season pills */}
-              <SeasonSection
-                season={seasonCtx.season}
-                seasons={seasonOptions}
-                competitionsCount={seasonCtx.competitions.length}
-                matchesCount={d.matches.length}
-                membersCount={d.members.length}
-                selectedSeasonId={String(seasonCtx.resolvedSeasonId || seasonCtx.effectiveSeasonId || '')}
-                onSeasonSwitch={handleSeasonSwitch}
-              />
-
-              {/* H2: Competition cards grid */}
-              <CompetitionGrid
-                competitions={seasonCtx.competitions}
-                competitionsLoading={seasonCtx.competitionsLoading}
-                getMatchCount={d.getMatchCountForCompetition}
-                matches={d.matches as MatchRecord[]}
-                matchDisplayTitle={d.matchDisplayTitle}
-                onMatchTap={setSelectedMatch}
-              />
-
-              {/* Wedstrijden — accordion with match items */}
-              <div className={s.accordionSection}>
-                <button
-                  type="button"
-                  className={s.accordionHeader}
-                  onClick={() => toggleSection('wedstrijden')}
-                  aria-expanded={expandedSections.has('wedstrijden')}
-                >
-                  <AppIcon icon={Trophy} size={18} className={s.accordionIcon} />
-                  <span className={s.accordionLabel}>Wedstrijden</span>
-                  <span className={s.accordionValue}>{d.matches.length}</span>
-                  {isAdmin && (
-                    <button
-                      type="button"
-                      className={s.accordionHeaderAdd}
-                      onClick={(e) => { e.stopPropagation(); d.setIsCreateMatchModalOpen(true); }}
-                      aria-label="Wedstrijd toevoegen"
-                    >
-                      <Plus size={16} />
-                    </button>
-                  )}
-                  <AppIcon
-                    icon={ChevronDown}
-                    size={16}
-                    className={`${s.accordionChevron} ${expandedSections.has('wedstrijden') ? s.accordionChevronOpen : ''}`}
-                  />
-                </button>
-                <div className={`${s.accordionBody} ${expandedSections.has('wedstrijden') ? (showAllMatches ? s.accordionBodyOpenLarge : s.accordionBodyOpen) : ''}`}>
-                  {(d.matches as MatchRecord[]).slice(0, showAllMatches ? undefined : 5).map((m) => (
-                    <button
-                      key={String(m.id)}
-                      type="button"
-                      className={s.accordionItem}
-                      onClick={() => setSelectedMatch(m)}
-                    >
-                      <span className={s.accordionItemLabel}>{d.matchDisplayTitle(m)}</span>
-                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
-                    </button>
-                  ))}
-                  {!showAllMatches && d.matches.length > 5 && (
-                    <button type="button" className={s.accordionViewAll} onClick={() => setShowAllMatches(true)}>
-                      Toon alle {d.matches.length} wedstrijden
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Selectie — accordion */}
-              {!isSupporter && (
-                <div className={s.accordionSection}>
-                  <button
-                    type="button"
-                    className={s.accordionHeader}
-                    onClick={() => toggleSection('selectie')}
-                    aria-expanded={expandedSections.has('selectie')}
-                  >
-                    <AppIcon icon={Users} size={18} className={s.accordionIcon} />
-                    <span className={s.accordionLabel}>Selectie</span>
-                    <span className={s.accordionValue}>{d.members.length}</span>
-                    <AppIcon
-                      icon={ChevronDown}
-                      size={16}
-                      className={`${s.accordionChevron} ${expandedSections.has('selectie') ? s.accordionChevronOpen : ''}`}
-                    />
-                  </button>
-                  <div className={`${s.accordionBody} ${expandedSections.has('selectie') ? (showAllMembers ? s.accordionBodyOpenLarge : s.accordionBodyOpen) : ''}`}>
-                    {(d.members as SquadMember[]).slice(0, showAllMembers ? undefined : 5).map((m) => (
-                      <button
-                        key={String(m.id)}
-                        type="button"
-                        className={s.accordionItem}
-                        onClick={() => setSelectedMember(m)}
-                      >
-                        <span className={s.accordionItemLabel}>{String(m.user?.name || m.user?.first_name || 'Lid')}</span>
-                        <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
-                      </button>
-                    ))}
-                    {!showAllMembers && d.members.length > 5 && (
-                      <button type="button" className={s.accordionViewAll} onClick={() => setShowAllMembers(true)}>
-                        Toon alle {d.members.length} leden
-                      </button>
-                    )}
+              {/* Compact season info card */}
+              {seasonCtx.season && (
+                <div className={s.seasonCompact}>
+                  <div className={s.seasonCompactRow}>
+                    <span className={s.seasonCompactName}>{String(seasonCtx.season.name || 'Seizoen')}</span>
+                    <span className={s.seasonCompactBadge}>Actief</span>
+                  </div>
+                  <div className={s.seasonCompactStats}>
+                    <span>{d.matches.length} wedstrijden</span>
+                    <span>·</span>
+                    <span>{seasonCtx.competitions.length} competities</span>
+                    <span>·</span>
+                    <span>{d.members.length} leden</span>
                   </div>
                 </div>
               )}
@@ -757,6 +665,7 @@ export const MyTeamHubPage: React.FC = () => {
               setIsCreateMatchModalOpen={d.setIsCreateMatchModalOpen}
               onMatchTap={setSelectedMatch}
               seasonName={d.season?.name as string | undefined}
+              competitions={seasonCtx.competitions}
             />
           )}
 
