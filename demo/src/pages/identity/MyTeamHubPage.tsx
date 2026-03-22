@@ -179,6 +179,8 @@ export const MyTeamHubPage: React.FC = () => {
   const [selectedMatch, setSelectedMatch] = useState<MatchRecord | null>(null);
   const [selectedMember, setSelectedMember] = useState<SquadMember | null>(null);
   const [detailMemberId, setDetailMemberId] = useState<string | null>(null);
+  const [panelClosing, setPanelClosing] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
   const [activeAssetSheet, setActiveAssetSheet] = useState<AssetSheetType | null>(null);
 
   // ── Credits balance (H1) ──
@@ -222,6 +224,43 @@ export const MyTeamHubPage: React.FC = () => {
     if (selectedMemberIndex >= 0 && selectedMemberIndex < d.members.length - 1)
       setSelectedMember((d.members as SquadMember[])[selectedMemberIndex + 1]);
   }, [selectedMemberIndex, d.members]);
+
+  // ── Member detail panel: animated close ──
+  const PANEL_CLOSE_MS = 200;
+  const handleClosePanel = useCallback(() => {
+    const usesMotion = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (!usesMotion) { setDetailMemberId(null); return; }
+    setPanelClosing(true);
+    setTimeout(() => { setPanelClosing(false); setDetailMemberId(null); }, PANEL_CLOSE_MS);
+  }, []);
+
+  // Scroll lock when member detail panel is open
+  useEffect(() => {
+    if (!detailMemberId) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [detailMemberId]);
+
+  // Focus trap inside member detail panel
+  useEffect(() => {
+    if (!detailMemberId || !panelRef.current) return;
+    const panel = panelRef.current;
+    const sel = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const first = panel.querySelector<HTMLElement>(sel);
+    first?.focus();
+
+    const trap = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const els = panel.querySelectorAll<HTMLElement>(sel);
+      if (!els.length) return;
+      const f = els[0], l = els[els.length - 1];
+      if (e.shiftKey && document.activeElement === f) { e.preventDefault(); l.focus(); }
+      else if (!e.shiftKey && document.activeElement === l) { e.preventDefault(); f.focus(); }
+    };
+    document.addEventListener('keydown', trap);
+    return () => document.removeEventListener('keydown', trap);
+  }, [detailMemberId]);
 
   // Compute match detail path for selected match
   const selectedMatchDetailPath = useMemo(() => {
@@ -974,30 +1013,37 @@ export const MyTeamHubPage: React.FC = () => {
       </NavigationSheet>
 
       {/* ── Member detail panel overlay ── */}
-      {detailMemberId && (
-        <div
-          className={s.memberPanelOverlay}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Lid bewerken"
-        >
-          <MemberDetailPanel
-            membershipId={detailMemberId}
-            memberIds={(d.members as SquadMember[]).map((m) => String(m.id))}
-            project={d.project}
-            org={d.org}
-            club={d.club}
-            apiBaseUrl={d.apiBaseUrl}
-            isTeamRoute={d.isTeamRoute}
-            userCanEditProject={d.userCanEditProject}
-            clubBrand={d.clubBrand}
-            teamBrand={d.teamBrand}
-            batchBrandKits={d.batchBrandKits}
-            onClose={() => setDetailMemberId(null)}
-            onNavigate={(mid) => setDetailMemberId(mid)}
-            onMemberUpdated={() => d.setMembersReloadToken((t: number) => t + 1)}
+      {(detailMemberId || panelClosing) && (
+        <>
+          <div
+            className={`${s.memberPanelBackdrop} ${panelClosing ? s.memberPanelBackdropClosing : ''}`}
+            onClick={handleClosePanel}
           />
-        </div>
+          <div
+            ref={panelRef}
+            className={`${s.memberPanelOverlay} ${panelClosing ? s.memberPanelOverlayClosing : ''}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Lid bewerken"
+          >
+            <MemberDetailPanel
+              membershipId={detailMemberId!}
+              memberIds={(d.members as SquadMember[]).map((m) => String(m.id))}
+              project={d.project}
+              org={d.org}
+              club={d.club}
+              apiBaseUrl={d.apiBaseUrl}
+              isTeamRoute={d.isTeamRoute}
+              userCanEditProject={d.userCanEditProject}
+              clubBrand={d.clubBrand}
+              teamBrand={d.teamBrand}
+              batchBrandKits={d.batchBrandKits}
+              onClose={handleClosePanel}
+              onNavigate={(mid) => setDetailMemberId(mid)}
+              onMemberUpdated={() => d.setMembersReloadToken((t: number) => t + 1)}
+            />
+          </div>
+        </>
       )}
 
       {/* Toast notifications */}

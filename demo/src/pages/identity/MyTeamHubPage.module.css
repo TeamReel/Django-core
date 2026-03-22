@@ -374,16 +374,88 @@
 }
 
 /* ── Member detail panel overlay ── */
-/* top: 56px clears the fixed TopNavbar so the panel's close button is visible */
+/* Backdrop — dims the hub behind the panel */
+.memberPanelBackdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--app-overlay);
+  z-index: var(--z-overlay);
+  animation: memberFadeIn 0.25s ease-out;
+}
+
+.memberPanelBackdropClosing {
+  animation: memberFadeOut 0.2s ease-in forwards;
+}
+
+@keyframes memberFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes memberFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* Panel — slides in from bottom (mobile) or right (desktop) */
 .memberPanelOverlay {
   position: fixed;
   top: 56px;
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: var(--z-overlay);
+  z-index: calc(var(--z-overlay) + 1);
   background: var(--app-bg);
   overflow-y: auto;
+  animation: memberSlideUp 0.25s ease-out;
+}
+
+.memberPanelOverlayClosing {
+  animation: memberSlideDown 0.2s ease-in forwards;
+}
+
+@keyframes memberSlideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes memberSlideDown {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+
+/* Desktop (≥640px): slide-in from right as side panel */
+@media (min-width: 640px) {
+  .memberPanelOverlay {
+    left: auto;
+    width: min(640px, 100vw - 60px);
+    border-left: 1px solid var(--app-border);
+    box-shadow: -4px 0 24px var(--alpha-black-15);
+    animation: memberSlideInRight 0.25s ease-out;
+  }
+
+  .memberPanelOverlayClosing {
+    animation: memberSlideOutRight 0.2s ease-in forwards;
+  }
+
+  @keyframes memberSlideInRight {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+  }
+
+  @keyframes memberSlideOutRight {
+    from { transform: translateX(0); }
+    to   { transform: translateX(100%); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .memberPanelOverlay,
+  .memberPanelOverlayClosing,
+  .memberPanelBackdrop,
+  .memberPanelBackdropClosing {
+    animation: none;
+  }
 }
 
 /* ── Toasts ── */
