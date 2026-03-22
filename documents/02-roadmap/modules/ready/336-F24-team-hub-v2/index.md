@@ -7,6 +7,7 @@
 | Prioriteit | Hoog |
 | Geschatte effort | ~30 uur |
 | Afhankelijkheden | F23 (done — commit `f0381784`) |
+| Maakt mogelijk | F25 Club Hub (backlog `337-F25-club-hub`) — hergebruikt `ClubAssetsSection`, `TeamSwitcher` |
 | Doelgroep | Club Admin, Team Admin, Player, Supporter |
 
 ---
