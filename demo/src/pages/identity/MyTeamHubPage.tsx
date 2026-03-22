@@ -729,6 +729,7 @@ export const MyTeamHubPage: React.FC = () => {
               matchDisplayTitle={d.matchDisplayTitle}
               setIsCreateMatchModalOpen={d.setIsCreateMatchModalOpen}
               onMatchTap={setSelectedMatch}
+              seasonName={d.season?.name as string | undefined}
             />
           )}
 
@@ -789,6 +790,9 @@ export const MyTeamHubPage: React.FC = () => {
               teamRoster={d.teamRoster as SquadMember[] | undefined}
               teamRosterLoading={d.teamRosterLoading}
               assignUsersToSeasonSquad={d.assignUsersToSeasonSquad}
+              removeFromSquad={d.unassignMembershipsFromSeasonSquad
+                ? (id: string) => d.unassignMembershipsFromSeasonSquad([id])
+                : undefined}
               onMemberTap={setSelectedMember}
             />
           )}

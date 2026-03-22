@@ -85,6 +85,33 @@
   }
 }
 
+/* ── Remove button (UserMinus icon) ── */
+.removeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--app-danger, #e53e3e);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.removeBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .removeBtn:hover {
+    background: var(--app-danger-subtle, rgba(229, 62, 62, 0.08));
+  }
+}
+
 /* ── Loading state ── */
 .loadingRow {
   padding: var(--space-3) var(--space-4);

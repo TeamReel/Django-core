@@ -29,6 +29,8 @@ interface HubWedstrijdenTabProps {
   setIsCreateMatchModalOpen: (v: boolean) => void;
   /** If provided, tapping a match calls this instead of navigating away */
   onMatchTap?: (m: MatchRecord) => void;
+  /** Current season name shown as context bar at the top */
+  seasonName?: string;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -161,6 +163,7 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
   matchDisplayTitle,
   setIsCreateMatchModalOpen,
   onMatchTap,
+  seasonName,
 }) => {
   const navigate = useNavigate();
 
@@ -199,6 +202,13 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
 
   return (
     <div className={s.container}>
+      {/* Season context bar */}
+      {seasonName && (
+        <div className={s.seasonBar}>
+          <span className={s.seasonBarLabel}>{seasonName}</span>
+        </div>
+      )}
+
       {/* Upcoming matches */}
       {grouped.upcoming.length > 0 && (
         <ListSection title="Komend">

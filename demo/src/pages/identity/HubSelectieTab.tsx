@@ -7,7 +7,7 @@
  */
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, UserMinus } from 'lucide-react';
 import { Alert } from '@django-core/design-system';
 import { ListSection } from '../../components/ListSection';
 import { Avatar } from '../../components/ui';
@@ -27,6 +27,8 @@ interface HubSelectieTabProps {
   teamRoster?: SquadMember[];
   teamRosterLoading?: boolean;
   assignUsersToSeasonSquad?: (userIds: string[]) => Promise<void>;
+  /** Remove a member from the season squad by membership ID (admin only) */
+  removeFromSquad?: (membershipId: string) => Promise<void>;
   /** If provided, tapping a member calls this instead of navigating away */
   onMemberTap?: (m: SquadMember) => void;
 }
@@ -84,6 +86,7 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
   teamRoster,
   teamRosterLoading,
   assignUsersToSeasonSquad,
+  removeFromSquad,
   onMemberTap,
 }) => {
   const navigate = useNavigate();
@@ -141,7 +144,19 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
                   leading={<Avatar src={avatarUrl} name={name} size="sm" />}
                   onTap={() => onMemberTap ? onMemberTap(m) : navigate(memberDetailHref(mid))}
                   trailing={
-                    assetStatus ? (
+                    isAdmin && removeFromSquad ? (
+                      <button
+                        type="button"
+                        className={s.removeBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeFromSquad(mid);
+                        }}
+                        aria-label={`${name} verwijderen uit selectie`}
+                      >
+                        <AppIcon icon={UserMinus} size={16} />
+                      </button>
+                    ) : assetStatus ? (
                       <span
                         className={s.assetDot}
                         data-status={assetStatus.status}

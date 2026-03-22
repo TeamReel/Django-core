@@ -5,12 +5,14 @@
  * grid. Each card shows name, type badge, and match count.
  * Tapping a card opens a summary sheet with the competition's matches.
  */
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Period } from '../../types/season';
 import type { MatchRecord } from '../periods/SeasonMatchesTab';
 import { getPeriodType } from '../../providers/seasonProviderHelpers';
 import { ChevronRight } from 'lucide-react';
+import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { AppIcon } from '../../components/AppIcon';
+import { ListSection } from '../../components/ListSection';
 import s from './CompetitionGrid.module.css';
 
 interface CompetitionGridProps {
@@ -130,8 +132,8 @@ const CompetitionSummarySheet: React.FC<CompetitionSummarySheetProps> = ({
 }) => {
   const type = getPeriodType(competition);
   const typeLabel = TYPE_LABELS[type] || 'Competitie';
+  const typeClass = TYPE_CLASSES[type] || s.typeCompetition;
 
-  // Filter matches for this competition
   const compMatches = useMemo(() => {
     const compId = String(competition.id || '').trim();
     if (!compId) return [];
@@ -141,61 +143,33 @@ const CompetitionSummarySheet: React.FC<CompetitionSummarySheetProps> = ({
     });
   }, [competition.id, matches]);
 
-  // Close on Escape key
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    },
-    [onClose],
-  );
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
-
   return (
-    <div
-      className={s.sheetBackdrop}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      role="dialog"
-      aria-modal="true"
-      aria-label={String(competition.name || 'Competitie')}
+    <NavigationSheet
+      isOpen
+      onClose={onClose}
+      title={String(competition.name || 'Competitie')}
     >
-      <div className={s.sheetPanel}>
-        <div className={s.cardName}>{String(competition.name || 'Competitie')}</div>
-        <span className={`${s.typeBadge} ${TYPE_CLASSES[type] || s.typeCompetition}`}>
-          {typeLabel}
-        </span>
-
-        {/* Match list */}
-        {compMatches.length > 0 && (
-          <div className={s.sheetMatchList}>
-            {compMatches.map((m) => (
-              <button
-                key={String(m.id)}
-                type="button"
-                className={s.sheetMatchItem}
-                onClick={() => { onMatchTap?.(m); onClose(); }}
-              >
-                <span className={s.sheetMatchTitle}>
-                  {matchDisplayTitle ? matchDisplayTitle(m) : String(m.title || 'Wedstrijd')}
-                </span>
-                <AppIcon icon={ChevronRight} size={14} className={s.sheetMatchChevron} />
-              </button>
-            ))}
-          </div>
-        )}
-        {compMatches.length === 0 && (
-          <div className={s.sheetEmpty}>Geen wedstrijden</div>
-        )}
-
-        <button type="button" className={s.sheetClose} onClick={onClose}>
-          Sluiten
-        </button>
+      <div className={s.sheetContent}>
+        <span className={`${s.typeBadge} ${typeClass}`}>{typeLabel}</span>
+        <div className={s.matchListSection}>
+          {compMatches.length === 0 ? (
+            <div className={s.sheetEmpty}>Geen wedstrijden</div>
+          ) : (
+            <ListSection title="Wedstrijden">
+              {compMatches.map((m) => (
+                <ListSection.Row
+                  key={String(m.id)}
+                  label={matchDisplayTitle ? matchDisplayTitle(m) : String(m.title || 'Wedstrijd')}
+                  icon={ChevronRight}
+                  onTap={() => { onMatchTap?.(m); onClose(); }}
+                />
+              ))}
+            </ListSection>
+          )}
+        </div>
       </div>
-    </div>
+    </NavigationSheet>
   );
 };
+
+// Suppress unused var warning — useEffect/useCallback no longer needed
