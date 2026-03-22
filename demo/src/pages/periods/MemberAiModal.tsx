@@ -125,8 +125,8 @@ export function MemberAiModal({
     person: aiInputPersonUrl
       ? getAssetUrl(aiInputPersonUrl)
       : aiSelectedKitType === 'legacy'
-        ? resolveDisplayUrl(form.legacy_photo?.url) || resolveDisplayUrl(form.profile?.url) || membership?.user?.avatar_url || null
-        : resolveDisplayUrl(form.profile?.url) || membership?.user?.avatar_url || null,
+        ? resolveDisplayUrl(form.legacy_photo?.url) || membership?.user?.avatar_url || resolveDisplayUrl(form.profile?.url) || null
+        : membership?.user?.avatar_url || resolveDisplayUrl(form.profile?.url) || null,
     background: (() => {
       const bgs = clubBrand.getAssets?.('club_background') || [];
       const bg = bgs[0] || clubBrand.getAsset?.('stadium_background');

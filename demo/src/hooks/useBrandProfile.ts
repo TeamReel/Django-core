@@ -89,7 +89,7 @@ export function useBrandProfile({
       else if (organisationId) params['organisation'] = organisationId;
 
       const listData = await api.list<BrandProfile>('/branding/profiles/', { params });
-      const profiles = Array.isArray(listData) ? listData : [];
+      const profiles = listData.results;
 
       if (!profiles.length) {
         setProfile(null);
