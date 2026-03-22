@@ -1,14 +1,10 @@
 /* ============================================================================
-   HubMediaTab — Segmented media views + asset matrix
+   HubMediaTab — Content view + asset matrix styles
    ============================================================================ */
 
 .root {
   display: flex;
   flex-direction: column;
-}
-
-.controlBar {
-  margin-bottom: var(--space-4);
 }
 
 /* ── Asset matrix wrapper ── */

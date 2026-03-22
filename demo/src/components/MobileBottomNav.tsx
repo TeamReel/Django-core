@@ -163,7 +163,20 @@ const MobileBottomNav = memo(function MobileBottomNav() {
     return (
       <button
         key={tab.id}
-        onClick={() => { haptic.light(); tab.path && navigate(tab.path); }}
+        onClick={() => {
+          haptic.light();
+          if (!tab.path) return;
+          // "Mijn Team": if already on the hub, reset to overview (strip ?tab=...)
+          if (tab.id === 'season' && isActive(tab)) {
+            const url = new URL(window.location.href);
+            if (url.searchParams.has('tab')) {
+              url.searchParams.delete('tab');
+              navigate(`${url.pathname}${url.search}`, { replace: true });
+            }
+            return;
+          }
+          navigate(tab.path);
+        }}
         aria-label={tab.label}
         aria-current={active ? 'page' : undefined}
         className={`${styles.tab} ${active ? styles.active : ''}`}

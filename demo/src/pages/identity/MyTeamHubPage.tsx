@@ -24,7 +24,7 @@ import { ShareButton } from '../../components/ShareButton';
 import MobileTabBar from '../../components/MobileTabBar';
 import { SeasonSwitcher, type SeasonOption } from '../../components/SeasonSwitcher';
 import { isSeasonPeriod, useSeasonContext } from '../../providers/SeasonProvider';
-import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
+
 import { periodPathKey } from '../../utils/periodPath';
 import { ListSection } from '../../components/ListSection';
 import { AppIcon } from '../../components/AppIcon';
@@ -45,6 +45,7 @@ import { TeamBeheerTab } from './TeamBeheerTab';
 import { HubClubTab } from './HubClubTab';
 import { HubSelectieTab } from './HubSelectieTab';
 import { HubMediaTab } from './HubMediaTab';
+import { MemberAssetMatrix } from './MemberAssetMatrix';
 import { MemberDetailPanel } from '../periods/MemberDetailPanel';
 
 const MatchSummarySheet = React.lazy(() =>
@@ -85,11 +86,8 @@ export const MyTeamHubPage: React.FC = () => {
   // ── Responsive: 4 tabs on mobile, 6 on desktop ──
   // (isMobile no longer gates admin tabs — admin sees all 6 everywhere)
 
-  // ── Back navigation: Hub → Club ──
-  useSetBackNavigation({
-    label: team.club?.name || 'Club',
-    path: team.backToClubHref,
-  });
+  // ── No back navigation: hub IS the root destination on mobile ──
+  // useSetBackNavigation removed — prevents persistent ← Club button on mobile.
 
   // ── Active tab (RBAC-gated) ──
   const [searchParams] = useSearchParams();
@@ -592,14 +590,7 @@ export const MyTeamHubPage: React.FC = () => {
 
           {/* Media — segmented: per wedstrijd + per seizoen asset-matrix */}
           {activeTab === 'media' && !isSupporter && (
-            <HubMediaTab
-              members={d.members as SquadMember[]}
-              memberDetailHref={(mid: string) => {
-                const base = d.memberDetailHref(mid);
-                return base ? `${base}?from=media` : base;
-              }}
-              onMemberTap={setSelectedMember}
-            >
+            <HubMediaTab>
               <SeasonContentTab
                 org={d.org}
                 projectId={String(d.project?.id || '')}
@@ -668,6 +659,19 @@ export const MyTeamHubPage: React.FC = () => {
                   />
                 </section>
               )}
+
+              {/* Member asset matrix (photo readiness per member) */}
+              <section className={s.beheerSection}>
+                <h2 className={s.beheerSectionTitle}>Ledenfoto's</h2>
+                <MemberAssetMatrix
+                  members={d.members as SquadMember[]}
+                  memberDetailHref={(mid: string) => {
+                    const base = d.memberDetailHref(mid);
+                    return base ? `${base}?from=beheer` : base;
+                  }}
+                  onMemberTap={setSelectedMember}
+                />
+              </section>
 
               {/* Team-level admin (brand profile, team settings) */}
               {team.org && team.team && team.teamIdForDirectoryLists && (

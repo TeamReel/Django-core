@@ -40,7 +40,7 @@
 .inlinePill {
   flex-shrink: 0;
   scroll-snap-align: center;
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-2) var(--space-3);
   min-height: 44px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
