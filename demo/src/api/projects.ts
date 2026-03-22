@@ -113,12 +113,12 @@ export const projectsApi = {
   /* ───── Functional roles ─────────────────────────────────── */
 
   /** Assign functional roles to a project membership. */
-  assignFunctionalRoles(projectId: number | string, data: { membership_id: number; roles: string[] }, opts?: MutateOptions) {
+  assignFunctionalRoles(projectId: number | string, data: { user_id: number | string; roles: string[] }, opts?: MutateOptions) {
     return api.post<void>(`/projects/${projectId}/functional-roles/assign/`, data, opts);
   },
 
   /** Unassign functional roles from a project membership. */
-  unassignFunctionalRoles(projectId: number | string, data: { membership_id: number; roles: string[] }, opts?: MutateOptions) {
+  unassignFunctionalRoles(projectId: number | string, data: { user_id: number | string; roles: string[] }, opts?: MutateOptions) {
     return api.post<void>(`/projects/${projectId}/functional-roles/unassign/`, data, opts);
   },
 

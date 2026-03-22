@@ -51,7 +51,7 @@ import { MemberDetailPanel } from '../periods/MemberDetailPanel';
 import { AssetDetailSheet, type AssetSheetType } from './AssetDetailSheet';
 import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { formatCredits } from './detail/useTeamCreditsData';
-import { creditsApi } from '../../api';
+import { creditsApi, projectsApi } from '../../api';
 import type { ProjectCreditsBalance } from '../../types/api/credits';
 import { SeasonSection } from './SeasonSection';
 import { CompetitionGrid } from './CompetitionGrid';
@@ -820,6 +820,10 @@ export const MyTeamHubPage: React.FC = () => {
               removeFromSquad={d.unassignMembershipsFromSeasonSquad
                 ? (id: string) => d.unassignMembershipsFromSeasonSquad([id])
                 : undefined}
+              onRoleChange={isAdmin && d.project?.id ? async (mid, role) => {
+                await projectsApi.updateMember(d.project!.id, mid, { role });
+                d.setMembersReloadToken((t: number) => t + 1);
+              } : undefined}
               onMemberTap={setSelectedMember}
             />
           )}

@@ -5,13 +5,14 @@
  * Each row shows avatar + name + asset-status dot + navigation chevron.
  * "Niet in selectie" section shows org members not in this season's squad.
  */
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, UserMinus } from 'lucide-react';
 import { Alert } from '@django-core/design-system';
 import { ListSection } from '../../components/ListSection';
 import { Avatar } from '../../components/ui';
 import { AppIcon } from '../../components/AppIcon';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { getMemberAssetStatus } from '../../utils/assetStatus';
 import type { SquadMember } from '../periods/squadTabTypes';
 import s from './HubSelectieTab.module.css';
@@ -29,6 +30,8 @@ interface HubSelectieTabProps {
   assignUsersToSeasonSquad?: (userIds: string[]) => Promise<void>;
   /** Remove a member from the season squad by membership ID (admin only) */
   removeFromSquad?: (membershipId: string) => Promise<void>;
+  /** Change a member's functional role */
+  onRoleChange?: (membershipId: string, role: 'goalkeeper' | 'player' | 'coach' | 'assistant') => Promise<void>;
   /** If provided, tapping a member calls this instead of navigating away */
   onMemberTap?: (m: SquadMember) => void;
 }
@@ -77,6 +80,22 @@ function memberAvatarUrl(m: SquadMember): string | undefined {
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 
+const ROLE_OPTIONS: { value: 'goalkeeper' | 'player' | 'coach' | 'assistant'; label: string }[] = [
+  { value: 'goalkeeper', label: 'Keeper' },
+  { value: 'player', label: 'Speler' },
+  { value: 'coach', label: 'Coach' },
+  { value: 'assistant', label: 'Assistent' },
+];
+
+function getMemberFunctionalRole(m: SquadMember): string {
+  const fr = (m as Record<string, unknown>).functional_roles as string[] | undefined;
+  const role = (m.role ?? '').toLowerCase();
+  if (fr?.includes('goalkeeper') || role === 'goalkeeper') return 'goalkeeper';
+  if (fr?.includes('coach') || role === 'coach') return 'coach';
+  if (fr?.includes('assistant') || role === 'assistant') return 'assistant';
+  return 'player';
+}
+
 export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
   members,
   membersLoading,
@@ -87,10 +106,34 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
   teamRosterLoading,
   assignUsersToSeasonSquad,
   removeFromSquad,
+  onRoleChange,
   onMemberTap,
 }) => {
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const [rosterSearch, setRosterSearch] = useState('');
+  const [rolePicker, setRolePicker] = useState<{ memberId: string; rect: DOMRect } | null>(null);
+
+  const handleRemove = useCallback(async (mid: string, name: string) => {
+    const ok = await confirm({
+      title: 'Lid verwijderen?',
+      message: `${name} wordt uit de selectie verwijderd.`,
+      confirmLabel: 'Verwijderen',
+      variant: 'danger',
+    });
+    if (ok) await removeFromSquad?.(mid);
+  }, [confirm, removeFromSquad]);
+
+  const handleRoleTap = useCallback((e: React.MouseEvent, mid: string) => {
+    e.stopPropagation();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setRolePicker((prev) => prev?.memberId === mid ? null : { memberId: mid, rect });
+  }, []);
+
+  const handleRoleSelect = useCallback(async (mid: string, role: 'goalkeeper' | 'player' | 'coach' | 'assistant') => {
+    setRolePicker(null);
+    await onRoleChange?.(mid, role);
+  }, [onRoleChange]);
 
   const groups = useMemo(() => groupByRole(members), [members]);
 
@@ -137,6 +180,9 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
               const avatarUrl = memberAvatarUrl(m);
               const assetStatus = isStaf ? null : getMemberAssetStatus(m as Record<string, unknown>);
 
+              const currentRole = getMemberFunctionalRole(m);
+              const roleLabel = ROLE_OPTIONS.find((r) => r.value === currentRole)?.label ?? 'Lid';
+
               return (
                 <ListSection.Row
                   key={mid}
@@ -144,25 +190,41 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
                   leading={<Avatar src={avatarUrl} name={name} size="sm" />}
                   onTap={() => onMemberTap ? onMemberTap(m) : navigate(memberDetailHref(mid))}
                   trailing={
-                    isAdmin && removeFromSquad ? (
-                      <button
-                        type="button"
-                        className={s.removeBtn}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeFromSquad(mid);
-                        }}
-                        aria-label={`${name} verwijderen uit selectie`}
-                      >
-                        <AppIcon icon={UserMinus} size={16} />
-                      </button>
-                    ) : assetStatus ? (
-                      <span
-                        className={s.assetDot}
-                        data-status={assetStatus.status}
-                        aria-label={`${assetStatus.filled} van 5 assets`}
-                      />
-                    ) : undefined
+                    <div className={s.trailingGroup}>
+                      {isAdmin && onRoleChange && (
+                        <button
+                          type="button"
+                          className={s.roleChip}
+                          onClick={(e) => handleRoleTap(e, mid)}
+                          aria-label={`Rol wijzigen voor ${name}`}
+                        >
+                          {roleLabel}
+                        </button>
+                      )}
+                      {!isAdmin && (
+                        <span className={s.roleLabel}>{roleLabel}</span>
+                      )}
+                      {assetStatus && (
+                        <span
+                          className={s.assetDot}
+                          data-status={assetStatus.status}
+                          aria-label={`${assetStatus.filled} van 5 assets`}
+                        />
+                      )}
+                      {isAdmin && removeFromSquad && (
+                        <button
+                          type="button"
+                          className={s.removeBtn}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemove(mid, name);
+                          }}
+                          aria-label={`${name} verwijderen uit selectie`}
+                        >
+                          <AppIcon icon={UserMinus} size={16} />
+                        </button>
+                      )}
+                    </div>
                   }
                 />
               );
@@ -219,6 +281,33 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
 
       {members.length === 0 && !membersLoading && (
         <Alert variant="info">Geen leden in de selectie.</Alert>
+      )}
+
+      {/* Role picker popover */}
+      {rolePicker && (
+        <>
+          <div className={s.rolePickerBackdrop} onClick={() => setRolePicker(null)} />
+          <div
+            className={s.rolePickerPopover}
+            style={{ top: rolePicker.rect.bottom + 4, left: rolePicker.rect.left }}
+          >
+            {ROLE_OPTIONS.map((opt) => {
+              const m = members.find((mem) => String(mem.id) === rolePicker.memberId);
+              const current = m ? getMemberFunctionalRole(m) : '';
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  className={s.rolePickerOption}
+                  data-active={current === opt.value ? 'true' : undefined}
+                  onClick={() => handleRoleSelect(rolePicker.memberId, opt.value)}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );
