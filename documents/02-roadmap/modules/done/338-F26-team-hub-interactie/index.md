@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Code | F26 |
-| Status | 📐 READY |
+| Status | ✅ DONE |
 | Prioriteit | Hoog |
 | Geschatte effort | ~24 uur |
 | Afhankelijkheden | F24 (done) — Team Hub V2 met iOS-accordions, CompetitionGrid, SeasonProvider |
