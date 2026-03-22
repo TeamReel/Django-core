@@ -175,6 +175,10 @@ export const MyTeamHubPage: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<SquadMember | null>(null);
   const [detailMemberId, setDetailMemberId] = useState<string | null>(null);
 
+  // ── Overview: in-place expand state ──
+  const [showAllMembers, setShowAllMembers] = useState(false);
+  const [showAllMatches, setShowAllMatches] = useState(false);
+
   // Close sheets on tab switch
   useEffect(() => {
     setSelectedMatch(null);
@@ -479,21 +483,44 @@ export const MyTeamHubPage: React.FC = () => {
               <CompetitionGrid
                 competitions={seasonCtx.competitions}
                 competitionsLoading={seasonCtx.competitionsLoading}
+                getMatchCount={d.getMatchCountForCompetition}
               />
 
-              {/* Wedstrijden — card link to tab */}
+              {/* Wedstrijden — accordion with match items */}
               <div className={s.accordionSection}>
                 <button
                   type="button"
                   className={s.accordionHeader}
-                  onClick={() => navigateToTab('wedstrijden')}
-                  aria-expanded={false}
+                  onClick={() => toggleSection('wedstrijden')}
+                  aria-expanded={expandedSections.has('wedstrijden')}
                 >
                   <AppIcon icon={Trophy} size={18} className={s.accordionIcon} />
                   <span className={s.accordionLabel}>Wedstrijden</span>
                   <span className={s.accordionValue}>{d.matches.length}</span>
-                  <AppIcon icon={ChevronRight} size={16} className={s.accordionChevron} />
+                  <AppIcon
+                    icon={ChevronDown}
+                    size={16}
+                    className={`${s.accordionChevron} ${expandedSections.has('wedstrijden') ? s.accordionChevronOpen : ''}`}
+                  />
                 </button>
+                <div className={`${s.accordionBody} ${expandedSections.has('wedstrijden') ? (showAllMatches ? s.accordionBodyOpenLarge : s.accordionBodyOpen) : ''}`}>
+                  {(d.matches as MatchRecord[]).slice(0, showAllMatches ? undefined : 5).map((m) => (
+                    <button
+                      key={String(m.id)}
+                      type="button"
+                      className={s.accordionItem}
+                      onClick={() => setSelectedMatch(m)}
+                    >
+                      <span className={s.accordionItemLabel}>{d.matchDisplayTitle(m)}</span>
+                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                    </button>
+                  ))}
+                  {!showAllMatches && d.matches.length > 5 && (
+                    <button type="button" className={s.accordionViewAll} onClick={() => setShowAllMatches(true)}>
+                      Toon alle {d.matches.length} wedstrijden
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Selectie — accordion */}
@@ -514,8 +541,8 @@ export const MyTeamHubPage: React.FC = () => {
                       className={`${s.accordionChevron} ${expandedSections.has('selectie') ? s.accordionChevronOpen : ''}`}
                     />
                   </button>
-                  <div className={`${s.accordionBody} ${expandedSections.has('selectie') ? s.accordionBodyOpen : ''}`}>
-                    {(d.members as SquadMember[]).slice(0, 5).map((m) => (
+                  <div className={`${s.accordionBody} ${expandedSections.has('selectie') ? (showAllMembers ? s.accordionBodyOpenLarge : s.accordionBodyOpen) : ''}`}>
+                    {(d.members as SquadMember[]).slice(0, showAllMembers ? undefined : 5).map((m) => (
                       <button
                         key={String(m.id)}
                         type="button"
@@ -526,55 +553,81 @@ export const MyTeamHubPage: React.FC = () => {
                         <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
                       </button>
                     ))}
-                    {d.members.length > 5 && (
-                      <button type="button" className={s.accordionViewAll} onClick={() => navigateToTab('selectie')}>
-                        Alle {d.members.length} leden →
+                    {!showAllMembers && d.members.length > 5 && (
+                      <button type="button" className={s.accordionViewAll} onClick={() => setShowAllMembers(true)}>
+                        Toon alle {d.members.length} leden
                       </button>
                     )}
                   </div>
                 </div>
               )}
 
-              {/* H4: Team assets — clickable card → assets tab */}
-              <button
-                type="button"
-                className={s.overviewCard}
-                aria-label="Bekijk team assets"
-                onClick={() => navigateToTab('assets')}
-              >
-                <div className={s.overviewCardTitle}>
-                  <AppIcon icon={Shirt} size={18} />
-                  <span>Team assets</span>
-                </div>
-                <div className={s.overviewCardMeta}>
-                  Tenue {teamAssetStatus === 'complete' ? '✅' : '⚠️'}
-                  {' · '}
-                  Sponsor {clubAssetStatus === 'complete' ? '✅' : '⚠️'}
-                  {' · '}
-                  Ledenfoto's {memberAssetSummary.complete}/{memberAssetSummary.total}
-                </div>
-              </button>
-
-              {/* H4: Club assets — clickable card → assets tab */}
-              {isAdmin && (
+              {/* Team assets — accordion */}
+              <div className={s.accordionSection}>
                 <button
                   type="button"
-                  className={s.overviewCard}
-                  aria-label="Bekijk club assets"
-                  onClick={() => navigateToTab('assets')}
+                  className={s.accordionHeader}
+                  onClick={() => toggleSection('team-assets')}
+                  aria-expanded={expandedSections.has('team-assets')}
+                  aria-label="Team assets"
                 >
-                  <div className={s.overviewCardTitle}>
-                    <AppIcon icon={Building2} size={18} />
-                    <span>Club assets</span>
-                  </div>
-                  <div className={s.overviewCardMeta}>
-                    Logo {Boolean((team.club as Record<string, unknown> | null)?.logo_url || (team.club as Record<string, unknown> | null)?.crest_url) ? '✅' : '⚠️'}
-                    {' · '}
-                    Sponsor {clubAssetStatus === 'complete' ? '✅' : '⚠️'}
-                    {' · '}
-                    Kits {teamAssetStatus === 'complete' ? '✅' : '⚠️'}
-                  </div>
+                  <AppIcon icon={Shirt} size={18} className={s.accordionIcon} />
+                  <span className={s.accordionLabel}>Team assets</span>
+                  <AppIcon
+                    icon={ChevronDown}
+                    size={16}
+                    className={`${s.accordionChevron} ${expandedSections.has('team-assets') ? s.accordionChevronOpen : ''}`}
+                  />
                 </button>
+                <div className={`${s.accordionBody} ${expandedSections.has('team-assets') ? s.accordionBodyOpen : ''}`}>
+                  <div className={s.accordionItem}>
+                    <span className={s.accordionItemLabel}>Tenue</span>
+                    <span className={s.accordionItemStatus}>{teamAssetStatus === 'complete' ? '✅' : '⚠️'}</span>
+                  </div>
+                  <div className={s.accordionItem}>
+                    <span className={s.accordionItemLabel}>Sponsor</span>
+                    <span className={s.accordionItemStatus}>{clubAssetStatus === 'complete' ? '✅' : '⚠️'}</span>
+                  </div>
+                  <div className={s.accordionItem}>
+                    <span className={s.accordionItemLabel}>Ledenfoto's</span>
+                    <span className={s.accordionItemStatus}>{memberAssetSummary.complete}/{memberAssetSummary.total}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Club assets — accordion (admin only) */}
+              {isAdmin && (
+                <div className={s.accordionSection}>
+                  <button
+                    type="button"
+                    className={s.accordionHeader}
+                    onClick={() => toggleSection('club-assets')}
+                    aria-expanded={expandedSections.has('club-assets')}
+                    aria-label="Club assets"
+                  >
+                    <AppIcon icon={Building2} size={18} className={s.accordionIcon} />
+                    <span className={s.accordionLabel}>Club assets</span>
+                    <AppIcon
+                      icon={ChevronDown}
+                      size={16}
+                      className={`${s.accordionChevron} ${expandedSections.has('club-assets') ? s.accordionChevronOpen : ''}`}
+                    />
+                  </button>
+                  <div className={`${s.accordionBody} ${expandedSections.has('club-assets') ? s.accordionBodyOpen : ''}`}>
+                    <div className={s.accordionItem}>
+                      <span className={s.accordionItemLabel}>Logo</span>
+                      <span className={s.accordionItemStatus}>{Boolean((team.club as Record<string, unknown> | null)?.logo_url || (team.club as Record<string, unknown> | null)?.crest_url) ? '✅' : '⚠️'}</span>
+                    </div>
+                    <div className={s.accordionItem}>
+                      <span className={s.accordionItemLabel}>Sponsor</span>
+                      <span className={s.accordionItemStatus}>{clubAssetStatus === 'complete' ? '✅' : '⚠️'}</span>
+                    </div>
+                    <div className={s.accordionItem}>
+                      <span className={s.accordionItemLabel}>Kits</span>
+                      <span className={s.accordionItemStatus}>{teamAssetStatus === 'complete' ? '✅' : '⚠️'}</span>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {/* Beheer — admin only, quick links */}
@@ -595,21 +648,21 @@ export const MyTeamHubPage: React.FC = () => {
                     />
                   </button>
                   <div className={`${s.accordionBody} ${expandedSections.has('beheer') ? s.accordionBodyOpen : ''}`}>
-                    <button type="button" className={s.accordionItem} onClick={() => navigateToTab('beheer')}>
+                    <div className={s.accordionItem}>
                       <AppIcon icon={Settings} size={14} className={s.accordionItemIcon} />
                       <span className={s.accordionItemLabel}>Team instellingen</span>
-                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
-                    </button>
-                    <button type="button" className={s.accordionItem} onClick={() => navigateToTab('beheer')}>
+                      <span className={s.accordionItemStatus}>✅</span>
+                    </div>
+                    <div className={s.accordionItem}>
                       <AppIcon icon={Trophy} size={14} className={s.accordionItemIcon} />
                       <span className={s.accordionItemLabel}>Competities</span>
-                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
-                    </button>
-                    <button type="button" className={s.accordionItem} onClick={() => navigateToTab('assets')}>
+                      <span className={s.accordionItemStatus}>{seasonCtx.competitions.length}</span>
+                    </div>
+                    <div className={s.accordionItem}>
                       <AppIcon icon={Upload} size={14} className={s.accordionItemIcon} />
-                      <span className={s.accordionItemLabel}>Assets uploaden</span>
-                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
-                    </button>
+                      <span className={s.accordionItemLabel}>Assets</span>
+                      <span className={s.accordionItemStatus}>{memberAssetSummary.complete}/{memberAssetSummary.total} foto's</span>
+                    </div>
                   </div>
                 </div>
               )}

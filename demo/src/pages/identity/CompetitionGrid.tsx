@@ -12,6 +12,7 @@ import s from './CompetitionGrid.module.css';
 interface CompetitionGridProps {
   competitions: Period[];
   competitionsLoading: boolean;
+  getMatchCount?: (comp: Period) => number;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -33,6 +34,7 @@ const TYPE_CLASSES: Record<string, string> = {
 export const CompetitionGrid: React.FC<CompetitionGridProps> = ({
   competitions,
   competitionsLoading,
+  getMatchCount,
 }) => {
   const [selectedCompetition, setSelectedCompetition] = useState<Period | null>(null);
 
@@ -61,8 +63,7 @@ export const CompetitionGrid: React.FC<CompetitionGridProps> = ({
             const type = getPeriodType(comp);
             const typeLabel = TYPE_LABELS[type] || 'Competitie';
             const typeClass = TYPE_CLASSES[type] || s.typeCompetition;
-            const childCount = (comp as Record<string, unknown>).children_count;
-            const matchCount = typeof childCount === 'number' ? childCount : null;
+            const matchCount = getMatchCount ? getMatchCount(comp) : null;
 
             return (
               <button

@@ -550,6 +550,10 @@
   max-height: 500px;
 }
 
+.accordionBodyOpenLarge {
+  max-height: 2000px;
+}
+
 .accordionItem {
   display: flex;
   align-items: center;
@@ -596,6 +600,12 @@
   flex-shrink: 0;
 }
 
+.accordionItemStatus {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
 .accordionViewAll {
   display: flex;
   align-items: center;
@@ -629,5 +639,6 @@
   .skeletonCard { animation: none; }
 
   .accordionChevron,
-  .accordionBody { transition: none; }
+  .accordionBody,
+  .accordionBodyOpenLarge { transition: none; }
 }
