@@ -2,10 +2,10 @@
  * AssetDetailSheet — Preview + manage a specific brand asset from the Overview tab.
  *
  * Opens as a NavigationSheet (sliding panel). Shows the current state of the
- * asset with preview images and a CTA to open the full asset editor.
+ * asset with preview images and CTAs to upload, process with AI, or edit.
  */
-import React, { useCallback, useMemo } from 'react';
-import { Shirt, Building2, Camera, Image, Users } from 'lucide-react';
+import React, { useCallback, useMemo, useRef } from 'react';
+import { Shirt, Building2, Camera, Image, Users, Upload, Sparkles } from 'lucide-react';
 import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { AppIcon } from '../../components/AppIcon';
 import type { SquadMember } from '../periods/squadTabTypes';
@@ -37,6 +37,10 @@ interface AssetDetailSheetProps {
   members?: SquadMember[];
   /** Navigate to a specific tab for full editing */
   onNavigateToTab: (tab: string) => void;
+  /** Upload file handler — called with file and asset type */
+  onUpload?: (file: File, assetType: AssetSheetType) => Promise<void>;
+  /** Open AI generation modal */
+  onOpenAiGenerate?: (assetType: AssetSheetType) => void;
 }
 
 /* ── Config per type ──────────────────────────────────────────────────── */
@@ -74,14 +78,47 @@ export const AssetDetailSheet: React.FC<AssetDetailSheetProps> = ({
   memberSummary,
   members,
   onNavigateToTab,
+  onUpload,
+  onOpenAiGenerate,
 }) => {
   const config = type ? SHEET_CONFIG[type] : null;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleEdit = useCallback(() => {
     if (!config) return;
     onClose();
     onNavigateToTab(config.editTab);
   }, [config, onClose, onNavigateToTab]);
+
+  const handleUploadClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && type && onUpload) {
+      await onUpload(file, type);
+    }
+    // Reset input so same file can be selected again
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, [type, onUpload]);
+
+  const handleAiGenerate = useCallback(() => {
+    if (type && onOpenAiGenerate) {
+      onOpenAiGenerate(type);
+    }
+  }, [type, onOpenAiGenerate]);
+
+  /* Determine if asset is missing (show upload/generate options) */
+  const assetMissing = useMemo(() => {
+    if (!type) return false;
+    if (type === 'logo' || type === 'club-sponsor') return !logoUrl && !sponsorUrl;
+    if (type === 'sponsor') return !sponsorUrl;
+    if (type === 'tenue' || type === 'kits') {
+      return !Object.values(batchBrandKits).some(Boolean);
+    }
+    return false;
+  }, [type, logoUrl, sponsorUrl, batchBrandKits]);
 
   /* Kit entries for grid display */
   const kitEntries = useMemo(() => {
@@ -111,9 +148,36 @@ export const AssetDetailSheet: React.FC<AssetDetailSheetProps> = ({
       title={config.title}
       icon={<AppIcon icon={config.icon} size={20} />}
       footer={
-        <button type="button" className={s.editButton} onClick={handleEdit}>
-          {config.editLabel}
-        </button>
+        <div className={s.footerButtons}>
+          {/* Hidden file input for uploads */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className={s.hiddenInput}
+            aria-hidden="true"
+          />
+
+          {/* Upload button - visible when onUpload provided */}
+          {onUpload && (
+            <button type="button" className={s.secondaryButton} onClick={handleUploadClick}>
+              <Upload size={16} /> Upload
+            </button>
+          )}
+
+          {/* AI Generate button - visible when missing asset and onOpenAiGenerate provided */}
+          {assetMissing && onOpenAiGenerate && (
+            <button type="button" className={s.primaryButton} onClick={handleAiGenerate}>
+              <Sparkles size={16} /> Genereer met AI
+            </button>
+          )}
+
+          {/* Edit/Manage button - always visible */}
+          <button type="button" className={s.editButton} onClick={handleEdit}>
+            {config.editLabel}
+          </button>
+        </div>
       }
     >
       <div className={s.root}>

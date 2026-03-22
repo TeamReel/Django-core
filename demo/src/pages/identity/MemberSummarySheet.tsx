@@ -74,6 +74,8 @@ interface MemberSummarySheetProps {
   /** 0-based current index, for '3 / 18' counter */
   currentIndex?: number;
   totalCount?: number;
+  /** Number of members with processed closeup photo */
+  membersWithPhoto?: number;
 }
 
 /* ── Component ────────────────────────────────────────────────────────── */
@@ -91,6 +93,7 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
   hasNext = false,
   currentIndex,
   totalCount,
+  membersWithPhoto,
 }) => {
   const [switching, setSwitching] = useState(false);
 
@@ -152,6 +155,9 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
               {showCounter && (
                 <span className={s.navCounter}>
                   {currentIndex + 1} / {totalCount}
+                  {membersWithPhoto !== undefined && totalCount !== undefined && (
+                    <span className={s.photoCount}> • {membersWithPhoto} met foto</span>
+                  )}
                 </span>
               )}
               <button

@@ -213,6 +213,22 @@ export const MyTeamHubPage: React.FC = () => {
     return (d.members as SquadMember[]).findIndex((m) => String(m.id) === String(selectedMember.id));
   }, [selectedMember, d.members]);
 
+  // Count members with processed closeup photo
+  const membersWithPhoto = useMemo(() => {
+    return (d.members as SquadMember[]).filter((m) => {
+      const tr = (m.metadata as Record<string, unknown> | undefined)?.teamreel_assets as Record<string, unknown> | undefined;
+      if (!tr) return false;
+      const closeup = (tr.images as Record<string, unknown> | undefined)?.closeup as Record<string, unknown> | undefined;
+      if (!closeup) return false;
+      // Check if any kit type has processed closeup
+      for (const kitType of ['home', 'away', 'third', 'goalkeeper']) {
+        const kit = closeup[kitType] as Record<string, unknown> | undefined;
+        if (typeof kit?.processed === 'string' && kit.processed) return true;
+      }
+      return false;
+    }).length;
+  }, [d.members]);
+
   const handleMemberPrev = useCallback(() => {
     if (selectedMemberIndex > 0)
       setSelectedMember((d.members as SquadMember[])[selectedMemberIndex - 1]);
@@ -886,6 +902,7 @@ export const MyTeamHubPage: React.FC = () => {
           hasNext={selectedMemberIndex >= 0 && selectedMemberIndex < d.members.length - 1}
           currentIndex={selectedMemberIndex >= 0 ? selectedMemberIndex : undefined}
           totalCount={d.members.length > 0 ? d.members.length : undefined}
+          membersWithPhoto={membersWithPhoto}
         />
       </React.Suspense>
 
