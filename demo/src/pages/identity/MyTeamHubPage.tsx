@@ -18,7 +18,7 @@ import {
   Pencil, Check, MoreHorizontal, Eye, Trash2,
   Calendar, MapPin, Trophy, Users, Film,
   Building2, Shirt, Camera, Palette, Upload, Settings,
-  ChevronRight,
+  ChevronRight, ChevronDown,
 } from 'lucide-react';
 import { ShareButton } from '../../components/ShareButton';
 import MobileTabBar from '../../components/MobileTabBar';
@@ -163,6 +163,16 @@ export const MyTeamHubPage: React.FC = () => {
   const [overflowOpen, setOverflowOpen] = useState(false);
   const overflowRef = useRef<HTMLDivElement>(null);
 
+  // ── Overview accordion state ──
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const toggleSection = useCallback((key: string) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }, []);
+
   // ── Sheet state ──
   const [selectedMatch, setSelectedMatch] = useState<MatchRecord | null>(null);
   const [selectedMember, setSelectedMember] = useState<SquadMember | null>(null);
@@ -297,7 +307,7 @@ export const MyTeamHubPage: React.FC = () => {
           </div>
 
           <div className={s.actions}>
-            {/* Activate context */}
+            {/* Activate context — visible on desktop, hidden on mobile (in overflow) */}
             <button
               type="button"
               className={`${s.activeBtn} ${isActiveContext ? s.activeBtnOn : ''}`}
@@ -309,49 +319,43 @@ export const MyTeamHubPage: React.FC = () => {
               {isActiveContext ? 'Actief' : 'Activeren'}
             </button>
 
-            {/* Edit (admin) */}
-            {d.userCanEditProject && (
-              <button
-                type="button"
-                className={s.iconBtn}
-                onClick={() => {
-                  d.setSelectedEditPeriod(d.season);
-                  d.setIsPeriodEditModalOpen(true);
-                }}
-                title="Seizoen bewerken"
-              >
-                <Pencil size={16} />
-              </button>
-            )}
-
             {/* Share */}
             <ShareButton compact className={s.shareBtn} />
 
-            {/* Overflow */}
-            {d.userCanEditProject && (
-              <div className={s.overflowWrap} ref={overflowRef}>
-                <button
-                  type="button"
-                  className={s.iconBtn}
-                  onClick={() => setOverflowOpen((o) => !o)}
-                  aria-label="Meer opties"
-                >
-                  <MoreHorizontal size={16} />
-                </button>
-                {overflowOpen && (
-                  <div className={s.overflowMenu}>
-                    <button type="button" onClick={() => { d.setSelectedDetailPeriod(d.season); d.setIsPeriodDetailModalOpen(true); setOverflowOpen(false); }}>
-                      <Eye size={14} /> Bekijken
+            {/* Overflow — contains Edit, View, Delete + mobile-only Activate */}
+            <div className={s.overflowWrap} ref={overflowRef}>
+              <button
+                type="button"
+                className={s.iconBtn}
+                onClick={() => setOverflowOpen((o) => !o)}
+                aria-label="Meer opties"
+              >
+                <MoreHorizontal size={16} />
+              </button>
+              {overflowOpen && (
+                <div className={s.overflowMenu}>
+                  {/* Activate — mobile only (hidden on desktop via CSS) */}
+                  {!isActiveContext && (
+                    <button type="button" className={s.overflowMobileOnly} onClick={() => { d.handleActivateContext(); setOverflowOpen(false); }}>
+                      <Check size={14} /> Activeren
                     </button>
-                    {d.userCanDeleteProject && (
-                      <button type="button" className={s.overflowDanger} onClick={() => { d.handleDeleteSeason(); setOverflowOpen(false); }}>
-                        <Trash2 size={14} /> Verwijderen
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                  {d.userCanEditProject && (
+                    <button type="button" onClick={() => { d.setSelectedEditPeriod(d.season); d.setIsPeriodEditModalOpen(true); setOverflowOpen(false); }}>
+                      <Pencil size={14} /> Bewerken
+                    </button>
+                  )}
+                  <button type="button" onClick={() => { d.setSelectedDetailPeriod(d.season); d.setIsPeriodDetailModalOpen(true); setOverflowOpen(false); }}>
+                    <Eye size={14} /> Bekijken
+                  </button>
+                  {d.userCanDeleteProject && d.userCanEditProject && (
+                    <button type="button" className={s.overflowDanger} onClick={() => { d.handleDeleteSeason(); setOverflowOpen(false); }}>
+                      <Trash2 size={14} /> Verwijderen
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -425,8 +429,8 @@ export const MyTeamHubPage: React.FC = () => {
               { id: 'wedstrijden', label: 'Wedstrijden' },
               ...(!isSupporter ? [{ id: 'media', label: 'Media' }] : []),
               ...(!isSupporter ? [{ id: 'selectie', label: 'Selectie' }] : []),
-              ...(isAdmin ? [{ id: 'beheer', label: 'Beheer' }] : []),
-              ...(isAdmin ? [{ id: 'club', label: 'Club' }] : []),
+              ...(isAdmin ? [{ id: 'beheer', label: 'Beheer', desktopOnly: true }] : []),
+              ...(isAdmin ? [{ id: 'club', label: 'Club', desktopOnly: true }] : []),
             ]}
             activeTab={activeTab}
           />
@@ -465,81 +469,162 @@ export const MyTeamHubPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Seizoen stats */}
-              <ListSection title="Seizoen">
-                <ListSection.Row
-                  icon={Trophy}
-                  label="Wedstrijden"
-                  value={String(d.matches.length)}
-                  onTap={() => navigateToTab('wedstrijden')}
-                />
-                <ListSection.Row
-                  icon={Users}
-                  label="Selectie"
-                  value={String(d.members.length)}
-                  onTap={() => navigateToTab('selectie')}
-                />
-                {!isSupporter && (
-                  <ListSection.Row
-                    icon={Film}
-                    label="Content"
-                    onTap={() => navigateToTab('media')}
+              {/* Wedstrijden — accordion */}
+              <div className={s.accordionSection}>
+                <button
+                  type="button"
+                  className={s.accordionHeader}
+                  onClick={() => toggleSection('wedstrijden')}
+                  aria-expanded={expandedSections.has('wedstrijden')}
+                >
+                  <AppIcon icon={Trophy} size={18} className={s.accordionIcon} />
+                  <span className={s.accordionLabel}>Wedstrijden</span>
+                  <span className={s.accordionValue}>{d.matches.length}</span>
+                  <AppIcon
+                    icon={ChevronDown}
+                    size={16}
+                    className={`${s.accordionChevron} ${expandedSections.has('wedstrijden') ? s.accordionChevronOpen : ''}`}
                   />
-                )}
-              </ListSection>
+                </button>
+                <div className={`${s.accordionBody} ${expandedSections.has('wedstrijden') ? s.accordionBodyOpen : ''}`}>
+                  {(d.matches as MatchRecord[]).slice(0, 3).map((m) => (
+                    <button
+                      key={String(m.id)}
+                      type="button"
+                      className={s.accordionItem}
+                      onClick={() => setSelectedMatch(m)}
+                    >
+                      <span className={s.accordionItemLabel}>{d.matchDisplayTitle(m)}</span>
+                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                    </button>
+                  ))}
+                  {d.matches.length > 3 && (
+                    <button type="button" className={s.accordionViewAll} onClick={() => navigateToTab('wedstrijden')}>
+                      Alle {d.matches.length} wedstrijden →
+                    </button>
+                  )}
+                </div>
+              </div>
 
-              {/* Assets status */}
+              {/* Selectie — accordion */}
+              {!isSupporter && (
+                <div className={s.accordionSection}>
+                  <button
+                    type="button"
+                    className={s.accordionHeader}
+                    onClick={() => toggleSection('selectie')}
+                    aria-expanded={expandedSections.has('selectie')}
+                  >
+                    <AppIcon icon={Users} size={18} className={s.accordionIcon} />
+                    <span className={s.accordionLabel}>Selectie</span>
+                    <span className={s.accordionValue}>{d.members.length}</span>
+                    <AppIcon
+                      icon={ChevronDown}
+                      size={16}
+                      className={`${s.accordionChevron} ${expandedSections.has('selectie') ? s.accordionChevronOpen : ''}`}
+                    />
+                  </button>
+                  <div className={`${s.accordionBody} ${expandedSections.has('selectie') ? s.accordionBodyOpen : ''}`}>
+                    {(d.members as SquadMember[]).slice(0, 5).map((m) => (
+                      <button
+                        key={String(m.id)}
+                        type="button"
+                        className={s.accordionItem}
+                        onClick={() => setSelectedMember(m)}
+                      >
+                        <span className={s.accordionItemLabel}>{String(m.user?.name || m.user?.first_name || 'Lid')}</span>
+                        <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                      </button>
+                    ))}
+                    {d.members.length > 5 && (
+                      <button type="button" className={s.accordionViewAll} onClick={() => navigateToTab('selectie')}>
+                        Alle {d.members.length} leden →
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Media — accordion (non-supporter) */}
+              {!isSupporter && (
+                <div className={s.accordionSection}>
+                  <button
+                    type="button"
+                    className={s.accordionHeader}
+                    onClick={() => toggleSection('media')}
+                    aria-expanded={expandedSections.has('media')}
+                  >
+                    <AppIcon icon={Film} size={18} className={s.accordionIcon} />
+                    <span className={s.accordionLabel}>Content</span>
+                    <AppIcon
+                      icon={ChevronDown}
+                      size={16}
+                      className={`${s.accordionChevron} ${expandedSections.has('media') ? s.accordionChevronOpen : ''}`}
+                    />
+                  </button>
+                  <div className={`${s.accordionBody} ${expandedSections.has('media') ? s.accordionBodyOpen : ''}`}>
+                    <button type="button" className={s.accordionViewAll} onClick={() => navigateToTab('media')}>
+                      Bekijk content →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Assets status — always visible */}
               <ListSection title="Assets">
                 <ListSection.Row
                   icon={Building2}
                   label="Club assets"
                   status={clubAssetStatus === 'complete' ? 'success' : 'warning'}
-                  onTap={() => navigateToTab('beheer')}
                 />
                 <ListSection.Row
                   icon={Shirt}
                   label="Team assets"
                   status={teamAssetStatus === 'complete' ? 'success' : 'warning'}
-                  onTap={() => navigateToTab('beheer')}
                 />
                 <ListSection.Row
                   icon={Camera}
                   label="Ledenfoto's"
                   value={`${memberAssetSummary.complete}/${memberAssetSummary.total}`}
                   status={memberPhotosStatus === 'complete' ? 'success' : 'warning'}
-                  onTap={() => navigateToTab('media')}
                 />
               </ListSection>
 
-              {/* Beheer — admin only, always visible */}
+              {/* Beheer — admin only, accordion */}
               {isAdmin && (
-                <ListSection title="Beheer">
-                  <ListSection.Row
-                    icon={Settings}
-                    label="Team instellingen"
-                    onTap={() => navigateToTab('beheer')}
-                  />
-                  <ListSection.Row
-                    icon={Palette}
-                    label="Brand profiel"
-                    onTap={() => navigateToTab('club')}
-                  />
-                  <ListSection.Row
-                    icon={Trophy}
-                    label="Competities"
-                    onTap={() => navigateToTab('beheer')}
-                  />
-                  <ListSection.Row
-                    icon={Shirt}
-                    label="Kits & Tenues"
-                    onTap={() => navigateToTab('club')}
-                  />
-                  <ListSection.Row
-                    icon={Upload}
-                    label="Assets uploaden"
-                    onTap={() => navigateToTab('media')}
-                  />
-                </ListSection>
+                <div className={s.accordionSection}>
+                  <button
+                    type="button"
+                    className={s.accordionHeader}
+                    onClick={() => toggleSection('beheer')}
+                    aria-expanded={expandedSections.has('beheer')}
+                  >
+                    <AppIcon icon={Settings} size={18} className={s.accordionIcon} />
+                    <span className={s.accordionLabel}>Beheer</span>
+                    <AppIcon
+                      icon={ChevronDown}
+                      size={16}
+                      className={`${s.accordionChevron} ${expandedSections.has('beheer') ? s.accordionChevronOpen : ''}`}
+                    />
+                  </button>
+                  <div className={`${s.accordionBody} ${expandedSections.has('beheer') ? s.accordionBodyOpen : ''}`}>
+                    <button type="button" className={s.accordionItem} onClick={() => navigateToTab('beheer')}>
+                      <AppIcon icon={Settings} size={14} className={s.accordionItemIcon} />
+                      <span className={s.accordionItemLabel}>Team instellingen</span>
+                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                    </button>
+                    <button type="button" className={s.accordionItem} onClick={() => navigateToTab('beheer')}>
+                      <AppIcon icon={Trophy} size={14} className={s.accordionItemIcon} />
+                      <span className={s.accordionItemLabel}>Competities</span>
+                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                    </button>
+                    <button type="button" className={s.accordionItem} onClick={() => navigateToTab('beheer')}>
+                      <AppIcon icon={Upload} size={14} className={s.accordionItemIcon} />
+                      <span className={s.accordionItemLabel}>Assets uploaden</span>
+                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                    </button>
+                  </div>
+                </div>
               )}
 
               {/* Club — admin-only, read-only status */}
@@ -559,11 +644,6 @@ export const MyTeamHubPage: React.FC = () => {
                     icon={Camera}
                     label="Club assets"
                     status={clubAssetStatus === 'complete' ? 'success' : 'warning'}
-                  />
-                  <ListSection.Row
-                    icon={Settings}
-                    label="Beheer bij club"
-                    onTap={() => navigateToTab('club')}
                   />
                 </ListSection>
               )}

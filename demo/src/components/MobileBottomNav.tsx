@@ -28,7 +28,7 @@ const MobileBottomNav = memo(function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const haptic = useHapticFeedback();
-  const { orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId, myOrgSlug, myClubSlugOrId, myTeamSlugOrId, mySeasonSlugOrId } = useAppSelection();
+  const { orgSlug, clubSlugOrId, teamSlugOrId, myOrgSlug, myClubSlugOrId, myTeamSlugOrId } = useAppSelection();
   const { isOrgAdmin } = useUserRole();
   const { prefill: createPrefill } = useCreateContext();
 
@@ -69,11 +69,6 @@ const MobileBottomNav = memo(function MobileBottomNav() {
   const myOrg = myOrgSlug || orgSlug;
   const myClub = myClubSlugOrId || clubSlugOrId;
   const myTeam = myTeamSlugOrId || teamSlugOrId;
-  // Only fall back to URL's seasonSlugOrId when we know it belongs to MY team —
-  // i.e. the URL team matches our resolved myTeam. Using a foreign team's season
-  // would build a broken 4-segment URL for the user's own team.
-  const urlSeasonIsMine = !!myTeamSlugOrId && teamSlugOrId === myTeamSlugOrId;
-  const mySeason = mySeasonSlugOrId || (urlSeasonIsMine ? seasonSlugOrId : null);
 
   const teamPath = myOrg && myClub && myTeam
     ? routes.team({ orgId: myOrg, clubId: myClub, projectId: myTeam })
@@ -81,12 +76,11 @@ const MobileBottomNav = memo(function MobileBottomNav() {
       ? routes.club({ orgId: myOrg, clubId: myClub })
       : routes.dashboard();
 
-  // Season tab: active season under the user's team
-  const seasonPath = mySeason && teamPath !== routes.dashboard()
-    ? `${teamPath}/${encodeURIComponent(mySeason)}`
-    : teamPath !== routes.dashboard()
-      ? teamPath
-      : '/directory?tab=clubs';
+  // "Mijn Team" always navigates to the team hub (3-seg), NOT the season URL.
+  // The hub auto-resolves the active season via TeamSeasonResolver.
+  const myTeamPath = teamPath !== routes.dashboard()
+    ? teamPath
+    : '/directory?tab=clubs';
 
   // Stable label — 'Mijn Club' voor org-admins, anders 'Mijn Team'
   const hierarchyLabel = isOrgAdmin ? 'Mijn Club' : 'Mijn Team';
@@ -94,7 +88,7 @@ const MobileBottomNav = memo(function MobileBottomNav() {
   // ── Tab definitions (excluding center + button) ─────────────────────
   const tabs = [
     { id: 'home', icon: Home, label: 'Home', path: routes.dashboard() },
-    { id: 'season', icon: CalendarDays, label: hierarchyLabel, path: seasonPath },
+    { id: 'season', icon: CalendarDays, label: hierarchyLabel, path: myTeamPath },
     // center + button is rendered separately
     { id: 'gallery', icon: Images, label: 'Studio', path: routes.studio() },
     { id: 'profile', icon: UserCircle, label: 'Profiel', path: routes.profile() },

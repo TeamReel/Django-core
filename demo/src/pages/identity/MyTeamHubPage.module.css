@@ -148,6 +148,17 @@
 
 .overflowDanger { color: var(--color-red-400); }
 
+/* Overflow items that only appear on mobile */
+.overflowMobileOnly { display: flex; }
+@media (min-width: 768px) {
+  .overflowMobileOnly { display: none; }
+}
+
+/* Hide Actief button on mobile — it's in the overflow menu there */
+@media (max-width: 767px) {
+  .activeBtn { display: none; }
+}
+
 /* ── Loading skeleton ── */
 .skeleton { padding: var(--space-4); }
 
@@ -385,6 +396,149 @@
 
 .toastDismiss:hover { opacity: 1; }
 
+/* ── Accordion sections (Overview tab) ── */
+.accordionSection {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+}
+
+.accordionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  min-height: 44px;
+  border: none;
+  background: none;
+  color: var(--app-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .accordionHeader:hover { background: var(--app-hover-bg, rgba(0, 0, 0, 0.04)); }
+}
+
+.accordionHeader:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: -2px;
+}
+
+.accordionIcon {
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+.accordionLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.accordionValue {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  font-weight: var(--font-medium);
+}
+
+.accordionChevron {
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+  transition: transform var(--duration-normal) var(--ease-default);
+  transform: rotate(0deg);
+}
+
+.accordionChevronOpen {
+  transform: rotate(180deg);
+}
+
+/* Smooth expand via max-height */
+.accordionBody {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height var(--duration-normal) var(--ease-default);
+}
+
+.accordionBodyOpen {
+  max-height: 500px;
+}
+
+.accordionItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-4) var(--space-2) calc(var(--space-4) + 18px + var(--space-3));
+  min-height: 40px;
+  border: none;
+  border-top: 1px solid var(--app-border);
+  background: none;
+  color: var(--app-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .accordionItem:hover { background: var(--app-hover-bg, rgba(0, 0, 0, 0.04)); }
+}
+
+.accordionItem:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: -2px;
+}
+
+.accordionItemIcon {
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+.accordionItemLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accordionItemChevron {
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+.accordionViewAll {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  min-height: 44px;
+  border: none;
+  border-top: 1px solid var(--app-border);
+  background: none;
+  color: var(--app-link);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.accordionViewAll:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .parentLink,
@@ -393,4 +547,7 @@
 
   .skeletonBar,
   .skeletonCard { animation: none; }
+
+  .accordionChevron,
+  .accordionBody { transition: none; }
 }
