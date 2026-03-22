@@ -46,8 +46,7 @@ De Beheer-accordion op Overview heeft 3 items die alle 3 `navigateToTab('beheer'
 - [ ] **"Bewerken"** → opent `TeamEditSheet` of navigeert naar team-edit pagina (niet `SeasonEditSheet`)
   - Check welke edit component beschikbaar is voor team-level edit
   - Fallback: navigeer naar `?modal=team-edit`
-- [ ] **"Activeren"** → verwijderen uit overflow menu (vervangen door SeasonSwitcher flow)
-  - Of: hernoemen naar "Stel in als actief seizoen" en alleen tonen als actief seizoen ≠ geselecteerd seizoen
+- [ ] **"Activeren"** → verwijderen uit overflow menu (SeasonSwitcher is de primaire interactie; apart "Activeren" is redundant en verwarrend)
 - [ ] **"Bekijken"** → blijft staan (opent publiek team profiel)
 - [ ] **"Delen"** → blijft staan (als aanwezig)
 

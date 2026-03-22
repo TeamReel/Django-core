@@ -32,7 +32,7 @@ Final polish: dead code opruimen, full accessibility audit, E2E test, desktop/mo
 ### 3. Theme support verificatie
 - [ ] Light theme: alle nieuwe componenten correct ✓
 - [ ] Dark theme: alle nieuwe componenten correct (check met `data-theme="dark"`)
-- [ ] Geen hardcoded kleuren — uitsluitend design tokens (`var(--color-*)`)
+- [ ] Geen hardcoded kleuren — uitsluitend design tokens (`var(--app-*)`)
 - [ ] Geen hardcoded spacing — uitsluitend tokens of grid (8pt)
 - [ ] Test beide themes visueel op 375px + 1280px
 

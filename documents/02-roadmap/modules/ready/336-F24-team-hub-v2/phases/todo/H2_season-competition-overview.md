@@ -18,17 +18,7 @@ Overview tab toont alle seizoenen en competities van het team als interactieve a
 - `hierarchyMatchesCountBySeasonId` → wedstrijden per seizoen
 - `hierarchyMatchesCountByCompetitionId` → wedstrijden per competitie
 
-**Content per seizoen (ContentItem):**
-- `ContentItem.template.template_type = 'season'` → gekoppeld aan seizoen via `activity.period`
-- Subtypes: `transformation` (then vs now), `season_recap`
-- API: `GET /api/v1/content-generation/?project_id={teamId}&template_type=season`
-
-**Content per wedstrijd (ContentItem):**
-- `ContentItem.template.template_type = 'pre_match'` + `template_subtype = 'lineup'`
-- Gekoppeld aan wedstrijd via `activity_id` (Activity type='match')
-- API: `GET /api/v1/content-generation/?project_id={teamId}&template_type=pre_match`
-
-**Geen extra API calls nodig voor hiërarchie** — `useHierarchyData` haalt seizoenen + competities al op.
+**Geen extra API calls nodig** — `useHierarchyData` haalt alles op.
 
 ## Taken
 
@@ -39,7 +29,6 @@ Overview tab toont alle seizoenen en competities van het team als interactieve a
   - Datum range (start – eind, of "Lopend" badge)
   - Wedstrijden count (`hierarchyMatchesCountBySeasonId[season.id]`)
   - Competities count (`hierarchyCompetitionsBySeasonId[season.id]?.length`)
-  - **Content badge**: "Seizoenscontent aanwezig" als er `ContentItem`s zijn met `template.template_type='season'` voor dit seizoen (bijv. transformation / season_recap)
 - [ ] Actief (geselecteerd) seizoen visueel gemarkeerd: badge "Actief" + highlight
 - [ ] Andere seizoenen: `onTap` → roept `handleSeasonSwitch(season.id)` aan
 - [ ] Max 5 weergegeven; bij meer: "Alle {n} seizoenen →" link (expandable of sheet)
@@ -52,7 +41,6 @@ Overview tab toont alle seizoenen en competities van het team als interactieve a
   - Naam
   - Type badge (competitie/beker/vriendschappelijk)
   - Wedstrijden count
-  - **Content badge per wedstrijd**: indicator hoeveel wedstrijden in deze competitie al een `lineup` ContentItem hebben (`template.template_subtype='lineup'`, `template_type='pre_match'`)
 - [ ] `onTap` → opent `CompetitionSummarySheet` (zie stap 3)
 - [ ] Lege staat: "Geen competities voor dit seizoen" met CTA
 - [ ] Accordions update automatisch bij seizoen-switch
@@ -64,7 +52,6 @@ Overview tab toont alle seizoenen en competities van het team als interactieve a
   - Competitie naam + type
   - Datum range
   - Aantal wedstrijden
-  - Content progress: "X van Y wedstrijden hebben een lineup video" (ContentItem met `template_subtype='lineup'`)
   - Datum van volgende wedstrijd (als beschikbaar)
   - "Alle wedstrijden bekijken →" link
 - [ ] Bottom sheet op mobile, side panel op desktop (volgt bestaande Sheet pattern)
