@@ -99,6 +99,15 @@ export const routes = {
     `/${seg(p.orgId)}/${seg(p.clubId)}`,
   team: (p: { orgId: string; clubId: string; projectId: string }) =>
     `/${seg(p.orgId)}/${seg(p.clubId)}/${seg(p.projectId)}`,
+  /** Team hub (3-seg) — canonical team page. Alias for team(). */
+  teamHub: (p: { orgId: string; clubId: string; projectId: string }) =>
+    `/${seg(p.orgId)}/${seg(p.clubId)}/${seg(p.projectId)}`,
+  /** Team hub with tab query param. */
+  teamHubWithTab: (p: { orgId: string; clubId: string; projectId: string; tab: string }) =>
+    `/${seg(p.orgId)}/${seg(p.clubId)}/${seg(p.projectId)}${qs({ tab: p.tab })}`,
+  /** Club hub (2-seg) — for F25. */
+  clubHub: (p: { orgId: string; clubId: string }) =>
+    `/${seg(p.orgId)}/${seg(p.clubId)}`,
   teamSeasons: (p: { orgId: string; clubId: string; projectId: string }) =>
     `/${seg(p.orgId)}/${seg(p.clubId)}/${seg(p.projectId)}/seasons`,
   season: (p: { orgId: string; clubId: string; projectId: string; seasonId: string }) =>

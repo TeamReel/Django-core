@@ -112,4 +112,7 @@ export interface SeasonContextValue {
   // Actions
   /** Force a full re-fetch of season + competitions. */
   reloadSeason: () => void;
+
+  /** Switch the selected season by ID (3-seg hub only, no URL navigation). */
+  setSelectedSeasonId: (id: string) => void;
 }

@@ -32,6 +32,7 @@ export const ProjectCreatePage = lazyWithRetry(() => import('./pages/identity/Pr
 export const ProjectEditPage = lazyWithRetry(() => import('./pages/identity/ProjectEditPage'));
 export const ClubDetailPage = lazyWithRetry(() => import('./pages/identity/ClubDetailPage'));
 export const TeamDetailPage = lazyWithRetry(() => import('./pages/identity/TeamDetailPage'));
+export const TeamHubPage = lazyWithRetry(() => import('./pages/identity/TeamHubPage'));
 export const SeasonDetailPage = lazyWithRetry(() => import('./pages/identity/SeasonDetailPage'));
 export const PermissionsPage = lazyWithRetry(() => import('./pages/identity/PermissionsPage'));
 export const UsersPage = lazyWithRetry(() => import('./pages/identity/UsersPage'));

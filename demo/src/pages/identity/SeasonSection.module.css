@@ -1,0 +1,116 @@
+/* ============================================================================
+   SeasonSection — Active season hero card + season pills
+   ============================================================================ */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--app-muted-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Hero card (active season) ── */
+.heroCard {
+  background: var(--app-surface-2);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.heroName {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--app-text);
+  line-height: 1.2;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  width: fit-content;
+}
+
+.badgeActive {
+  background: var(--app-success);
+  color: #fff;
+}
+
+.heroStats {
+  font-size: var(--font-size-sm);
+  color: var(--app-muted-text);
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* ── Season pills (horizontal scroll) ── */
+.pillsRow {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: var(--space-1);
+}
+
+.pillsRow::-webkit-scrollbar {
+  display: none;
+}
+
+.pill {
+  flex-shrink: 0;
+  background: var(--app-surface-3);
+  border: none;
+  border-radius: var(--radius-full);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--app-text);
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  transition: background var(--duration-fast) var(--ease-default),
+              transform var(--duration-fast) var(--ease-default);
+}
+
+.pill:active {
+  transform: scale(0.98);
+}
+
+.pill:focus-visible {
+  outline: 2px solid var(--app-focus-ring, var(--app-primary));
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .pill:hover {
+    background: var(--app-surface-2);
+  }
+}
+
+.pillSelected {
+  background: var(--app-primary);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill {
+    transition: none;
+  }
+}

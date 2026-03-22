@@ -22,7 +22,7 @@ import {
   ProjectHierarchyMatchRedirectPage,
   SeasonDetailPage,
   MatchDetailPage,
-  TeamDetailPage,
+  TeamHubPage,
   ClubDetailPage,
   // Identity
   OrganisationCreatePage,
@@ -106,7 +106,7 @@ export function getHierarchyRoutes(): React.ReactNode[] {
     <Route key="h-proj-season-legacy" path="/:orgId/projects/:projectId/seasons/:seasonId" element={<ProtectedRoute><HierarchyRedirect /></ProtectedRoute>} />,
 
     // ── Canonical vanity hierarchy: /:orgId/:clubId/:projectId/* ──
-    <Route key="h-vanity-team" path="/:orgId/:clubId/:projectId" element={<ProtectedRoute><TeamDetailPage /></ProtectedRoute>} />,
+    <Route key="h-vanity-team" path="/:orgId/:clubId/:projectId" element={<ProtectedRoute><TeamHubPage /></ProtectedRoute>} />,
     <Route key="h-vanity-season" path="/:orgId/:clubId/:projectId/:seasonId" element={<ProtectedRoute><SeasonDetailPage /></ProtectedRoute>} />,
     <Route key="h-vanity-member" path="/:orgId/:clubId/:projectId/:seasonId/members/:memberId" element={<ProtectedRoute><ProjectSeasonMemberDetailPage /></ProtectedRoute>} />,
     <Route key="h-vanity-match" path="/:orgId/:clubId/:projectId/:seasonId/:competitionId/:matchId" element={<ProtectedRoute><MatchDetailPage /></ProtectedRoute>} />,

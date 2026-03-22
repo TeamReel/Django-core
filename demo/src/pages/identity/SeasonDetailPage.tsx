@@ -1,18 +1,30 @@
 import React from 'react';
-import { MyTeamHubPage } from './MyTeamHubPage';
-import { SeasonProvider } from '../../providers/SeasonProvider';
-import { usePreloadRoutes } from '../../hooks/usePreloadRoutes';
+import { Navigate, useParams } from 'react-router-dom';
 
+/**
+ * SeasonDetailPage — F24 redirect.
+ *
+ * The 4-seg URL `/:org/:club/:team/:season` is no longer the canonical hub.
+ * Redirect to the 3-seg hub `/:org/:club/:team?season=<season>` so the hub
+ * can resolve the season internally.
+ */
 export default function SeasonDetailPage() {
-  // Preload likely next destinations: Match detail, Member detail
-  usePreloadRoutes([
-    () => import('../activities/MatchDetailWrapper'),
-    () => import('./MemberDetailPage'),
-  ]);
+  const { orgId, clubId, projectId, seasonId } = useParams<{
+    orgId: string;
+    clubId: string;
+    projectId: string;
+    seasonId: string;
+  }>();
+
+  const org = encodeURIComponent(orgId || '');
+  const club = encodeURIComponent(clubId || '');
+  const team = encodeURIComponent(projectId || '');
+  const season = encodeURIComponent(seasonId || '');
 
   return (
-    <SeasonProvider>
-      <MyTeamHubPage />
-    </SeasonProvider>
+    <Navigate
+      to={`/${org}/${club}/${team}${season ? `?season=${season}` : ''}`}
+      replace
+    />
   );
 }

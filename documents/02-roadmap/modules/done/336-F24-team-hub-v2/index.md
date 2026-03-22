@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Code | F24 |
-| Status | � READY |
+| Status | ✅ DONE |
 | Prioriteit | Hoog |
 | Geschatte effort | ~30 uur |
 | Afhankelijkheden | F23 (done — commit `f0381784`) |

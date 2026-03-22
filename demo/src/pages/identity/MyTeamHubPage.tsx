@@ -15,8 +15,8 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert } from '@django-core/design-system';
 import {
-  Pencil, Check, MoreHorizontal, Eye, Trash2,
-  Calendar, MapPin, Trophy, Users, Film,
+  Pencil, MoreHorizontal, Eye, Trash2,
+  Calendar, MapPin, Trophy, Users,
   Building2, Shirt, Camera, Palette, Upload, Settings,
   ChevronRight, ChevronDown,
 } from 'lucide-react';
@@ -26,6 +26,7 @@ import { SeasonSwitcher, type SeasonOption } from '../../components/SeasonSwitch
 import { isSeasonPeriod, useSeasonContext } from '../../providers/SeasonProvider';
 
 import { periodPathKey } from '../../utils/periodPath';
+import { setActiveContext } from '../../utils/activeContext';
 import { ListSection } from '../../components/ListSection';
 import { AppIcon } from '../../components/AppIcon';
 import { getClubAssetStatus, getTeamAssetStatus, getMemberAssetSummary } from '../../utils/assetStatus';
@@ -47,6 +48,8 @@ import { HubSelectieTab } from './HubSelectieTab';
 import { HubMediaTab } from './HubMediaTab';
 import { MemberAssetMatrix } from './MemberAssetMatrix';
 import { MemberDetailPanel } from '../periods/MemberDetailPanel';
+import { SeasonSection } from './SeasonSection';
+import { CompetitionGrid } from './CompetitionGrid';
 
 const MatchSummarySheet = React.lazy(() =>
   import('./MatchSummarySheet').then((m) => ({ default: m.MatchSummarySheet })),
@@ -96,9 +99,9 @@ export const MyTeamHubPage: React.FC = () => {
 
     // Tab aliasing — maps Panel B / legacy tab names to Hub tabs
     const ALIAS_MAP: Record<string, string> = {
-      content: 'media',
+      content: 'assets',
+      media: 'assets',
       competitions: 'beheer',
-      assets: 'beheer',
       transactions: 'beheer',
       workflow: 'beheer',
       matches: 'wedstrijden',
@@ -113,8 +116,8 @@ export const MyTeamHubPage: React.FC = () => {
     const allowed = isSupporter
       ? new Set(['overview', 'wedstrijden'])
       : isPlayer
-        ? new Set(['overview', 'wedstrijden', 'media', 'selectie'])
-        : new Set(['overview', 'wedstrijden', 'media', 'selectie', 'beheer', 'club']);
+        ? new Set(['overview', 'wedstrijden', 'assets', 'selectie'])
+        : new Set(['overview', 'wedstrijden', 'assets', 'selectie', 'beheer', 'club']);
     return allowed.has(aliased) ? aliased : 'overview';
   }, [searchParams, isPlayer, isSupporter]);
 
@@ -145,19 +148,13 @@ export const MyTeamHubPage: React.FC = () => {
 
   const handleSeasonSwitch = useCallback(
     (season: SeasonOption) => {
-      // Navigate to the same hub but with different season segment
-      const basePath = seasonCtx.seasonsBasePath || '';
-      if (!basePath) return;
-      navigate(`${basePath}/${encodeURIComponent(season.slug)}`);
+      // F24: Switch season via internal state (no URL navigation on 3-seg hub)
+      seasonCtx.setSelectedSeasonId(season.slug);
+      // H1: Persist choice in active context (fire-and-forget)
+      setActiveContext('season', season.id).catch(() => {/* ignore */});
     },
-    [navigate, seasonCtx.seasonsBasePath],
+    [seasonCtx],
   );
-
-  // ── Active context check ──
-  const isActiveContext =
-    d.activeContext &&
-    String((d.activeContext as { season?: { id?: string } } | null)?.season?.id || '').trim() ===
-      String(d.resolvedSeasonId || d.effectiveSeasonId || '').trim();
 
   // ── Overflow menu ──
   const [overflowOpen, setOverflowOpen] = useState(false);
@@ -293,6 +290,19 @@ export const MyTeamHubPage: React.FC = () => {
   return (
     <>
       <div className={s.page}>
+        {/* ── Breadcrumb — back to club ── */}
+        {team.club && (
+          <div className={s.breadcrumb}>
+            <button
+              type="button"
+              className={s.breadcrumbLink}
+              onClick={() => navigate(`/${team.orgKeyForRoutes}/${team.clubKeyForRoutes}`)}
+            >
+              ← {String((team.club as Record<string, unknown>)?.name || 'Club')}
+            </button>
+          </div>
+        )}
+
         {/* ── Header ── */}
         <div className={s.headerRow}>
           <div className={s.titleBlock}>
@@ -307,22 +317,10 @@ export const MyTeamHubPage: React.FC = () => {
           </div>
 
           <div className={s.actions}>
-            {/* Activate context — visible on desktop, hidden on mobile (in overflow) */}
-            <button
-              type="button"
-              className={`${s.activeBtn} ${isActiveContext ? s.activeBtnOn : ''}`}
-              disabled={d.activatingContext || (isActiveContext ?? false)}
-              onClick={d.handleActivateContext}
-              title="Stel dit seizoen in als actieve context"
-            >
-              {isActiveContext && <Check size={14} />}
-              {isActiveContext ? 'Actief' : 'Activeren'}
-            </button>
-
             {/* Share */}
             <ShareButton compact className={s.shareBtn} />
 
-            {/* Overflow — contains Edit, View, Delete + mobile-only Activate */}
+            {/* Overflow — contains Edit, View, Delete */}
             <div className={s.overflowWrap} ref={overflowRef}>
               <button
                 type="button"
@@ -334,14 +332,11 @@ export const MyTeamHubPage: React.FC = () => {
               </button>
               {overflowOpen && (
                 <div className={s.overflowMenu}>
-                  {/* Activate — mobile only (hidden on desktop via CSS) */}
-                  {!isActiveContext && (
-                    <button type="button" className={s.overflowMobileOnly} onClick={() => { d.handleActivateContext(); setOverflowOpen(false); }}>
-                      <Check size={14} /> Activeren
-                    </button>
-                  )}
-                  {d.userCanEditProject && (
-                    <button type="button" onClick={() => { d.setSelectedEditPeriod(d.season); d.setIsPeriodEditModalOpen(true); setOverflowOpen(false); }}>
+                  {d.userCanEditProject && team.team && (
+                    <button type="button" onClick={() => {
+                      navigate(`/organisations/${team.orgIdForDirectoryLists}/projects/${team.teamIdForDirectoryLists}/edit`);
+                      setOverflowOpen(false);
+                    }}>
                       <Pencil size={14} /> Bewerken
                     </button>
                   )}
@@ -427,7 +422,7 @@ export const MyTeamHubPage: React.FC = () => {
             tabs={[
               { id: 'overview', label: 'Overview' },
               { id: 'wedstrijden', label: 'Wedstrijden' },
-              ...(!isSupporter ? [{ id: 'media', label: 'Media' }] : []),
+              ...(!isSupporter ? [{ id: 'assets', label: 'Assets' }] : []),
               ...(!isSupporter ? [{ id: 'selectie', label: 'Selectie' }] : []),
               ...(isAdmin ? [{ id: 'beheer', label: 'Beheer', desktopOnly: true }] : []),
               ...(isAdmin ? [{ id: 'club', label: 'Club', desktopOnly: true }] : []),
@@ -469,41 +464,36 @@ export const MyTeamHubPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Wedstrijden — accordion */}
+              {/* H2: Season hero card + season pills */}
+              <SeasonSection
+                season={seasonCtx.season}
+                seasons={seasonOptions}
+                competitionsCount={seasonCtx.competitions.length}
+                matchesCount={d.matches.length}
+                membersCount={d.members.length}
+                selectedSeasonId={String(seasonCtx.resolvedSeasonId || seasonCtx.effectiveSeasonId || '')}
+                onSeasonSwitch={handleSeasonSwitch}
+              />
+
+              {/* H2: Competition cards grid */}
+              <CompetitionGrid
+                competitions={seasonCtx.competitions}
+                competitionsLoading={seasonCtx.competitionsLoading}
+              />
+
+              {/* Wedstrijden — card link to tab */}
               <div className={s.accordionSection}>
                 <button
                   type="button"
                   className={s.accordionHeader}
-                  onClick={() => toggleSection('wedstrijden')}
-                  aria-expanded={expandedSections.has('wedstrijden')}
+                  onClick={() => navigateToTab('wedstrijden')}
+                  aria-expanded={false}
                 >
                   <AppIcon icon={Trophy} size={18} className={s.accordionIcon} />
                   <span className={s.accordionLabel}>Wedstrijden</span>
                   <span className={s.accordionValue}>{d.matches.length}</span>
-                  <AppIcon
-                    icon={ChevronDown}
-                    size={16}
-                    className={`${s.accordionChevron} ${expandedSections.has('wedstrijden') ? s.accordionChevronOpen : ''}`}
-                  />
+                  <AppIcon icon={ChevronRight} size={16} className={s.accordionChevron} />
                 </button>
-                <div className={`${s.accordionBody} ${expandedSections.has('wedstrijden') ? s.accordionBodyOpen : ''}`}>
-                  {(d.matches as MatchRecord[]).slice(0, 3).map((m) => (
-                    <button
-                      key={String(m.id)}
-                      type="button"
-                      className={s.accordionItem}
-                      onClick={() => setSelectedMatch(m)}
-                    >
-                      <span className={s.accordionItemLabel}>{d.matchDisplayTitle(m)}</span>
-                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
-                    </button>
-                  ))}
-                  {d.matches.length > 3 && (
-                    <button type="button" className={s.accordionViewAll} onClick={() => navigateToTab('wedstrijden')}>
-                      Alle {d.matches.length} wedstrijden →
-                    </button>
-                  )}
-                </div>
               </div>
 
               {/* Selectie — accordion */}
@@ -545,52 +535,47 @@ export const MyTeamHubPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Media — accordion (non-supporter) */}
-              {!isSupporter && (
-                <div className={s.accordionSection}>
-                  <button
-                    type="button"
-                    className={s.accordionHeader}
-                    onClick={() => toggleSection('media')}
-                    aria-expanded={expandedSections.has('media')}
-                  >
-                    <AppIcon icon={Film} size={18} className={s.accordionIcon} />
-                    <span className={s.accordionLabel}>Content</span>
-                    <AppIcon
-                      icon={ChevronDown}
-                      size={16}
-                      className={`${s.accordionChevron} ${expandedSections.has('media') ? s.accordionChevronOpen : ''}`}
-                    />
-                  </button>
-                  <div className={`${s.accordionBody} ${expandedSections.has('media') ? s.accordionBodyOpen : ''}`}>
-                    <button type="button" className={s.accordionViewAll} onClick={() => navigateToTab('media')}>
-                      Bekijk content →
-                    </button>
-                  </div>
+              {/* H4: Team assets — clickable card → assets tab */}
+              <button
+                type="button"
+                className={s.overviewCard}
+                onClick={() => navigateToTab('assets')}
+              >
+                <div className={s.overviewCardTitle}>
+                  <AppIcon icon={Shirt} size={18} />
+                  <span>Team assets</span>
                 </div>
+                <div className={s.overviewCardMeta}>
+                  Tenue {teamAssetStatus === 'complete' ? '✅' : '⚠️'}
+                  {' · '}
+                  Sponsor {clubAssetStatus === 'complete' ? '✅' : '⚠️'}
+                  {' · '}
+                  Ledenfoto's {memberAssetSummary.complete}/{memberAssetSummary.total}
+                </div>
+              </button>
+
+              {/* H4: Club assets — clickable card → assets tab */}
+              {isAdmin && (
+                <button
+                  type="button"
+                  className={s.overviewCard}
+                  onClick={() => navigateToTab('assets')}
+                >
+                  <div className={s.overviewCardTitle}>
+                    <AppIcon icon={Building2} size={18} />
+                    <span>Club assets</span>
+                  </div>
+                  <div className={s.overviewCardMeta}>
+                    Logo {Boolean((team.club as Record<string, unknown> | null)?.logo_url || (team.club as Record<string, unknown> | null)?.crest_url) ? '✅' : '⚠️'}
+                    {' · '}
+                    Sponsor {clubAssetStatus === 'complete' ? '✅' : '⚠️'}
+                    {' · '}
+                    Kits {teamAssetStatus === 'complete' ? '✅' : '⚠️'}
+                  </div>
+                </button>
               )}
 
-              {/* Assets status — always visible */}
-              <ListSection title="Assets">
-                <ListSection.Row
-                  icon={Building2}
-                  label="Club assets"
-                  status={clubAssetStatus === 'complete' ? 'success' : 'warning'}
-                />
-                <ListSection.Row
-                  icon={Shirt}
-                  label="Team assets"
-                  status={teamAssetStatus === 'complete' ? 'success' : 'warning'}
-                />
-                <ListSection.Row
-                  icon={Camera}
-                  label="Ledenfoto's"
-                  value={`${memberAssetSummary.complete}/${memberAssetSummary.total}`}
-                  status={memberPhotosStatus === 'complete' ? 'success' : 'warning'}
-                />
-              </ListSection>
-
-              {/* Beheer — admin only, accordion */}
+              {/* Beheer — admin only, quick links */}
               {isAdmin && (
                 <div className={s.accordionSection}>
                   <button
@@ -618,34 +603,13 @@ export const MyTeamHubPage: React.FC = () => {
                       <span className={s.accordionItemLabel}>Competities</span>
                       <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
                     </button>
-                    <button type="button" className={s.accordionItem} onClick={() => navigateToTab('beheer')}>
+                    <button type="button" className={s.accordionItem} onClick={() => navigateToTab('assets')}>
                       <AppIcon icon={Upload} size={14} className={s.accordionItemIcon} />
                       <span className={s.accordionItemLabel}>Assets uploaden</span>
                       <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
                     </button>
                   </div>
                 </div>
-              )}
-
-              {/* Club — admin-only, read-only status */}
-              {isAdmin && (
-                <ListSection title="Club">
-                  <ListSection.Row
-                    icon={Building2}
-                    label="Clublogo"
-                    status={Boolean((team.club as Record<string, unknown> | null)?.logo_url || (team.club as Record<string, unknown> | null)?.crest_url) ? 'success' : 'warning'}
-                  />
-                  <ListSection.Row
-                    icon={Palette}
-                    label="Brand profiel"
-                    status={Boolean(team.brandProfileId) ? 'success' : 'warning'}
-                  />
-                  <ListSection.Row
-                    icon={Camera}
-                    label="Club assets"
-                    status={clubAssetStatus === 'complete' ? 'success' : 'warning'}
-                  />
-                </ListSection>
               )}
             </>
           )}
@@ -665,17 +629,46 @@ export const MyTeamHubPage: React.FC = () => {
             />
           )}
 
-          {/* Media — segmented: per wedstrijd + per seizoen asset-matrix */}
-          {activeTab === 'media' && !isSupporter && (
+          {/* Assets — club assets, team overrides, member photos */}
+          {activeTab === 'assets' && !isSupporter && (
             <HubMediaTab>
-              <SeasonContentTab
-                org={d.org}
-                projectId={String(d.project?.id || '')}
-                seasonId={d.resolvedSeasonId || d.effectiveSeasonId || ''}
-                apiBaseUrl={d.apiBaseUrl}
-                members={d.members}
-                pushToast={d.pushToast}
-              />
+              {/* Club assets status */}
+              <ListSection title="Club assets">
+                <ListSection.Row
+                  icon={Building2}
+                  label="Clublogo"
+                  status={Boolean((team.club as Record<string, unknown> | null)?.logo_url || (team.club as Record<string, unknown> | null)?.crest_url) ? 'success' : 'warning'}
+                />
+                <ListSection.Row
+                  icon={Palette}
+                  label="Club-sponsor"
+                  status={clubAssetStatus === 'complete' ? 'success' : 'warning'}
+                />
+                <ListSection.Row
+                  icon={Shirt}
+                  label="Club kits"
+                  status={clubAssetStatus === 'complete' ? 'success' : 'warning'}
+                />
+              </ListSection>
+
+              {/* Team overrides */}
+              <ListSection title="Team instellingen">
+                <ListSection.Row
+                  icon={Shirt}
+                  label="Team kits"
+                  status={teamAssetStatus === 'complete' ? 'success' : 'warning'}
+                />
+              </ListSection>
+
+              {/* Member photos */}
+              <ListSection title="Ledenfoto's">
+                <ListSection.Row
+                  icon={Camera}
+                  label="Foto's"
+                  value={`${memberAssetSummary.complete}/${memberAssetSummary.total}`}
+                  status={memberPhotosStatus === 'complete' ? 'success' : 'warning'}
+                />
+              </ListSection>
             </HubMediaTab>
           )}
 
@@ -747,6 +740,19 @@ export const MyTeamHubPage: React.FC = () => {
                     return base ? `${base}?from=beheer` : base;
                   }}
                   onMemberTap={setSelectedMember}
+                />
+              </section>
+
+              {/* H3: Content pipeline (moved from Media tab) */}
+              <section className={s.beheerSection}>
+                <h2 className={s.beheerSectionTitle}>Content & Video</h2>
+                <SeasonContentTab
+                  org={d.org}
+                  projectId={String(d.project?.id || '')}
+                  seasonId={d.resolvedSeasonId || d.effectiveSeasonId || ''}
+                  apiBaseUrl={d.apiBaseUrl}
+                  members={d.members}
+                  pushToast={d.pushToast}
                 />
               </section>
 

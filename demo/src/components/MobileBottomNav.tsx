@@ -17,7 +17,6 @@ import { Home, CalendarDays, Plus, Images, UserCircle } from 'lucide-react';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { useHapticFeedback } from '../hooks/useHapticFeedback';
 import { useCreateContext } from '../hooks/useCreateContext';
-import { useUserRole } from './PermissionGuards';
 import { preloadRoutes } from '../utils/preloadRoute';
 import { routes } from '../routes';
 import CreateWizard from './CreateWizard';
@@ -29,7 +28,6 @@ const MobileBottomNav = memo(function MobileBottomNav() {
   const location = useLocation();
   const haptic = useHapticFeedback();
   const { orgSlug, clubSlugOrId, teamSlugOrId, myOrgSlug, myClubSlugOrId, myTeamSlugOrId } = useAppSelection();
-  const { isOrgAdmin } = useUserRole();
   const { prefill: createPrefill } = useCreateContext();
 
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -82,8 +80,8 @@ const MobileBottomNav = memo(function MobileBottomNav() {
     ? teamPath
     : '/directory?tab=clubs';
 
-  // Stable label — 'Mijn Club' voor org-admins, anders 'Mijn Team'
-  const hierarchyLabel = isOrgAdmin ? 'Mijn Club' : 'Mijn Team';
+  // H1: Label is always "Mijn Team" regardless of role
+  const hierarchyLabel = 'Mijn Team';
 
   // ── Tab definitions (excluding center + button) ─────────────────────
   const tabs = [

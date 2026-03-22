@@ -33,6 +33,7 @@ import {
   unwrap,
   type SeasonContextValue,
 } from './seasonProviderHelpers';
+import { getActiveContext, setActiveContext } from '../utils/activeContext';
 import type {
   Period,
   SeasonProject,
@@ -53,7 +54,7 @@ export function useSeasonData(): SeasonContextValue {
   const params = useParams<{
     orgId: string;
     projectId: string;
-    seasonId: string;
+    seasonId?: string;
     clubId?: string;
     competitionId?: string;
     matchId?: string;
@@ -62,9 +63,19 @@ export function useSeasonData(): SeasonContextValue {
   const orgSlugOrId = String(params.orgId || '').trim();
   const projectSlugOrId = String(params.projectId || '').trim();
   const clubSlugOrId = String(params.clubId || '').trim();
-  const effectiveSeasonId = String(params.seasonId || '').trim();
+  const seasonIdFromUrl = String(params.seasonId || '').trim();
   const isTeamRoute = Boolean(clubSlugOrId);
   const isOrgRoute = location.pathname.startsWith('/organisations/');
+
+  // F24: Read ?season= query param as hint (for deep-links & redirects)
+  const searchParams = new URLSearchParams(location.search);
+  const seasonHint = searchParams.get('season') || '';
+
+  // F24: Internal season state for 3-seg hub (no season in URL)
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
+
+  // Effective season: URL param > internal state > query hint
+  const effectiveSeasonId = seasonIdFromUrl || selectedSeasonId || seasonHint;
 
   // ── Core state ─────────────────────────────────────────────────────
   const [org, setOrg] = useState<SeasonOrganisation | null>(null);
@@ -85,7 +96,7 @@ export function useSeasonData(): SeasonContextValue {
   // ── Main data fetch ────────────────────────────────────────────────
   useEffect(() => {
     const run = async () => {
-      if (!orgSlugOrId || !projectSlugOrId || !effectiveSeasonId) return;
+      if (!orgSlugOrId || !projectSlugOrId) return;
 
       try {
         setLoading(true);
@@ -126,33 +137,78 @@ export function useSeasonData(): SeasonContextValue {
         const seasonOptions = rootPeriods.filter(isSeasonPeriod);
         setSeasonsForSwitcher(seasonOptions);
 
-        // 3. Resolve season UUID from URL param (UUID or slugified name)
-        const isUuidParam = looksLikeUuid(effectiveSeasonId);
-        const seasonFromList = isUuidParam
-          ? seasonOptions.find((p) => String(p.id) === effectiveSeasonId)
-          : seasonOptions.find((p) => periodPathKey(p) === effectiveSeasonId);
+        // 3. Resolve season — from URL, hint, active context, or auto-pick most recent
+        let resolvedSeason: Period | undefined;
 
-        const seasonUuid = String(
-          seasonFromList?.id || (isUuidParam ? effectiveSeasonId : ''),
-        ).trim();
-        if (!seasonUuid) throw new Error('Season not found');
+        if (effectiveSeasonId) {
+          // Explicit season (from URL param, internal state, or ?season= hint)
+          const isUuidParam = looksLikeUuid(effectiveSeasonId);
+          resolvedSeason = isUuidParam
+            ? seasonOptions.find((p) => String(p.id) === effectiveSeasonId)
+            : seasonOptions.find((p) => periodPathKey(p) === effectiveSeasonId);
+        }
+
+        // H1: Try active context season if no explicit season resolved
+        if (!resolvedSeason && seasonOptions.length > 0) {
+          try {
+            const ctx = await getActiveContext();
+            const ctxSeasonId = String(ctx?.season?.id || '').trim();
+            if (ctxSeasonId) {
+              resolvedSeason = seasonOptions.find((p) => String(p.id) === ctxSeasonId);
+            }
+          } catch {
+            // Active context unavailable — fall through to default
+          }
+        }
+
+        // Fallback: pick most recent season (first in list)
+        if (!resolvedSeason && seasonOptions.length > 0) {
+          resolvedSeason = seasonOptions[0];
+        }
+
+        if (!resolvedSeason) {
+          // No seasons at all — will render HubTeamOnlyView
+          setLoading(false);
+          return;
+        }
+
+        const seasonUuid = String(resolvedSeason.id).trim();
         setResolvedSeasonId(seasonUuid);
+
+        // F24: Update internal state for 3-seg hub (so subsequent fetches use it)
+        if (!seasonIdFromUrl) {
+          setSelectedSeasonId(periodPathKey(resolvedSeason) || seasonUuid);
+        }
 
         // 4. Fetch season detail
         const seasonJson = await api.get<Period>(`/periods/${encodeURIComponent(seasonUuid)}/`);
         setSeason(seasonJson);
 
-        // 5. Canonicalize URL to slug when possible
-        const desiredKey = periodPathKey(seasonJson);
-        if (desiredKey && desiredKey !== effectiveSeasonId) {
-          const seasonSegmentIdx = location.pathname.indexOf(effectiveSeasonId);
-          if (seasonSegmentIdx !== -1) {
-            const before = location.pathname.slice(0, seasonSegmentIdx);
-            const after = location.pathname.slice(seasonSegmentIdx + effectiveSeasonId.length);
-            const canonical = `${before}${desiredKey}${after}`;
-            navigate(`${canonical}${location.search}`, { replace: true });
-            return;
+        // 5. Canonicalize URL to slug when possible (only for 4-seg URLs with season in path)
+        if (seasonIdFromUrl) {
+          const desiredKey = periodPathKey(seasonJson);
+          if (desiredKey && desiredKey !== seasonIdFromUrl) {
+            const seasonSegmentIdx = location.pathname.indexOf(seasonIdFromUrl);
+            if (seasonSegmentIdx !== -1) {
+              const before = location.pathname.slice(0, seasonSegmentIdx);
+              const after = location.pathname.slice(seasonSegmentIdx + seasonIdFromUrl.length);
+              const canonical = `${before}${desiredKey}${after}`;
+              navigate(`${canonical}${location.search}`, { replace: true });
+              return;
+            }
           }
+        }
+
+        // F24: Clean up ?season= query param after processing (3-seg hub only)
+        if (!seasonIdFromUrl && seasonHint) {
+          const cleanUrl = new URL(window.location.href);
+          cleanUrl.searchParams.delete('season');
+          navigate(`${cleanUrl.pathname}${cleanUrl.search}`, { replace: true });
+        }
+
+        // H1: Update active context with resolved season (fire-and-forget)
+        if (seasonUuid) {
+          setActiveContext('season', seasonUuid).catch(() => {/* ignore */});
         }
 
         // 6. Load competitions (direct children of this season)
@@ -181,9 +237,12 @@ export function useSeasonData(): SeasonContextValue {
     run();
   }, [
     apiBaseUrl,
+    apiV1,
     orgSlugOrId,
     projectSlugOrId,
     effectiveSeasonId,
+    seasonIdFromUrl,
+    seasonHint,
     isTeamRoute,
     clubSlugOrId,
     reloadToken,
@@ -339,6 +398,7 @@ export function useSeasonData(): SeasonContextValue {
       isSupporter,
       apiBaseUrl,
       reloadSeason,
+      setSelectedSeasonId,
     }),
     [
       org, project, club, season, resolvedSeasonId, competitions, seasonsForSwitcher,
@@ -347,7 +407,7 @@ export function useSeasonData(): SeasonContextValue {
       seasonsBasePath, projectDetailPath, seasonPathKey, memberDetailHref,
       clubBrand, teamBrand, batchBrandKits, brandLogoUrl, brandSponsorUrl,
       isSuperAdmin, orgForPermissions, permissionContext, userCanEditProject, userCanDeleteProject,
-      isPlayer, isSupporter, apiBaseUrl, reloadSeason,
+      isPlayer, isSupporter, apiBaseUrl, reloadSeason, setSelectedSeasonId,
     ],
   );
 }
