@@ -160,6 +160,19 @@ API: `PATCH /api/v1/projects/{project_pk}/members/{pk}/` (ProjectMembershipViewS
 | Competitie detail | Sheet/bottom sheet op hub | Consistent met match/member sheets, minder navigatie |
 | Legacy 4-seg URLs | Redirect naar 3-seg (met `?season=X` hint) | Bookmark/share compatibiliteit |
 | Backend wijzigingen | Geen — alleen frontend | Alle benodigde data al beschikbaar via bestaande API |
+| Design-stijl | iOS-premium: cards, hero, visuele hiërarchie | Consistent met homepage/dashboard; geen Android-settings rij-menu's |
+
+### Design-principes (premium)
+
+De Team Hub moet aanvoelen als een **premium iOS-app** — vergelijkbaar met de homepage en het dashboard. Concreet:
+
+| Principe | Betekent | Niet |
+|----------|----------|------|
+| **Card-based UI** | Secties als visuele kaarten met afgeronde hoeken, subtiele schaduw | Geen platte rij-lijsten met chevrons |
+| **Visuele hiërarchie** | Hero/banner bovenaan → content cards → samenvattingen | Geen gelijk-gewogen accordions |
+| **Direct tapable** | Hele kaart is een tap-target, press-feedback (`scale(0.98)`) | Geen "Ga naar →" linkjes in rij |
+| **Content-first** | Thumbnails, kleuren, iconen — laat de data zien | Geen tekst-only status badges |
+| **Consistentie** | Zelfde card-styling als Club Hub, dashboard, match wizard | Geen eigen visuele taal per pagina |
 
 ---
 

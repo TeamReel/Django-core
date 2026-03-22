@@ -8,7 +8,18 @@
 
 ## Doel
 
-Overview tab toont alle seizoenen en competities van het team als interactieve accordions. De user kan vanuit de hub direct tussen seizoenen switchen en competitie-detail bekijken.
+Overview tab toont seizoenen en competities als visuele kaarten — iOS-premium stijl, niet als accordions met chevron-rijen. De user ziet direct de belangrijkste data per seizoen/competitie en kan snel wisselen of doorklikken.
+
+## Design-principe
+
+De Overview is het visitekaartje van het team. Het moet voelen als een **Apple Fitness+ overzicht** — visuele blokken met data, niet als een instellingenmenu.
+
+| Pattern | Gebruik | Niet |
+|---------|---------|------|
+| **Seizoen-kaart** | Visuele kaart met naam, datum, stats, "Actief" badge | Geen rij met chevron |
+| **Competitie-kaart** | Kaart met naam, type-badge, wedstrijden-count | Geen accordion die open/dicht klapt |
+| **Actief seizoen** | Prominente hero-kaart bovenaan | Geen markering als één rij in een lijst |
+| **Andere seizoenen** | Compactere kaarten onder het actieve seizoen | Geen expandable accordion |
 
 ## Context
 
@@ -22,28 +33,34 @@ Overview tab toont alle seizoenen en competities van het team als interactieve a
 
 ## Taken
 
-### 1. Seizoenen-accordion op Overview (`MyTeamHubPage.tsx`)
-- [ ] Nieuwe accordion-sectie "Seizoenen" in de Overview tab
-- [ ] Per seizoen tonen:
-  - Naam (bijv. "2025-2026")
-  - Datum range (start – eind, of "Lopend" badge)
-  - Wedstrijden count (`hierarchyMatchesCountBySeasonId[season.id]`)
-  - Competities count (`hierarchyCompetitionsBySeasonId[season.id]?.length`)
-- [ ] Actief (geselecteerd) seizoen visueel gemarkeerd: badge "Actief" + highlight
-- [ ] Andere seizoenen: `onTap` → roept `handleSeasonSwitch(season.id)` aan
-- [ ] Max 5 weergegeven; bij meer: "Alle {n} seizoenen →" link (expandable of sheet)
-- [ ] Lege staat: "Nog geen seizoenen" met CTA om seizoen aan te maken
+### 1. Actief seizoen als hero-kaart op Overview
+- [ ] Nieuwe sectie "Seizoen" in de Overview tab — geen accordion, altijd open
+- [ ] **Actief seizoen hero-kaart**:
+  - Seizoen naam (groot, `var(--font-size-xl)`)
+  - Datum range (start – eind) of "Lopend" badge
+  - Stats rij: "X wedstrijden · Y competities · Z leden"
+  - Visuele stijl: `var(--app-surface-2)`, `border-radius: var(--radius-md)`, `padding: var(--space-4)`
+  - "Actief" badge: `var(--app-success)` pill
+- [ ] **Andere seizoenen** (compact, onder het actieve seizoen):
+  - Horizontale scrollbare rij van compacte seizoen-pills (naam + wedstrijden-count)
+  - Tap op pill → `handleSeasonSwitch(season.id)` — wisselt actief seizoen
+  - Max 5 zichtbaar; bij meer: "Alle {n} seizoenen" pill aan het einde
+  - Op 1 seizoen: geen rij tonen (alleen hero-kaart)
+- [ ] Lege staat: visuele kaart met "Seizoen aanmaken" CTA (niet een tekst-rij)
 
-### 2. Competities-accordion op Overview (`MyTeamHubPage.tsx`)
-- [ ] Nieuwe accordion-sectie "Competities" in de Overview tab
+### 2. Competities als visuele kaarten
+- [ ] Nieuwe sectie "Competities" — altijd open, geen accordion
 - [ ] Toont competities van het **huidig geselecteerde** seizoen
-- [ ] Per competitie tonen:
-  - Naam
-  - Type badge (competitie/beker/vriendschappelijk)
-  - Wedstrijden count
-- [ ] `onTap` → opent `CompetitionSummarySheet` (zie stap 3)
-- [ ] Lege staat: "Geen competities voor dit seizoen" met CTA
-- [ ] Accordions update automatisch bij seizoen-switch
+- [ ] Per competitie een **kaart**:
+  - Naam (bold)
+  - Type badge: "Competitie" / "Beker" / "Vriendschappelijk" — `var(--app-primary)`, `var(--app-warning)`, `var(--app-muted-text)` pill
+  - Wedstrijden count + datum volgende wedstrijd (indien beschikbaar)
+  - Hele kaart tapbaar → opent `CompetitionSummarySheet` (zie stap 3)
+  - Hover: `var(--app-surface-3)` + subtle lift — alleen `@media (hover: hover)`
+  - Active: `scale(0.98)` press-feedback
+- [ ] **Responsive grid**: `repeat(auto-fill, minmax(200px, 1fr))` — 1 kolom op 375px, 2+ op desktop
+- [ ] Lege staat: visuele kaart "Geen competities" met CTA
+- [ ] Kaarten updaten automatisch bij seizoen-switch
 
 ### 3. `CompetitionSummarySheet` (nieuw component)
 - [ ] Locatie: `demo/src/components/CompetitionSummarySheet/CompetitionSummarySheet.tsx`
@@ -57,11 +74,11 @@ Overview tab toont alle seizoenen en competities van het team als interactieve a
 - [ ] Bottom sheet op mobile, side panel op desktop (volgt bestaande Sheet pattern)
 - [ ] Props: `competition: Period`, `onClose: () => void`
 
-### 4. Positie in Overview accordion-volgorde
-Gewenste volgorde van accordions op Overview tab:
+### 4. Positie in Overview volgorde
+Gewenste volgorde van secties op Overview tab:
 1. Team info (al aanwezig)
-2. **Seizoenen** (nieuw, H2)
-3. **Competities** (nieuw, H2)
+2. **Seizoen** (hero-kaart actief + seizoen-pills) (nieuw, H2)
+3. **Competities** (kaarten-grid) (nieuw, H2)
 4. Selectie preview (al aanwezig)
 5. Assets preview (verbeterd in H4)
 6. Beheer (al aanwezig, verbeterd in H4)
@@ -72,16 +89,19 @@ Gewenste volgorde van accordions op Overview tab:
 
 | Nieuw bestand | Inhoud |
 |--------------|--------|
-| `SeasonAccordion.tsx` | Seizoenen-lijst met switch handler |
-| `CompetitionAccordion.tsx` | Competities-lijst met sheet trigger |
+| `SeasonSection.tsx` | Seizoen hero-kaart + seizoen-pills | < 150 |
+| `CompetitionGrid.tsx` | Competitie-kaarten grid + sheet trigger | < 150 |
 | `CompetitionSummarySheet.tsx` | Sheet component (eigen map) |
 
-### 6. Styling (`MyTeamHubPage.module.css`)
-- [ ] Seizoen-rij: naam + meta + chevron — `min-height: 44px` (touch target)
-- [ ] **"Actief" badge: `var(--app-success)` — semantisch token** (NIET `--color-success-100`)
-- [ ] **"Lopend" badge: `var(--app-primary)` — semantisch token** (NIET `--color-primary-100`)
-- [ ] Competitie-rij: naam + type badge + wedstrijden count
-- [ ] Empty states: gebruik `EmptyState` ui-primitive of eigen layout met `var(--app-muted-text)`
+### 6. Styling
+- [ ] **Seizoen hero-kaart**: `var(--app-surface-2)`, `border-radius: var(--radius-md)`, `padding: var(--space-4)`
+- [ ] **Seizoen-pills**: `var(--app-surface-3)`, `border-radius: var(--radius-full)`, `padding: var(--space-1) var(--space-3)`
+- [ ] **"Actief" badge: `var(--app-success)`** — semantisch token (NIET `--color-success-100`)
+- [ ] **"Lopend" badge: `var(--app-primary)`** — semantisch token (NIET `--color-primary-100`)
+- [ ] **Competitie-kaarten**: `var(--app-surface-2)`, `border-radius: var(--radius-md)`, hover lift + schaduw
+- [ ] Hover-effecten: alleen `@media (hover: hover)` — geen hover op touch devices
+- [ ] Active/tap: `transform: scale(0.98)` — snelle feedback
+- [ ] Empty states: gebruik visuele kaart met CTA, niet tekst-rij
 - [ ] Alle kleur-tokens: uitsluitend `var(--app-*)` semantische tokens, nooit `var(--color-*)`
 - [ ] Animaties: `transition: opacity var(--duration-fast) var(--ease-default)` + `@media (prefers-reduced-motion: reduce)` block
 
@@ -100,17 +120,19 @@ Gewenste volgorde van accordions op Overview tab:
 
 ## Verificatie
 
-- [ ] Overview tab: "Seizoenen" accordion toont alle seizoenen van het team
-- [ ] Actief seizoen gemarkeerd met semantische token-kleur (geen primitive)
-- [ ] Tap op ander seizoen → optimistic highlight → data wisselt (zonder navigatie)
+- [ ] Overview tab: seizoen hero-kaart toont actief seizoen prominent
+- [ ] Seizoen-pills: tap op ander seizoen → optimistic UI → data wisselt
+- [ ] Actief seizoen visueel gemarkeerd met `var(--app-success)` badge
 - [ ] Snelle dubbele tap: geen race condition, laatste seizoen wint
-- [ ] "Competities" accordion toont competities van het actieve seizoen
-- [ ] Na seizoen-switch: Competities-accordion updaten naar nieuwe seizoen
-- [ ] Tap op competitie → CompetitionSummarySheet opent
-- [ ] Empty state: seizoenloos team toont CTA, competitie-vrij seizoen toont CTA
-- [ ] Skeleton: tijdens laden van `hierarchySeasons` → placeholder rijen zichtbaar
-- [ ] Mobile (375px): touch targets ≥ 44px, accordions werken
+- [ ] Competitie-kaarten: grid layout, responsive 375px–1280px
+- [ ] Na seizoen-switch: competitie-kaarten updaten naar nieuwe seizoen
+- [ ] Tap op competitie-kaart → CompetitionSummarySheet opent
+- [ ] Empty state: visuele kaart met CTA (niet tekst-rij)
+- [ ] Skeleton: bij laden → kaart-skeletons zichtbaar
+- [ ] Mobile (375px): touch targets ≥ 44px, kaarten full-width
+- [ ] Desktop: hover-lift + schaduw op `@media (hover: hover)`
+- [ ] Tap-feedback: `scale(0.98)` op alle interactieve kaarten
 - [ ] Dark theme: alle tokens correct (geen primitive color tokens)
 - [ ] `@media (prefers-reduced-motion: reduce)`: animaties uitgeschakeld
-- [ ] `SeasonAccordion.tsx`, `CompetitionAccordion.tsx` als aparte bestanden (< 150 regels elk)
+- [ ] `SeasonSection.tsx`, `CompetitionGrid.tsx` als aparte bestanden (< 150 regels elk)
 - [ ] TypeScript: `npx tsc --noEmit` clean

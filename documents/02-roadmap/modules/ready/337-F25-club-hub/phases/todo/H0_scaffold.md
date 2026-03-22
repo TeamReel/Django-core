@@ -37,17 +37,17 @@ Tab-definitie (volgt `MyTeamHubPage` patroon exact):
 ```ts
 const TABS: HubTab[] = [
   { id: 'overview', label: 'Overzicht' },
-  { id: 'teams',    label: 'Teams' },
   { id: 'assets',   label: 'Assets' },
   { id: 'leden',    label: 'Leden' },
   { id: 'beheer',   label: 'Beheer' },
 ];
 ```
 
+> **4 tabs** — iOS best practice. Teams-overzicht zit in de Overview als visuele kaartengrid.
+
 - [ ] `useParams()` → `{ orgId, clubId }` (geen seizoenId)
 - [ ] `useSearchParams()` → `tab` query param voor deeplinking (`?tab=assets`)
 - [ ] `navigateToTab(id: string)` helper (zelfde als MyTeamHubPage)
-- [ ] Render `HubLayout` of equivalent met sidebar + main content
 - [ ] Elke tab rendert een placeholder `<div>` (wordt ingevuld in H1-H4)
 - [ ] Max 500 regels — split vroeg in sub-componenten vanaf H1
 
@@ -72,7 +72,7 @@ const TABS: HubTab[] = [
 ## Verificatie
 
 - [ ] `/:org/:club` → `ClubHubPage` laadt (geen redirect naar team)
-- [ ] Tab-navigatie werkt: `?tab=teams`, `?tab=assets` etc.
+- [ ] Tab-navigatie werkt: `?tab=assets`, `?tab=leden`, `?tab=beheer`
 - [ ] Header toont club naam + logo (of placeholder als geen logo)
 - [ ] Geen SeasonSwitcher in header
 - [ ] `npx tsc --noEmit` clean

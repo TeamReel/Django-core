@@ -1,4 +1,4 @@
-# H1 — Overview tab + Teams overzicht
+# H1 — Overview tab (hero + teams + samenvatting)
 
 | | |
 |---|---|
@@ -8,92 +8,117 @@
 
 ## Doel
 
-De Overview tab toont een samenvatting van de club: teamskaarten, club assets status, en quick links. De Teams tab geeft een volledig overzicht van alle teams met navigatie naar de team hub.
+De Overview tab is het visuele visitekaartje van de club. Premium iOS-stijl: hero card bovenaan, team-kaarten als tapbare visuele blokken, samenvattingskaarten met inline acties. Geen accordions of rijen met chevrons — dat is Android-settings-stijl.
+
+## Design-principe: iOS Premium
+
+De Overview moet voelen als een **Apple Fitness+ dashboard** of een **Spotify artist page** — niet als een instellingenmenu. Concrete richtlijnen:
+
+- **Hero card bovenaan**: club banner/achtergrond foto, club naam in overlay, logo, badge met "X teams · Y leden"
+- **Card-based layout**: elke sectie is een visuele kaart met afgeronde hoeken, subtiele schaduw, content-first
+- **Direct tapable**: team-kaart = hele kaart is een tap-target (niet een "Ga naar →" linkje)
+- **Geen chevrons/rij-lijsten**: dit is een overzichtspagina, geen menu
+- **Visuele hiërarchie**: hero → teams → assets status → leden teller (groot naar klein)
 
 ## Context
 
 **Data nodig:**
 - `GET /projects/?parent_project_id={clubId}` → alle teams van de club
-- `GET /brands/?project_id={clubId}` → club BrandProfile (logo, sponsor status)
-
-**Hergebruik:**
-- Team-kaart UI: volgt het patroon van bestaande project-kaarten in de codebase
-- `navigateToTab()` helper uit H0
+- `GET /brands/?project_id={clubId}` → club BrandProfile (logo, sponsor, `club_background`)
 
 ## Taken
 
-### 1. Overview tab inhoud (`ClubHubPage.tsx`)
+### 1. Hero card (bovenaan Overview)
 
-Sub-component: `demo/src/pages/identity/ClubOverviewTab.tsx` (< 200 regels)
+- [ ] **Banner afbeelding**: `club_background` uit BrandProfile (of gradient fallback met club-kleuren)
+- [ ] **Club logo**: overlay links-onder op de banner, `border-radius: 50%`, witte rand
+- [ ] **Club naam**: grote typografie (`var(--font-size-2xl)`) over de banner
+- [ ] **Stats badge**: "X teams · Y leden" — compact, `var(--app-surface-2)` pill-badge
+- [ ] **Visuele stijl**: `border-radius: var(--radius-lg)`, `overflow: hidden`, aspect-ratio ~21:9 op mobile
+- [ ] **Skeleton**: banner-shaped placeholder met shimmer bij laden
 
-- [ ] **Teams sectie** op Overview:
-  - Horizontaal scrollbare rij teamkaarten (max 3 zichtbaar, daarna scroll)
-  - Per kaart: team naam, actief seizoen badge (of "Geen seizoen"), ledenaantal
-  - Klik op kaart → `navigate(routes.teamHub(orgSlug, clubSlug, teamSlug))`
-  - "Alle teams →" link → navigeert naar Teams tab (`navigateToTab('teams')`)
-  - Lege staat: "Nog geen teams" met CTA "Team toevoegen"
+### 2. Teams sectie (visuele kaartengrid — geen aparte tab)
 
-- [ ] **Club assets samenvatting** op Overview:
-  - Rij: Logo — status badge (aanwezig / ontbreekt) + chevron → `navigateToTab('assets')`
-  - Rij: Sponsor — status badge + chevron → `navigateToTab('assets')`
-  - Rij: Kits — "X van Y kits ingesteld" badge + chevron → `navigateToTab('assets')`
-  - Rij: Locatie — status badge + chevron → `navigateToTab('assets')`
-  - Geen tweede weergave van de assets zelf — alleen status + navigatie
+- [ ] **Sectie header**: "Teams" — grote typografie, geen accordion, altijd open
+- [ ] **Responsive grid**: `display: grid`, `grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))`, `gap: var(--space-3)`
+- [ ] Per **TeamCard**:
+  - Banner: team-kleur gradient of `club_background` crop (aspect-ratio 3:2)
+  - Team naam (bold, centered onder banner)
+  - Subtekst: actief seizoen naam of "Geen seizoen" in `var(--app-muted-text)`
+  - Leden count badge: "12 leden" pill
+  - Hele kaart is een `<button>` (a11y) → `navigate(routes.teamHub(...))`
+  - Hover: subtle lift (`translateY(-2px)` + schaduw-toename)
+  - Active: press-down feedback (`scale(0.98)`)
+- [ ] Sortering: alfabetisch
+- [ ] Lege staat: visuele kaart met "+" icoon + "Team toevoegen" tekst (niet een lege-tekst-rij)
+- [ ] Op mobile (375px): 2 kolommen
+- [ ] Op desktop (1280px): 3-4 kolommen
 
-- [ ] **Leden samenvatting** op Overview:
-  - "X club-leden" teller + chevron → `navigateToTab('leden')`
+### 3. Club assets samenvatting (visuele kaart, niet rij-lijst)
 
-- [ ] **Accordion volgorde** op Overview:
-  1. Teams
-  2. Club assets
-  3. Leden
-  4. Beheer (quick links naar instellingen)
+- [ ] **Enkele samenvattingskaart** "Brand assets" met inline statusbadges:
+  - Logo: ✅ of ⚠️ icoon + "Ingesteld" / "Ontbreekt"
+  - Sponsor: ✅ of ⚠️
+  - Kits: "4 van 8 ingesteld" progress-indicator (visuele bar of cirkel)
+  - Locatie: ✅ of ⚠️
+- [ ] **Hele kaart tapbaar** → `navigateToTab('assets')`
+- [ ] Kaart stijl: `var(--app-surface-2)`, `border-radius: var(--radius-md)`, `padding: var(--space-4)`
+- [ ] Visuele iconen per asset type (niet alleen tekst)
 
-### 2. Teams tab inhoud
+### 4. Club leden samenvatting (compact)
 
-Sub-component: `demo/src/pages/identity/ClubTeamsTab.tsx` (< 300 regels)
+- [ ] **Mini-kaart**: "Leden" + grote teller (bijv. "8") + "Club beheerders en editors"
+- [ ] Tapbaar → `navigateToTab('leden')`
+- [ ] Avatar-rij: eerste 5 profielfoto's als overlapping cirkel-thumbnails (à la GitHub contributors)
 
-- [ ] Grid van teamkaarten (2 kolommen op mobile, 3+ op desktop)
-- [ ] Per team kaart:
-  - Team naam + team logo (of club logo als fallback)
-  - Actief seizoen naam (of "Geen actief seizoen")
-  - Aantal leden in actief seizoen
-  - Aantal wedstrijden in actief seizoen
-  - "Ga naar team →" knop → `navigate(routes.teamHub(orgSlug, clubSlug, teamSlug))`
-- [ ] Sortering: alfabetisch op naam (standaard)
-- [ ] Lege staat: "Nog geen teams. Voeg een team toe om te beginnen."
-- [ ] Skeleton: bij laden 3 placeholder kaarten met shimmer
-- [ ] `@media (prefers-reduced-motion: reduce)` → statische skeleton
+### 5. Quick actions (optioneel — als ruimte)
 
-### 3. Sub-component extractie (500-lijn grens)
+- [ ] Rij van 2-3 actie-knoppen onder de hero:
+  - "Assets beheren" → `navigateToTab('assets')`
+  - "Team toevoegen" → create flow (of disabled als niet beschikbaar)
+  - "Instellingen" → `navigateToTab('beheer')`
+- [ ] Stijl: pill-buttons, `var(--app-primary)` achtergrond, icoon + label
 
-`ClubHubPage.tsx` mag max 500 regels. Extracten:
+### 6. Sub-component extractie (500-lijn grens)
 
 | Nieuw bestand | Inhoud | Max regels |
 |--------------|--------|-----------|
-| `ClubOverviewTab.tsx` | Overview tab accordions | 200 |
-| `ClubTeamsTab.tsx` | Teams grid + kaarten | 300 |
+| `ClubOverviewTab.tsx` | Overview tab layout (hero + secties) | 250 |
+| `ClubHeroCard.tsx` | Hero card met banner + logo + stats | 100 |
 | `TeamCard.tsx` | Herbruikbare team-kaart | 80 |
 
-### 4. Styling
-- [ ] Teamkaarten: `var(--app-surface-2)` achtergrond, `var(--app-border)` rand
-- [ ] Hover-staat: `var(--app-surface-3)` (geen hardcoded kleuren)
-- [ ] Status badges: `var(--app-success)` groen, `var(--app-warning)` geel, `var(--app-muted-text)` grijs
-- [ ] Grid: CSS Grid, responsive met `minmax(240px, 1fr)`
-- [ ] `aspect-ratio: 16/9` op team kaart header (voor logo/banner)
+### 7. Styling
+- [ ] **Cards**: `var(--app-surface-2)` achtergrond, `var(--app-border)` subtiele rand, `border-radius: var(--radius-md)`
+- [ ] **Hover-staat**: `var(--app-surface-3)` + `box-shadow` toename — alleen op `@media (hover: hover)`
+- [ ] **Active/tap-staat**: `transform: scale(0.98)` — snelle feedback
+- [ ] **Status badges**: `var(--app-success)` groen, `var(--app-warning)` geel
+- [ ] **Grid**: CSS Grid, responsive
+- [ ] **Hero banner**: `object-fit: cover`, gradient overlay voor tekst-leesbaarheid
+- [ ] `@media (prefers-reduced-motion: reduce)` → geen hover-lift, geen scale-transition
 
-### 5. Loading states
-- [ ] Teams laden: skeleton kaarten (3 placeholders)
-- [ ] Overview secties: skeleton rijen
-- [ ] Alle skeletons: shimmer animatie + `prefers-reduced-motion` fallback
+### 8. Loading states
+- [ ] Hero card: banner-shaped skeleton met shimmer
+- [ ] Team cards: 3 placeholder-kaarten met shimmer
+- [ ] Asset samenvatting: kaart-skeleton
+- [ ] `@media (prefers-reduced-motion: reduce)` → statische placeholders
+
+## Terugnavigatie
+
+- [ ] **Van Club Hub → Dashboard**: browser back of bottom nav "Home"
+- [ ] **Header**: geen expliciete back-button nodig (club hub is top-level)
+- [ ] **Van Team Hub → Club Hub**: "← Club" breadcrumb-link in Team Hub header (wordt aangevuld in F24 H4 of F25 H4)
 
 ## Verificatie
 
-- [ ] Overview tab: teams sectie toont alle teams als kaarten
-- [ ] Klik op teamkaart → navigeer naar `/:org/:club/:team`
-- [ ] "Alle teams →" → Teams tab opent
-- [ ] Overview assets samenvatting: rijen klikbaar → Assets tab
-- [ ] Teams tab: grid zichtbaar, responsive 375px + 1280px
-- [ ] Lege staat: zichtbaar als club geen teams heeft
-- [ ] Skeleton: zichtbaar tijdens laden
+- [ ] Overview tab: hero card toont banner + club logo + naam
+- [ ] Team-kaarten: responsive grid, 2 kolommen op 375px, 3+ op 1280px
+- [ ] Klik op team-kaart → navigeer naar `/:org/:club/:team`
+- [ ] Asset samenvatting: visuele kaart met status badges, tapbaar → Assets tab
+- [ ] Leden samenvatting: teller + avatar-rij, tapbaar → Leden tab
+- [ ] Lege staat (geen teams): visuele "+" kaart
+- [ ] Hero card: skeleton bij laden, banner + fallback gradient
+- [ ] Hover-effect: lift + schaduw op desktop (`@media (hover: hover)`)
+- [ ] Tap-feedback: scale(0.98) op mobile
+- [ ] `@media (prefers-reduced-motion: reduce)`: geen animaties
+- [ ] Dark mode: alle tokens correct
 - [ ] `npx tsc --noEmit` clean

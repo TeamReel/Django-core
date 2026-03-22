@@ -8,13 +8,15 @@
 
 ## Doel
 
-Overview secties worden klikbaar. Header en overflow menu worden logisch en correct. Club admins kunnen via een `TeamSwitcher` direct wisselen tussen teams van dezelfde club. Alle broken interactions worden gefixed.
+Overview secties worden visuele tapbare kaarten (premium iOS-stijl). Header en overflow menu worden logisch en correct. Club admins krijgen een `TeamSwitcher`. Terugnavigatie naar Club Hub wordt duidelijk.
 
-## Principes (consistentie & geen dubbele code)
+## Principes (consistentie & premium design)
 
-- **Club assets verschijnen op één plek**: de Assets tab (`ClubAssetsSection`). De Overview toont alleen een samenvatting-rij en linkt daarnaar. Geen tweede weergave van club assets.
-- **`TeamSwitcher` volgt exact hetzelfde patroon als `SeasonSwitcher`**: zelfde props-API, zelfde dropdown-gedrag, zelfde active context write. Geen aparte implementatie.
-- **Navigatie vanuit Overview gebruikt altijd de `navigateToTab(tabId)` helper** — nooit hardcoded `?tab=` strings verspreid door de component.
+- **Card-based UI**: Alle Overview-secties zijn visuele kaarten, niet rijen met chevrons. Consistent met H2 seizoen-kaarten en F25 Club Hub.
+- **Club assets = samenvatting-kaart**: De Assets-sectie op Overview toont een visuele kaart met status + hele kaart tapbaar naar Assets tab. Geen rij-met-chevron.
+- **`TeamSwitcher` volgt exact hetzelfde patroon als `SeasonSwitcher`**: zelfde props-API, zelfde dropdown-gedrag.
+- **Terugnavigatie**: breadcrumb-link "← Club" in header voor navigatie naar Club Hub (F25).
+- **Navigatie vanuit Overview gebruikt altijd de `navigateToTab(tabId)` helper** — nooit hardcoded `?tab=` strings.
 
 ## Problemen op te lossen
 
@@ -30,26 +32,38 @@ Overview secties worden klikbaar. Header en overflow menu worden logisch en corr
 
 ## Taken
 
-### 1. Overview "Assets" sectie klikbaar (`MyTeamHubPage.tsx`)
-- [ ] Rij "Tenue": `onTap` → `navigateToTab('assets')`
-- [ ] Rij "Sponsor": `onTap` → `navigateToTab('assets')`
-- [ ] Rij "Ledenfoto's": `onTap` → `navigateToTab('assets')`
-- [ ] Rij "Club logo": `onTap` → `navigateToTab('assets')` (scrollt naar `ClubAssetsSection`)
-- [ ] Chevron icoon (`>`) zichtbaar op elke rij
+### 1. Overview "Assets" sectie als visuele kaart (`MyTeamHubPage.tsx`)
 
-### 2. Overview "Club" sectie — linkt naar Assets tab (niet `?tab=club`)
+Niet rijen met chevrons — een samenvatting-kaart, vergelijkbaar met F25 Club Hub:
+- [ ] **Samenvatting-kaart "Team assets"**:
+  - Tenue thumbnail (kleine kit-preview afbeelding als beschikbaar)
+  - Status rij: "Tenue ✅ · Sponsor ✅ · Ledenfoto's 8/12"
+  - Hele kaart tapbaar → `navigateToTab('assets')`
+  - Visuele stijl: `var(--app-surface-2)`, `border-radius: var(--radius-md)`
+  - Hover: subtle lift — alleen `@media (hover: hover)`
+  - Active: `scale(0.98)` tap-feedback
 
-Na F24 is er geen aparte "club" tab. Club assets zitten in de Assets tab (`ClubAssetsSection`). De Overview-rijen moeten daarnaar linken:
-- [ ] Rij "Club logo": `onTap` → `navigateToTab('assets')` (niet `?tab=club`)
-- [ ] Rij "Brand profiel": `onTap` → `navigateToTab('assets')`
-- [ ] Rij "Club assets": `onTap` → `navigateToTab('assets')`
-- [ ] Chevron icoon op elke rij
-- [ ] Sectie-label: "Club" → hernoem naar "Club assets" (duidelijker waar het naartoe gaat)
+### 2. Overview "Club assets" sectie als visuele kaart
+
+Na F24 is er geen aparte "club" tab. Club assets zitten in de Assets tab (`ClubAssetsSection`):
+- [ ] **Samenvatting-kaart "Club assets"**:
+  - Club logo thumbnail (kleine cirkel)
+  - Status: "Logo ✅ · Sponsor ✅ · Kits X/Y · Locatie ✅"
+  - Hele kaart tapbaar → `navigateToTab('assets')`
+  - Dezelfde kaart-stijl als "Team assets" kaart
+- [ ] Sectie-label: "Club assets" (duidelijk waar het naartoe gaat)
 
 ### 3. Beheer accordion specifieke navigatie
 - [ ] "Team instellingen" → `navigateToTab('beheer', { section: 'settings' })`
 - [ ] "Competities" → `navigateToTab('beheer', { section: 'competitions' })`
 - [ ] "Assets uploaden" → `navigateToTab('assets')` (niet Beheer)
+
+### 3b. Terugnavigatie: breadcrumb naar Club Hub
+- [ ] **Header breadcrumb**: "← {clubNaam}" link, navigeert naar `routes.clubHub(orgSlug, clubSlug)`
+- [ ] Positie: boven de team-naam in de header (klein, `var(--app-muted-text)`)
+- [ ] Alleen tonen als we weten dat er een Club Hub is (altijd: elke team heeft een club)
+- [ ] Op mobile: compact, enkel "← Club" tekst-link
+- [ ] Op desktop: "← {clubNaam}" met volledige naam
 
 ### 4. Overflow menu correcties (`MyTeamHubPage.tsx`)
 - [ ] **"Bewerken"** → opent team-edit (niet seizoen-edit): check bestaande `TeamEditSheet` component

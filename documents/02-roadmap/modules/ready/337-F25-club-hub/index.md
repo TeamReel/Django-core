@@ -32,7 +32,7 @@ F24 löst het probleem op **team-niveau**. F25 biedt hetzelfde op **club-niveau*
 | F24 component | Gebruik in F25 |
 |--------------|---------------|
 | `ClubAssetsSection` | Hergebruikt 1-op-1 op Club Hub Assets tab |
-| `TeamSwitcher` | Verplaatst naar Club Hub header als primaire team-navigatie |
+| `TeamSwitcher` | Blijft op Team Hub (F24 H4); Club Hub navigeert via team-kaarten |
 | `SeasonSwitcher` | Niet van toepassing op club-niveau |
 | `navigateToTab()` helper | Hergebruikt in Club Hub tabs |
 
@@ -70,11 +70,12 @@ Project (club, parent_project=None)
 
 | Tab | Zichtbaar voor | Inhoud |
 |-----|---------------|--------|
-| **Overview** | Alle rollen | Teamsoverzicht (kaarten), club assets samenvatting, quick links |
-| **Teams** | Alle rollen | Alle teams van de club met status + navigatie naar team hub |
+| **Overview** | Alle rollen | Hero card, team-kaarten grid, club assets samenvatting, leden teller |
 | **Assets** | Club admin (edit), anderen read-only | Club BrandProfile assets — hergebruikt `ClubAssetsSection` 1-op-1 |
 | **Leden** | Club admin | Club-niveau leden (ProjectMembership zonder period) |
 | **Beheer** | Club admin | Club instellingen, credits, branding configuratie |
+
+> **4 tabs** — iOS best practice (max 5). Teams-overzicht zit in de Overview als visuele kaartengrid, geen aparte tab nodig.
 
 ### Header (consistent met Team Hub)
 
@@ -96,11 +97,12 @@ Project (club, parent_project=None)
 
 De `ClubAssetsSection` component (gebouwd in F24) wordt **zonder wijzigingen** hergebruikt op de Club Hub Assets tab. Geen tweede implementatie.
 
-### TeamSwitcher: migratiepad
+### TeamSwitcher: geen duplicatie
 
-In F24 staat de `TeamSwitcher` op de **team hub** (club admins kunnen wisselen binnen de hub). Na F25 is de **Club Hub** de primaire plek voor team-navigatie. Het patroon:
-- Club Hub: team-kaarten + klik → navigeer naar team hub
-- Team Hub header: `TeamSwitcher` blijft staan (snelle wissel zonder terug naar club hub)
+`TeamSwitcher` blijft op de **Team Hub** (F24 H4) — daar is snelle teamwissel waardevol. De Club Hub navigeert naar teams via visuele team-kaarten op de Overview. Geen TeamSwitcher in de Club Hub header — dat zou dubbel zijn met de team-kaarten.
+
+- **Club Hub**: team-kaarten op Overview → klik → navigeer naar team hub
+- **Team Hub**: `TeamSwitcher` in header → snelle teamwissel zonder terug naar club hub
 - Beide werken via dezelfde `setActiveContext('team', id)` + `navigate()` flow
 
 ### Gedeelde componenten — geen opnieuw bouwen
@@ -108,7 +110,7 @@ In F24 staat de `TeamSwitcher` op de **team hub** (club admins kunnen wisselen b
 | Component | Gebouwd in | Hergebruik in F25 |
 |----------|-----------|-----------------|
 | `ClubAssetsSection` | F24 H3 | Club Hub Assets tab (ongewijzigd) |
-| `TeamSwitcher` | F24 H4 | Club Hub header (als compacte teamlijst) |
+| `TeamSwitcher` | F24 H4 | Niet in Club Hub — blijft alleen op Team Hub |
 | `navigateToTab()` | F24 | Club Hub tabs |
 | `MemberPhotosSection` struct | F24 H3 | Club Hub Leden tab (zelfde patroon) |
 
@@ -119,7 +121,7 @@ In F24 staat de `TeamSwitcher` op de **team hub** (club admins kunnen wisselen b
 | Fase | Naam | Effort |
 |------|------|--------|
 | H0 | Route + ClubHubPage scaffold | ~3 uur |
-| H1 | Overview tab + Teams overzicht | ~4 uur |
+| H1 | Overview tab (hero + teams + samenvatting) | ~4 uur |
 | H2 | Assets tab (hergebruik ClubAssetsSection) | ~2 uur |
 | H3 | Leden tab | ~5 uur |
 | H4 | Beheer tab + polish | ~4 uur |
@@ -131,12 +133,12 @@ In F24 staat de `TeamSwitcher` op de **team hub** (club admins kunnen wisselen b
 ## 6. Acceptatiecriteria (globaal)
 
 - [ ] `/:org/:club` → Club Hub laadt correct
-- [ ] Teams tab: alle teams van de club zichtbaar als kaarten; klik → navigeer naar team hub
+- [ ] Overview tab: hero card + team-kaarten grid; klik → navigeer naar team hub
 - [ ] Assets tab: hergebruikt `ClubAssetsSection` zonder duplicatie
 - [ ] Club admin: edit knoppen actief op Assets tab
 - [ ] Team hub Assets tab: club assets read-only na F25 (link naar Club Hub voor bewerken)
 - [ ] Geen dubbele implementatie van club asset beheer
-- [ ] `TeamSwitcher` werkt zowel op team hub als via Club Hub team-kaarten
+- [ ] 4 tabs op mobile met ruimte (Overview, Assets, Leden, Beheer)
 - [ ] Alle semantische tokens (`var(--app-*)`) — geen primitives
 - [ ] Max 500 regels per TSX bestand
 - [ ] WCAG 2.1 AA

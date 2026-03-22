@@ -21,7 +21,7 @@ Kwaliteitsborging + documentatie voor de volledige Club Hub implementatie. TypeS
 
 ### 2. A11y audit
 
-- [ ] **Focusorder**: tabvolgorde logisch voor alle 5 tabs
+- [ ] **Focusorder**: tabvolgorde logisch voor alle 4 tabs
 - [ ] **Landmarks**: `<main>`, `<nav aria-label="Club tabs">`, `<section aria-label="...">`
 - [ ] **ARIA**: `aria-current="page"` op actieve tab, `aria-label` op icon-only knoppen
 - [ ] **Touch targets**: alle interactieve elementen ≥ 44×44px
@@ -46,7 +46,6 @@ Testbestand: `demo/tests/club-hub.spec.ts`
 ```
 - Navigeer naar /:org/:club
 - Verificeer: ClubHubPage geladen, default tab "Overview" actief
-- Klik op "Teams" tab → TeamsTab verschijnt
 - Klik op "Assets" tab → AssetsTab verschijnt
 - Klik op "Leden" tab → LedenTab verschijnt
 - Klik op "Beheer" tab → BeheerTab verschijnt (als admin)
@@ -54,8 +53,8 @@ Testbestand: `demo/tests/club-hub.spec.ts`
 
 **Flow 2: TeamCard → Team Hub navigatie**
 ```
-- Navigeer naar /:org/:club → "Teams" tab
-- Klik op een TeamCard
+- Navigeer naar /:org/:club → Overview tab
+- Klik op een TeamCard in de teams-grid
 - Verificeer: navigeert naar /:org/:club/:team (Team Hub)
 ```
 
@@ -81,7 +80,7 @@ Testbestand: `demo/tests/club-hub.spec.ts`
 
 Index.md entry voor routing:
 ```
-| `/:org/:club` | ClubHubPage | Club overzicht (tabbed: Overview, Teams, Assets, Leden, Beheer) |
+| `/:org/:club` | ClubHubPage | Club overzicht (4 tabs: Overview, Assets, Leden, Beheer) |
 ```
 
 ### 6. Phase-management
