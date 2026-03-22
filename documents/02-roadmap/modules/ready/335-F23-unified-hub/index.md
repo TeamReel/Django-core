@@ -1,9 +1,9 @@
-# 335-F23 — Unified Hub: Eén Hub voor Alle Rollen
+﻿# 335-F23 — Unified Hub: Eén Hub voor Alle Rollen
 
 | | |
 |---|---|
 | Code | F23 |
-| Status | � READY |
+| Status | ✅ DONE |
 | Prioriteit | Hoog |
 | Geschatte effort | ~40 uur |
 | Afhankelijkheden | F22 (done), F21 (done) |
@@ -428,13 +428,13 @@ export function buildUnifiedHubSection(
 
 | Fase | Wat | Effort | Breaking? |
 |------|-----|--------|-----------|
-| **H0** — TeamSeasonResolver | 3-segment auto-redirect naar 4-segment + edge cases | ~6u | Nee — backward compatible |
-| **H1** — Hub scope-detectie | MyTeamHubPage uitbreiden met scope parameter | ~8u | Nee — nieuwe code naast bestaande |
-| **H2** — ClubDetailPage → redirect | 2-segment stuurt door naar hub (via actief team) | ~6u | Ja — maar redirect vangt op |
-| **H3** — Sidebar unificatie | Eén `buildUnifiedHubSection` ipv 6 aparte builders | ~4u | Nee |
-| **H4** — Team-only hub (geen seizoen) | `HubTeamOnlyView` voor teams zonder seizoenen | ~6u | Nee |
-| **H5** — Cleanup & deprecated code | Verwijder standalone ClubDetailPage, TeamDetailPage, oude hooks | ~6u | Nee (code al niet meer bereikbaar) |
-| **H6** — Polish & edge cases | Deep links, bookmark compatibility, loading states | ~4u | Nee |
+| ✅ **H0** — TeamSeasonResolver | 3-segment auto-redirect naar 4-segment + edge cases | ~6u | Nee — backward compatible |
+| ✅ **H1** — Hub scope-detectie | HubTeamOnlyView component voor team-only scope | ~8u | Nee — nieuwe code naast bestaande |
+| ✅ **H2** — ClubDetailPage → redirect | 2-segment stuurt door naar hub (via actief team) | ~6u | Ja — maar redirect vangt op |
+| ✅ **H3** — Sidebar unificatie | Eén `buildUnifiedHubSection` ipv 6 aparte builders | ~4u | Nee |
+| ✅ **H4** — Team-only hub (geen seizoen) | `HubTeamOnlyView` uitbreiden met meer team data | ~6u | Nee |
+| ✅ **H5** — Cleanup & deprecated code | Verwijder standalone ClubDetailPage, TeamDetailPage, oude hooks | ~6u | Nee (code al niet meer bereikbaar) |
+| ✅ **H6** — Polish & edge cases | Deep links, bookmark compatibility, loading states | ~4u | Nee |
 
 ### 5.2 Backward compatibility
 

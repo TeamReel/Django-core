@@ -22,6 +22,7 @@ export interface PanelBConfigParams {
     path: string;
     search: string;
     isPlayer: boolean;
+    isSupporter?: boolean;
     isOrgAdmin: boolean;
     isSystemAdmin: boolean;
     isStaff: boolean;
@@ -40,7 +41,7 @@ export interface PanelBConfigParams {
 export function buildPanelBConfig(params: PanelBConfigParams): PanelBResult | null {
     const {
         path, search,
-        isPlayer, isOrgAdmin, isSystemAdmin, isStaff,
+        isPlayer, isSupporter, isOrgAdmin, isSystemAdmin, isStaff,
         orgSlug, clubSlugOrId, teamSlugOrId,
         seasonSlugOrId, competitionSlugOrId, matchId,
     } = params;
@@ -76,6 +77,7 @@ export function buildPanelBConfig(params: PanelBConfigParams): PanelBResult | nu
             return buildWorkSectionPanelB({
                 path,
                 isPlayer,
+                isSupporter: isSupporter ?? false,
                 isOrgRoute: path.startsWith('/organisations/'),
                 orgSlug,
                 clubSlugOrId,

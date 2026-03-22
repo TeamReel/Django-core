@@ -13,7 +13,61 @@ import {
 import type { PanelBResult } from './sidebarPanelBWork.types';
 import { makeTabUrl, makeOrgSectionUrl } from './sidebarPanelBWork.types';
 
+/* ── Hub scope enum ─────────────────────────────────────────────── */
+
+export type HubScope = 'season' | 'team-only' | 'club';
+
+/* ── Unified hub section (matches hub MobileTabBar per scope) ───── */
+
+export function buildUnifiedHubSection(
+    baseUrl: string,
+    scope: HubScope,
+    isPlayer: boolean,
+    isSupporter: boolean,
+): PanelBResult {
+    const isAdmin = !isPlayer && !isSupporter;
+
+    switch (scope) {
+        case 'season':
+            return {
+                title: 'Hub',
+                items: [
+                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    { label: 'Wedstrijden', path: makeTabUrl(baseUrl, 'wedstrijden'), icon: Trophy },
+                    ...(!isSupporter ? [{ label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star }] : []),
+                    ...(!isSupporter ? [{ label: 'Selectie', path: makeTabUrl(baseUrl, 'selectie'), icon: Users }] : []),
+                    ...(isAdmin ? [{ label: 'Beheer', path: makeTabUrl(baseUrl, 'beheer'), icon: Settings }] : []),
+                    ...(isAdmin ? [{ label: 'Club', path: makeTabUrl(baseUrl, 'club'), icon: Shield }] : []),
+                ],
+                isActive: true,
+            };
+        case 'team-only':
+            return {
+                title: 'Hub',
+                items: [
+                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    ...(!isSupporter ? [{ label: 'Selectie', path: makeTabUrl(baseUrl, 'selectie'), icon: Users }] : []),
+                    ...(isAdmin ? [{ label: 'Beheer', path: makeTabUrl(baseUrl, 'beheer'), icon: Settings }] : []),
+                ],
+                isActive: true,
+            };
+        case 'club':
+            return {
+                title: 'Hub',
+                items: [
+                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    { label: 'Teams', path: makeTabUrl(baseUrl, 'teams'), icon: Shirt },
+                    { label: 'Leden', path: makeTabUrl(baseUrl, 'leden'), icon: Users },
+                    { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
+                ],
+                isActive: true,
+            };
+    }
+}
+
 /* ── Team detail ────────────────────────────────────────────────── */
+
+/** @deprecated Use buildUnifiedHubSection with scope 'team-only' instead. */
 
 export function buildTeamDetailSection(baseUrl: string, isPlayer: boolean): PanelBResult {
     return {
@@ -29,6 +83,7 @@ export function buildTeamDetailSection(baseUrl: string, isPlayer: boolean): Pane
 
 /* ── Club detail ────────────────────────────────────────────────── */
 
+/** @deprecated Use buildUnifiedHubSection with scope 'club' instead. */
 export function buildClubDetailSection(baseUrl: string): PanelBResult {
     return {
         title: 'Club',
@@ -55,6 +110,7 @@ export function buildClubDetailSection(baseUrl: string): PanelBResult {
 
 /* ── Season detail (standard — team & vanity team routes) ───────── */
 
+/** @deprecated Use buildUnifiedHubSection with scope 'season' instead. */
 export function buildSeasonSection(baseUrl: string, isPlayer: boolean): PanelBResult {
     return {
         title: 'Season',
@@ -77,6 +133,7 @@ export function buildSeasonSection(baseUrl: string, isPlayer: boolean): PanelBRe
 
 /* ── Season detail (project-scoped — includes Kits & Identity) ──── */
 
+/** @deprecated Use buildUnifiedHubSection with scope 'season' instead. */
 export function buildSeasonProjectSection(baseUrl: string, isPlayer: boolean): PanelBResult {
     return {
         title: 'Season',

@@ -10,10 +10,6 @@ vi.mock('../../utils/apiEnvelope', () => ({
   unwrapEnvelope: (d: any) => d?.results ?? d,
 }));
 
-vi.mock('./TeamOrganisationDetailPage', () => ({
-  default: () => <div>TeamOrganisationDetailPage</div>,
-}));
-
 describe('TeamDetailPage', () => {
   it('renders without crashing', () => {
     renderWithProviders(<TeamDetailPage />, { routerProps: { initialEntries: ['/teams/test-team'] } });

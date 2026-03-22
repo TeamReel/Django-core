@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { organisationsApi, projectsApi } from '@/api';
 import { unwrapEnvelope } from '../../utils/apiEnvelope';
+import { useAppSelection } from '../../hooks/useAppSelection';
 
 import ClubOrganisationDetailPage from './ClubOrganisationDetailPage';
 
@@ -23,6 +24,12 @@ const looksLikeIdentifier = (value: string) => {
   return false;
 };
 
+/** Club tab names — mapped to the hub's "club" tab on redirect. */
+const CLUB_TABS = new Set([
+  'teams', 'members', 'hierarchy', 'media', 'identity',
+  'settings', 'assets', 'kits', 'balance', 'transactions', 'workflow',
+]);
+
 export default function ClubDetailPage() {
   const { orgId, projectId } = useParams<{ orgId: string; projectId: string }>();
   const location = useLocation();
@@ -32,6 +39,9 @@ export default function ClubDetailPage() {
   const shouldResolveClub = useMemo(() => looksLikeIdentifier(clubSlugOrId), [clubSlugOrId]);
   const [resolvedClubSlug, setResolvedClubSlug] = useState<string>('');
   const [resolved, setResolved] = useState(false);
+
+  // Hub redirect: detect if user has an active team in this club.
+  const { myClubSlugOrId, myTeamSlugOrId, mySeasonSlugOrId } = useAppSelection();
 
   useEffect(() => {
     const run = async () => {
@@ -67,10 +77,29 @@ export default function ClubDetailPage() {
 
   if (shouldResolveClub && !resolved) return null;
 
+  // Club not found after ID resolution → redirect to org clubs list
+  if (shouldResolveClub && resolved && !resolvedClubSlug) {
+    return <Navigate to={`/${orgSlugOrId}?tab=clubs`} replace />;
+  }
+
   if (orgSlugOrId && resolvedClubSlug && resolvedClubSlug !== clubSlugOrId) {
     return <Navigate to={`/${orgSlugOrId}/${resolvedClubSlug}${location.search || ''}`} replace />;
   }
 
-  // Organisation-style club view (mirrors federation page layout).
+  // ── Hub redirect: user has a team in this club → redirect to hub ──
+  const effectiveClubSlug = resolvedClubSlug || clubSlugOrId;
+  if (myClubSlugOrId && myTeamSlugOrId && myClubSlugOrId === effectiveClubSlug) {
+    const basePath = `/${orgSlugOrId}/${effectiveClubSlug}/${myTeamSlugOrId}`;
+    if (mySeasonSlugOrId) {
+      // Map club-specific tab params to hub's "club" tab
+      const params = new URLSearchParams(location.search || '');
+      const oldTab = params.get('tab');
+      const search = oldTab && CLUB_TABS.has(oldTab) ? '?tab=club' : '';
+      return <Navigate to={`${basePath}/${mySeasonSlugOrId}${search}`} replace />;
+    }
+    return <Navigate to={basePath} replace />;
+  }
+
+  // Club-only admin or viewing another club → full club management page.
   return <ClubOrganisationDetailPage />;
 }

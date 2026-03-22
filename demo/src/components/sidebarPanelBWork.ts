@@ -26,6 +26,7 @@ import {
     buildMemberSection,
     buildMatchDetailSection,
     buildFallbackSection,
+    buildUnifiedHubSection,
 } from './sidebarPanelBWorkEntities';
 
 /* Re-export for backward compatibility */
@@ -38,10 +39,11 @@ export { makeTabUrl, makeOrgSectionUrl } from './sidebarPanelBWork.types';
 
 export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult | null {
     const {
-        path, isPlayer, isOrgRoute, orgSlug,
+        path, isPlayer, isSupporter, isOrgRoute, orgSlug,
         clubSlugOrId, teamSlugOrId, seasonSlugOrId,
         competitionSlugOrId, matchId, locationPathname,
     } = params;
+    const supporter = isSupporter ?? false;
 
     /* ── Route matching ─────────────────────────────────────────── */
 
@@ -154,7 +156,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
         const baseUrl = path.startsWith('/organisations/')
             ? `/organisations/${orgId}/${clubId}/${projectId}`
             : `/${orgId}/${clubId}/${projectId}`;
-        return buildTeamDetailSection(baseUrl, isPlayer);
+        return buildUnifiedHubSection(baseUrl, 'team-only', isPlayer, supporter);
     }
 
     /* ── Club detail ────────────────────────────────────────────── */
@@ -164,7 +166,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
         const baseUrl = path.startsWith('/organisations/')
             ? `/organisations/${orgId}/${projectId}`
             : `/${orgId}/${projectId}`;
-        return buildClubDetailSection(baseUrl);
+        return buildUnifiedHubSection(baseUrl, 'club', isPlayer, supporter);
     }
 
     /* ── Season detail (team, explicit routes) ──────────────────── */
@@ -174,7 +176,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
         const baseUrl = path.startsWith('/organisations/')
             ? `/organisations/${orgId}/projects/${clubId}/teams/${projectId}/seasons/${seasonId}`
             : `/${orgId}/projects/${clubId}/teams/${projectId}/seasons/${seasonId}`;
-        return buildSeasonSection(baseUrl, isPlayer);
+        return buildUnifiedHubSection(baseUrl, 'season', isPlayer, supporter);
     }
 
     /* ── Competition detail (vanity) ────────────────────────────── */
@@ -204,7 +206,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
         const baseUrl = path.startsWith('/organisations/')
             ? `/organisations/${orgId}/${clubId}/${projectId}/${seasonId}`
             : `/${orgId}/${clubId}/${projectId}/${seasonId}`;
-        return buildSeasonSection(baseUrl, isPlayer);
+        return buildUnifiedHubSection(baseUrl, 'season', isPlayer, supporter);
     }
 
     /* ── Member detail (vanity) ──────────────────────────────────── */
@@ -247,7 +249,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
         const baseUrl = path.startsWith('/organisations/')
             ? `/organisations/${orgId}/projects/${projectId}/seasons/${seasonId}`
             : `/${orgId}/projects/${projectId}/seasons/${seasonId}`;
-        return buildSeasonProjectSection(baseUrl, isPlayer);
+        return buildUnifiedHubSection(baseUrl, 'season', isPlayer, supporter);
     }
 
     /* ── Hierarchy context fallback ─────────────────────────────── */

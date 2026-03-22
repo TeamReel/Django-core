@@ -16,6 +16,7 @@ export interface PanelBResult {
 export interface WorkSectionParams {
     path: string;
     isPlayer: boolean;
+    isSupporter?: boolean;
     isOrgRoute: boolean;
     orgSlug: string;
     clubSlugOrId: string | null;

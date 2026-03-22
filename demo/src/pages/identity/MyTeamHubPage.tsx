@@ -12,7 +12,7 @@
  *   Admin    → Overview, Wedstrijden, Media, Selectie, Beheer, Club (6)
  */
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert } from '@django-core/design-system';
 import {
   Pencil, Check, MoreHorizontal, Eye, Trash2,
@@ -271,16 +271,13 @@ export const MyTeamHubPage: React.FC = () => {
   }
 
   if (team.error || !team.org || !team.club || !team.team) {
-    return (
-      <div className={s.page}>
-        <div className={s.errorBox}>
-          <div className={s.errorMsg}>{team.error || 'Team niet gevonden'}</div>
-          <button type="button" className={s.backBtn} onClick={() => navigate(team.backToClubHref)}>
-            Terug
-          </button>
-        </div>
-      </div>
-    );
+    return <Navigate to={team.backToClubHref} replace />;
+  }
+
+  // Season not found / failed → fall back to team-only hub
+  if (!d.loading && !team.loading && (seasonCtx.error || !seasonCtx.season)) {
+    const teamOnly = `/${team.orgKeyForRoutes}/${team.clubKeyForRoutes}/${team.teamKeyForRoutes}`;
+    return <Navigate to={teamOnly} replace />;
   }
 
   return (

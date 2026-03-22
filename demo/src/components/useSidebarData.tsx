@@ -45,7 +45,7 @@ export interface UseSidebarDataReturn {
 /* ------------------------------------------------------------------ */
 
 export function useSidebarData(): UseSidebarDataReturn {
-    const { isSystemAdmin, isOrgAdmin, isLandAdmin, isPlayer } = useUserRole();
+    const { isSystemAdmin, isOrgAdmin, isLandAdmin, isPlayer, isSupporter } = useUserRole();
     const { user } = useAuth();
     const { context, organisations } = useContextSwitcher();
     const location = useLocation();
@@ -80,6 +80,7 @@ export function useSidebarData(): UseSidebarDataReturn {
             path: location.pathname,
             search: location.search || '',
             isPlayer,
+            isSupporter,
             isOrgAdmin,
             isSystemAdmin,
             isStaff,
@@ -90,7 +91,7 @@ export function useSidebarData(): UseSidebarDataReturn {
             competitionSlugOrId,
             matchId,
         });
-    }, [location.pathname, location.search, orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId, competitionSlugOrId, matchId, teamName, seasonName, competitionName, isOrgAdmin, isSystemAdmin, isStaff, user?.email]);
+    }, [location.pathname, location.search, orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId, competitionSlugOrId, matchId, teamName, seasonName, competitionName, isPlayer, isSupporter, isOrgAdmin, isSystemAdmin, isStaff, user?.email]);
 
     /* ── Visible sections (nav permission filter) ──────────────── */
 

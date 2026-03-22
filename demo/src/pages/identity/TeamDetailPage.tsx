@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
-import TeamOrganisationDetailPage from './TeamOrganisationDetailPage';
+import HubTeamOnlyView from './HubTeamOnlyView';
 import { organisationsApi, projectsApi } from '@/api';
 import { unwrapEnvelope } from '../../utils/apiEnvelope';
 import { usePreloadRoutes } from '../../hooks/usePreloadRoutes';
@@ -9,6 +9,7 @@ import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { isSeasonPeriod } from '../../providers/seasonProviderHelpers';
 import { periodPathKey } from '../../utils/periodPath';
+import { APP_LAST_CTX_KEY } from '../../hooks/appSelectionParser';
 
 type Project = {
   id: string;
@@ -106,7 +107,7 @@ export default function TeamDetailPage() {
 
 // ── Season auto-redirect ─────────────────────────────────────────────────────
 // Fetches the team's seasons. If found, redirects to the Hub at the
-// active season route. Otherwise, renders TeamOrganisationDetailPage.
+// active season route. Otherwise, renders HubTeamOnlyView.
 
 function TeamSeasonRedirect({
   orgSlug,
@@ -120,6 +121,26 @@ function TeamSeasonRedirect({
   const location = useLocation();
   const [seasonRedirect, setSeasonRedirect] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
+
+  // Local-first: check localStorage for a cached season hint for this team.
+  // This provides an instant redirect before the API call returns.
+  const cachedHint = useMemo(() => {
+    try {
+      const raw = localStorage.getItem(APP_LAST_CTX_KEY);
+      if (!raw) return null;
+      const ctx = JSON.parse(raw) as {
+        teamSlugOrId?: string;
+        seasonSlugOrId?: string;
+      };
+      if (
+        ctx.teamSlugOrId === teamSlug &&
+        ctx.seasonSlugOrId
+      ) {
+        return ctx.seasonSlugOrId;
+      }
+    } catch { /* ignore */ }
+    return null;
+  }, [teamSlug]);
 
   useEffect(() => {
     let cancelled = false;
@@ -144,7 +165,7 @@ function TeamSeasonRedirect({
 
         const seasons = periods.filter(isSeasonPeriod);
         if (!cancelled && seasons.length > 0) {
-          // Pick the most recently created season (last = newest)
+          // Pick the most recently created season (first = most recent)
           const active = seasons[0];
           const slug = periodPathKey(active as { name?: string; slug?: string; id?: string | number })
             || String((active as { id?: string }).id || '');
@@ -162,7 +183,12 @@ function TeamSeasonRedirect({
     return () => { cancelled = true; };
   }, [orgSlug, clubSlug, teamSlug, location.search]);
 
+  // Instant redirect from localStorage hint (before API completes)
+  if (!checked && cachedHint) {
+    return <Navigate to={`/${orgSlug}/${clubSlug}/${teamSlug}/${encodeURIComponent(cachedHint)}${location.search || ''}`} replace />;
+  }
+
   if (seasonRedirect) return <Navigate to={seasonRedirect} replace />;
   if (!checked) return null; // brief blank while checking
-  return <TeamOrganisationDetailPage />;
+  return <HubTeamOnlyView />;
 }

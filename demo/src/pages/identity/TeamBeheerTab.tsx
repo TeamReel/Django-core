@@ -9,7 +9,7 @@ import { KitsTab } from '@/components/KitsTab';
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import { api } from '@/api';
 import type { Project } from './teamDetailTypes';
-import s from './TeamOrganisationDetailPage.module.css';
+import s from './TeamBeheerTab.module.css';
 
 type BeheerSubtab = 'assets' | 'kits' | 'credits';
 
