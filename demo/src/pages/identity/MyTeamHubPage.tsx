@@ -12,7 +12,7 @@
  *   Admin    → Overview, Wedstrijden, Media, Selectie, Beheer, Club (6)
  */
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert } from '@django-core/design-system';
 import {
   Pencil, Check, MoreHorizontal, Eye, Trash2,
@@ -291,9 +291,6 @@ export const MyTeamHubPage: React.FC = () => {
         {/* ── Header ── */}
         <div className={s.headerRow}>
           <div className={s.titleBlock}>
-            <Link to={team.backToClubHref.split('?')[0]} className={s.parentLink}>
-              ‹ {team.club?.name || 'Club'}
-            </Link>
             <div className={s.titleRow}>
               <h1>{team.team?.name || 'Team'}</h1>
               <SeasonSwitcher
@@ -425,18 +422,20 @@ export const MyTeamHubPage: React.FC = () => {
           }}
         />
 
-        {/* ── Tab Bar (RBAC) ── */}
-        <MobileTabBar
-          tabs={[
-            { id: 'overview', label: 'Overview' },
-            { id: 'wedstrijden', label: 'Wedstrijden' },
-            ...(!isSupporter ? [{ id: 'media', label: 'Media' }] : []),
-            ...(!isSupporter ? [{ id: 'selectie', label: 'Selectie' }] : []),
-            ...(isAdmin ? [{ id: 'beheer', label: 'Beheer' }] : []),
-            ...(isAdmin ? [{ id: 'club', label: 'Club' }] : []),
-          ]}
-          activeTab={activeTab}
-        />
+        {/* ── Tab Bar (RBAC) — hidden on desktop where Panel B handles nav ── */}
+        <div className={s.mobileTabBarWrap}>
+          <MobileTabBar
+            tabs={[
+              { id: 'overview', label: 'Overview' },
+              { id: 'wedstrijden', label: 'Wedstrijden' },
+              ...(!isSupporter ? [{ id: 'media', label: 'Media' }] : []),
+              ...(!isSupporter ? [{ id: 'selectie', label: 'Selectie' }] : []),
+              ...(isAdmin ? [{ id: 'beheer', label: 'Beheer' }] : []),
+              ...(isAdmin ? [{ id: 'club', label: 'Club' }] : []),
+            ]}
+            activeTab={activeTab}
+          />
+        </div>
 
         {/* ── Tab Content ── */}
         <div className={s.tabContent}>
