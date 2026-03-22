@@ -115,6 +115,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+.actionButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
 .actionButton:active {
   opacity: 0.85;
 }
