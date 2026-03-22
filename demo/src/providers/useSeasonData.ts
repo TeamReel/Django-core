@@ -283,21 +283,19 @@ export function useSeasonData(): SeasonContextValue {
     return kits;
   }, [clubBrand, teamBrand, isTeamRoute]);
 
-  const brandLogoUrl = useMemo(
-    () =>
-      clubBrand.getAsset?.('logo_upload')
-        ? getAssetUrl(clubBrand.getAsset('logo_upload')!.url)
-        : null,
-    [clubBrand],
-  );
+  const brandLogoUrl = useMemo(() => {
+    const clubAsset = clubBrand.getAsset?.('logo_upload');
+    if (clubAsset?.url) return getAssetUrl(clubAsset.url);
+    const teamAsset = teamBrand.getAsset?.('logo_upload');
+    return teamAsset?.url ? getAssetUrl(teamAsset.url) : null;
+  }, [clubBrand, teamBrand]);
 
-  const brandSponsorUrl = useMemo(
-    () =>
-      clubBrand.getAsset?.('sponsor_logo_upload')
-        ? getAssetUrl(clubBrand.getAsset('sponsor_logo_upload')!.url)
-        : null,
-    [clubBrand],
-  );
+  const brandSponsorUrl = useMemo(() => {
+    const clubAsset = clubBrand.getAsset?.('sponsor_logo_upload');
+    if (clubAsset?.url) return getAssetUrl(clubAsset.url);
+    const teamAsset = teamBrand.getAsset?.('sponsor_logo_upload');
+    return teamAsset?.url ? getAssetUrl(teamAsset.url) : null;
+  }, [clubBrand, teamBrand]);
 
   // ── Permissions ────────────────────────────────────────────────────
   const userRole = String(user?.role || '').toLowerCase();

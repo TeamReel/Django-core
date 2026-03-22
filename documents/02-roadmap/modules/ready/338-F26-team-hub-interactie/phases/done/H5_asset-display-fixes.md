@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Fase | H5 |
-| Status | 📋 TODO |
+| Status | ✅ DONE |
 | Effort | ~4 uur |
 | Afhankelijkheid | H0 (done) |
 

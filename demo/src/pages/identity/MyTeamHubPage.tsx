@@ -29,7 +29,7 @@ import { periodPathKey } from '../../utils/periodPath';
 import { setActiveContext } from '../../utils/activeContext';
 import { ListSection } from '../../components/ListSection';
 import { AppIcon } from '../../components/AppIcon';
-import { getClubAssetStatus, getTeamAssetStatus, getMemberAssetSummary } from '../../utils/assetStatus';
+import { getTeamAssetStatus, getMemberAssetSummary } from '../../utils/assetStatus';
 import { useTeamDetailData } from './useTeamDetailData';
 import { useTeamTabData } from './useTeamTabData';
 import { useSeasonDetailPageData } from '../periods/useSeasonDetailPageData';
@@ -49,8 +49,10 @@ import { HubMediaTab } from './HubMediaTab';
 import { MemberAssetMatrix } from './MemberAssetMatrix';
 import { MemberDetailPanel } from '../periods/MemberDetailPanel';
 import { AssetDetailSheet, type AssetSheetType } from './AssetDetailSheet';
+import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { formatCredits } from './detail/useTeamCreditsData';
 import { creditsApi } from '../../api';
+import type { ProjectCreditsBalance } from '../../types/api/credits';
 import { SeasonSection } from './SeasonSection';
 import { CompetitionGrid } from './CompetitionGrid';
 
@@ -163,8 +165,8 @@ export const MyTeamHubPage: React.FC = () => {
   const [overflowOpen, setOverflowOpen] = useState(false);
   const overflowRef = useRef<HTMLDivElement>(null);
 
-  // ── Overview accordion state (Wedstrijden + Selectie default open) ──
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['wedstrijden', 'selectie']));
+  // ── Overview accordion state (all sections default closed) ──
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set([]));
   const toggleSection = useCallback((key: string) => {
     setExpandedSections((prev) => {
       const next = new Set(prev);
@@ -180,13 +182,15 @@ export const MyTeamHubPage: React.FC = () => {
   const [activeAssetSheet, setActiveAssetSheet] = useState<AssetSheetType | null>(null);
 
   // ── Credits balance (H1) ──
-  const [creditsLabel, setCreditsLabel] = useState<string | null>(null);
+  const [creditsBalance, setCreditsBalance] = useState<ProjectCreditsBalance | null>(null);
+  const [creditsSheetOpen, setCreditsSheetOpen] = useState(false);
+  const creditsLabel = creditsBalance ? formatCredits(creditsBalance.remaining_credits) : null;
   useEffect(() => {
     const pid = d.project?.id;
     if (!pid || !isAdmin) return;
     const ac = new AbortController();
     creditsApi.getProjectBalance(pid, ac.signal)
-      .then((b) => setCreditsLabel(formatCredits(b.remaining_credits)))
+      .then((b) => setCreditsBalance(b))
       .catch(() => { /* ignore — balance simply not shown */ });
     return () => ac.abort();
   }, [d.project?.id, isAdmin]);
@@ -255,12 +259,13 @@ export const MyTeamHubPage: React.FC = () => {
   }, [nextMatch]);
 
   // ── Overview: asset status ──
-  const clubAssetStatus = useMemo(
-    () => getClubAssetStatus(d.brandLogoUrl, d.brandSponsorUrl),
-    [d.brandLogoUrl, d.brandSponsorUrl],
-  );
   const teamAssetStatus = useMemo(
     () => getTeamAssetStatus(d.batchBrandKits),
+    [d.batchBrandKits],
+  );
+  const hasSponsor = Boolean(d.brandSponsorUrl);
+  const hasAnyKit = useMemo(
+    () => Object.values(d.batchBrandKits).some(Boolean),
     [d.batchBrandKits],
   );
   const memberAssetSummary = useMemo(
@@ -617,7 +622,7 @@ export const MyTeamHubPage: React.FC = () => {
                   </button>
                   <button type="button" className={s.accordionItem} onClick={() => setActiveAssetSheet('sponsor')}>
                     <span className={s.accordionItemLabel}>Sponsor</span>
-                    <span className={s.accordionItemStatus}>{clubAssetStatus === 'complete' ? '\u2713' : '\u2013'}</span>
+                    <span className={s.accordionItemStatus}>{hasSponsor ? '\u2713' : '\u2013'}</span>
                     <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
                   </button>
                   <button type="button" className={s.accordionItem} onClick={() => setActiveAssetSheet('member-photos')}>
@@ -654,12 +659,12 @@ export const MyTeamHubPage: React.FC = () => {
                     </button>
                     <button type="button" className={s.accordionItem} onClick={() => setActiveAssetSheet('club-sponsor')}>
                       <span className={s.accordionItemLabel}>Sponsor</span>
-                      <span className={s.accordionItemStatus}>{clubAssetStatus === 'complete' ? '\u2713' : '\u2013'}</span>
+                      <span className={s.accordionItemStatus}>{hasSponsor ? '\u2713' : '\u2013'}</span>
                       <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
                     </button>
                     <button type="button" className={s.accordionItem} onClick={() => setActiveAssetSheet('kits')}>
                       <span className={s.accordionItemLabel}>Kits</span>
-                      <span className={s.accordionItemStatus}>{teamAssetStatus === 'complete' ? '\u2713' : '\u2013'}</span>
+                      <span className={s.accordionItemStatus}>{hasAnyKit ? '\u2713' : '\u2013'}</span>
                       <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
                     </button>
                   </div>
@@ -684,17 +689,17 @@ export const MyTeamHubPage: React.FC = () => {
                     />
                   </button>
                   <div className={`${s.accordionBody} ${expandedSections.has('beheer') ? s.accordionBodyOpen : ''}`}>
-                    <button type="button" className={s.accordionItem} onClick={() => navigateToTab('beheer')}>
-                      <AppIcon icon={Settings} size={14} className={s.accordionItemIcon} />
-                      <span className={s.accordionItemLabel}>Team instellingen</span>
+                    <button type="button" className={s.accordionItem} onClick={() => setCreditsSheetOpen(true)}>
+                      <AppIcon icon={Wallet} size={14} className={s.accordionItemIcon} />
+                      <span className={s.accordionItemLabel}>Credits & saldo</span>
                       {creditsLabel && (
                         <span className={s.accordionItemStatus}>
-                          <AppIcon icon={Wallet} size={12} /> {creditsLabel}
+                          {creditsLabel}
                         </span>
                       )}
                       <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
                     </button>
-                    <button type="button" className={s.accordionItem} onClick={() => navigateToTab('beheer')}>
+                    <button type="button" className={s.accordionItem} onClick={() => navigateToTab('wedstrijden')}>
                       <AppIcon icon={Trophy} size={14} className={s.accordionItemIcon} />
                       <span className={s.accordionItemLabel}>Competities</span>
                       <span className={s.accordionItemStatus}>{seasonCtx.competitions.length}</span>
@@ -740,12 +745,12 @@ export const MyTeamHubPage: React.FC = () => {
                 <ListSection.Row
                   icon={Palette}
                   label="Club-sponsor"
-                  status={clubAssetStatus === 'complete' ? 'success' : 'warning'}
+                  status={hasSponsor ? 'success' : 'warning'}
                 />
                 <ListSection.Row
                   icon={Shirt}
                   label="Club kits"
-                  status={clubAssetStatus === 'complete' ? 'success' : 'warning'}
+                  status={hasAnyKit ? 'success' : 'warning'}
                 />
               </ListSection>
 
@@ -938,6 +943,43 @@ export const MyTeamHubPage: React.FC = () => {
           navigateToTab(tab);
         }}
       />
+
+      {/* ── Credits balance sheet (H4) ── */}
+      <NavigationSheet
+        isOpen={creditsSheetOpen}
+        onClose={() => setCreditsSheetOpen(false)}
+        title="Credits & saldo"
+        icon={<AppIcon icon={Wallet} size={18} />}
+      >
+        {creditsBalance ? (
+          <div className={s.creditsSheet}>
+            <div className={s.creditsRow}>
+              <span className={s.creditsRowLabel}>Toegekend</span>
+              <span className={s.creditsRowValue}>{formatCredits(creditsBalance.allocated_credits)}</span>
+            </div>
+            <div className={s.creditsRow}>
+              <span className={s.creditsRowLabel}>Verbruikt</span>
+              <span className={s.creditsRowValue}>{formatCredits(creditsBalance.used_credits)}</span>
+            </div>
+            <div className={`${s.creditsRow} ${s.creditsRowTotal}`}>
+              <span className={s.creditsRowLabel}>Resterend</span>
+              <span className={s.creditsRowValue}>{formatCredits(creditsBalance.remaining_credits)}</span>
+            </div>
+            <button
+              type="button"
+              className={s.creditsLink}
+              onClick={() => { setCreditsSheetOpen(false); navigateToTab('beheer'); }}
+            >
+              Volledig overzicht bekijken
+              <AppIcon icon={ChevronRight} size={14} />
+            </button>
+          </div>
+        ) : (
+          <div className={s.creditsSheet}>
+            <p className={s.creditsEmpty}>Geen balansgegevens beschikbaar.</p>
+          </div>
+        )}
+      </NavigationSheet>
 
       {/* ── Member detail panel overlay ── */}
       {detailMemberId && (

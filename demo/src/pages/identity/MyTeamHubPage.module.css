@@ -677,3 +677,66 @@
   .accordionBody,
   .accordionBodyOpenLarge { transition: none; }
 }
+
+/* ── Credits sheet (H4) ── */
+.creditsSheet {
+  padding: var(--space-4);
+}
+
+.creditsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.creditsRowTotal {
+  border-bottom: none;
+  font-weight: var(--font-bold);
+}
+
+.creditsRowLabel {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+}
+
+.creditsRowTotal .creditsRowLabel {
+  color: var(--app-text);
+}
+
+.creditsRowValue {
+  font-size: var(--text-base);
+  font-variant-numeric: tabular-nums;
+}
+
+.creditsLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) 0;
+  margin-top: var(--space-2);
+  border: none;
+  background: none;
+  color: var(--app-link);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.creditsLink:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.creditsEmpty {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  text-align: center;
+  padding: var(--space-6) 0;
+  margin: 0;
+}
