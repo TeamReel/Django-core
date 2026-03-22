@@ -3,16 +3,23 @@
  *
  * Renders competitions of the active season as tappable cards in a responsive
  * grid. Each card shows name, type badge, and match count.
+ * Tapping a card opens a summary sheet with the competition's matches.
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Period } from '../../types/season';
+import type { MatchRecord } from '../periods/SeasonMatchesTab';
 import { getPeriodType } from '../../providers/seasonProviderHelpers';
+import { ChevronRight } from 'lucide-react';
+import { AppIcon } from '../../components/AppIcon';
 import s from './CompetitionGrid.module.css';
 
 interface CompetitionGridProps {
   competitions: Period[];
   competitionsLoading: boolean;
   getMatchCount?: (comp: Period) => number;
+  matches?: MatchRecord[];
+  matchDisplayTitle?: (m: MatchRecord) => string;
+  onMatchTap?: (m: MatchRecord) => void;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -35,6 +42,9 @@ export const CompetitionGrid: React.FC<CompetitionGridProps> = ({
   competitions,
   competitionsLoading,
   getMatchCount,
+  matches = [],
+  matchDisplayTitle,
+  onMatchTap,
 }) => {
   const [selectedCompetition, setSelectedCompetition] = useState<Period | null>(null);
 
@@ -89,6 +99,9 @@ export const CompetitionGrid: React.FC<CompetitionGridProps> = ({
         <React.Suspense fallback={null}>
           <CompetitionSummarySheet
             competition={selectedCompetition}
+            matches={matches}
+            matchDisplayTitle={matchDisplayTitle}
+            onMatchTap={onMatchTap}
             onClose={() => setSelectedCompetition(null)}
           />
         </React.Suspense>
@@ -102,15 +115,31 @@ export const CompetitionGrid: React.FC<CompetitionGridProps> = ({
 
 interface CompetitionSummarySheetProps {
   competition: Period;
+  matches?: MatchRecord[];
+  matchDisplayTitle?: (m: MatchRecord) => string;
+  onMatchTap?: (m: MatchRecord) => void;
   onClose: () => void;
 }
 
 const CompetitionSummarySheet: React.FC<CompetitionSummarySheetProps> = ({
   competition,
+  matches = [],
+  matchDisplayTitle,
+  onMatchTap,
   onClose,
 }) => {
   const type = getPeriodType(competition);
   const typeLabel = TYPE_LABELS[type] || 'Competitie';
+
+  // Filter matches for this competition
+  const compMatches = useMemo(() => {
+    const compId = String(competition.id || '').trim();
+    if (!compId) return [];
+    return matches.filter((m) => {
+      const pid = String(m.period_id || (typeof m.period === 'object' ? m.period?.id : m.period) || '');
+      return pid === compId;
+    });
+  }, [competition.id, matches]);
 
   // Close on Escape key
   const handleKeyDown = useCallback(
@@ -140,6 +169,29 @@ const CompetitionSummarySheet: React.FC<CompetitionSummarySheetProps> = ({
         <span className={`${s.typeBadge} ${TYPE_CLASSES[type] || s.typeCompetition}`}>
           {typeLabel}
         </span>
+
+        {/* Match list */}
+        {compMatches.length > 0 && (
+          <div className={s.sheetMatchList}>
+            {compMatches.map((m) => (
+              <button
+                key={String(m.id)}
+                type="button"
+                className={s.sheetMatchItem}
+                onClick={() => { onMatchTap?.(m); onClose(); }}
+              >
+                <span className={s.sheetMatchTitle}>
+                  {matchDisplayTitle ? matchDisplayTitle(m) : String(m.title || 'Wedstrijd')}
+                </span>
+                <AppIcon icon={ChevronRight} size={14} className={s.sheetMatchChevron} />
+              </button>
+            ))}
+          </div>
+        )}
+        {compMatches.length === 0 && (
+          <div className={s.sheetEmpty}>Geen wedstrijden</div>
+        )}
+
         <button type="button" className={s.sheetClose} onClick={onClose}>
           Sluiten
         </button>

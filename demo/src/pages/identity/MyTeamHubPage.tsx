@@ -160,8 +160,8 @@ export const MyTeamHubPage: React.FC = () => {
   const [overflowOpen, setOverflowOpen] = useState(false);
   const overflowRef = useRef<HTMLDivElement>(null);
 
-  // ── Overview accordion state ──
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  // ── Overview accordion state (Wedstrijden + Selectie default open) ──
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['wedstrijden', 'selectie']));
   const toggleSection = useCallback((key: string) => {
     setExpandedSections((prev) => {
       const next = new Set(prev);
@@ -484,6 +484,9 @@ export const MyTeamHubPage: React.FC = () => {
                 competitions={seasonCtx.competitions}
                 competitionsLoading={seasonCtx.competitionsLoading}
                 getMatchCount={d.getMatchCountForCompetition}
+                matches={d.matches as MatchRecord[]}
+                matchDisplayTitle={d.matchDisplayTitle}
+                onMatchTap={setSelectedMatch}
               />
 
               {/* Wedstrijden — accordion with match items */}
