@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | TODO |
+| Status | DONE |
 | Effort | ~8 uur |
 | Blokkeerd door | — |
 

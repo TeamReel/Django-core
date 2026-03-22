@@ -7,7 +7,7 @@
  */
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, Trophy, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, Trophy, ArrowRight, Pencil } from 'lucide-react';
 import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import type { MatchRecord } from '../periods/SeasonMatchesTab';
 import s from './MatchSummarySheet.module.css';
@@ -21,6 +21,8 @@ export interface MatchSummarySheetProps {
   matchDisplayTitle: (m: MatchRecord) => string;
   /** Full path to the MatchDetailPage for this match. */
   matchDetailPath: string;
+  /** Optional edit handler — shown as secondary button for admins. */
+  onEdit?: (match: MatchRecord) => void;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -70,6 +72,7 @@ export const MatchSummarySheet: React.FC<MatchSummarySheetProps> = ({
   onClose,
   matchDisplayTitle,
   matchDetailPath,
+  onEdit,
 }) => {
   const navigate = useNavigate();
 
@@ -136,15 +139,27 @@ export const MatchSummarySheet: React.FC<MatchSummarySheetProps> = ({
             )}
           </div>
 
-          {/* Primary action */}
-          <button
-            className={s.actionButton}
-            onClick={handleGoToMatch}
-            type="button"
-          >
-            <span>Ga naar wedstrijd</span>
-            <ArrowRight size={18} aria-hidden="true" />
-          </button>
+          {/* Actions */}
+          <div className={s.actions}>
+            {onEdit && (
+              <button
+                className={s.editButton}
+                onClick={() => { onClose(); onEdit(match); }}
+                type="button"
+              >
+                <Pencil size={18} aria-hidden="true" />
+                <span>Bewerken</span>
+              </button>
+            )}
+            <button
+              className={s.actionButton}
+              onClick={handleGoToMatch}
+              type="button"
+            >
+              <span>Ga naar wedstrijd</span>
+              <ArrowRight size={18} aria-hidden="true" />
+            </button>
+          </div>
         </div>
       )}
     </NavigationSheet>

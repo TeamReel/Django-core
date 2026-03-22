@@ -528,6 +528,41 @@
   font-weight: var(--font-medium);
 }
 
+/* ── + button inside accordion header (H2) ── */
+.accordionHeaderAdd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-md);
+  background: var(--app-surface);
+  color: var(--app-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--duration-fast) var(--ease-default);
+}
+
+.accordionHeaderAdd:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .accordionHeaderAdd:hover {
+    background: var(--app-surface-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accordionHeaderAdd {
+    transition: none;
+  }
+}
+
 .accordionChevron {
   color: var(--app-muted-text);
   flex-shrink: 0;

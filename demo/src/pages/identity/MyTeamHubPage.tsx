@@ -15,8 +15,8 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert } from '@django-core/design-system';
 import {
-  Pencil, MoreHorizontal, Eye, Trash2,
-  Calendar, MapPin, Trophy, Users,
+  Pencil, MoreHorizontal, Eye, Trash2, Plus,
+  Calendar, MapPin, Trophy, Users, Wallet,
   Building2, Shirt, Camera, Palette, Upload, Settings,
   ChevronRight, ChevronDown,
 } from 'lucide-react';
@@ -49,6 +49,8 @@ import { HubMediaTab } from './HubMediaTab';
 import { MemberAssetMatrix } from './MemberAssetMatrix';
 import { MemberDetailPanel } from '../periods/MemberDetailPanel';
 import { AssetDetailSheet, type AssetSheetType } from './AssetDetailSheet';
+import { formatCredits } from './detail/useTeamCreditsData';
+import { creditsApi } from '../../api';
 import { SeasonSection } from './SeasonSection';
 import { CompetitionGrid } from './CompetitionGrid';
 
@@ -176,6 +178,18 @@ export const MyTeamHubPage: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<SquadMember | null>(null);
   const [detailMemberId, setDetailMemberId] = useState<string | null>(null);
   const [activeAssetSheet, setActiveAssetSheet] = useState<AssetSheetType | null>(null);
+
+  // ── Credits balance (H1) ──
+  const [creditsLabel, setCreditsLabel] = useState<string | null>(null);
+  useEffect(() => {
+    const pid = d.project?.id;
+    if (!pid || !isAdmin) return;
+    const ac = new AbortController();
+    creditsApi.getProjectBalance(pid, ac.signal)
+      .then((b) => setCreditsLabel(formatCredits(b.remaining_credits)))
+      .catch(() => { /* ignore — balance simply not shown */ });
+    return () => ac.abort();
+  }, [d.project?.id, isAdmin]);
 
   // ── Overview: in-place expand state ──
   const [showAllMembers, setShowAllMembers] = useState(false);
@@ -503,6 +517,16 @@ export const MyTeamHubPage: React.FC = () => {
                   <AppIcon icon={Trophy} size={18} className={s.accordionIcon} />
                   <span className={s.accordionLabel}>Wedstrijden</span>
                   <span className={s.accordionValue}>{d.matches.length}</span>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      className={s.accordionHeaderAdd}
+                      onClick={(e) => { e.stopPropagation(); d.setIsCreateMatchModalOpen(true); }}
+                      aria-label="Wedstrijd toevoegen"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  )}
                   <AppIcon
                     icon={ChevronDown}
                     size={16}
@@ -663,6 +687,11 @@ export const MyTeamHubPage: React.FC = () => {
                     <button type="button" className={s.accordionItem} onClick={() => navigateToTab('beheer')}>
                       <AppIcon icon={Settings} size={14} className={s.accordionItemIcon} />
                       <span className={s.accordionItemLabel}>Team instellingen</span>
+                      {creditsLabel && (
+                        <span className={s.accordionItemStatus}>
+                          <AppIcon icon={Wallet} size={12} /> {creditsLabel}
+                        </span>
+                      )}
                       <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
                     </button>
                     <button type="button" className={s.accordionItem} onClick={() => navigateToTab('beheer')}>
@@ -867,6 +896,11 @@ export const MyTeamHubPage: React.FC = () => {
           onClose={() => setSelectedMatch(null)}
           matchDisplayTitle={d.matchDisplayTitle}
           matchDetailPath={selectedMatchDetailPath}
+          onEdit={isAdmin ? (m) => {
+            setSelectedMatch(null);
+            d.setSelectedEditMatch(m);
+            d.setIsMatchEditModalOpen(true);
+          } : undefined}
         />
         <MemberSummarySheet
           member={selectedMember}
