@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Code | F25 |
-| Status | 📋 ROADMAP |
+| Status | � READY |
 | Prioriteit | Medium |
 | Geschatte effort | ~20 uur |
 | Afhankelijkheden | F24 (done) — `TeamSwitcher`, 3-seg URL structuur, `ClubAssetsSection` component |

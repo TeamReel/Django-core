@@ -1,0 +1,1 @@
+rm 'documents/08-testing/permission-testing-guide.md'
