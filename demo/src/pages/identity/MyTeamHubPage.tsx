@@ -910,6 +910,10 @@ export const MyTeamHubPage: React.FC = () => {
             setDetailMemberId(String(selectedMember?.id ?? ''));
             setSelectedMember(null);
           }}
+          onEdit={isAdmin ? (m) => {
+            setSelectedMember(null);
+            setDetailMemberId(String(m.id ?? ''));
+          } : undefined}
           onPrev={handleMemberPrev}
           onNext={handleMemberNext}
           hasPrev={selectedMemberIndex > 0}
@@ -937,7 +941,12 @@ export const MyTeamHubPage: React.FC = () => {
 
       {/* ── Member detail panel overlay ── */}
       {detailMemberId && (
-        <div className={s.memberPanelOverlay}>
+        <div
+          className={s.memberPanelOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Lid bewerken"
+        >
           <MemberDetailPanel
             membershipId={detailMemberId}
             memberIds={(d.members as SquadMember[]).map((m) => String(m.id))}
@@ -952,6 +961,7 @@ export const MyTeamHubPage: React.FC = () => {
             batchBrandKits={d.batchBrandKits}
             onClose={() => setDetailMemberId(null)}
             onNavigate={(mid) => setDetailMemberId(mid)}
+            onMemberUpdated={() => d.setMembersReloadToken((t: number) => t + 1)}
           />
         </div>
       )}

@@ -5,7 +5,7 @@
  * Toont avatar, naam, rol en asset-slots. Zichtbaar voor alle rollen.
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Check, Minus, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Minus, ArrowRight, Pencil } from 'lucide-react';
 import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { Avatar } from '../../components/ui';
 import { getMemberSlotPresence, getMemberAssetStatus } from '../../utils/assetStatus';
@@ -56,6 +56,8 @@ interface MemberSummarySheetProps {
   onClose: () => void;
   /** Called when 'Bekijk profiel' is tapped — opens MemberDetailPanel slide-in */
   onViewProfile?: () => void;
+  /** Called when 'Bewerken' is tapped — opens MemberDetailPanel for editing (admin) */
+  onEdit?: (member: SquadMember) => void;
   /** < > navigation between members */
 
   onPrev?: () => void;
@@ -74,6 +76,7 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
   isOpen,
   onClose,
   onViewProfile,
+  onEdit,
   onPrev,
   onNext,
   hasPrev = false,
@@ -200,6 +203,12 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
 
           {/* Action */}
           <div className={s.actions}>
+            {onEdit && member && (
+              <button className={s.editButton} onClick={() => { onClose(); onEdit(member); }}>
+                <Pencil size={18} aria-hidden="true" />
+                <span>Bewerken</span>
+              </button>
+            )}
             <button className={s.profileButton} onClick={handleViewProfile}>
               <span>Bekijk profiel</span>
               <ArrowRight size={18} aria-hidden="true" />

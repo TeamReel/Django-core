@@ -156,7 +156,40 @@
 /* ── Actions ──────────────────────────────────────────────────────────── */
 
 .actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
   padding-bottom: var(--space-2);
+}
+
+.editButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  background: var(--app-surface);
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: background var(--duration-fast) ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.editButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .editButton:hover {
+    background: var(--app-surface-2);
+  }
 }
 
 .profileButton {
@@ -193,7 +226,8 @@
   }
 
   .profileButton,
-  .navButton {
+  .navButton,
+  .editButton {
     transition: none;
   }
 }
