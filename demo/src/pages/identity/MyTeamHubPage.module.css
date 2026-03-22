@@ -335,9 +335,13 @@
 }
 
 /* ── Member detail panel overlay ── */
+/* top: 56px clears the fixed TopNavbar so the panel's close button is visible */
 .memberPanelOverlay {
   position: fixed;
-  inset: 0;
+  top: 56px;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: var(--z-overlay);
   background: var(--app-bg);
   overflow-y: auto;
