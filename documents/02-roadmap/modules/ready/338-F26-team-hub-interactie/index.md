@@ -3,9 +3,9 @@
 | | |
 |---|---|
 | Code | F26 |
-| Status | ✅ DONE |
+| Status | 📐 READY |
 | Prioriteit | Hoog |
-| Geschatte effort | ~24 uur |
+| Geschatte effort | ~40 uur |
 | Afhankelijkheden | F24 (done) — Team Hub V2 met iOS-accordions, CompetitionGrid, SeasonProvider |
 | Doelgroep | Club Admin, Team Admin |
 
@@ -56,19 +56,35 @@ F24 leverde een complete Team Hub V2 op met iOS-style accordions, seizoen-switch
 | H1 | Credits & Team Instellingen | ~4 uur | — |
 | H2 | Wedstrijden CRUD | ~6 uur | — |
 | H3 | Selectie In-Page Editing | ~6 uur | — |
+| H4 | Accordion UX & Beheer In-Page | ~3 uur | H0–H3 |
+| H5 | Asset Display Fixes | ~4 uur | H0 |
+| H6 | Overview → Wedstrijden Integratie | ~8 uur | H2 |
+| H7 | Selectie Ledenbeheer | ~6 uur | H3 |
+| H8 | Member Detail In-Page Fix | ~3 uur | H3 |
 
-Fases zijn onafhankelijk en kunnen in willekeurige volgorde worden gebouwd.
+H0–H3 zijn afgerond. H4–H8 zijn feedback-fases na visuele review.
 
 ---
 
 ## 3. Acceptatiecriteria
 
-- [ ] Asset-items in Team Assets en Club Assets accordions zijn tappable en openen detail/edit
-- [ ] Admin kan asset uploaden, vervangen en verwijderen vanuit overview
-- [ ] Beheer-sectie toont credits saldo en wallet-informatie (live API data)
-- [ ] Wedstrijden accordion heeft + knop die create-modal opent
-- [ ] Bestaande wedstrijden zijn bewerkbaar via tappable items
-- [ ] Selectie-leden zijn inline bewerkbaar via MemberDetailPanel overlay
+### H0–H3 (afgerond)
+- [x] Asset-items in Team Assets en Club Assets accordions zijn tappable en openen detail/edit
+- [x] Admin kan asset uploaden, vervangen en verwijderen vanuit overview
+- [x] Beheer-sectie toont credits saldo en wallet-informatie (live API data)
+- [x] Wedstrijden accordion heeft + knop die create-modal opent
+- [x] Bestaande wedstrijden zijn bewerkbaar via tappable items
+- [x] Selectie-leden zijn inline bewerkbaar via MemberDetailPanel overlay
+
+### H4–H8 (nieuw)
+- [ ] Wedstrijden en Selectie standaard dichtgeklapt in Overview
+- [ ] "Team instellingen" toont credits/balance in-page (niet navigeren naar andere tab)
+- [ ] Tenue, Sponsor, Club Logo, Club Kits tonen correcte assets (data flow fix)
+- [ ] Overview vereenvoudigd: alleen actief seizoen + actieve competitie
+- [ ] Season/Competition management geïntegreerd in Wedstrijden tab
+- [ ] Leden toevoegen/verwijderen uit selectie mogelijk
+- [ ] Season-level member management (lid van team maar niet van seizoen)
+- [ ] Member bewerken blijft in-page als iOS-style slide-in panel
 - [ ] Geen navigatie weg van de hub voor standaard CRUD-acties
 - [ ] WCAG 2.1 AA: alle interactieve items hebben focus-visible, 44×44px touch targets
 - [ ] TypeScript 0 errors, Vite build success
