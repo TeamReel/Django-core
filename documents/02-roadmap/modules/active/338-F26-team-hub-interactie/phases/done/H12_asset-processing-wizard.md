@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | ✅ DONE |
 | Effort | ~4 uur |
 | Afhankelijkheid | — |
 
