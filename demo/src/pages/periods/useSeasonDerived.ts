@@ -255,7 +255,13 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
     const resolvedAwayClub = oppClubId ? opponentClubNames[oppClubId] : '';
     const homeName = homeClubName || club?.name || project?.name || '';
     const awayName = resolvedAwayClub || awayClubName || m.opponent_project?.name || '';
-    if (homeName && awayName) return `${homeName} vs ${awayName}`;
+    if (homeName && awayName && homeName !== awayName) return `${homeName} vs ${awayName}`;
+    // Same club name on both sides → use team/project names instead
+    if (homeName && awayName && homeName === awayName) {
+      const homeTeam = String(ctx?.home_team_name || project?.name || homeName);
+      const awayTeam = String(ctx?.away_team_name || m.opponent_project?.name || awayName);
+      if (homeTeam !== awayTeam) return `${homeTeam} vs ${awayTeam}`;
+    }
 
     // Fallback: string replacement on stored title
     let raw = m.title || m.name || '';

@@ -517,7 +517,12 @@ export const MyTeamHubPage: React.FC = () => {
 
               {/* Compact season info card */}
               {seasonCtx.season && (
-                <div className={s.seasonCompact}>
+                <button
+                  type="button"
+                  className={s.seasonCompact}
+                  onClick={() => navigateToTab('wedstrijden')}
+                  aria-label={`Seizoen ${String(seasonCtx.season.name || 'Seizoen')} bekijken`}
+                >
                   <div className={s.seasonCompactRow}>
                     <span className={s.seasonCompactName}>{String(seasonCtx.season.name || 'Seizoen')}</span>
                     <span className={s.seasonCompactBadge}>Actief</span>
@@ -529,7 +534,7 @@ export const MyTeamHubPage: React.FC = () => {
                     <span>·</span>
                     <span>{d.members.length} leden</span>
                   </div>
-                </div>
+                </button>
               )}
 
               {/* Team assets — accordion */}
@@ -730,7 +735,18 @@ export const MyTeamHubPage: React.FC = () => {
                 ? (id: string) => d.unassignMembershipsFromSeasonSquad([id])
                 : undefined}
               onRoleChange={isAdmin && d.project?.id ? async (mid, role) => {
-                await projectsApi.updateMember(d.project!.id, mid, { role });
+                const member = (d.members as SquadMember[]).find((m) => String(m.id) === mid);
+                const userId = Number(member?.user?.id);
+                if (!userId) return;
+                const prevDirect = (member as Record<string, unknown>)?.functional_roles;
+                const prevRoles = Array.isArray(prevDirect) ? prevDirect.map((r: unknown) => String(r || '').trim()).filter(Boolean) : [];
+                const nextRoles: string[] = [role];
+                const prevSet = new Set(prevRoles);
+                const nextSet = new Set(nextRoles);
+                const toAdd = nextRoles.filter((r) => !prevSet.has(r));
+                const toRemove = prevRoles.filter((r) => !nextSet.has(r));
+                if (toRemove.length) await projectsApi.unassignFunctionalRoles(d.project!.id, { user_id: userId, roles: toRemove });
+                if (toAdd.length) await projectsApi.assignFunctionalRoles(d.project!.id, { user_id: userId, roles: toAdd });
                 d.setMembersReloadToken((t: number) => t + 1);
               } : undefined}
               onMemberTap={setSelectedMember}

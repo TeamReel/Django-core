@@ -42,7 +42,7 @@
   border-radius: var(--radius-full, 9999px);
   border: 1px solid var(--app-border);
   background: var(--app-surface);
-  color: var(--app-text-secondary);
+  color: var(--app-muted-text);
   font: var(--font-caption, 500 0.75rem / 1.3 var(--font-family));
   cursor: pointer;
   min-height: 32px;

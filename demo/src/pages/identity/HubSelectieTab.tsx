@@ -5,7 +5,7 @@
  * Each row shows avatar + name + asset-status dot + navigation chevron.
  * "Niet in selectie" section shows org members not in this season's squad.
  */
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, UserMinus } from 'lucide-react';
 import { Alert } from '@django-core/design-system';
@@ -31,7 +31,7 @@ interface HubSelectieTabProps {
   /** Remove a member from the season squad by membership ID (admin only) */
   removeFromSquad?: (membershipId: string) => Promise<void>;
   /** Change a member's functional role */
-  onRoleChange?: (membershipId: string, role: 'goalkeeper' | 'player' | 'coach' | 'assistant') => Promise<void>;
+  onRoleChange?: (membershipId: string, role: 'keeper' | 'player' | 'coach' | 'assistant') => Promise<void>;
   /** If provided, tapping a member calls this instead of navigating away */
   onMemberTap?: (m: SquadMember) => void;
 }
@@ -53,7 +53,7 @@ function groupByRole(members: SquadMember[]): Record<RoleGroup, SquadMember[]> {
     const fr = (m as Record<string, unknown>).functional_roles as string[] | undefined;
     const role = (m.role ?? '').toLowerCase();
 
-    if (fr?.includes('goalkeeper') || role === 'goalkeeper') {
+    if (fr?.includes('keeper') || fr?.includes('goalkeeper') || role === 'keeper' || role === 'goalkeeper') {
       groups.keepers.push(m);
     } else if (
       fr?.includes('coach') || fr?.includes('assistant') ||
@@ -75,13 +75,25 @@ function memberName(m: SquadMember): string {
 }
 
 function memberAvatarUrl(m: SquadMember): string | undefined {
+  // Priority: closeup processed → raw → profile → kit photo → user avatar
+  const tr = (m.metadata as Record<string, unknown> | undefined)?.teamreel_assets as Record<string, unknown> | undefined;
+  if (tr) {
+    const closeup = (tr.images as Record<string, unknown> | undefined)?.closeup as Record<string, unknown> | undefined;
+    const home = (closeup?.home ?? closeup?.away) as Record<string, unknown> | undefined;
+    if (typeof home?.processed === 'string' && home.processed) return home.processed;
+    if (typeof home?.raw === 'string' && home.raw) return home.raw;
+    const profileUrl = (tr.media as Record<string, unknown> | undefined)?.profile as Record<string, unknown> | undefined;
+    if (typeof profileUrl?.url === 'string' && profileUrl.url) return profileUrl.url;
+    const kitUrl = (tr.kit as Record<string, unknown> | undefined)?.profile_photo_url;
+    if (typeof kitUrl === 'string' && kitUrl) return kitUrl;
+  }
   return (m.user as Record<string, unknown> | undefined)?.avatar_url as string | undefined;
 }
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 
-const ROLE_OPTIONS: { value: 'goalkeeper' | 'player' | 'coach' | 'assistant'; label: string }[] = [
-  { value: 'goalkeeper', label: 'Keeper' },
+const ROLE_OPTIONS: { value: 'keeper' | 'player' | 'coach' | 'assistant'; label: string }[] = [
+  { value: 'keeper', label: 'Keeper' },
   { value: 'player', label: 'Speler' },
   { value: 'coach', label: 'Coach' },
   { value: 'assistant', label: 'Assistent' },
@@ -90,7 +102,7 @@ const ROLE_OPTIONS: { value: 'goalkeeper' | 'player' | 'coach' | 'assistant'; la
 function getMemberFunctionalRole(m: SquadMember): string {
   const fr = (m as Record<string, unknown>).functional_roles as string[] | undefined;
   const role = (m.role ?? '').toLowerCase();
-  if (fr?.includes('goalkeeper') || role === 'goalkeeper') return 'goalkeeper';
+  if (fr?.includes('keeper') || fr?.includes('goalkeeper') || role === 'keeper' || role === 'goalkeeper') return 'keeper';
   if (fr?.includes('coach') || role === 'coach') return 'coach';
   if (fr?.includes('assistant') || role === 'assistant') return 'assistant';
   return 'player';
@@ -130,10 +142,18 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
     setRolePicker((prev) => prev?.memberId === mid ? null : { memberId: mid, rect });
   }, []);
 
-  const handleRoleSelect = useCallback(async (mid: string, role: 'goalkeeper' | 'player' | 'coach' | 'assistant') => {
+  const handleRoleSelect = useCallback(async (mid: string, role: 'keeper' | 'player' | 'coach' | 'assistant') => {
     setRolePicker(null);
     await onRoleChange?.(mid, role);
   }, [onRoleChange]);
+
+  // Close role picker on Escape
+  useEffect(() => {
+    if (!rolePicker) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setRolePicker(null); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [rolePicker]);
 
   const groups = useMemo(() => groupByRole(members), [members]);
 
@@ -197,6 +217,8 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
                           className={s.roleChip}
                           onClick={(e) => handleRoleTap(e, mid)}
                           aria-label={`Rol wijzigen voor ${name}`}
+                          aria-haspopup="listbox"
+                          aria-expanded={rolePicker?.memberId === mid}
                         >
                           {roleLabel}
                         </button>
@@ -289,7 +311,12 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
           <div className={s.rolePickerBackdrop} onClick={() => setRolePicker(null)} />
           <div
             className={s.rolePickerPopover}
-            style={{ top: rolePicker.rect.bottom + 4, left: rolePicker.rect.left }}
+            role="listbox"
+            aria-label="Kies rol"
+            style={{
+              top: Math.min(rolePicker.rect.bottom + 4, window.innerHeight - 220),
+              left: Math.min(rolePicker.rect.left, window.innerWidth - 160),
+            }}
           >
             {ROLE_OPTIONS.map((opt) => {
               const m = members.find((mem) => String(mem.id) === rolePicker.memberId);
@@ -299,6 +326,8 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
                   key={opt.value}
                   type="button"
                   className={s.rolePickerOption}
+                  role="option"
+                  aria-selected={current === opt.value}
                   data-active={current === opt.value ? 'true' : undefined}
                   onClick={() => handleRoleSelect(rolePicker.memberId, opt.value)}
                 >

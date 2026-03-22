@@ -317,11 +317,28 @@
 
 /* ── Compact season info card (H9) ── */
 .seasonCompact {
+  display: block;
+  width: 100%;
+  text-align: left;
   background: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   margin-bottom: var(--space-3);
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.seasonCompact:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .seasonCompact:hover {
+    background: var(--app-hover-bg, rgba(0, 0, 0, 0.02));
+  }
 }
 
 .seasonCompactRow {
@@ -337,8 +354,8 @@
 
 .seasonCompactBadge {
   font: var(--font-caption, 500 0.75rem / 1.3 var(--font-family));
-  color: var(--app-success-text, #16a34a);
-  background: var(--app-success-bg, #dcfce7);
+  color: var(--app-success);
+  background: var(--app-surface-2);
   padding: 2px var(--space-2);
   border-radius: var(--radius-full, 9999px);
 }
