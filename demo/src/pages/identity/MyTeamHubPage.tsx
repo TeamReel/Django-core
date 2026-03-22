@@ -48,6 +48,7 @@ import { HubSelectieTab } from './HubSelectieTab';
 import { HubMediaTab } from './HubMediaTab';
 import { MemberAssetMatrix } from './MemberAssetMatrix';
 import { MemberDetailPanel } from '../periods/MemberDetailPanel';
+import { AssetDetailSheet, type AssetSheetType } from './AssetDetailSheet';
 import { SeasonSection } from './SeasonSection';
 import { CompetitionGrid } from './CompetitionGrid';
 
@@ -174,6 +175,7 @@ export const MyTeamHubPage: React.FC = () => {
   const [selectedMatch, setSelectedMatch] = useState<MatchRecord | null>(null);
   const [selectedMember, setSelectedMember] = useState<SquadMember | null>(null);
   const [detailMemberId, setDetailMemberId] = useState<string | null>(null);
+  const [activeAssetSheet, setActiveAssetSheet] = useState<AssetSheetType | null>(null);
 
   // ── Overview: in-place expand state ──
   const [showAllMembers, setShowAllMembers] = useState(false);
@@ -184,6 +186,7 @@ export const MyTeamHubPage: React.FC = () => {
     setSelectedMatch(null);
     setSelectedMember(null);
     setDetailMemberId(null);
+    setActiveAssetSheet(null);
   }, [activeTab]);
 
   // Member navigation for MemberSummarySheet
@@ -583,18 +586,21 @@ export const MyTeamHubPage: React.FC = () => {
                   />
                 </button>
                 <div className={`${s.accordionBody} ${expandedSections.has('team-assets') ? s.accordionBodyOpen : ''}`}>
-                  <div className={s.accordionItem}>
+                  <button type="button" className={s.accordionItem} onClick={() => setActiveAssetSheet('tenue')}>
                     <span className={s.accordionItemLabel}>Tenue</span>
-                    <span className={s.accordionItemStatus}>{teamAssetStatus === 'complete' ? '✅' : '⚠️'}</span>
-                  </div>
-                  <div className={s.accordionItem}>
+                    <span className={s.accordionItemStatus}>{teamAssetStatus === 'complete' ? '\u2713' : '\u2013'}</span>
+                    <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                  </button>
+                  <button type="button" className={s.accordionItem} onClick={() => setActiveAssetSheet('sponsor')}>
                     <span className={s.accordionItemLabel}>Sponsor</span>
-                    <span className={s.accordionItemStatus}>{clubAssetStatus === 'complete' ? '✅' : '⚠️'}</span>
-                  </div>
-                  <div className={s.accordionItem}>
+                    <span className={s.accordionItemStatus}>{clubAssetStatus === 'complete' ? '\u2713' : '\u2013'}</span>
+                    <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                  </button>
+                  <button type="button" className={s.accordionItem} onClick={() => setActiveAssetSheet('member-photos')}>
                     <span className={s.accordionItemLabel}>Ledenfoto's</span>
                     <span className={s.accordionItemStatus}>{memberAssetSummary.complete}/{memberAssetSummary.total}</span>
-                  </div>
+                    <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                  </button>
                 </div>
               </div>
 
@@ -617,18 +623,21 @@ export const MyTeamHubPage: React.FC = () => {
                     />
                   </button>
                   <div className={`${s.accordionBody} ${expandedSections.has('club-assets') ? s.accordionBodyOpen : ''}`}>
-                    <div className={s.accordionItem}>
+                    <button type="button" className={s.accordionItem} onClick={() => setActiveAssetSheet('logo')}>
                       <span className={s.accordionItemLabel}>Logo</span>
-                      <span className={s.accordionItemStatus}>{Boolean((team.club as Record<string, unknown> | null)?.logo_url || (team.club as Record<string, unknown> | null)?.crest_url) ? '✅' : '⚠️'}</span>
-                    </div>
-                    <div className={s.accordionItem}>
+                      <span className={s.accordionItemStatus}>{Boolean((team.club as Record<string, unknown> | null)?.logo_url || (team.club as Record<string, unknown> | null)?.crest_url) ? '\u2713' : '\u2013'}</span>
+                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                    </button>
+                    <button type="button" className={s.accordionItem} onClick={() => setActiveAssetSheet('club-sponsor')}>
                       <span className={s.accordionItemLabel}>Sponsor</span>
-                      <span className={s.accordionItemStatus}>{clubAssetStatus === 'complete' ? '✅' : '⚠️'}</span>
-                    </div>
-                    <div className={s.accordionItem}>
+                      <span className={s.accordionItemStatus}>{clubAssetStatus === 'complete' ? '\u2713' : '\u2013'}</span>
+                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                    </button>
+                    <button type="button" className={s.accordionItem} onClick={() => setActiveAssetSheet('kits')}>
                       <span className={s.accordionItemLabel}>Kits</span>
-                      <span className={s.accordionItemStatus}>{teamAssetStatus === 'complete' ? '✅' : '⚠️'}</span>
-                    </div>
+                      <span className={s.accordionItemStatus}>{teamAssetStatus === 'complete' ? '\u2713' : '\u2013'}</span>
+                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                    </button>
                   </div>
                 </div>
               )}
@@ -651,21 +660,23 @@ export const MyTeamHubPage: React.FC = () => {
                     />
                   </button>
                   <div className={`${s.accordionBody} ${expandedSections.has('beheer') ? s.accordionBodyOpen : ''}`}>
-                    <div className={s.accordionItem}>
+                    <button type="button" className={s.accordionItem} onClick={() => navigateToTab('beheer')}>
                       <AppIcon icon={Settings} size={14} className={s.accordionItemIcon} />
                       <span className={s.accordionItemLabel}>Team instellingen</span>
-                      <span className={s.accordionItemStatus}>✅</span>
-                    </div>
-                    <div className={s.accordionItem}>
+                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                    </button>
+                    <button type="button" className={s.accordionItem} onClick={() => navigateToTab('beheer')}>
                       <AppIcon icon={Trophy} size={14} className={s.accordionItemIcon} />
                       <span className={s.accordionItemLabel}>Competities</span>
                       <span className={s.accordionItemStatus}>{seasonCtx.competitions.length}</span>
-                    </div>
-                    <div className={s.accordionItem}>
+                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                    </button>
+                    <button type="button" className={s.accordionItem} onClick={() => setActiveAssetSheet('member-photos')}>
                       <AppIcon icon={Upload} size={14} className={s.accordionItemIcon} />
-                      <span className={s.accordionItemLabel}>Assets</span>
-                      <span className={s.accordionItemStatus}>{memberAssetSummary.complete}/{memberAssetSummary.total} foto's</span>
-                    </div>
+                      <span className={s.accordionItemLabel}>Ledenfoto's</span>
+                      <span className={s.accordionItemStatus}>{memberAssetSummary.complete}/{memberAssetSummary.total}</span>
+                      <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
+                    </button>
                   </div>
                 </div>
               )}
@@ -873,6 +884,22 @@ export const MyTeamHubPage: React.FC = () => {
           totalCount={d.members.length > 0 ? d.members.length : undefined}
         />
       </React.Suspense>
+
+      {/* ── Asset detail sheet ── */}
+      <AssetDetailSheet
+        isOpen={!!activeAssetSheet}
+        onClose={() => setActiveAssetSheet(null)}
+        type={activeAssetSheet}
+        batchBrandKits={d.batchBrandKits}
+        logoUrl={d.brandLogoUrl}
+        sponsorUrl={d.brandSponsorUrl}
+        memberSummary={memberAssetSummary}
+        members={d.members as SquadMember[]}
+        onNavigateToTab={(tab) => {
+          setActiveAssetSheet(null);
+          navigateToTab(tab);
+        }}
+      />
 
       {/* ── Member detail panel overlay ── */}
       {detailMemberId && (
