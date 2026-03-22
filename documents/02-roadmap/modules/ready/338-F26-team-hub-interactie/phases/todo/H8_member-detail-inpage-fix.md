@@ -1,46 +1,56 @@
-# H8 — Member Detail In-Page Fix
+# H8 — Member Detail In-Page (iOS Stijl)
 
 | | |
 |---|---|
 | Fase | H8 |
 | Status | 📋 TODO |
-| Effort | ~3 uur |
-| Afhankelijkheid | H3 (done) |
+| Effort | ~4 uur |
+| Afhankelijkheid | H5 (done) |
 
 ## Wat
 
-Wanneer je op een member klikt en dan "Bewerken" tapt, navigeert de app weg van de hub naar een andere pagina. Dit moet in-page blijven als een iOS-style slide-in panel op dezelfde pagina.
+Wanneer je op een member klikt en dan "Bewerken" tapt, navigeert de app weg van de hub naar een andere pagina. Dit moet in-page blijven als een iOS-style slide-in panel.
 
-## Technische analyse
+### Problemen
 
-### Huidige flow
-1. User taps member → `MemberSummarySheet` opent (sheet overlay) ✅
-2. User taps "Bewerken" → `onEdit` callback fires:
-   - `setSelectedMember(null)` — sluit MemberSummarySheet
-   - `setDetailMemberId(String(m.id))` — opent MemberDetailPanel
-3. `MemberDetailPanel` rendert als overlay dialog (`memberPanelOverlay` CSS class)
-
-### Mogelijke oorzaken dat het "weg navigeert"
-De code zelf navigeert NIET weg — het rendert MemberDetailPanel als een in-page overlay. Maar:
-
-1. **MemberDetailPanel kan intern navigatie triggeren** — als het panel zelf `useNavigate()` gebruikt om naar een member detail page te gaan bij bepaalde acties
-2. **De overlay CSS kan het zo laten lijken** — `memberPanelOverlay` is een full-screen overlay die de hele hub bedekt, waardoor het voelt als een andere pagina
-3. **Escape/close kan de verkeerde state resetten** — als er een race condition is
+1. **"Bewerken" navigeert weg** — Na tap op member → summary sheet → "Bewerken" gaat de app naar een andere URL. De gebruiker verliest de hub-context.
+2. **MemberDetailPanel overlay voelt als andere pagina** — Het `memberPanelOverlay` bedekt de hele hub, waardoor het niet meer als in-page voelt.
+3. **Geen terug-animatie** — Bij sluiten van het detail panel is er geen slide-out animatie.
 
 ### Gewenste UX
-- Member detail panel moet duidelijk een **slide-in overlay** zijn (van rechts)
-- De hub moet zichtbaar op de achtergrond blijven (half zichtbaar of dimmed)
-- "Sluiten" brengt je terug naar de hub op exact dezelfde scroll-positie
-- Geen URL-wijziging — altijd op dezelfde hub URL blijven
+- Member tap → MemberSummarySheet (bestaand, werkt goed)
+- "Bewerken" → MemberDetailPanel als **rechts-inschuivend panel** (hub dimmed op achtergrond)
+- Hub zichtbaar achter het panel (dimmed overlay)
+- Sluiten → slide-out animatie → terug op hub, zelfde scrollpositie
+- **Geen URL-wijziging** bij openen/sluiten
+- Alle bewerkingen (rol, foto's, assets) binnen het panel, niet via navigatie
+
+## Technische aanpak
+
+### Huidige flow
+1. Tap member → `setSelectedMember(m)` → `MemberSummarySheet` opent ✅
+2. Tap "Bewerken" → `setSelectedMember(null)` + `setDetailMemberId(mid)` → `MemberDetailPanel` opent
+3. `MemberDetailPanel` rendert in `memberPanelOverlay` div als `role="dialog"`
+
+### Fixes
+1. **Check MemberDetailPanel** — of het intern `navigate()` aanroept → blokkeren
+2. **CSS animatie** — `memberPanelOverlay` met `slideInRight` animatie + dimmed achtergrond
+3. **Tab-trap** — focus binnen het panel houden (voor a11y)
+4. **Scroll lock** — hub scroll locken terwijl panel open is
+
+### Bestanden
+- `demo/src/pages/identity/MyTeamHubPage.tsx` — overlay rendering + state
+- `demo/src/pages/identity/MyTeamHubPage.module.css` — `.memberPanelOverlay` styling
+- `demo/src/pages/periods/MemberDetailPanel.tsx` — check voor interne navigatie
 
 ## Checklist
 
-- [ ] Verify: Check of MemberDetailPanel intern `navigate()` aanroept bij open/mount
-- [ ] Fix: Blokkeer eventuele navigatie binnen MemberDetailPanel wanneer geopend vanuit de hub
-- [ ] CSS: `memberPanelOverlay` stylen als slide-in van rechts met dimmed achtergrond (hub zichtbaar)
-- [ ] Animatie: `slideInRight` voor openen, `slideOutRight` voor sluiten
-- [ ] Achtergrond: hub dimmed maar zichtbaar achter het panel
+- [ ] Check of MemberDetailPanel intern navigatie triggert → blokkeren
+- [ ] CSS: `.memberPanelOverlay` als slide-in van rechts met dimmed achtergrond
+- [ ] Animatie: slideInRight (openen) + slideOutRight (sluiten)
+- [ ] Hub zichtbaar achter panel (dimmed, niet interactief)
 - [ ] Scroll positie behouden na sluiten
-- [ ] URL mag niet wijzigen bij openen/sluiten MemberDetailPanel
-- [ ] Test: complete flow member tap → summary → bewerken → panel → sluiten → terug op hub
+- [ ] Focus trap binnen het detail panel
+- [ ] URL mag niet wijzigen
+- [ ] Test: complete flow member → summary → bewerken → panel → sluiten
 - [ ] TypeScript 0 errors, Vite build success

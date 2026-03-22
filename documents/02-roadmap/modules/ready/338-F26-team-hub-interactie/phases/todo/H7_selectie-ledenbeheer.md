@@ -1,52 +1,51 @@
-# H7 — Selectie Ledenbeheer
+# H7 — Selectie Ledenbeheer Verbeteren
 
 | | |
 |---|---|
 | Fase | H7 |
 | Status | 📋 TODO |
 | Effort | ~6 uur |
-| Afhankelijkheid | H3 (done) |
+| Afhankelijkheid | H5 (done) |
 
 ## Wat
 
-Twee ontbrekende functies in de Selectie:
+De basisflow voor leden toevoegen/verwijderen is gebouwd (H5), maar er missen nog cruciale functies:
 
-1. **Leden toevoegen/verwijderen** — Admin moet leden aan de selectie kunnen toevoegen (uit het team) of verwijderen. Nu is de selectie read-only.
+1. **Rol wijzigen** — Admin moet de rol (keeper, speler, staf) van een lid kunnen wijzigen vanuit de selectielijst
+2. **Assets behouden bij re-add** — Wanneer een lid verwijderd en opnieuw toegevoegd wordt, moeten bestaande assets (foto's, tenue) behouden blijven
+3. **Confirmatie bij verwijderen** — Nu verwijdert de rode knop direct zonder bevestiging
 
-2. **Season-level membership** — Een lid kan lid zijn van het team maar niet gekoppeld aan het huidige seizoen. Admin moet per seizoen kunnen bepalen welke leden actief zijn.
+### Huidige staat
+- ✅ `removeFromSquad` prop + rode `UserMinus` knop op member rijen (admin only)
+- ✅ `assignUsersToSeasonSquad` + "Niet in selectie" sectie met + knoppen
+- ❌ Geen rol-wijzig UI
+- ❌ Geen confirmatie-dialog bij verwijderen
+- ❌ Assets worden niet expliciet behouden bij re-add (backend gedrag te verifiëren)
 
-## Technische analyse
+## Technische aanpak
 
-### Huidige situatie
-- `HubSelectieTab.tsx` toont een lijst van `SquadMember[]` uit `d.members`
-- Members komen uit `useSeasonDetailPageData` → API call naar `/memberships/`
-- Er is geen UI om leden toe te voegen of te verwijderen
-- De member list is gekoppeld aan het seizoen (period) via de membership API
+### Rol wijzigen
+- `SquadMember` heeft `role` en `functional_roles` velden
+- Huidige groupering: `groupByRole()` in `HubSelectieTab.tsx` gebruikt deze velden
+- Optie: lange druk of context menu op een lid → rol selector (Keeper / Speler / Staf)
+- Backend: PATCH `/memberships/{id}/` met `{ role: 'goalkeeper' }` of `{ functional_roles: ['goalkeeper'] }`
 
-### Backend API
-- **Memberships endpoint**: `/api/v1/organisations/{org}/projects/{project}/memberships/`
-- **Create**: POST met `{ user: userId, role: 'member' }` (of via invite)
-- **Delete**: DELETE `/memberships/{id}/`
-- **Season koppeling**: Memberships zijn gekoppeld aan een project (team). Season-level is via `period_memberships` of een filter op de membership.
+### Assets behouden bij re-add
+- Verifieer backend gedrag: als een membership verwijderd wordt, worden assets (file_assets, brand_assets) gedelinkd?
+- Indien ja: soft-delete membership i.p.v. hard delete (of deactivate)
+- Indien nee: assets hangen aan de user, niet de membership → automatisch behouden
 
-### Gewenste UX
-- **Toevoegen**: "Lid toevoegen" button → zoek/selecteer uit team-leden die nog niet in het seizoen zitten
-- **Verwijderen**: Swipe-to-delete of "Verwijder" optie in de MemberSummarySheet
-- **Season koppeling**: Toggle of checkbox per lid om aan/uit het seizoen te koppelen
-
-### Bestaande componenten
-- `MemberSummarySheet` — kan uitgebreid met "Verwijder uit selectie" actie
-- `UsersList` / `MembersList` — kan hergebruikt voor de "toevoegen" picker
+### Bestanden
+- `demo/src/pages/identity/HubSelectieTab.tsx` — rol UI + confirmatie
+- `demo/src/pages/periods/useSeasonBulkActions.ts` — unassign logic
+- `src/memberships/` — backend membership model
 
 ## Checklist
 
-- [ ] Research: Hoe werkt season-level membership in de backend? Is er een aparte `period_membership` of filter?
-- [ ] "Lid toevoegen" button in Selectie tab/accordion — opent picker sheet
-- [ ] Picker sheet: toon team-leden die niet in het huidige seizoen zitten
-- [ ] Koppel geselecteerd lid aan seizoen via API
-- [ ] "Verwijder uit selectie" actie op MemberSummarySheet (admin only)
-- [ ] Verwijder-actie ontkoppelt lid van seizoen (niet permanent verwijderen uit team)
-- [ ] Refresh na toevoegen/verwijderen (`setMembersReloadToken`)
-- [ ] Empty state: "Geen leden in dit seizoen — voeg leden toe"
-- [ ] WCAG: focus management, confirmatie bij verwijderen
+- [ ] Rol-wijzig UI: tap op huidige rol → picker met Keeper/Speler/Staf
+- [ ] Backend: PATCH membership rol endpoint verifiëren en aansluiten
+- [ ] Confirmatie dialog bij "Verwijder uit selectie" ("Weet je zeker...?")
+- [ ] Verify: assets behouden na remove + re-add (backend check)
+- [ ] Indien nodig: soft-delete implementatie voor memberships
+- [ ] Refresh na rol-wijziging (`setMembersReloadToken`)
 - [ ] TypeScript 0 errors, Vite build success

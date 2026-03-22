@@ -316,18 +316,6 @@ export const MyTeamHubPage: React.FC = () => {
   return (
     <>
       <div className={s.page}>
-        {/* ── Breadcrumb — back to club ── */}
-        {team.club && (
-          <div className={s.breadcrumb}>
-            <button
-              type="button"
-              className={s.breadcrumbLink}
-              onClick={() => navigate(`/${team.orgKeyForRoutes}/${team.clubKeyForRoutes}`)}
-            >
-              ← {String((team.club as Record<string, unknown>)?.name || 'Club')}
-            </button>
-          </div>
-        )}
 
         {/* ── Header ── */}
         <div className={s.headerRow}>
