@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Code | F24 |
-| Status | 📋 ROADMAP |
+| Status | � READY |
 | Prioriteit | Hoog |
 | Geschatte effort | ~30 uur |
 | Afhankelijkheden | F23 (done — commit `f0381784`) |
@@ -117,17 +117,25 @@ H3 kan parallel lopen met H1-H2 (geen onderlinge afhankelijkheid na H0).
 - [ ] 0 TypeScript fouten, 0 console errors
 - [ ] Mobile responsive (375px–1280px)
 - [ ] Light + dark theme
+- [ ] **Alleen semantische tokens** (`var(--app-*)`) — geen primitive `var(--color-*)` tokens
+- [ ] **Sub-component extractie**: `MyTeamHubPage.tsx` max 500 regels (split in `SeasonAccordion`, `CompetitionAccordion`, `AssetsTabContent`)
+- [ ] **Loading states**: skeleton screens bij initieel laden, loading indicator bij seizoen-switch
+- [ ] **Race conditions**: geen stale data bij snelle seizoen-switch (`AbortController` of debounce)
+- [ ] **Image loading**: aspect-ratio containers voor thumbnails, skeleton/fallback bij laden/fout
 
 ### Should have
 - [ ] Bottom nav "Mijn Team" gebruikt active context voor navigatie
 - [ ] Overflow "Bewerken" opent team-edit (niet seizoen-edit)
 - [ ] Overview secties klikbaar naar juiste tab
 - [ ] Beheer accordion items navigeren naar specifieke secties
+- [ ] Optimistic UI bij seizoen-switch (rij gemarkeerd vóór data laadt)
+- [ ] Toast notification bij upload succes/fout
+- [ ] `HubTeamOnlyView` fallback werkt correct na URL-herstructurering
 
 ### Could have
 - [ ] CompetitionSummarySheet — competitie detail als sheet
-- [ ] Seizoen-selectie animatie bij switch
 - [ ] Deep-link `?season=X` query param support
+- [ ] Drag & drop voor asset uploads
 
 ---
 

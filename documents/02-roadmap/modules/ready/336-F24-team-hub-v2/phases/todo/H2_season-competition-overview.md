@@ -66,20 +66,51 @@ Gewenste volgorde van accordions op Overview tab:
 5. Assets preview (verbeterd in H4)
 6. Beheer (al aanwezig, verbeterd in H4)
 
-### 5. Styling (`MyTeamHubPage.module.css`)
-- [ ] Seizoen-rij stijling: naam + meta + chevron
-- [ ] "Actief" badge: `var(--color-success-100)` achtergrond, `var(--color-success-700)` tekst
-- [ ] "Lopend" badge: `var(--color-primary-100)` voor huidig jaar
+### 5. Sub-component extractie (500-lijn grens)
+
+`MyTeamHubPage.tsx` is al ~860 regels en overschrijdt de 500-lijn grens uit de frontend instructions. Deze componenten extracten als eigen bestanden:
+
+| Nieuw bestand | Inhoud |
+|--------------|--------|
+| `SeasonAccordion.tsx` | Seizoenen-lijst met switch handler |
+| `CompetitionAccordion.tsx` | Competities-lijst met sheet trigger |
+| `CompetitionSummarySheet.tsx` | Sheet component (eigen map) |
+
+### 6. Styling (`MyTeamHubPage.module.css`)
+- [ ] Seizoen-rij: naam + meta + chevron — `min-height: 44px` (touch target)
+- [ ] **"Actief" badge: `var(--app-success)` — semantisch token** (NIET `--color-success-100`)
+- [ ] **"Lopend" badge: `var(--app-primary)` — semantisch token** (NIET `--color-primary-100`)
 - [ ] Competitie-rij: naam + type badge + wedstrijden count
-- [ ] Empty states: gecentreerde tekst + CTA knop
+- [ ] Empty states: gebruik `EmptyState` ui-primitive of eigen layout met `var(--app-muted-text)`
+- [ ] Alle kleur-tokens: uitsluitend `var(--app-*)` semantische tokens, nooit `var(--color-*)`
+- [ ] Animaties: `transition: opacity var(--duration-fast) var(--ease-default)` + `@media (prefers-reduced-motion: reduce)` block
+
+### 7. Loading states & UX bij seizoen-switch
+- [ ] **Optimistic UI**: geselecteerde seizoen-rij krijgt direct `aria-selected="true"` + visuele highlight (geen wachten op data)
+- [ ] **Tab-content**: bij seizoen-switch korte fade (`opacity: 0 → 1`) op data-secties
+- [ ] **Skeleton screen**: als `hierarchySeasons` nog laadt → 3 placeholder-rijen met shimmer animatie
+- [ ] **Loading indicator**: klein spinner next to SeasonSwitcher terwijl nieuwe seizoen-data laadt
+- [ ] Alle skeletons: `@media (prefers-reduced-motion: reduce)` → statische placeholder zonder animatie
+
+### 8. Race condition afhandeling
+- [ ] Gebruik `AbortController` in season-switch handler: annuleer vorige request als user snel wisselt
+- [ ] Debounce of disable de seizoen-knoppen tijdens loading (prevent double-tap)
+- [ ] Bij PATCH `/auth/active-context/` fout: toon toast maar behoud lokale state (optimistic)
+- [ ] Pattern: zelfde als `useHierarchyData` abort-pattern als dat al aanwezig is
 
 ## Verificatie
 
 - [ ] Overview tab: "Seizoenen" accordion toont alle seizoenen van het team
-- [ ] Actief seizoen gemarkeerd met badge
-- [ ] Tap op ander seizoen → hub data wisselt naar dat seizoen (zonder navigatie)
-- [ ] "Competities" accordion toont competities van het geselecteerde seizoen
+- [ ] Actief seizoen gemarkeerd met semantische token-kleur (geen primitive)
+- [ ] Tap op ander seizoen → optimistic highlight → data wisselt (zonder navigatie)
+- [ ] Snelle dubbele tap: geen race condition, laatste seizoen wint
+- [ ] "Competities" accordion toont competities van het actieve seizoen
 - [ ] Na seizoen-switch: Competities-accordion updaten naar nieuwe seizoen
 - [ ] Tap op competitie → CompetitionSummarySheet opent
-- [ ] Mobile (375px): accordions werken, touch targets ≥ 44px
+- [ ] Empty state: seizoenloos team toont CTA, competitie-vrij seizoen toont CTA
+- [ ] Skeleton: tijdens laden van `hierarchySeasons` → placeholder rijen zichtbaar
+- [ ] Mobile (375px): touch targets ≥ 44px, accordions werken
+- [ ] Dark theme: alle tokens correct (geen primitive color tokens)
+- [ ] `@media (prefers-reduced-motion: reduce)`: animaties uitgeschakeld
+- [ ] `SeasonAccordion.tsx`, `CompetitionAccordion.tsx` als aparte bestanden (< 150 regels elk)
 - [ ] TypeScript: `npx tsc --noEmit` clean

@@ -72,22 +72,57 @@ getEffectiveAsset() → pakt dichtstbijzijnde niveau dat asset heeft
   3. Content & Video (content pipeline — was Media)
   4. Ledenfoto's uploaden
 
-### 6. Styling (`MyTeamHubPage.module.css`)
-- [ ] Sectie headers in assets tab (tenue / sponsor / club assets / ledenfoto's)
-- [ ] Inherited badge: `var(--color-neutral-200)` achtergrond, klein label
-- [ ] Preview thumbnails: vaste aspect ratios per asset type
-- [ ] Lege staten per sectie met upload CTA
-- [ ] Club assets sectie: visueel anders (grijs/gedimdt voor non-admins)
+### 6. Sub-component extractie (500-lijn grens)
+
+`MyTeamHubPage.tsx` mag max 500 regels zijn (frontend instructions). De Assets tab-content extracten:
+
+| Nieuw bestand | Inhoud |
+|--------------|--------|
+| `AssetsTabContent.tsx` | Root component voor de Assets tab |
+| `TeamAssetsSection.tsx` | Tenue + sponsor + team foto |
+| `ClubAssetsSection.tsx` | Inherited club assets (read-only) |
+
+Maximale bestandsgrootte: 150 regels per CSS module, 500 regels per TSX.
+
+### 7. Styling (`MyTeamHubPage.module.css` + eigen CSS modules)
+- [ ] Sectie headers: `var(--app-muted-text)` — semantisch token
+- [ ] **Inherited badge: `var(--app-surface-2)` achtergrond** (NIET `var(--color-neutral-200)`)
+- [ ] Preview thumbnails: vaste aspect ratio via `aspect-ratio` CSS property (voorkomt layout reflow bij laden)
+- [ ] Lege staat per sectie: `EmptyState` component of eigen layout — NIET alleen tekst
+- [ ] Club assets sectie: `opacity: 0.7` voor non-admins (gedimpt, niet disabled)
+- [ ] Alle kleur-tokens: **uitsluitend `var(--app-*)` semantic tokens**, nooit `var(--color-*)`
+- [ ] Dark mode: test via `data-theme="dark"` attribuut op root
+
+### 8. Image loading states
+- [ ] Asset thumbnails (kit foto's, sponsor logo, team foto): skeleton placeholder terwijl afbeelding laadt
+  ```tsx
+  <div className={styles.assetThumb}>
+    {isLoading ? <div className={styles.thumbSkeleton} /> : <img src={url} alt={label} />}
+  </div>
+  ```
+- [ ] `aspect-ratio: 3/2` voor kit thumbnails, `aspect-ratio: 1` voor logootjes (voorkomt CLS)
+- [ ] Fallback bij mislukte afbeelding: placeholder icoon + "Foto ontbreekt" tekst
+- [ ] Skeleton animatie: `@media (prefers-reduced-motion: reduce)` → statische placeholder
+
+### 9. Upload UX (admin)
+- [ ] Upload knop: `min-height: 44px; min-width: 44px` (touch target)
+- [ ] Upload progress: lineaire progress bar onder de thumbnail
+- [ ] Succesmelding: `Toast` component bij succesvolle upload (niet page-refresh)
+- [ ] Foutmelding: inline error under de upload knop (niet alert())
 
 ## Verificatie
 
-- [ ] Tab label zichtbaar als "Assets" (niet "Media")
+- [ ] Tab label "Assets" zichtbaar (niet "Media")
 - [ ] `?tab=media` → redirect naar `?tab=assets` (backward compat)
-- [ ] Tenue sectie: alle 4 kit types zichtbaar
-- [ ] Sponsor: inherited badge zichtbaar als van club
-- [ ] Club assets sectie: logo + locatie read-only voor team admins
-- [ ] Ledenfoto's matrix: toont alle leden
+- [ ] Tenue sectie: alle 4 kit types zichtbaar met aspect-ratio placeholders
+- [ ] Afbeelding skeleton: zichtbaar tijdens laden, verdwijnt na load (of fallback bij fout)
+- [ ] Sponsor: inherited badge met `var(--app-surface-2)` (niet primitive token)
+- [ ] Club assets sectie: read-only voor team admins, gedimpt (niet disabled)
+- [ ] Dark theme: inherited badge, sectie headers, skeleton correct
+- [ ] Ledenfoto's matrix: alle leden met upload-status
+- [ ] Upload: progress bar + toast bij succes + inline error bij fout
 - [ ] Content pipeline zichtbaar in Beheer tab (niet meer in Assets)
+- [ ] `AssetsTabContent.tsx` als apart bestand (< 500 regels)
 - [ ] Mobile (375px): scroll werkt, geen overflow
 - [ ] `npx tsc --noEmit` clean
 - [ ] `npx vite build` clean
