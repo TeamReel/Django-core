@@ -343,6 +343,15 @@
   .adminSectionChevron { transition: none; }
 }
 
+/* ── Member detail panel overlay ── */
+.memberPanelOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background: var(--app-bg);
+  overflow-y: auto;
+}
+
 /* ── Toasts ── */
 .toastContainer {
   position: fixed;

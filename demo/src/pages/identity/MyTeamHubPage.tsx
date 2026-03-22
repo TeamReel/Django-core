@@ -45,8 +45,14 @@ import { TeamBeheerTab } from './TeamBeheerTab';
 import { HubClubTab } from './HubClubTab';
 import { HubSelectieTab } from './HubSelectieTab';
 import { HubMediaTab } from './HubMediaTab';
-import { MatchSummarySheet } from './MatchSummarySheet';
-import { MemberSummarySheet } from './MemberSummarySheet';
+import { MemberDetailPanel } from '../periods/MemberDetailPanel';
+
+const MatchSummarySheet = React.lazy(() =>
+  import('./MatchSummarySheet').then((m) => ({ default: m.MatchSummarySheet })),
+);
+const MemberSummarySheet = React.lazy(() =>
+  import('./MemberSummarySheet').then((m) => ({ default: m.MemberSummarySheet })),
+);
 
 import s from './MyTeamHubPage.module.css';
 
@@ -162,11 +168,13 @@ export const MyTeamHubPage: React.FC = () => {
   // ── Sheet state ──
   const [selectedMatch, setSelectedMatch] = useState<MatchRecord | null>(null);
   const [selectedMember, setSelectedMember] = useState<SquadMember | null>(null);
+  const [detailMemberId, setDetailMemberId] = useState<string | null>(null);
 
   // Close sheets on tab switch
   useEffect(() => {
     setSelectedMatch(null);
     setSelectedMember(null);
+    setDetailMemberId(null);
   }, [activeTab]);
 
   // Member navigation for MemberSummarySheet
@@ -697,25 +705,51 @@ export const MyTeamHubPage: React.FC = () => {
       </div>
 
       {/* ── Sheets ── */}
-      <MatchSummarySheet
-        match={selectedMatch}
-        isOpen={!!selectedMatch}
-        onClose={() => setSelectedMatch(null)}
-        matchDisplayTitle={d.matchDisplayTitle}
-        matchDetailPath={selectedMatchDetailPath}
-      />
-      <MemberSummarySheet
-        member={selectedMember}
-        isOpen={!!selectedMember}
-        onClose={() => setSelectedMember(null)}
-        memberDetailPath={selectedMember ? d.memberDetailHref(String(selectedMember.id ?? '')) : ''}
-        onPrev={handleMemberPrev}
-        onNext={handleMemberNext}
-        hasPrev={selectedMemberIndex > 0}
-        hasNext={selectedMemberIndex >= 0 && selectedMemberIndex < d.members.length - 1}
-        currentIndex={selectedMemberIndex >= 0 ? selectedMemberIndex : undefined}
-        totalCount={d.members.length > 0 ? d.members.length : undefined}
-      />
+      <React.Suspense fallback={null}>
+        <MatchSummarySheet
+          match={selectedMatch}
+          isOpen={!!selectedMatch}
+          onClose={() => setSelectedMatch(null)}
+          matchDisplayTitle={d.matchDisplayTitle}
+          matchDetailPath={selectedMatchDetailPath}
+        />
+        <MemberSummarySheet
+          member={selectedMember}
+          isOpen={!!selectedMember}
+          onClose={() => setSelectedMember(null)}
+          onViewProfile={() => {
+            setDetailMemberId(String(selectedMember?.id ?? ''));
+            setSelectedMember(null);
+          }}
+          onPrev={handleMemberPrev}
+          onNext={handleMemberNext}
+          hasPrev={selectedMemberIndex > 0}
+          hasNext={selectedMemberIndex >= 0 && selectedMemberIndex < d.members.length - 1}
+          currentIndex={selectedMemberIndex >= 0 ? selectedMemberIndex : undefined}
+          totalCount={d.members.length > 0 ? d.members.length : undefined}
+        />
+      </React.Suspense>
+
+      {/* ── Member detail panel overlay ── */}
+      {detailMemberId && (
+        <div className={s.memberPanelOverlay}>
+          <MemberDetailPanel
+            membershipId={detailMemberId}
+            memberIds={(d.members as SquadMember[]).map((m) => String(m.id))}
+            project={d.project}
+            org={d.org}
+            club={d.club}
+            apiBaseUrl={d.apiBaseUrl}
+            isTeamRoute={d.isTeamRoute}
+            userCanEditProject={d.userCanEditProject}
+            clubBrand={d.clubBrand}
+            teamBrand={d.teamBrand}
+            batchBrandKits={d.batchBrandKits}
+            onClose={() => setDetailMemberId(null)}
+            onNavigate={(mid) => setDetailMemberId(mid)}
+          />
+        </div>
+      )}
 
       {/* Toast notifications */}
       {d.toasts.length > 0 && (

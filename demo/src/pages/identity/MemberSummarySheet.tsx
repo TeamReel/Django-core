@@ -5,7 +5,6 @@
  * Toont avatar, naam, rol en asset-slots. Zichtbaar voor alle rollen.
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Check, Minus, ArrowRight } from 'lucide-react';
 import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { Avatar } from '../../components/ui';
@@ -55,9 +54,10 @@ interface MemberSummarySheetProps {
   member: SquadMember | null;
   isOpen: boolean;
   onClose: () => void;
-  /** Path for 'Bekijk profiel' — navigates to member detail page */
-  memberDetailPath: string;
+  /** Called when 'Bekijk profiel' is tapped — opens MemberDetailPanel slide-in */
+  onViewProfile?: () => void;
   /** < > navigation between members */
+
   onPrev?: () => void;
   onNext?: () => void;
   hasPrev?: boolean;
@@ -73,7 +73,7 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
   member,
   isOpen,
   onClose,
-  memberDetailPath,
+  onViewProfile,
   onPrev,
   onNext,
   hasPrev = false,
@@ -81,7 +81,6 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
   currentIndex,
   totalCount,
 }) => {
-  const navigate = useNavigate();
   const [switching, setSwitching] = useState(false);
 
   const handlePrev = useCallback(() => {
@@ -115,9 +114,8 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
   }, [isOpen, handlePrev, handleNext, onClose]);
 
   const handleViewProfile = useCallback(() => {
-    onClose();
-    setTimeout(() => navigate(memberDetailPath), 0);
-  }, [onClose, memberDetailPath, navigate]);
+    onViewProfile?.();
+  }, [onViewProfile]);
 
   const assetStatus = member ? getMemberAssetStatus(member as Record<string, unknown>) : null;
   const slotPresence = member ? getMemberSlotPresence(member as Record<string, unknown>) : [];
