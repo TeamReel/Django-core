@@ -221,7 +221,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
         </div>
 
         <div className={styles.headerActions}>
-          <button type="button" className={styles.closeBtn} onClick={onClose} title="Sluiten">
+          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Sluiten" title="Sluiten">
             <X size={18} />
           </button>
         </div>

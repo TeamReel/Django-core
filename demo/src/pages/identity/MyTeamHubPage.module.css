@@ -71,8 +71,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
@@ -93,10 +93,10 @@
 
 .iconBtn:active { background: var(--app-active-bg, rgba(0, 0, 0, 0.08)); }
 
-/* ── Share button override — match .iconBtn (36×36px) ── */
+/* ── Share button override — match .iconBtn (44×44px) ── */
 .shareBtn button {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   justify-content: center;
 }
