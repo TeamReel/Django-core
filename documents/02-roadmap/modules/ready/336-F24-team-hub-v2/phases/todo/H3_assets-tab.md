@@ -8,60 +8,84 @@
 
 ## Doel
 
-De "Media" tab wordt vervangen door een "Assets" tab met visuele/brand assets. De content pipeline verhuist naar de Beheer tab. Kan parallel lopen met H1-H2.
+De "Media" tab wordt vervangen door een "Assets" tab met visuele/brand assets, member-foto's en credits. De content pipeline verhuist naar de Beheer tab. Kan parallel lopen met H1-H2.
 
 ## Context
 
+**Data model (uit index.md §1.5):**
+
+- **Club BrandProfile** → eigenaar van `logo`, `sponsor_logo`, alle kits, `location_photo`, `club_background`
+- **Team BrandProfile** → kan `sponsor_logo` en alle kits OVERSCHRIJVEN (geen eigen logo)
+- Inheritance via `getEffectiveAsset(type)`: zoekt eerst team-profiel, dan club-profiel
+- **Member assets** leven in `ProjectMembership.metadata.teamreel_assets` — NIET in BrandAsset
+- **Credits**: `ProjectCreditsBalance` per team — API: `GET /api/v1/credits/projects/{teamId}/`
+
 **Bestaande componenten om te hergebruiken:**
-- `KitsTab` — tenue (thuis/uit/3e/keeper) upload + preview
+- `KitsTab` — tenue upload + preview; ondersteunt 8 kit types: `home`, `away`, `third`, `goalkeeper`, `coach`, `assistant`, `training`, `legacy`
 - `IdentityTab` — logo/sponsor/locatie per level
-- `AssetsTabTeamLevel` — volledige asset management met inheritance badges
-- `MemberAssetMatrix` (in Beheer tab) — ledenfoto's upload status matrix
+- `AssetsTabTeamLevel` — asset management met inheritance badges; gebruikt `getEffectiveAsset()`
 
-**Asset inheritance model:**
-```
-Club → Team → Seizoen
-getEffectiveAsset() → pakt dichtstbijzijnde niveau dat asset heeft
-```
-
-**BrandAsset types:** `logo`, `sponsor_logo`, `kit_home`, `kit_away`, `kit_third`, `kit_goalkeeper`, `location_photo`, `stadium_background`, `team_photo`
+**RBAC (vastgesteld via bestaande permissie-hooks):**
+- Club admin (`role='admin'` op club Project) → kan club BrandAssets bewerken
+- Team admin (`role='admin'` op team Project) → kan team-overrides bewerken (sponsor, kits)
+- Speler/viewer → read-only; kan eigen `ProjectMembership.metadata` bewerken (foto's)
 
 ## Taken
 
-### 1. Tab hernoemen + tab definitie (`MyTeamHubPage.tsx`)
+### 1. Tab hernoemen + definitie (`MyTeamHubPage.tsx`)
 - [ ] Tab definitie: `id: 'media'` → `id: 'assets'`, `label: 'Media'` → `label: 'Assets'`
-- [ ] Alias map: voeg `'media': 'assets'` toe voor backward compat (`?tab=media` → assets tab)
-- [ ] RBAC: Assets tab zichtbaar voor Player + Admin (niet Supporter only)
-- [ ] Sidebar PanelB: update tab naam "Assets"
-- [ ] MobileTabBar: tab naam "Assets"
+- [ ] Alias map: `'media': 'assets'` voor backward compat (`?tab=media` → assets tab)
+- [ ] RBAC: Assets tab zichtbaar voor alle rollen (Player, Admin, Supporter)
+- [ ] Sidebar PanelB + MobileTabBar: tab naam "Assets"
 
-### 2. Assets tab inhoud — team assets sectie
-- [ ] **Tenue** sectie met `KitsTab` component:
-  - Thuis, uit, 3e, keeper tenue
-  - Upload + preview per kit type
-  - Edit voor admins, view-only voor players
-- [ ] **Sponsor** sectie:
-  - Sponsor logo preview + upload knop (admin)
-  - Inherited van club → toon badge "Van club" + optie om te overschrijven
-- [ ] **Team foto** sectie:
-  - Huidige team foto preview
-  - Upload knop (admin)
+### 2. Club assets sectie (heeft eigen BrandProfile)
+- [ ] Sectie header: "Club assets" met uitleg "Gedeeld door alle teams van de club"
+- [ ] **Logo** (`logo`): preview + upload knop (club admin), read-only balk (team admin)
+- [ ] **Sponsor** (`sponsor_logo`): preview + upload knop (club admin), met badge "Club-sponsor" als team geen override heeft
+- [ ] **Kits** (4 primaire: `kit_home`, `kit_away`, `kit_third`, `kit_goalkeeper`):
+  - Preview thumbnail per kit type met label (Thuis / Uit / 3e / Keeper)
+  - Upload knop (club admin)
+  - "Club" badge op elk item
+- [ ] **Overige kits** (`kit_coach`, `kit_assistant`, `kit_training`, `kit_legacy`):
+  - Weergegeven als compacte rij (minder prominent dan primaire kits)
+  - Zichtbaar als de club ze heeft; anders "Niet ingesteld" placeholder
+- [ ] **Locatie** (`location_photo`): foto preview + locatienaam; upload knop (club admin)
+- [ ] Gedrag per rol:
+  - Club admin → in-place bewerken (upload knop actief); geen navigatie weg van de tab
+  - Team admin / player → read-only; `opacity: 0.7`; geen upload knoppen
 
-### 3. Assets tab inhoud — club assets sectie (inherited)
-- [ ] Sectie header: "Van de club" met info-tooltip uitleg
-- [ ] **Club logo** — preview (read-only voor niet-club-admins)
-- [ ] **Locatie** — locatie naam + locatie foto preview
-- [ ] Inherited badge op elk item: "Van [Clubnaam]"
-- [ ] Club admins: edit knop zichtbaar → navigeert naar club profiel
+### 3. Team overrides sectie (team BrandProfile)
+- [ ] Sectie header: "Team instellingen" met uitleg "Teamspecifieke overrides van de club"
+- [ ] **Sponsor override** (`sponsor_logo` op team BrandProfile):
+  - Als team heeft eigen sponsor: preview + "Team-sponsor" badge + verwijder-optie (team admin)
+  - Als niet: "Erft club-sponsor" placeholder + "Eigen sponsor instellen" knop (team admin)
+- [ ] **Kit overrides** (primaire 4: `kit_home`, `kit_away`, `kit_third`, `kit_goalkeeper`):
+  - Per kit: toon of het een club-kit (inherited) of team-kit (override) is
+  - "Override" badge als team eigen kit heeft
+  - Upload knop (team admin) + verwijder override knop als override actief
+  - Toont `getEffectiveAsset(kit_type)` → inherited of override preview
+- [ ] Gedrag per rol:
+  - Team admin of club admin → upload knoppen actief
+  - Speler / viewer → read-only
 
-### 4. Assets tab inhoud — ledenfoto's sectie
-- [ ] **Ledenfoto's** sectie met status matrix:
-  - Per lid: naam, foto preview of placeholder, upload status
-  - Upload knop per lid (admin)
-  - Volledige matrix: hergebruik `MemberAssetMatrix` component
-- [ ] Teller: "X van Y leden hebben een foto"
+### 4. Member foto-sectie (ProjectMembership.metadata)
+- [ ] Sectie header: "Ledenfoto's" met teller "X van Y leden hebben een foto"
+- [ ] Per lid een rij: naam, thumbnail (`metadata.teamreel_assets.media.profile`), upload-status badge
+- [ ] Upload wordt gedaan via `PATCH /api/v1/projects/{project_pk}/members/{pk}/` — NIET via BrandAsset
+- [ ] Admin: upload knop per lid (roept ProjectMembership API aan)
+- [ ] Speler: kan alleen eigen rij bewerken
+- [ ] Lege staat: "Nog geen ledenfoto's" met CTA (upload eerste foto)
+- [ ] Koppeling met `fullbody`/`halfbody`/`closeup` types: maak dit inzichtelijk (bijv. welke kit-type voor-ingesteld is)
 
-### 5. Content pipeline verplaatsen naar Beheer tab
+### 5. Credits sectie (ProjectCreditsBalance)
+- [ ] Sectie header: "Credits"
+- [ ] API: `GET /api/v1/credits/projects/{teamId}/` → `{ current_balance: Decimal }`
+- [ ] Weergave: huidig saldo (bijv. "1.200 credits")
+- [ ] Zichtbaar voor alle rollen (transparantie over gebruik)
+- [ ] Link naar `CreditsPage` van de organisatie voor bijkopen/details
+- [ ] Lege staat: "Geen creditsinformatie beschikbaar" als er geen balance-record is
+
+### 6. Content pipeline verplaatsen naar Beheer tab
 - [ ] `SeasonContentTab` component verwijderen uit Media/Assets tab
 - [ ] Toevoegen als accordion-sectie in Beheer tab:
   - Sectie header: "Content & Video"
@@ -70,59 +94,65 @@ getEffectiveAsset() → pakt dichtstbijzijnde niveau dat asset heeft
   1. Team instellingen
   2. Competities beheren
   3. Content & Video (content pipeline — was Media)
-  4. Ledenfoto's uploaden
+  4. Ledenfoto's uploaden (detail-beheer, los van de Assets tab sectie)
 
-### 6. Sub-component extractie (500-lijn grens)
+### 7. Sub-component extractie (500-lijn grens)
 
 `MyTeamHubPage.tsx` mag max 500 regels zijn (frontend instructions). De Assets tab-content extracten:
 
-| Nieuw bestand | Inhoud |
-|--------------|--------|
-| `AssetsTabContent.tsx` | Root component voor de Assets tab |
-| `TeamAssetsSection.tsx` | Tenue + sponsor + team foto |
-| `ClubAssetsSection.tsx` | Inherited club assets (read-only) |
+| Nieuw bestand | Inhoud | Max regels |
+|--------------|--------|-----------|
+| `AssetsTabContent.tsx` | Root component Assets tab — rendert secties | 150 |
+| `ClubAssetsSection.tsx` | Club BrandProfile assets (logo, sponsor, kits, locatie) | 200 |
+| `TeamAssetsSection.tsx` | Team overrides (sponsor, kit overrides) | 150 |
+| `MemberPhotosSection.tsx` | Ledenfoto's rij (ProjectMembership.metadata) | 150 |
+| `CreditsSection.tsx` | Credits balance display | 80 |
 
-Maximale bestandsgrootte: 150 regels per CSS module, 500 regels per TSX.
-
-### 7. Styling (`MyTeamHubPage.module.css` + eigen CSS modules)
+### 8. Styling (`AssetsTabContent.module.css` + eigen CSS modules)
 - [ ] Sectie headers: `var(--app-muted-text)` — semantisch token
-- [ ] **Inherited badge: `var(--app-surface-2)` achtergrond** (NIET `var(--color-neutral-200)`)
-- [ ] Preview thumbnails: vaste aspect ratio via `aspect-ratio` CSS property (voorkomt layout reflow bij laden)
-- [ ] Lege staat per sectie: `EmptyState` component of eigen layout — NIET alleen tekst
-- [ ] Club assets sectie: `opacity: 0.7` voor non-admins (gedimpt, niet disabled)
-- [ ] Alle kleur-tokens: **uitsluitend `var(--app-*)` semantic tokens**, nooit `var(--color-*)`
-- [ ] Dark mode: test via `data-theme="dark"` attribuut op root
+- [ ] Inherited badge: `var(--app-surface-2)` achtergrond (NIET `var(--color-neutral-200)`)
+- [ ] Override badge: `var(--app-primary)` tint (NIET `var(--color-primary-100)`)
+- [ ] Read-only secties (club assets voor team admin): `opacity: 0.7` — NIET `pointer-events: none`
+- [ ] Preview thumbnails: `aspect-ratio: 3/2` voor kit-fotos, `aspect-ratio: 1` voor logo's
+- [ ] Lege staat: consistent met bestaande `EmptyState` ui-primitive of eigen layout — NIET alleen tekst
+- [ ] Dark mode: alle tokens correct via `data-theme="dark"` attribuut op root
+- [ ] Alle kleur-tokens: uitsluitend `var(--app-*)` — nooit `var(--color-*)`
 
-### 8. Image loading states
-- [ ] Asset thumbnails (kit foto's, sponsor logo, team foto): skeleton placeholder terwijl afbeelding laadt
+### 9. Image loading states
+- [ ] Asset thumbnails: skeleton placeholder terwijl afbeelding laadt
   ```tsx
   <div className={styles.assetThumb}>
     {isLoading ? <div className={styles.thumbSkeleton} /> : <img src={url} alt={label} />}
   </div>
   ```
-- [ ] `aspect-ratio: 3/2` voor kit thumbnails, `aspect-ratio: 1` voor logootjes (voorkomt CLS)
+- [ ] `aspect-ratio` op alle thumbnail containers (voorkomt CLS bij laden)
 - [ ] Fallback bij mislukte afbeelding: placeholder icoon + "Foto ontbreekt" tekst
 - [ ] Skeleton animatie: `@media (prefers-reduced-motion: reduce)` → statische placeholder
 
-### 9. Upload UX (admin)
+### 10. Upload UX (admin)
 - [ ] Upload knop: `min-height: 44px; min-width: 44px` (touch target)
 - [ ] Upload progress: lineaire progress bar onder de thumbnail
-- [ ] Succesmelding: `Toast` component bij succesvolle upload (niet page-refresh)
-- [ ] Foutmelding: inline error under de upload knop (niet alert())
+- [ ] Succesbericht: `Toast` component bij succesvolle upload (geen page-refresh)
+- [ ] Foutmelding: inline error onder de upload knop (geen `alert()`)
 
 ## Verificatie
 
 - [ ] Tab label "Assets" zichtbaar (niet "Media")
 - [ ] `?tab=media` → redirect naar `?tab=assets` (backward compat)
-- [ ] Tenue sectie: alle 4 kit types zichtbaar met aspect-ratio placeholders
-- [ ] Afbeelding skeleton: zichtbaar tijdens laden, verdwijnt na load (of fallback bij fout)
-- [ ] Sponsor: inherited badge met `var(--app-surface-2)` (niet primitive token)
-- [ ] Club assets sectie: read-only voor team admins, gedimpt (niet disabled)
-- [ ] Dark theme: inherited badge, sectie headers, skeleton correct
-- [ ] Ledenfoto's matrix: alle leden met upload-status
-- [ ] Upload: progress bar + toast bij succes + inline error bij fout
-- [ ] Content pipeline zichtbaar in Beheer tab (niet meer in Assets)
-- [ ] `AssetsTabContent.tsx` als apart bestand (< 500 regels)
-- [ ] Mobile (375px): scroll werkt, geen overflow
+- [ ] **Club assets sectie**: logo, sponsor, 4 primaire kits, locatie zichtbaar
+- [ ] Club admin → upload knoppen actief op club assets; in-place opslaan
+- [ ] Team admin → club assets read-only + gedimpt; team overrides bewerkbaar
+- [ ] **Team overrides sectie**: sponsor override + kit overrides met inherited/override state
+- [ ] `getEffectiveAsset()` inheritance correct: team override verbergt club-asset niet maar toont override badge
+- [ ] **Ledenfoto's sectie**: alle leden met profiel-thumbnail, teller klopt
+- [ ] Member foto upload via ProjectMembership API (niet BrandAsset API)
+- [ ] **Credits sectie**: saldo zichtbaar
+- [ ] Thumbnail skeletons: zichtbaar tijdens laden, verdwijnen na load (of fallback bij fout)
+- [ ] Inherited badge: `var(--app-surface-2)` (geen primitive token)
+- [ ] Override badge: `var(--app-primary)` (geen primitive token)
+- [ ] Dark theme: alle secties correct
+- [ ] Content pipeline: NIET meer in Assets tab — wel in Beheer tab
+- [ ] `AssetsTabContent.tsx` als apart bestand (< 150 regels)
+- [ ] Mobile (375px): scroll werkt, geen overflow, touch targets ≥ 44px
 - [ ] `npx tsc --noEmit` clean
 - [ ] `npx vite build` clean

@@ -73,6 +73,81 @@ De hub moet dit systeem gebruiken om het initieel geselecteerde seizoen te bepal
 
 ---
 
+### 1.5 Domeinmodel
+
+De hub toont en beheert data op meerdere niveaus van de hiërarchie:
+
+```
+Organisation
+└── Project (club, parent_project=None)
+    ├── BrandProfile → BrandAsset (club-eigenaar: logo, sponsor, kits, locatie, achtergrond)
+    ├── ProjectMembership (club membership; period=null)
+    └── Project (team, parent_project=club)
+        ├── BrandProfile → BrandAsset (team overrides: sponsor, kits)
+        ├── ProjectCreditsBalance           ← credits per team (AI-generaties)
+        ├── ProjectMembership               ← teamlidmaatschap (period=null of period=seizoen)
+        │   └── metadata.teamreel_assets   ← lid-foto's en -video's (NIET BrandAsset)
+        └── Period (seizoen, parent_period=None)
+            ├── ContentItem (template_type='season')   ← transformation, season_recap
+            ├── ProjectMembership (period=seizoen)     ← seizoenslidmaatschap
+            └── Period (competitie, parent_period=seizoen)
+                └── Activity (type='match')
+                    └── ContentItem (template_type='pre_match'/'post_match')
+                                                        ← lineup, end_score, highlights
+```
+
+**Asset-eigenaarschap per niveau (BrandAsset):**
+
+| Asset type | Club | Team |
+|---|---|---|
+| `logo` | ✅ Eigenaar | ❌ Erft van club (geen eigen logo) |
+| `sponsor_logo` | ✅ Eigenaar | ✅ Kan overschrijven |
+| `kit_home` / `kit_away` / `kit_third` / `kit_goalkeeper` | ✅ Eigenaar | ✅ Kan overschrijven |
+| `kit_coach` / `kit_assistant` / `kit_training` / `kit_legacy` | ✅ Eigenaar | ✅ Kan overschrijven |
+| `location_photo` | ✅ Eigenaar | ❌ Erft van club |
+| `club_background` | ✅ Eigenaar | ❌ Erft van club |
+
+*Inheritance via `getEffectiveAsset(type)`: checkt eerst team BrandProfile, dan club BrandProfile.*
+
+**Member assets (niet BrandAsset — aparte opslag):**
+
+Lid-foto's en -video's leven in `ProjectMembership.metadata.teamreel_assets`:
+
+| Sleutel | Inhoud |
+|---------|--------|
+| `images.{kit_type}.fullbody` | Gegenereerd fullbody-foto in tenue |
+| `images.{kit_type}.halfbody` | Auto-gecropte versie (55% hoogte) |
+| `images.{kit_type}.closeup` | Auto-gecropte versie (28% — hoofd + schouders) |
+| `images.{kit_type}.action_photo` | Actie-foto |
+| `media.profile` | Profielfoto URL |
+| `media.intro` | Introvideo |
+| `media.celebration` | Doelpunt-viering video |
+
+API: `PATCH /api/v1/projects/{project_pk}/members/{pk}/` (ProjectMembershipViewSet)
+
+**Credits per team:**
+
+`ProjectCreditsBalance` — één record per project (team). API: `GET /api/v1/credits/projects/{teamId}/`
+
+**Content types:**
+
+| Niveau | TemplateType | Subtypes |
+|--------|-------------|---------|
+| Seizoen | `season` | `transformation` (then vs now), `season_recap` |
+| Pre-wedstrijd | `pre_match` | `lineup`, `lineup_flyer`, `flyer`, `walkon`, `anthem` |
+| Post-wedstrijd | `post_match` | `end_score`, `match_summary`, `highlights` |
+| Per lid | `member` | `profile_photo`, `member_in_tenue`, `member_intro` |
+
+**RBAC op Assets tab:**
+
+| Rol | Vastgesteld via | Bevoegdheid |
+|-----|----------------|-------------|
+| Club admin | `role='admin'` op club Project | Alle club BrandAssets bewerken |
+| Team admin | `role='admin'` op team Project | Team BrandAsset overrides bewerken (sponsor, kits) |
+| Speler / Viewer | Overig membership | Read-only assets; eigen lid-metadata bewerken |
+
+---
+
 ## 2. Design beslissingen
 
 | Beslissing | Keuze | Reden |
