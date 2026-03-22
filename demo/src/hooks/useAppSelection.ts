@@ -28,24 +28,62 @@ export function useAppSelection(): AppSelection {
   const { context } = useContextSwitcher();
   const { user } = useAuth(); // assuming useAuth provides authenticated user
 
-  const [appSelection, setAppSelection] = useState<AppSelection>({
-    orgSlug: '',
-    clubSlugOrId: null,
-    clubName: null,
-    teamSlugOrId: null,
-    teamName: null,
-    teamIdForApi: null,
-    seasonSlugOrId: null,
-    seasonName: null,
-    seasonIdForApi: null,
-    competitionSlugOrId: null,
-    competitionName: null,
-    competitionIdForApi: null,
-    matchId: null,
-    myOrgSlug: null,
-    myClubSlugOrId: null,
-    myTeamSlugOrId: null,
-    mySeasonSlugOrId: null,
+  // Pre-seed from localStorage for instant rendering (overwritten by async compute()).
+  // This eliminates the cold-start flicker where "Mijn Team" shows /directory
+  // while the async resolution is in flight.
+  const [appSelection, setAppSelection] = useState<AppSelection>(() => {
+    try {
+      const raw = localStorage.getItem(APP_LAST_CTX_KEY);
+      const parsed = raw ? (JSON.parse(raw) as Record<string, unknown>) : null;
+      if (parsed && typeof parsed === 'object') {
+        const orgSlug = String(parsed.orgSlug || '');
+        const clubSlugOrId = parsed.clubSlugOrId ? String(parsed.clubSlugOrId) : null;
+        const teamSlugOrId = parsed.teamSlugOrId ? String(parsed.teamSlugOrId) : null;
+        const seasonSlugOrId = parsed.seasonSlugOrId ? String(parsed.seasonSlugOrId) : null;
+        if (orgSlug) {
+          return {
+            orgSlug,
+            clubSlugOrId,
+            clubName: null,
+            teamSlugOrId,
+            teamName: null,
+            teamIdForApi: null,
+            seasonSlugOrId,
+            seasonName: null,
+            seasonIdForApi: null,
+            competitionSlugOrId: parsed.competitionSlugOrId ? String(parsed.competitionSlugOrId) : null,
+            competitionName: null,
+            competitionIdForApi: null,
+            matchId: parsed.matchId ? String(parsed.matchId) : null,
+            myOrgSlug: orgSlug,
+            myClubSlugOrId: clubSlugOrId,
+            myTeamSlugOrId: teamSlugOrId,
+            mySeasonSlugOrId: seasonSlugOrId,
+          };
+        }
+      }
+    } catch {
+      // ignore — fallback to nulls
+    }
+    return {
+      orgSlug: '',
+      clubSlugOrId: null,
+      clubName: null,
+      teamSlugOrId: null,
+      teamName: null,
+      teamIdForApi: null,
+      seasonSlugOrId: null,
+      seasonName: null,
+      seasonIdForApi: null,
+      competitionSlugOrId: null,
+      competitionName: null,
+      competitionIdForApi: null,
+      matchId: null,
+      myOrgSlug: null,
+      myClubSlugOrId: null,
+      myTeamSlugOrId: null,
+      mySeasonSlugOrId: null,
+    };
   });
 
   const readLastAppContext = (currentUserEmail?: string) => {

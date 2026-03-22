@@ -69,7 +69,11 @@ const MobileBottomNav = memo(function MobileBottomNav() {
   const myOrg = myOrgSlug || orgSlug;
   const myClub = myClubSlugOrId || clubSlugOrId;
   const myTeam = myTeamSlugOrId || teamSlugOrId;
-  const mySeason = mySeasonSlugOrId || seasonSlugOrId;
+  // Only fall back to URL's seasonSlugOrId when we know it belongs to MY team —
+  // i.e. the URL team matches our resolved myTeam. Using a foreign team's season
+  // would build a broken 4-segment URL for the user's own team.
+  const urlSeasonIsMine = !!myTeamSlugOrId && teamSlugOrId === myTeamSlugOrId;
+  const mySeason = mySeasonSlugOrId || (urlSeasonIsMine ? seasonSlugOrId : null);
 
   const teamPath = myOrg && myClub && myTeam
     ? routes.team({ orgId: myOrg, clubId: myClub, projectId: myTeam })

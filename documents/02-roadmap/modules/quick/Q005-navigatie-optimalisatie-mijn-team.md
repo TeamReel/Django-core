@@ -2,6 +2,91 @@
 
 | | |
 |---|---|
+| Status | ✅ DONE |
+| Bron | Flow review — botNav → SeasonDetailPage |
+| Impact | 🟡 important |
+| Effort | ~1 uur |
+
+## Huidige situatie (was)
+
+Wanneer de gebruiker op "Mijn Club" / "Mijn Team" tikt in de bottom nav, doorloopt de app
+meerdere stappen die voor merkbare latency zorgen:
+
+```
+Tap → useAppSelection (async: 2-3 API calls tegelijk)
+       ↓  Initial state = alle null → "Mijn Team" toont /directory of teamPath zonder seizoen
+     compute() klaar → setAppSelection met my* values gevuld
+       ↓
+     Correcte seasonPath beschikbaar
+```
+
+**Knelpunten:**
+1. `useAppSelection` initialiseert altijd met alle `null` waarden. Tot `compute()` klaar is,
+   heeft `MobileBottomNav` geen `mySeasonSlugOrId` en valt terug op 3-segment URL (zonder season).
+2. Race condition: `mySeason = mySeasonSlugOrId || seasonSlugOrId`. Als de user op een
+   **ander** team's pagina browst en `mySeasonSlugOrId` nog null is, pakt hij de URL's
+   seasonSlugOrId — die hoort bij het andere team. Klikken op "Mijn Team" bouwt dan een
+   4-segment URL met de verkeerde season slug: SeasonProvider vindt hem niet → error.
+3. ⚠️ De originele Q005-analyse stelde voor om `useContextSwitcher()` te gebruiken als
+   vervanging. Dit klopt niet: `useContextSwitcher` weet alleen `organisation + project`
+   (2 niveaus), terwijl TeamReel een 4-laagse hiërarchie (org/club/team/season) heeft.
+
+## Oplossing (geïmplementeerd)
+
+### Fix 1 — Lazy `useState` initialisatie in `useAppSelection`
+
+`useState` krijgt een lazy initializer die **synchronisch** `APP_LAST_CTX_KEY` uit
+localStorage leest en direct de volledige `my*` waarden vult:
+
+```tsx
+const [appSelection, setAppSelection] = useState<AppSelection>(() => {
+  const raw = localStorage.getItem(APP_LAST_CTX_KEY);
+  const parsed = raw ? JSON.parse(raw) : null;
+  if (parsed?.orgSlug) {
+    return {
+      ...allNulls,
+      orgSlug: parsed.orgSlug,
+      myOrgSlug: parsed.orgSlug,
+      myClubSlugOrId: parsed.clubSlugOrId ?? null,
+      myTeamSlugOrId: parsed.teamSlugOrId ?? null,
+      mySeasonSlugOrId: parsed.seasonSlugOrId ?? null,
+    };
+  }
+  return allNulls;
+});
+```
+
+**Effect:** Bij elke mount zijn `my*` waarden instant beschikbaar (synchroon, geen network).
+`compute()` draait daarna nog steeds en schrijft de gecorrigeerde/gevalideerde waarden terug.
+
+### Fix 2 — Race condition fix in `MobileBottomNav`
+
+`mySeason` gebruikt de URL-season alleen als fallback wanneer gegarandeerd is dat de URL
+ook echt van het eigen team is:
+
+```tsx
+const urlSeasonIsMine = !!myTeamSlugOrId && teamSlugOrId === myTeamSlugOrId;
+const mySeason = mySeasonSlugOrId || (urlSeasonIsMine ? seasonSlugOrId : null);
+```
+
+**Effect:** Geen broken 4-segment URL meer wanneer user een ander team's pagina bezoekt.
+
+## Resultaat
+
+| Scenario | Vóór | Na |
+|----------|------|----|
+| Cold start (dashboard) | 3-segment URL, SeasonProvider doet redirect | 4-segment URL vanuit localStorage: instant |
+| Koud (ander team's pagina) | 4-segment URL met verkeerde season → error | 3-segment URL (veilig) → SeasonProvider resolveert |
+| Warm (zelfde team) | Instant (URL params gevuld) | Instant (localStorage + URL) |
+| Eerste sessie ooit | 3-segment, SeasonProvider resolveert | Zelfde — geen localStorage beschikbaar |
+
+## Commits
+- `c8a56e04` — plan aangemaakt
+- `[next commit]` — fixes geïmplementeerd
+
+
+| | |
+|---|---|
 | Status | 📋 TODO |
 | Bron | Flow review — botNav → SeasonDetailPage |
 | Impact | 🟡 important |
