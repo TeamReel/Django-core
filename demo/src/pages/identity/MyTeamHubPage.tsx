@@ -871,6 +871,7 @@ export const MyTeamHubPage: React.FC = () => {
           member={selectedMember}
           isOpen={!!selectedMember}
           onClose={() => setSelectedMember(null)}
+          clubName={d.club?.name}
           onViewProfile={() => {
             setDetailMemberId(String(selectedMember?.id ?? ''));
             setSelectedMember(null);

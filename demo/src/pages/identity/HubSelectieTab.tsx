@@ -75,17 +75,15 @@ function memberName(m: SquadMember): string {
 }
 
 function memberAvatarUrl(m: SquadMember): string | undefined {
-  // Priority: closeup processed → raw → profile → kit photo → user avatar
+  // Priority: processed closeup in-tenue ONLY → user avatar
   const tr = (m.metadata as Record<string, unknown> | undefined)?.teamreel_assets as Record<string, unknown> | undefined;
   if (tr) {
     const closeup = (tr.images as Record<string, unknown> | undefined)?.closeup as Record<string, unknown> | undefined;
-    const home = (closeup?.home ?? closeup?.away) as Record<string, unknown> | undefined;
-    if (typeof home?.processed === 'string' && home.processed) return home.processed;
-    if (typeof home?.raw === 'string' && home.raw) return home.raw;
-    const profileUrl = (tr.media as Record<string, unknown> | undefined)?.profile as Record<string, unknown> | undefined;
-    if (typeof profileUrl?.url === 'string' && profileUrl.url) return profileUrl.url;
-    const kitUrl = (tr.kit as Record<string, unknown> | undefined)?.profile_photo_url;
-    if (typeof kitUrl === 'string' && kitUrl) return kitUrl;
+    // Check all kit types for processed closeup
+    for (const kitType of ['home', 'away', 'third', 'goalkeeper']) {
+      const kit = closeup?.[kitType] as Record<string, unknown> | undefined;
+      if (typeof kit?.processed === 'string' && kit.processed) return kit.processed;
+    }
   }
   return (m.user as Record<string, unknown> | undefined)?.avatar_url as string | undefined;
 }

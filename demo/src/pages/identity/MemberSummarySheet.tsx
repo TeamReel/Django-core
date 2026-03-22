@@ -40,12 +40,17 @@ function memberName(m: SquadMember): string {
 }
 
 function memberAvatarUrl(m: SquadMember): string | undefined {
+  // Priority: processed closeup in-tenue (home/away/third) → user avatar
+  const tr = (m.metadata as Record<string, unknown> | undefined)?.teamreel_assets as Record<string, unknown> | undefined;
+  if (tr) {
+    const closeup = (tr.images as Record<string, unknown> | undefined)?.closeup as Record<string, unknown> | undefined;
+    // Check all kit types for processed closeup
+    for (const kitType of ['home', 'away', 'third', 'goalkeeper']) {
+      const kit = closeup?.[kitType] as Record<string, unknown> | undefined;
+      if (typeof kit?.processed === 'string' && kit.processed) return kit.processed;
+    }
+  }
   return (m.user as Record<string, unknown> | undefined)?.avatar_url as string | undefined;
-}
-
-function memberRoleLabel(m: SquadMember): string {
-  const role = (m.role ?? '').toLowerCase();
-  return ROLE_LABELS[role] ?? 'Lid';
 }
 
 /* ── Types ────────────────────────────────────────────────────────────── */
@@ -54,6 +59,8 @@ interface MemberSummarySheetProps {
   member: SquadMember | null;
   isOpen: boolean;
   onClose: () => void;
+  /** Club name (parent project) to display under member name */
+  clubName?: string;
   /** Called when 'Bekijk profiel' is tapped — opens MemberDetailPanel slide-in */
   onViewProfile?: () => void;
   /** Called when 'Bewerken' is tapped — opens MemberDetailPanel for editing (admin) */
@@ -75,6 +82,7 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
   member,
   isOpen,
   onClose,
+  clubName,
   onViewProfile,
   onEdit,
   onPrev,
@@ -170,7 +178,7 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
                 size="xl"
               />
               <h2 className={s.memberName}>{memberName(member)}</h2>
-              <p className={s.memberRole}>{memberRoleLabel(member)}</p>
+              <p className={s.memberRole}>{clubName || 'Lid'}</p>
             </div>
 
             {/* Asset slots list */}
