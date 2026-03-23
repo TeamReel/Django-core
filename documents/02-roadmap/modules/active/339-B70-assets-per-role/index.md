@@ -3,9 +3,10 @@
 | | |
 |---|---|
 | Code | B70 |
-| Status | 📐 READY |
+| Status | � IN UITVOERING |
 | Prioriteit | Hoog |
 | Geschatte effort | ~31 uur |
+| Voortgang | H0–H7 done (8/11 fases) |
 | Afhankelijkheid | F26 H13 (multi-role UI, done) |
 | Doelgroep | Club Admin, Team Admin |
 
