@@ -242,11 +242,20 @@ export const MyTeamHubPage: React.FC = () => {
 
   // ── Member detail panel: animated close ──
   const PANEL_CLOSE_MS = 200;
+  // Track which member opened the panel (for back-navigation to summary sheet)
+  const panelSourceMemberRef = useRef<SquadMember | null>(null);
   const handleClosePanel = useCallback(() => {
+    const returnMember = panelSourceMemberRef.current;
+    panelSourceMemberRef.current = null;
+    const close = () => {
+      setDetailMemberId(null);
+      // Return to MemberSummarySheet if opened from there
+      if (returnMember) setSelectedMember(returnMember);
+    };
     const usesMotion = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (!usesMotion) { setDetailMemberId(null); return; }
+    if (!usesMotion) { close(); return; }
     setPanelClosing(true);
-    setTimeout(() => { setPanelClosing(false); setDetailMemberId(null); }, PANEL_CLOSE_MS);
+    setTimeout(() => { setPanelClosing(false); close(); }, PANEL_CLOSE_MS);
   }, []);
 
   // Scroll lock when member detail panel is open
@@ -893,6 +902,7 @@ export const MyTeamHubPage: React.FC = () => {
             setSelectedMember(null);
           }}
           onEdit={isAdmin ? (m, tab?) => {
+            panelSourceMemberRef.current = m;
             setSelectedMember(null);
             setDetailDefaultTab(tab);
             setDetailMemberId(String(m.id ?? ''));

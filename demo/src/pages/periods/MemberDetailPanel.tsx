@@ -19,6 +19,7 @@ import { MemberAssetsTab } from './MemberAssetsTab';
 import { MemberIntroTab } from './MemberIntroTab';
 import { MemberCelebrationTab } from './MemberCelebrationTab';
 import { MemberActionPhotoTab } from './MemberActionPhotoTab';
+import { MemberThenVsNowTab } from './MemberThenVsNowTab';
 import { getUserDisplayName, mergeAssetsIntoMetadata } from './memberDetailUtils';
 import type { AssetVariantsMap, MembershipRecord } from './memberDetailUtils';
 import type { MemberMediaForm } from '../../constants/mediaSlots';
@@ -81,6 +82,7 @@ const PANEL_TABS = [
   { id: 'assets', label: 'Assets' },
   { id: 'intro', label: 'Intro' },
   { id: 'celebration', label: 'Celebration' },
+  { id: 'then_vs_now', label: 'Then vs Now' },
   { id: 'action_photo', label: 'Actiefoto' },
 ];
 
@@ -329,6 +331,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
             )}
             {activeTab === 'intro' && <MemberIntroTab {...tabCommonProps} />}
             {activeTab === 'celebration' && <MemberCelebrationTab {...tabCommonProps} />}
+            {activeTab === 'then_vs_now' && <MemberThenVsNowTab {...tabCommonProps} />}
             {activeTab === 'action_photo' && <MemberActionPhotoTab {...tabCommonProps} />}
           </>
         )}

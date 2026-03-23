@@ -38,6 +38,7 @@
 /* ── Mobile: compact asset cards ── */
 @media (max-width: 599px) {
   .variantPreview34 { min-height: 120px; }
+  .variantPreview916 { min-height: 120px; }
   .variantPreview11 { min-height: 100px; }
 }
 .checkerboardBg { background: repeating-conic-gradient(var(--color-neutral-900) 0% 25%, var(--color-neutral-800) 0% 50%) 50% / 20px 20px; }
