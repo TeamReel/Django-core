@@ -163,6 +163,159 @@ def get_available_kits(role: str) -> list[str]:
     return []
 
 
+def get_best_variant(
+    role_assets: dict,
+    media_type: str,
+    asset_type: str,
+    get_url_fn: Any = None,
+) -> dict | str | None:
+    """Select the best variant for a given asset type across all kits.
+
+    Priority: variant with processed URL → variant with raw URL.
+    Within a kit, prefers 'default' variant first.
+
+    Args:
+        role_assets: The ``roles.{role}`` dict (images + videos).
+        media_type: ``'images'`` or ``'videos'``.
+        asset_type: e.g. ``'intro'``, ``'fullbody'``.
+        get_url_fn: Optional function to extract URL from variant value.
+            If not provided, returns the raw variant dict/string.
+
+    Returns:
+        The best variant value, or None if nothing found.
+    """
+    kits = (role_assets.get(media_type) or {}).get(asset_type) or {}
+    for kit_data in kits.values():
+        if not isinstance(kit_data, dict):
+            continue
+        # Try 'default' first
+        if "default" in kit_data:
+            val = kit_data["default"]
+            if val:
+                if get_url_fn:
+                    url = get_url_fn(val)
+                    if url:
+                        return val
+                elif isinstance(val, dict) and val.get("processed"):
+                    return val
+                elif isinstance(val, str) and val:
+                    return val
+        # Fallback: first variant with data
+        for val in kit_data.values():
+            if not val:
+                continue
+            if get_url_fn:
+                url = get_url_fn(val)
+                if url:
+                    return val
+            elif isinstance(val, dict) and (val.get("processed") or val.get("raw")):
+                return val
+            elif isinstance(val, str) and val:
+                return val
+    return None
+
+
+def resolve_lineup_member_assets(
+    teamreel_assets: dict,
+    functional_role: str,
+    kit_type: str,
+    get_best_url_fn: Any,
+    get_ffmpeg_best_url_fn: Any,
+    find_best_intro_url_fn: Any,
+) -> tuple[str | None, str | None, str | None]:
+    """Resolve fullbody, intro, and closeup URLs for a lineup member.
+
+    Checks new ``roles.{role}`` structure first, then falls back to
+    legacy flat ``images/videos`` paths.
+
+    Args:
+        teamreel_assets: The ``teamreel_assets`` dict from membership metadata.
+        functional_role: Functional role string (e.g. ``'keeper'``, ``'player'``).
+        kit_type: Kit type to prefer (``'goalkeeper'``, ``'home'``, etc.).
+        get_best_url_fn: Function to extract best URL from a variant value.
+        get_ffmpeg_best_url_fn: Function to extract FFmpeg-preferred URL.
+        find_best_intro_url_fn: Function that finds best intro from variant dict.
+
+    Returns:
+        Tuple of (kit_url, intro_url, closeup_url) — any may be None.
+    """
+    kit_url: str | None = None
+    intro_url: str | None = None
+    closeup_url: str | None = None
+
+    # Normalise role key: 'goalkeeper'/'doelman' → 'keeper' for the roles dict
+    role_key = functional_role
+    if role_key in ("goalkeeper", "doelman"):
+        role_key = "keeper"
+
+    # ── Try new roles.{role} structure ──
+    roles = teamreel_assets.get("roles") or {}
+    role_data = roles.get(role_key) or {}
+
+    if role_data:
+        # Fullbody
+        fb = (role_data.get("images") or {}).get("fullbody") or {}
+        fb_val = fb.get(kit_type) or {}
+        kit_url = get_best_url_fn(fb_val.get("default") if isinstance(fb_val, dict) else fb_val)
+        if not kit_url and kit_type != "home":
+            fb_home = fb.get("home") or {}
+            kit_url = get_best_url_fn(
+                fb_home.get("default") if isinstance(fb_home, dict) else fb_home
+            )
+
+        # Intro
+        intro_data = (role_data.get("videos") or {}).get("intro") or {}
+        # Flatten to old format for _find_best_intro_url compatibility
+        flat_intro: dict = {}
+        for ik, kit_variants in intro_data.items():
+            if isinstance(kit_variants, dict):
+                for vk, vv in kit_variants.items():
+                    flat_intro[f"{ik}_{vk}" if vk != "default" else ik] = vv
+            else:
+                flat_intro[ik] = kit_variants
+        if flat_intro:
+            intro_url = find_best_intro_url_fn(flat_intro, kit_type, get_ffmpeg_best_url_fn)
+
+        # Closeup
+        cl = (role_data.get("images") or {}).get("closeup") or {}
+        cl_val = cl.get(kit_type) or {}
+        closeup_url = get_best_url_fn(cl_val.get("default") if isinstance(cl_val, dict) else cl_val)
+        if not closeup_url and kit_type != "home":
+            cl_home = cl.get("home") or {}
+            closeup_url = get_best_url_fn(
+                cl_home.get("default") if isinstance(cl_home, dict) else cl_home
+            )
+
+    # ── Fallback: legacy flat images/videos ──
+    media = teamreel_assets.get("media") or {}
+    images = teamreel_assets.get("images") or {}
+    videos = teamreel_assets.get("videos") or {}
+
+    if not kit_url:
+        fullbody_dict = images.get("fullbody") or {}
+        kit_url = get_best_url_fn(fullbody_dict.get(kit_type))
+        if not kit_url and kit_type != "home":
+            kit_url = get_best_url_fn(fullbody_dict.get("home"))
+        if not kit_url:
+            kit_url = (media.get("kit") or {}).get("url")
+
+    if not intro_url:
+        intro_variants = videos.get("intro") or {}
+        intro_url = find_best_intro_url_fn(intro_variants, kit_type, get_ffmpeg_best_url_fn)
+        if not intro_url:
+            intro_url = (media.get("intro") or {}).get("url")
+
+    if not closeup_url:
+        closeup_dict = images.get("closeup") or {}
+        closeup_url = get_best_url_fn(closeup_dict.get(kit_type))
+        if not closeup_url and kit_type != "home":
+            closeup_url = get_best_url_fn(closeup_dict.get("home"))
+        if not closeup_url:
+            closeup_url = (media.get("closeup") or {}).get("url")
+
+    return kit_url, intro_url, closeup_url
+
+
 # ---------------------------------------------------------------------------
 # Write helpers
 # ---------------------------------------------------------------------------

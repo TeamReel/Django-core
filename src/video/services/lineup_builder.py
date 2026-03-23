@@ -723,69 +723,40 @@ class LineupSegmentBuilder:
                 if project_membership
                 else {}
             )
-            media = teamreel_assets.get("media", {})
-
             logger.info(
-                "DEBUG: Player %s - teamreel_assets.media=%s",
+                "DEBUG: Player %s - teamreel_assets keys=%s",
                 member,
-                list(media.keys()) if media else None,
+                list(teamreel_assets.keys()) if teamreel_assets else None,
             )
 
-            # Resolve URLs: prefer per-variant processed → per-variant raw → flat media slot
+            # Resolve URLs: roles.{role} first, then legacy flat paths
             from src.video.services.asset_processing_specs import (
                 get_best_url,
                 get_ffmpeg_best_url,
             )
-
-            images = teamreel_assets.get("images", {})
-            videos = teamreel_assets.get("videos", {})
+            from src.video.utils.asset_metadata import resolve_lineup_member_assets
 
             # Determine kit type from functional role (goalkeeper → "goalkeeper", else → "home")
             fr_lower = (functional_role or "").lower()
             kit_type = "goalkeeper" if fr_lower in ("keeper", "doelman") else "home"
 
-            # Kit (fullbody) — check images.fullbody.{kit_type} first, fallback to "home", then media.kit
-            fullbody_dict = images.get("fullbody", {}) or {}
-            fullbody_val = fullbody_dict.get(kit_type)
-            kit_url = get_best_url(fullbody_val)
-            if not kit_url and kit_type != "home":
-                kit_url = get_best_url(fullbody_dict.get("home"))
-            if not kit_url:
-                kit_url = media.get("kit", {}).get("url")
+            kit_url, intro_url, closeup_url = resolve_lineup_member_assets(
+                teamreel_assets=teamreel_assets,
+                functional_role=functional_role,
+                kit_type=kit_type,
+                get_best_url_fn=get_best_url,
+                get_ffmpeg_best_url_fn=get_ffmpeg_best_url,
+                find_best_intro_url_fn=_find_best_intro_url,
+            )
+
             logger.info(
-                "DEBUG: Player %s - kit_type=%s, fullbody raw value type=%s → kit_url=%s",
+                "DEBUG: Player %s - kit_type=%s, kit_url=%s, intro_url=%s, closeup_url=%s",
                 member,
                 kit_type,
-                type(fullbody_val).__name__,
                 kit_url[:80] if kit_url else None,
-            )
-
-            # Intro — check videos.intro.{kit_type}_* first, then "home_*", then bare style keys, then media.intro
-            # Priority: arms_crossed > thumbs_up > hand_up (most common first)
-            # Use get_ffmpeg_best_url to prefer processed_source (.mov with alpha) over preview
-            intro_variants = videos.get("intro", {}) or {}
-            intro_url = _find_best_intro_url(intro_variants, kit_type, get_ffmpeg_best_url)
-
-            # Pass 5: legacy media.intro slot
-            if not intro_url:
-                intro_url = media.get("intro", {}).get("url")
-
-            logger.info(
-                "DEBUG: Player %s - intro_url=%s (kit_type=%s, from %d variants: %s)",
-                member,
                 intro_url[:80] if intro_url else None,
-                kit_type,
-                len(intro_variants),
-                list(intro_variants.keys()),
+                closeup_url[:80] if closeup_url else None,
             )
-
-            # Closeup — check images.closeup.{kit_type} first, fallback to "home", then media.closeup
-            closeup_dict = images.get("closeup", {}) or {}
-            closeup_url = get_best_url(closeup_dict.get(kit_type))
-            if not closeup_url and kit_type != "home":
-                closeup_url = get_best_url(closeup_dict.get("home"))
-            if not closeup_url:
-                closeup_url = media.get("closeup", {}).get("url")
 
             # Convert relative paths to presigned URLs if needed
             if kit_url and not kit_url.startswith("http"):
@@ -1249,10 +1220,6 @@ class LineupSegmentBuilder:
                     teamreel_assets = (other_pm.metadata or {}).get("teamreel_assets", {})
                     self._debug_trace.append(f"PM {pm.id}: assets inherited from PM {other_pm.id}")
 
-            media = teamreel_assets.get("media", {})
-            images = teamreel_assets.get("images", {})
-            videos = teamreel_assets.get("videos", {})
-
             from src.video.services.asset_processing_specs import (
                 get_best_url,
                 get_ffmpeg_best_url,
@@ -1275,28 +1242,18 @@ class LineupSegmentBuilder:
             else:
                 kit_type = "home"
 
-            # Kit (fullbody) — images.fullbody.{kit_type} → images.fullbody.home → media.kit
-            fullbody_dict = images.get("fullbody", {}) or {}
-            kit_url = get_best_url(fullbody_dict.get(kit_type))
-            if not kit_url and kit_type != "home":
-                kit_url = get_best_url(fullbody_dict.get("home"))
-            if not kit_url:
-                kit_url = media.get("kit", {}).get("url")
+            # Resolve assets: roles.{role} first, then legacy flat paths
+            from src.video.utils.asset_metadata import resolve_lineup_member_assets
 
-            # Intro — videos.intro.{kit_type}_* → videos.intro.home_* → bare keys → media.intro
-            # Use get_ffmpeg_best_url to prefer processed_source (.mov with alpha)
-            intro_variants = videos.get("intro", {}) or {}
-            intro_url = _find_best_intro_url(intro_variants, kit_type, get_ffmpeg_best_url)
-            if not intro_url:
-                intro_url = media.get("intro", {}).get("url")
-
-            # Closeup — images.closeup.{kit_type} → images.closeup.home → media.closeup
-            closeup_dict = images.get("closeup", {}) or {}
-            closeup_url = get_best_url(closeup_dict.get(kit_type))
-            if not closeup_url and kit_type != "home":
-                closeup_url = get_best_url(closeup_dict.get("home"))
-            if not closeup_url:
-                closeup_url = media.get("closeup", {}).get("url")
+            kit_url, intro_url, closeup_url = resolve_lineup_member_assets(
+                teamreel_assets=teamreel_assets,
+                functional_role=functional_role
+                or ("keeper" if kit_type == "goalkeeper" else "player"),
+                kit_type=kit_type,
+                get_best_url_fn=get_best_url,
+                get_ffmpeg_best_url_fn=get_ffmpeg_best_url,
+                find_best_intro_url_fn=_find_best_intro_url,
+            )
 
             # Convert relative paths to presigned URLs
             if kit_url and not kit_url.startswith("http"):

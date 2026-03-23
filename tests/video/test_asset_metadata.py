@@ -14,12 +14,14 @@ from src.video.utils.asset_metadata import (
     build_s3_asset_path,
     get_asset_roles,
     get_available_kits,
+    get_best_variant,
     get_default_kit,
     get_functional_roles,
     get_role_assets,
     get_variant_value,
     iter_variants,
     media_type_for_asset,
+    resolve_lineup_member_assets,
     set_variant_value,
     update_media_aliases,
 )
@@ -411,3 +413,275 @@ class TestBuildS3AssetPath:
             ext="png",
         )
         assert path == "members/abc123/processed/keeper/fullbody/goalkeeper/default_x1y2z3.png"
+
+
+# ---------------------------------------------------------------------------
+# get_best_variant
+# ---------------------------------------------------------------------------
+
+
+class TestGetBestVariant:
+    def test_prefers_default_variant(self):
+        role_assets = {
+            "videos": {
+                "intro": {
+                    "home": {
+                        "default": {"processed": "https://s3/default.mp4", "raw": "r"},
+                        "arms_crossed": {"processed": "https://s3/arms.mp4"},
+                    }
+                }
+            }
+        }
+        result = get_best_variant(role_assets, "videos", "intro")
+        assert result == {"processed": "https://s3/default.mp4", "raw": "r"}
+
+    def test_fallback_to_first_with_data(self):
+        role_assets = {
+            "videos": {
+                "intro": {
+                    "home": {
+                        "default": None,
+                        "arms_crossed": {"processed": "https://s3/arms.mp4"},
+                    }
+                }
+            }
+        }
+        result = get_best_variant(role_assets, "videos", "intro")
+        assert result == {"processed": "https://s3/arms.mp4"}
+
+    def test_returns_none_when_empty(self):
+        assert get_best_variant({}, "videos", "intro") is None
+
+    def test_returns_none_when_no_processed(self):
+        role_assets = {"videos": {"intro": {"home": {"default": {}}}}}
+        assert get_best_variant(role_assets, "videos", "intro") is None
+
+    def test_with_get_url_fn(self):
+        role_assets = {
+            "images": {
+                "fullbody": {
+                    "goalkeeper": {
+                        "default": {"processed": "https://s3/fb.png"},
+                    }
+                }
+            }
+        }
+        result = get_best_variant(
+            role_assets,
+            "images",
+            "fullbody",
+            get_url_fn=lambda v: v.get("processed") if isinstance(v, dict) else v,
+        )
+        assert result == {"processed": "https://s3/fb.png"}
+
+    def test_string_variant_value(self):
+        role_assets = {"images": {"closeup": {"home": {"default": "https://s3/closeup.png"}}}}
+        result = get_best_variant(role_assets, "images", "closeup")
+        assert result == "https://s3/closeup.png"
+
+
+# ---------------------------------------------------------------------------
+# resolve_lineup_member_assets — mixed role tests
+# ---------------------------------------------------------------------------
+
+
+def _get_best_url(val):
+    """Test helper: extract URL from variant value."""
+    if isinstance(val, dict):
+        return val.get("processed") or val.get("raw")
+    if isinstance(val, str) and val:
+        return val
+    return None
+
+
+def _get_ffmpeg_best_url(val):
+    """Same as _get_best_url for test purposes."""
+    return _get_best_url(val)
+
+
+def _find_best_intro_url(variants, kit_type, get_url_fn):
+    """Simplified intro finder for tests."""
+    if not variants:
+        return None
+    # Try kit_type first
+    val = variants.get(kit_type)
+    if val:
+        url = get_url_fn(val)
+        if url:
+            return url
+    # Any variant with URL
+    for v in variants.values():
+        url = get_url_fn(v)
+        if url:
+            return url
+    return None
+
+
+class TestResolveLineupMemberAssets:
+    """Tests for lineup member asset resolution per functional role."""
+
+    def test_keeper_gets_keeper_assets(self):
+        """Keeper in lineup gets goalkeeper kit and keeper intro."""
+        ta = {
+            "roles": {
+                "keeper": {
+                    "images": {
+                        "fullbody": {
+                            "goalkeeper": {"default": {"processed": "https://s3/keeper-fb.png"}},
+                        },
+                        "closeup": {
+                            "goalkeeper": {"default": {"processed": "https://s3/keeper-cl.png"}},
+                        },
+                    },
+                    "videos": {
+                        "intro": {
+                            "goalkeeper": {"default": {"processed": "https://s3/keeper-intro.mp4"}},
+                        },
+                    },
+                },
+            },
+        }
+        kit_url, intro_url, closeup_url = resolve_lineup_member_assets(
+            ta,
+            "keeper",
+            "goalkeeper",
+            _get_best_url,
+            _get_ffmpeg_best_url,
+            _find_best_intro_url,
+        )
+        assert kit_url == "https://s3/keeper-fb.png"
+        assert intro_url == "https://s3/keeper-intro.mp4"
+        assert closeup_url == "https://s3/keeper-cl.png"
+
+    def test_player_gets_player_assets(self):
+        """Player in lineup gets home kit and player intro."""
+        ta = {
+            "roles": {
+                "player": {
+                    "images": {
+                        "fullbody": {
+                            "home": {"default": {"processed": "https://s3/player-fb.png"}},
+                        },
+                        "closeup": {
+                            "home": {"default": {"processed": "https://s3/player-cl.png"}},
+                        },
+                    },
+                    "videos": {
+                        "intro": {
+                            "home": {"default": {"processed": "https://s3/player-intro.mp4"}},
+                        },
+                    },
+                },
+            },
+        }
+        kit_url, intro_url, closeup_url = resolve_lineup_member_assets(
+            ta,
+            "player",
+            "home",
+            _get_best_url,
+            _get_ffmpeg_best_url,
+            _find_best_intro_url,
+        )
+        assert kit_url == "https://s3/player-fb.png"
+        assert intro_url == "https://s3/player-intro.mp4"
+        assert closeup_url == "https://s3/player-cl.png"
+
+    def test_goalkeeper_role_normalised_to_keeper(self):
+        """functional_role='goalkeeper' should map to roles.keeper."""
+        ta = {
+            "roles": {
+                "keeper": {
+                    "images": {
+                        "fullbody": {
+                            "goalkeeper": {"default": {"processed": "https://s3/fb.png"}},
+                        },
+                    },
+                    "videos": {},
+                },
+            },
+        }
+        kit_url, _, _ = resolve_lineup_member_assets(
+            ta,
+            "goalkeeper",
+            "goalkeeper",
+            _get_best_url,
+            _get_ffmpeg_best_url,
+            _find_best_intro_url,
+        )
+        assert kit_url == "https://s3/fb.png"
+
+    def test_missing_role_falls_back_to_legacy(self):
+        """When roles dict is empty, falls back to flat images/videos."""
+        ta = {
+            "images": {
+                "fullbody": {"home": {"processed": "https://s3/legacy-fb.png"}},
+                "closeup": {"home": {"processed": "https://s3/legacy-cl.png"}},
+            },
+            "videos": {
+                "intro": {"home": {"processed": "https://s3/legacy-intro.mp4"}},
+            },
+        }
+        kit_url, intro_url, closeup_url = resolve_lineup_member_assets(
+            ta,
+            "player",
+            "home",
+            _get_best_url,
+            _get_ffmpeg_best_url,
+            _find_best_intro_url,
+        )
+        assert kit_url == "https://s3/legacy-fb.png"
+        assert intro_url == "https://s3/legacy-intro.mp4"
+        assert closeup_url == "https://s3/legacy-cl.png"
+
+    def test_completely_empty_returns_none_tuple(self):
+        """Empty teamreel_assets should not crash, returns (None, None, None)."""
+        kit_url, intro_url, closeup_url = resolve_lineup_member_assets(
+            {},
+            "player",
+            "home",
+            _get_best_url,
+            _get_ffmpeg_best_url,
+            _find_best_intro_url,
+        )
+        assert kit_url is None
+        assert intro_url is None
+        assert closeup_url is None
+
+    def test_kit_fallback_to_home(self):
+        """When requested kit_type not found, falls back to 'home'."""
+        ta = {
+            "roles": {
+                "player": {
+                    "images": {
+                        "fullbody": {
+                            "home": {"default": {"processed": "https://s3/home-fb.png"}},
+                        },
+                    },
+                    "videos": {},
+                },
+            },
+        }
+        kit_url, _, _ = resolve_lineup_member_assets(
+            ta,
+            "player",
+            "away",
+            _get_best_url,
+            _get_ffmpeg_best_url,
+            _find_best_intro_url,
+        )
+        assert kit_url == "https://s3/home-fb.png"
+
+    def test_media_fallback(self):
+        """Legacy media.kit.url as last resort for fullbody."""
+        ta = {
+            "media": {"kit": {"url": "https://s3/media-kit.png"}},
+        }
+        kit_url, _, _ = resolve_lineup_member_assets(
+            ta,
+            "player",
+            "home",
+            _get_best_url,
+            _get_ffmpeg_best_url,
+            _find_best_intro_url,
+        )
+        assert kit_url == "https://s3/media-kit.png"
