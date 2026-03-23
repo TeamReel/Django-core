@@ -1,79 +1,86 @@
-# H1 — Backend Write-Path per Rol
+# H1 — Backend Write-Path Refactor
 
 | | |
 |---|---|
 | Status | 📋 TODO |
-| Effort | ~3 uur |
+| Effort | ~4 uur |
 | Laag | Backend |
 | Afhankelijkheid | H0 |
 
 ## Doel
 
-Modify de backend write-functies zodat assets naar `roles.{role}.*` worden geschreven. Dual-write: ook naar root voor backward compat.
+Alle 8 write-locaties omzetten van suffix-formaat naar genest formaat + role-scoping.
 
-## Implementatie
+## Locaties
 
-### 1. `_update_variant_metadata()` uitbreiden
+### 1. `_update_variant_metadata()` — Hoofd write
 
-**Bestand**: `src/video/tasks/asset_processing.py`
+**Bestand**: `src/video/tasks/asset_processing.py:54`
 
-Huidige functie schrijft naar `metadata.teamreel_assets.images.{type}.{kit}`. Uitbreiden met optionele `role` parameter:
-
+Was:
 ```python
-def _update_variant_metadata(
-    membership: object,
-    *,
-    asset_type: str,
-    kit_type: str,
-    variant_id: str | None,
-    variant_value: dict,
-    role: str | None = None,  # ← NEW
-) -> None:
-    # Bestaande write (root level) — behouden voor backward compat
-    # ... existing code ...
-
-    # NEW: also write to roles.{role} if role is provided
-    if role:
-        roles = tr.setdefault("roles", {})
-        role_data = roles.setdefault(role, {})
-        if asset_type in IMAGE_TYPES:
-            images = role_data.setdefault("images", {})
-            cat = images.setdefault(asset_type, {})
-            cat[kit_type] = variant_value
-        else:
-            videos = role_data.setdefault("videos", {})
-            cat = videos.setdefault(asset_type, {})
-            cat[kit_type] = variant_value
+composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+cat[composite_key] = variant_value
 ```
 
-### 2. Write-helper utility
-
-**Bestand**: `src/projects/utils/role_assets.py` (aanvullen op H0)
-
+Wordt:
 ```python
-def set_asset_for_role(
-    metadata: dict,
-    role: str,
-    asset_type: str,
-    kit_type: str,
-    value: dict,
-    *,
-    dual_write: bool = True,
-) -> dict:
-    """Write asset variant to roles.{role} and optionally to root."""
+variant = variant_id or "default"
+# Schrijf genest: type.kit.variant = value
+kit_dict = cat.setdefault(kit_type, {})
+kit_dict[variant] = variant_value
+
+# Dual-write naar root suffix-formaat (legacy)
+if dual_write:
+    legacy_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+    cat[legacy_key] = variant_value
 ```
 
-### Tests
+### 2. `_get_variant_state()` — State lookup
 
-- Test dual-write: both root + role populated
-- Test role-only write: `dual_write=False`
-- Test overschrijven: bestaande variant updated, niet verdubbeld
-- Test metadata integrity: andere velden niet aangetast
+**Bestand**: `src/video/tasks/asset_processing.py:100`
+
+Gebruik `get_asset_variant()` helper uit H0 i.p.v. eigen composite key constructie.
+
+### 3-5. `job.py` — write functies
+
+**Bestand**: `src/video/views/job.py`
+
+- `:637` `process_asset()` — pass `role` + `variant_id` apart door
+- `:1331` `_set_variant_metadata()` — gebruik `set_asset_variant()` helper
+- `:1377` `_get_variant_metadata()` — gebruik `get_asset_variant()` helper
+
+### 6-7. `generative/views_asset.py` — AI pipeline writes
+
+**Bestand**: `src/generative/views_asset.py`
+
+- `:3697` Propagate image approval — genest schrijven
+- `:3846` Propagate video approval — genest schrijven
+
+### 8. `process_teamreel_assets.py` — management command write
+
+**Bestand**: `src/video/management/commands/process_teamreel_assets.py:125`
+
+Gebruik `set_asset_variant()` helper.
+
+## Role-parameter toevoegen
+
+Alle write-functies accepteren nu `role: str | None`:
+- Als `role` meegegeven → schrijf naar `roles.{role}.*`
+- Als `role` is None → schrijf naar root (legacy) + auto-detect primaire rol
+
+## Tests
+
+- Test `_update_variant_metadata()` met variant → geneste opslag
+- Test `_update_variant_metadata()` zonder variant → `"default"` key
+- Test dual-write → zowel genest als suffix geschreven
+- Test role parameter → `roles.player.images.*` structuur
+- Test backward compat → zonder role → root-level
 
 ## Acceptatiecriteria
 
-- [ ] `_update_variant_metadata()` accepteert `role` parameter
-- [ ] Dual-write: root + `roles.{role}` beide bijgewerkt
-- [ ] `set_asset_for_role()` utility beschikbaar
-- [ ] Bestaande writes (zonder role) blijven exact werken
-- [ ] Tests voor write-path
+- [ ] Alle 8 write-locaties gebruiken genest formaat
+- [ ] `role` parameter beschikbaar op alle writes
+- [ ] Dual-write actief (legacy suffix + genest)
+- [ ] `"default"` als standaard variant_id
+- [ ] Geen regressie op bestaande flows
