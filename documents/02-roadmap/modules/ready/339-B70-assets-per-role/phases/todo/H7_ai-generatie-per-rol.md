@@ -2,63 +2,68 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Fase | H7 |
 | Effort | ~3 uur |
 | Laag | Backend + Frontend |
 | Afhankelijkheid | H6 |
 
 ## Doel
 
-AI-generatie contextbewust maken: rol bepaalt tenue, variant bepaalt pose.
+AI asset generatie (images + videos) stuurt `role` context mee zodat gegenereerde assets op de juiste plek in de metadata terechtkomen.
 
-## Implementatie
+## Scope
 
-### 1. Backend: generation endpoints + role + variant
+### Backend — `src/generative/views_asset.py`
 
-- Pass `role` + `variant_id` door naar `process_member_asset.delay()`
-- Role bepaalt tenue selectie (keeper→goalkeeper, player→home/away/third)
-- Variant bepaalt pose/stijl (default, arms_crossed, thumbs_up)
-
-### 2. AI pipeline regex update
-
-**Bestand**: `src/generative/views_asset.py`
-
-Huidige filename pattern:
-```
-member_intro_kit_type-{kit}_style_variant-{style}_{hash}_{idx}.mp4
-```
-
-Na refactor: `kit_type` en `style_variant` worden apart opgeslagen in genest formaat i.p.v. als suffix gecombineerd.
-
-### 3. Frontend: MemberAiModal
-
-- Ontvangt `role` + `variantId` props van MemberDetailPanel
-- Stuurt `role` + `variant_id` mee in API call
-- Kit selector toont alleen relevante kits voor de rol
-- Label: "Genereer [variant] voor [rol] in [tenue]"
-
-### 4. Role-to-asset mapping (uitbreiden H0)
-
+**Asset dispatch** moet role-aware worden:
 ```python
-ROLE_ASSET_TYPES = {
-    "keeper": ["fullbody", "halfbody", "closeup", "intro", "celebration"],
-    "player": ["fullbody", "halfbody", "closeup", "intro", "celebration"],
-    "coach": ["closeup", "halfbody"],
-    # ...
-}
-
-ROLE_KIT_TYPES = {
-    "keeper": ["goalkeeper"],
-    "player": ["home", "away", "third"],
-    "coach": ["training"],
-    # ...
-}
+# Bij AI generatie:
+# 1. Ontvang role uit request
+# 2. Genereer asset met role-specifieke prompt context
+# 3. Sla op via set_variant_value(membership, role, ...)
 ```
 
-## Acceptatiecriteria
+**Approval propagation** (lijn ~3697, ~3846):
+- Al omgezet in H2, maar hier wordt de AI-specifieke logica getest
+- Bij goedkeuring van AI-gegenereerde asset: correcte role/kit/variant
 
-- [ ] Generation endpoints accepteren `role` + `variant_id`
-- [ ] Correcte tenue per rol
-- [ ] AI pipeline schrijft genest formaat
-- [ ] MemberAiModal stuurt role + variant mee
-- [ ] Backward compat: zonder role → huidige gedrag
+**Auto-dispatch RVM** (lijn ~3957):
+- Al omgezet in H3, maar hier wordt het per-rol getest
+- RVM (Remove Video Matte) wordt per rol getriggered
+
+### Frontend — AI generatie UI
+
+```typescript
+// Bij AI asset generatie request:
+const request = {
+  membership_id: member.id,
+  asset_type: "intro",
+  kit_type: "home",
+  variant_id: "default",
+  role: selectedRole,  // Meegestuurd vanuit role tab
+  prompt_context: {
+    role: selectedRole,
+    kit: "home",
+    // ...
+  }
+};
+```
+
+### Prompt context per rol
+
+| Rol | Context |
+|-----|---------|
+| `keeper` | Keeperstenue, handschoenen, doelgebied |
+| `player` | Veldtenue, speelveld |
+| `coach` | Trainingskleding, zijlijn |
+
+## Checklist
+
+- [ ] AI generatie requests bevatten `role` veld
+- [ ] AI-gegenereerde assets worden opgeslagen onder `roles.{role}.*`
+- [ ] Approval propagation schrijft naar correcte role
+- [ ] Auto-dispatch RVM per rol
+- [ ] Frontend stuurt role mee bij AI generatie
+- [ ] Prompt context bevat rol-specifieke hints
+- [ ] Tests voor AI pipeline met role context
+- [ ] `pytest` groen

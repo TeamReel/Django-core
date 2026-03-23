@@ -2,43 +2,60 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Fase | H8 |
 | Effort | ~2 uur |
 | Laag | Frontend |
 | Afhankelijkheid | H5 |
 
 ## Doel
 
-HubSelectieTab en MemberSummarySheet updaten zodat asset-status per rol getoond wordt.
+Selectie-overzicht en summary sheets tonen asset-completeness per rol.
 
-## Implementatie
+## Scope
 
-### 1. HubSelectieTab asset dots per rol
+### `HubSelectieTab.tsx` — Asset status dots per rol
 
-**Bestand**: `demo/src/pages/identity/HubSelectieTab.tsx`
+**Huidige situatie**: Eén set dots per member (5 tracked slots).
+**Nieuw**: Dots per rol, of gecombineerde completeness.
 
-- Asset dots per rol (gekleurde stip naast rolbadge)
-- Hover tooltip: "Keeper: 3/5 | Speler: 2/5"
-- Kleurcodering: groen (100%), oranje (>50%), rood (<50%)
+```
+┌─────────────────────────────────────────┐
+│ Naam          Speler    Keeper    Score  │
+│ Jan de Vries  ●●●○○    ●●○○○    60%    │
+│ Piet Jansen   ●●●●●    —        100%   │
+│ Lisa Bakker   ●●●●○    ●●●○○    70%    │
+└─────────────────────────────────────────┘
+```
 
-### 2. MemberSummarySheet per rol
+- Multi-role leden: aparte kolom per rol
+- Single-role leden: één kolom
+- Totaal score: gemiddelde over alle rollen
 
-**Bestand**: `demo/src/pages/identity/MemberSummarySheet.tsx`
+### `MemberSummarySheet.tsx` — Slot grid per rol
 
-- Sectie per rol met asset slots
-- "Assets als Keeper" → closeup ✅, kit ✅, intro (2 varianten) ✅
-- "Assets als Speler" → closeup ✅, kit (home) ✅, intro (1 variant) ⚠️
-- Variant count bij video types: "3 intro varianten"
+**Huidige situatie**: Flat grid van 5 slots.
+**Nieuw**: Grouped per rol met sub-slots.
 
-### CSS
+```
+Speler:
+  ✅ Fullbody (home)    ✅ Closeup (home)    ✅ Intro (home, 3 variants)
+  ❌ Fullbody (away)    ❌ Closeup (away)    ❌ Intro (away)
 
-- `.rolAssetSection` — collapsible per rol
-- `.variantCount` — badge met variant aantal
-- `.assetDots` — dots naast rolbadge
+Keeper:
+  ✅ Fullbody (gk)      ❌ Closeup (gk)      ❌ Intro (gk)
+```
 
-## Acceptatiecriteria
+### `getMemberAssetStatus()` — Per rol
 
-- [ ] Asset status per rol in selectie lijst
-- [ ] MemberSummarySheet gegroepeerd per rol
-- [ ] Variant aantallen getoond bij video types
-- [ ] Responsive
+Al gerefactord in H5. Hier wordt het geïntegreerd in de UI componenten.
+
+## Checklist
+
+- [ ] HubSelectieTab toont status per rol
+- [ ] Kolom per rol bij multi-role leden
+- [ ] Totaal score als gewogen gemiddelde
+- [ ] MemberSummarySheet grouped per rol
+- [ ] Variant count bij video types
+- [ ] Responsive: cards op mobiel, tabel op desktop
+- [ ] `npx tsc --noEmit` 0 errors
+- [ ] `npx vite build` succesvol

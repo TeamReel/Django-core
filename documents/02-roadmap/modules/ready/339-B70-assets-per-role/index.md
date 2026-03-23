@@ -1,11 +1,11 @@
-# 339-B70 — Assets Per Role
+# 339-B70 — Assets Per Role + Variant Nesting
 
 | | |
 |---|---|
 | Code | B70 |
-| Status | � READY |
+| Status | 📐 READY |
 | Prioriteit | Hoog |
-| Geschatte effort | ~36 uur |
+| Geschatte effort | ~31 uur |
 | Afhankelijkheid | F26 H13 (multi-role UI, done) |
 | Doelgroep | Club Admin, Team Admin |
 
@@ -17,31 +17,26 @@
 
 Assets worden opgeslagen op **member-niveau** in `ProjectMembership.metadata.teamreel_assets`.
 
-**Twee problemen:**
+**Drie problemen:**
 
 **Probleem A — Geen rolscheiding**: Een lid met meerdere rollen (keeper + speler) heeft maar één set assets. Maar een keeper-closeup (keeperstenue, handschoenen) is iets heel anders dan een speler-closeup (veldtenue).
 
-**Probleem B — Suffix-based variants**: Video-varianten worden opgeslagen als suffix op kit_type:
+**Probleem B — Suffix-based variants**: Video-varianten als suffix op kit_type: `home_arms_crossed`. Moet geparsed worden met `split("_", 1)` op 6+ plekken. Semantisch onduidelijk.
 
-```json
-"videos": {
-  "intro": {
-    "home": { "raw": "...", "processed": "..." },
-    "home_arms_crossed": { "raw": "...", "processed": "..." },
-    "home_thumbs_up": { "raw": "...", "processed": "..." }
-  }
-}
-```
+**Probleem C — 5-staps fallback chain**: Door 4 historische formaten bevat `job.py:640-682` een 5-staps fallback chain. Geen bugs meer, maar onnodige complexiteit die elke read raakt.
 
-Dit geeft problemen:
-- Strings parsen om tenue van variant te scheiden (`split("_", 1)` op 6+ plekken)
-- Niet makkelijk te tellen hoeveel varianten een tenue heeft
-- 5 verschillende fallback-strategieën in `job.py` voor legacy formaten
-- Semantisch onduidelijk: `home_arms_crossed` — is `arms` deel van kit of variant?
+**Huidige formaten in productie:**
+
+| Era | Formaat | Voorbeeld | Geschat % |
+|-----|---------|-----------|-----------|
+| Q1 2024 | Flat media | `media.kit.url = "s3://..."` | ~2-5% |
+| Q2 2024 | Bare keys | `videos.intro.arms_crossed = {...}` | ~10-15% |
+| Q2-Q3 | Composite strings | `videos.intro.home_arms_crossed = "url"` | ~5-10% |
+| Q3+ 2024 | Composite objects | `videos.intro.home_arms_crossed = {raw, processed, ...}` | ~70-75% |
 
 ### 1.2 Gewenste situatie
 
-Assets worden opgeslagen **per functionele rol** met **geneste variant-structuur**:
+**Eén formaat. Geen fallbacks. Clean break.**
 
 ```json
 {
@@ -61,11 +56,6 @@ Assets worden opgeslagen **per functionele rol** met **geneste variant-structuur
             "goalkeeper": {
               "default": { "raw": "...", "processed": "..." },
               "arms_crossed": { "raw": "...", "processed": "..." }
-            }
-          },
-          "celebration": {
-            "goalkeeper": {
-              "default": { "raw": "...", "processed": "..." }
             }
           }
         }
@@ -88,103 +78,98 @@ Assets worden opgeslagen **per functionele rol** met **geneste variant-structuur
         }
       }
     },
-    "media": { ... },
-    "images": { ... },
-    "videos": { ... }
+    "media": { ... }
   }
 }
 ```
 
 **Structuur**: `roles.{rol}.{images|videos}.{type}.{kit}.{variant} = variant_value`
 
-**S3-pad**: `members/{id}/processed/{role}/{type}/{kit}/{variant}_{hash}.{ext}`
-
-**Root-level** (`images`, `videos`) blijft behouden als legacy fallback tijdens migratie.
+**Na migratie**: root-level `images` en `videos` keys worden verwijderd. Geen fallbacks nodig.
 
 ### 1.3 Impactanalyse — Touchpoints
 
-#### Backend — Write-path (8 locaties suffix-constructie)
+**26 touchpoints** (19 backend, 7 frontend). Alle worden in één keer omgezet.
 
-| # | Bestand | Functie | Wat |
-|---|---------|---------|-----|
-| 1 | `src/video/tasks/asset_processing.py:54` | `_update_variant_metadata()` | Hoofd write naar metadata |
-| 2 | `src/video/tasks/asset_processing.py:100` | `_get_variant_state()` | Composite key lookup |
-| 3 | `src/video/views/job.py:637` | `process_asset()` | Write trigger |
-| 4 | `src/video/views/job.py:1331` | `_set_variant_metadata()` | Direct metadata write |
-| 5 | `src/video/views/job.py:1377` | `_get_variant_metadata()` | Direct metadata read |
-| 6 | `src/generative/views_asset.py:3697` | Propagate image approval | AI pipeline write |
-| 7 | `src/generative/views_asset.py:3846` | Propagate video approval | AI pipeline write |
-| 8 | `src/video/management/commands/process_teamreel_assets.py:125` | Management command | Batch write |
+#### Backend — Write (8 locaties, suffix → genest)
 
-#### Backend — Read-path (6 locaties suffix-parsing)
+| # | Bestand | Functie |
+|---|---------|---------|
+| 1 | `src/video/tasks/asset_processing.py:54` | `_update_variant_metadata()` |
+| 2 | `src/video/tasks/asset_processing.py:100` | `_get_variant_state()` |
+| 3 | `src/video/views/job.py:637` | `process_asset()` |
+| 4 | `src/video/views/job.py:1331` | `_set_variant_metadata()` |
+| 5 | `src/video/views/job.py:1377` | `_get_variant_metadata()` |
+| 6 | `src/generative/views_asset.py:3697` | Propagate image approval |
+| 7 | `src/generative/views_asset.py:3846` | Propagate video approval |
+| 8 | `src/video/management/commands/process_teamreel_assets.py:125` | Batch write |
 
-| # | Bestand | Parse methode | Wat |
-|---|---------|--------------|-----|
-| 9 | `src/video/views/job.py:640-682` | 5-staps fallback chain | **Hoogste risico** |
-| 10 | `src/video/views/job.py:912` | `split("_", 1)` | process_all_variants |
-| 11 | `src/video/views/job.py:1262` | `split("_", 1)` | active_processing_jobs |
-| 12 | `src/video/management/commands/reprocess_pending_assets.py:343` | `split("_", 1)` | Re-queue |
-| 13 | `src/video/management/commands/reset_processed_teamreel_assets.py:371` | `split("_", 1)` | Reset state |
-| 14 | `src/generative/views_asset.py:3957` | `startswith()` loop | Auto-dispatch RVM |
+#### Backend — Read (6 locaties, split/fallback → geneste lookup)
+
+| # | Bestand | Huidig | Wordt |
+|---|---------|--------|-------|
+| 9 | `src/video/views/job.py:640-682` | 5-staps fallback | Directe dict-lookup |
+| 10 | `src/video/views/job.py:912` | `split("_", 1)` | Dict iteration |
+| 11 | `src/video/views/job.py:1262` | `split("_", 1)` | Dict iteration |
+| 12 | `src/video/management/commands/reprocess_pending_assets.py:343` | `split("_", 1)` | Dict iteration |
+| 13 | `src/video/management/commands/reset_processed_teamreel_assets.py:371` | `split("_", 1)` | Dict iteration |
+| 14 | `src/generative/views_asset.py:3957` | `startswith()` | Dict iteration |
 
 #### Backend — S3 paden (5 locaties in asset_processor.py)
 
-| # | Lijn | Formaat | Huidig pad |
-|---|------|---------|------------|
-| 15 | :247 | PNG images | `members/{id}/processed/{type}/{kit}{_variant}_{hash}.png` |
-| 16 | :479 | MP4 passthrough | idem |
-| 17 | :582 | MOV/WebM RVM | idem |
-| 18 | :788 | MP4 preview | idem |
-| 19 | :1025 | WebM rembg | idem |
+| # | Lijn | Huidig | Wordt |
+|---|------|--------|-------|
+| 15-19 | :247, :479, :582, :788, :1025 | `{type}/{kit}{_variant}_{hash}.{ext}` | `{role}/{type}/{kit}/{variant}_{hash}.{ext}` |
 
-#### Frontend (read-only, geen suffix-constructie)
+#### Frontend (7 locaties, read-only)
 
-| # | Bestand | Impact |
-|---|---------|--------|
-| 20 | `demo/src/utils/mediaHelpers.ts` | Lees-logica aanpassen voor genest |
-| 21 | `demo/src/utils/assetStatus.ts` | Status per rol + variant |
-| 22 | `demo/src/pages/periods/MemberDetailPanel.tsx` | Role-tabs + variant display |
-| 23 | `demo/src/pages/periods/MemberAssetsTab.tsx` | Per-kit per-variant cards |
-| 24 | `demo/src/pages/identity/HubSelectieTab.tsx` | Asset dots per rol |
-| 25 | `demo/src/pages/identity/MemberSummarySheet.tsx` | Slots per rol |
-| 26 | `demo/src/components/ActiveJobsModal/ActiveJobsModal.tsx` | Deduplication |
-
-**Totaal: 26 touchpoints** (19 backend, 7 frontend)
+| # | Bestand |
+|---|---------|
+| 20 | `demo/src/utils/mediaHelpers.ts` |
+| 21 | `demo/src/utils/assetStatus.ts` |
+| 22 | `demo/src/pages/periods/MemberDetailPanel.tsx` |
+| 23 | `demo/src/pages/periods/MemberAssetsTab.tsx` |
+| 24 | `demo/src/pages/identity/HubSelectieTab.tsx` |
+| 25 | `demo/src/pages/identity/MemberSummarySheet.tsx` |
+| 26 | `demo/src/components/ActiveJobsModal/ActiveJobsModal.tsx` |
 
 ---
 
 ## 2. Designbeslissingen
 
-### 2.1 Variant-nesting (NIEUW)
+### 2.1 Clean Break — Geen Fallbacks
 
-**Was**: suffix-based `{kit}_{variant}` → `"home_arms_crossed"`
-**Wordt**: genest `{kit}.{variant}` → `"home": { "arms_crossed": {...} }`
+**Strategie**: One-shot migratie, geen dual-write, geen fallback-lagen.
 
-Voordelen:
-- Geen string-parsing meer (`split("_", 1)` verdwijnt)
-- Makkelijk alle varianten van een tenue itereren: `Object.keys(intro.home)`
-- Schone API: `kit_type` en `variant_id` zijn aparte velden, nooit gecombineerd
-- Fallback-chain in `job.py` wordt drastisch simpeler
+**Waarom niet gradual/dual-write?**
+- De codebase heeft al 4 historische formaten met een 5-staps fallback chain
+- Dual-write voegt een 5e formaat toe met nóg meer fallback-complexiteit
+- Feature flags voor fallbacks worden nooit opgeruimd
+- We bouwen de app nog — dit is het moment om het goed te doen
 
-Conventie:
-- **`"default"`** = de standaard variant (was: geen suffix)
-- Images hebben typisch alleen `"default"` (1 foto per kit)
-- Videos kunnen meerdere varianten hebben (default, arms_crossed, thumbs_up, etc.)
+**Deploy-draaiboek:**
+1. Deploy nieuwe code (leest nieuw formaat, schrijft nieuw formaat)
+2. Pause Celery workers (~30 sec)
+3. Run migratie: `python manage.py migrate_asset_metadata`
+4. Resume Celery workers
+5. Verify: `python manage.py verify_asset_metadata`
 
-### 2.2 Backward compatibility — Gradual migration
+**Rollback**: git revert + herstart. Migratie is reversible (oud formaat wordt als backup bewaard in `_legacy_assets`).
 
-**Strategie**: Dual-write + fallback-read
-1. **Fase 1**: Nieuwe helpers lezen eerst `roles.{role}.*.{kit}.{variant}`, fallback naar root + suffix
-2. **Fase 2**: Writes gaan naar nieuw formaat EN oud formaat (dual-write)
-3. **Fase 3**: Management command migreert bestaande data (suffix→nested, root→role)
-4. **Fase 4**: Na verificatie: stop dual-write, alleen nieuw formaat
+### 2.2 Variant-nesting
 
-### 2.3 S3-padstructuur (NIEUW)
+**Was**: `{kit}_{variant}` → `"home_arms_crossed"` (suffix, string-parsing nodig)
+**Wordt**: `{kit}.{variant}` → `"home": { "arms_crossed": {...} }` (genest, dict-lookup)
+
+- **`"default"`** = standaard variant (was: geen suffix)
+- Images: typisch alleen `"default"` per kit
+- Videos: meerdere varianten per kit (default, arms_crossed, thumbs_up, etc.)
+- `split("_", 1)` verdwijnt volledig uit codebase
+
+### 2.3 S3-padstructuur
 
 **Was**: `members/{id}/processed/{type}/{kit}{_variant}_{hash}.{ext}`
 **Wordt**: `members/{id}/processed/{role}/{type}/{kit}/{variant}_{hash}.{ext}`
-
-Voorbeeld: `members/abc/processed/player/intro/home/arms_crossed_f7a2b1.webm`
 
 Bestaande S3 objecten worden NIET verplaatst — de URL in metadata verwijst al naar het juiste object. Alleen nieuwe uploads gebruiken het nieuwe pad.
 
@@ -209,9 +194,20 @@ Bestaande S3 objecten worden NIET verplaatst — de URL in metadata verwijst al 
 | `profile` | ✓ | ✓ | ✓ |
 | `action_photo` | ✓ | ✓ | — |
 
-### 2.6 API interface
+### 2.6 Shared vs. role-specific
 
-Bestaande endpoints krijgen `role` + `variant_id` als aparte velden:
+| Asset | Per Rol | Gedeeld |
+|-------|---------|---------|
+| Closeup in tenue | ✅ | |
+| Fullbody in tenue | ✅ | |
+| Halfbody in tenue | ✅ | |
+| Intro video | ✅ (multi-variant) | |
+| Celebration video | ✅ (multi-variant) | |
+| Profielfoto (headshot) | | ✅ |
+| Action photo | | ✅ |
+
+### 2.7 API interface
+
 ```
 POST /api/v1/video/process-asset/
 {
@@ -223,7 +219,15 @@ POST /api/v1/video/process-asset/
 }
 ```
 
-`variant_id` default naar `"default"` als niet meegegeven.
+- `role` verplicht (geen default-guessing)
+- `variant_id` default `"default"` als niet meegegeven
+- `kit_type` en `variant_id` altijd aparte velden, nooit gecombineerd
+
+### 2.8 Default role
+
+- Bij upload: role is verplicht (UI stuurt geselecteerde rol mee)
+- Bij display: primaire rol als default tab
+- Leden met 1 rol: geen role selector getoond
 
 ---
 
@@ -231,122 +235,53 @@ POST /api/v1/video/process-asset/
 
 | Fase | Titel | Effort | Laag | Afhankelijkheid |
 |------|-------|--------|------|-----------------|
-| H0 | Metadata Schema + Read/Write Helpers | ~3 uur | Backend + Frontend | — |
-| H1 | Backend Write-Path Refactor | ~4 uur | Backend | H0 |
-| H2 | Celery + S3 Paden + Processor | ~3 uur | Backend | H1 |
-| H3 | Fallback Chain + AI Pipeline Read-Path | ~4 uur | Backend | H0 |
-| H4 | Management Commands Update | ~2 uur | Backend | H1 |
-| H5 | Frontend Types + Asset Hooks | ~2 uur | Frontend | H0 |
-| H6 | MemberDetailPanel Role Tabs | ~4 uur | Frontend | H5 |
-| H7 | AI Generatie per Rol | ~3 uur | Frontend + Backend | H6 |
+| H0 | Schema + Read/Write Helpers | ~2 uur | Backend + Frontend | — |
+| H1 | One-Shot Migratie Command | ~4 uur | Backend | H0 |
+| H2 | Backend Write-Path (alle 8 locaties) | ~3 uur | Backend | H0 |
+| H3 | Backend Read-Path + Fallback Opruimen | ~3 uur | Backend | H0 |
+| H4 | Celery + S3 + Management Commands | ~3 uur | Backend | H2 |
+| H5 | Frontend Types + Hooks | ~2 uur | Frontend | H0 |
+| H6 | MemberDetailPanel Role Tabs + Variants | ~4 uur | Frontend | H5 |
+| H7 | AI Generatie per Rol | ~3 uur | Backend + Frontend | H6 |
 | H8 | Selectie & Summary per Rol | ~2 uur | Frontend | H5 |
 | H9 | Video Lineup per Rol | ~3 uur | Backend | H2 |
-| H10 | Data Migratie Command | ~3 uur | Backend | H1, H3 |
-| H11 | Cleanup & Dual-Write Stop | ~2 uur | Backend + Frontend | H10 |
-| HX | End-to-End Test & Verificatie | ~1 uur | Test | Alle |
+| HX | E2E Test + Deploy Draaiboek | ~2 uur | Full-stack | Alle |
 
 ---
 
 ## 4. Acceptatiecriteria
 
 ### Backend — Variant nesting
-- [ ] Alle 8 write-locaties gebruiken genest formaat `{kit}.{variant}` i.p.v. suffix
-- [ ] Alle 6 read-locaties lezen genest, met suffix-fallback
-- [ ] `variant_id` default naar `"default"` (nooit leeg/None in storage)
-- [ ] Fallback chain in `job.py` vereenvoudigd
-- [ ] `split("_", 1)` verdwenen uit codebase
+- [ ] Alle 8 write-locaties gebruiken genest formaat `{kit}.{variant}`
+- [ ] Alle 6 read-locaties gebruiken directe dict-lookups
+- [ ] `split("_", 1)` verdwenen uit asset code
+- [ ] 5-staps fallback chain in `job.py` verwijderd
+- [ ] `variant_id` default `"default"` (nooit leeg/None)
 
 ### Backend — Role scoping
-- [ ] `_update_variant_metadata()` schrijft naar `roles.{role}.*` (+ root dual-write)
-- [ ] `process_member_asset` accepteert `role` parameter
-- [ ] S3 pad: `members/{id}/processed/{role}/{type}/{kit}/{variant}_{hash}.{ext}`
-- [ ] Serializer levert role-based assets in API response
-- [ ] Management command migreert bestaande data (suffix→nested + root→role)
+- [ ] `_update_variant_metadata()` schrijft naar `roles.{role}.*`
+- [ ] `process_member_asset` accepteert `role` als verplicht veld
+- [ ] S3: `members/{id}/processed/{role}/{type}/{kit}/{variant}_{hash}.{ext}`
+- [ ] Serializer levert role-based assets
 - [ ] Video lineup selecteert assets o.b.v. functionele rol
 
+### Migratie
+- [ ] `migrate_asset_metadata` converteert alle 4 legacy formaten → nieuw
+- [ ] `verify_asset_metadata` checkt dat alle data correct gemigreerd is
+- [ ] Migratie is idempotent en reversible
+- [ ] Deploy-draaiboek getest met `--dry-run`
+
 ### Frontend
-- [ ] `getAssetsForRole()` helper leest geneste structuur met fallback
+- [ ] `getAssetsForRole()` leest geneste structuur (geen fallback)
 - [ ] `getMemberAssetStatus()` per rol
-- [ ] MemberDetailPanel met role-tabs
-- [ ] Variant picker/display voor videos (meerdere intro's per tenue)
-- [ ] AI generatie stuurt role + variant context mee
-- [ ] Selectie UI toont asset completeness per rol
+- [ ] MemberDetailPanel met role-tabs + variant grid
+- [ ] AI generatie stuurt role + variant mee
+- [ ] Selectie UI toont completeness per rol
 
 ### Kwaliteit
 - [ ] TypeScript 0 errors, Vite build success
-- [ ] Bestaande assets blijven werken (suffix fallback)
+- [ ] `pytest` all green
 - [ ] Geen N+1 queries
-- [ ] WCAG 2.1 AA op alle nieuwe UI elementen
-- [ ] pytest tests voor nested variant + role-based read/write
-
-```python
-def get_member_asset(member, asset_type, role=None):
-    assets = member.metadata.get('teamreel_assets', {})
-
-    # Try role-specific first
-    if role and 'roles' in assets:
-        role_assets = assets['roles'].get(role, {})
-        if asset_type in role_assets.get('images', {}):
-            return role_assets['images'][asset_type]
-
-    # Fallback to root (legacy)
-    return assets.get('images', {}).get(asset_type)
-```
-
-### 3.2 Default role
-
-Als geen rol gespecificeerd:
-- Bij upload: gebruik primaire rol van member
-- Bij display: toon assets van primaire rol
-
-### 3.3 Shared vs. role-specific
-
-| Asset | Per Rol | Gedeeld |
-|-------|---------|---------|
-| Closeup in tenue | ✅ | |
-| Fullbody in tenue | ✅ | |
-| Halfbody in tenue | ✅ | |
-| Short intro | ✅ | |
-| Goal celebration | ✅ (keeper ≠ speler viering) | |
-| Profielfoto (headshot) | | ✅ |
-| Action photo | | ✅ |
-
----
-
-## 4. Acceptatiecriteria
-
-### Backend
-- [ ] Schema ondersteunt assets per rol
-- [ ] API accepteert `role` parameter bij upload
-- [ ] Backward compatible met bestaande assets
-- [ ] Processing pipeline kent rol-context
-- [ ] Unit tests voor nieuwe schema
-
-### Frontend
-- [ ] Member detail toont tabs per rol bij multi-role leden
-- [ ] Asset upload UI vraagt om rol selectie
-- [ ] Selectie grid toont asset-status per rol
-- [ ] Single-role leden: geen extra UI complexiteit
-
-### Video Generation
-- [ ] Templates selecteren correcte assets o.b.v. rol
-- [ ] Keeper-lineup: keeper-assets
-- [ ] Speler-lineup: speler-assets
-
----
-
-## 5. Open vragen
-
-1. **Migratie bestaande data**: Automatisch toewijzen aan primaire rol, of handmatig?
-2. **Storage quota**: Verdubbelt opslag bij multi-role. Acceptabel?
-3. **Processing costs**: Meer AI-processing bij meerdere rollen. Budget impact?
-
----
-
-## 6. Risico's
-
-| Risico | Impact | Mitigatie |
-|--------|--------|-----------|
-| Schema migratie breekt bestaande data | Hoog | Gradual migration + fallback |
-| UI wordt te complex | Medium | Single-role leden: simplified UX |
-| Storage kosten | Laag | Monitor, cap aantal rollen |
+- [ ] WCAG 2.1 AA op alle nieuwe UI
+- [ ] Geen `split("_", 1)` in codebase
+- [ ] Geen fallback-code in reads

@@ -1,80 +1,95 @@
-# H5 — Frontend Types + Asset Hooks
+# H5 — Frontend Types + Hooks
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Fase | H5 |
 | Effort | ~2 uur |
 | Laag | Frontend |
 | Afhankelijkheid | H0 |
 
 ## Doel
 
-Frontend utilities updaten voor geneste variant-structuur + role-aware asset reads.
+Frontend types, hooks en utility functies aanpassen voor de nieuwe geneste metadata-structuur met role-scoping.
 
-## Implementatie
+## Scope
 
-### 1. TypeScript types
+### Types — `demo/src/utils/assetMetadata.ts` (uit H0)
+
+Types zijn al gedefinieerd in H0. Hier worden de hooks en helpers gebouwd.
+
+### `demo/src/utils/mediaHelpers.ts` — Refactor
 
 ```typescript
-// Geneste variant structuur
-interface KitVariants {
-  [variantId: string]: VariantValue;  // "default", "arms_crossed", etc.
+// WAS:
+export function getMediaProcessingState(assets, assetType, compositeKey) {
+  return assets?.videos?.[assetType]?.[compositeKey]?.processing_state;
 }
 
-interface AssetCategory {
-  [kitType: string]: KitVariants;     // "home", "goalkeeper", etc.
-}
-
-interface RoleAssets {
-  images?: Record<string, AssetCategory>;
-  videos?: Record<string, AssetCategory>;
-  media?: Record<string, MediaSlot>;
-}
-
-interface TeamReelAssets {
-  roles?: Record<string, RoleAssets>;
-  // Legacy root-level (fallback):
-  images?: Record<string, unknown>;
-  videos?: Record<string, unknown>;
-  media?: Record<string, MediaSlot>;
+// WORDT:
+export function getMediaProcessingState(
+  assets: TeamreelAssets,
+  role: string,
+  assetType: string,
+  kit: string,
+  variant = "default"
+): string | undefined {
+  return getVariantValue(assets, role, "videos", assetType, kit, variant)?.processing_state;
 }
 ```
 
-### 2. `mediaHelpers.ts` updaten
+### `demo/src/utils/assetStatus.ts` — Per rol
 
-**Bestand**: `demo/src/utils/mediaHelpers.ts`
+```typescript
+// WAS:
+export function getMemberAssetStatus(assets) {
+  // Checked 5 hardcoded slots against root-level data
 
-- `readAssetsFromMembership()` → role-aware, leest `roles.{role}.*`
-- `getMediaProcessingState()` → geneste iteratie: `type.kit.variant`
-- `mergeAssetsIntoMetadata()` → schrijft genest formaat
+// WORDT:
+export function getMemberAssetStatus(assets: TeamreelAssets, role: string) {
+  // Check slots for specific role
+  const roleAssets = assets?.roles?.[role];
+  // Count filled/total for images + videos
+}
+```
 
-### 3. `assetStatus.ts` updaten
+### `readAssetsFromMembership()` — Vereenvoudigen
 
-**Bestand**: `demo/src/utils/assetStatus.ts`
+```typescript
+// WAS: complex fallback logic reading from images/videos/media root
+// WORDT: direct read from roles.{role}
+export function readAssetsFromMembership(
+  membership: Membership,
+  role: string
+): RoleAssets {
+  return membership.metadata?.teamreel_assets?.roles?.[role] ?? { images: {}, videos: {} };
+}
+```
 
-- `getMemberAssetStatus()` → per-role asset tracking
-- Tracked slots per rol:
-  - **player**: kit (home) + closeup + intro → per variant count
-  - **keeper**: kit (goalkeeper) + closeup + intro
-  - **coach/staf**: closeup alleen
+### Nieuwe hook: `useRoleAssets()`
 
-### 4. `ActiveJobsModal.tsx`
+```typescript
+export function useRoleAssets(membership: Membership, role: string) {
+  const assets = membership.metadata?.teamreel_assets;
+  const roleAssets = assets?.roles?.[role];
 
-**Bestand**: `demo/src/components/ActiveJobsModal/ActiveJobsModal.tsx`
+  return {
+    getImage: (type: string, kit: string) =>
+      getVariantValue(assets, role, "images", type, kit),
+    getVideo: (type: string, kit: string, variant = "default") =>
+      getVariantValue(assets, role, "videos", type, kit, variant),
+    getVariants: (type: string, kit: string) =>
+      Object.keys(roleAssets?.videos?.[type]?.[kit] ?? {}),
+    getStatus: () => getMemberAssetStatus(assets, role),
+  };
+}
+```
 
-- Deduplication logica aanpassen voor geneste keys
+## Checklist
 
-## Tests
-
-- Test `getAssetsForRole()` met genest formaat → correct
-- Test `getAssetsForRole()` met suffix legacy → fallback werkt
-- Test `getMemberAssetStatus()` per rol → juiste counts
-- Test `getAllVariants()` → vindt alle varianten
-
-## Acceptatiecriteria
-
-- [ ] TypeScript types voor geneste structuur
-- [ ] `mediaHelpers.ts` leest genest + suffix fallback
-- [ ] `assetStatus.ts` role-aware
-- [ ] `ActiveJobsModal` werkt met geneste keys
-- [ ] Geen breaking changes voor bestaande callers
+- [ ] `getMediaProcessingState()` omgezet naar role-based
+- [ ] `getMemberAssetStatus()` accepteert `role` parameter
+- [ ] `readAssetsFromMembership()` vereenvoudigd (geen fallbacks)
+- [ ] `useRoleAssets()` hook aangemaakt
+- [ ] Alle imports bijgewerkt in consuming components
+- [ ] `npx tsc --noEmit` 0 errors
+- [ ] `npx vite build` succesvol

@@ -1,72 +1,91 @@
-# H6 — MemberDetailPanel Role Tabs
+# H6 — MemberDetailPanel Role Tabs + Variants
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Fase | H6 |
 | Effort | ~4 uur |
 | Laag | Frontend |
 | Afhankelijkheid | H5 |
 
 ## Doel
 
-MemberDetailPanel uitbreiden met role-tabs en variant-display zodat assets per rol en per variant bekeken worden.
+MemberDetailPanel uitbreiden met role-tabs en per-kit variant grid. Gebruiker kan per rol de assets bekijken en beheren.
 
-## Implementatie
+## Scope
 
-### 1. Role selector
+### `MemberDetailPanel.tsx` — Role tabs
 
-**Bestand**: `demo/src/pages/periods/MemberDetailPanel.tsx`
+```
+┌─────────────────────────────────────────┐
+│ Jan de Vries            [×]             │
+│                                         │
+│ [Speler] [Keeper]     ← role tabs       │
+│                                         │
+│ ┌─ Home ──────────────────────────────┐ │
+│ │ Fullbody  Halfbody  Closeup         │ │
+│ │ [img]     [img]     [img]           │ │
+│ │                                     │ │
+│ │ Intro                               │ │
+│ │ [default] [arms_crossed] [thumbs_up]│ │
+│ │                                     │ │
+│ │ Celebration                         │ │
+│ │ [default] [thumbs_up]              │ │
+│ └─────────────────────────────────────┘ │
+│                                         │
+│ ┌─ Away ──────────────────────────────┐ │
+│ │ Fullbody  Halfbody  Closeup         │ │
+│ │ [img]     [img]     [img]           │ │
+│ │                                     │ │
+│ │ Intro                               │ │
+│ │ [default]                           │ │
+│ └─────────────────────────────────────┘ │
+└─────────────────────────────────────────┘
+```
 
-- Horizontale role pills bovenaan panel
-- Toont alle rollen van het lid (uit `functional_roles`)
+### Role tab logica
+
+- Tabs tonen alleen als lid meerdere rollen heeft
+- Enkele rol: geen tabs, direct content
 - Default: primaire rol geselecteerd
-- Switch → toont assets voor die rol
+- Tab badge: completeness % per rol
 
-### 2. MemberAssetsTab per rol + variant display
+### `MemberAssetsTab.tsx` — Per-kit sectie
 
-**Bestand**: `demo/src/pages/periods/MemberAssetsTab.tsx`
+Per kit een sectie met:
+1. **Image slots**: fullbody, halfbody, closeup (elk max 1 per kit, variant=default)
+2. **Video variants**: intro, celebration met meerdere varianten als thumbnails
+3. **Upload button**: asset type + kit + variant + role meesturen
 
-- Ontvangt `selectedRole` prop
-- Per asset type: toon alle varianten als grid
-  - Intro → grid van thumbnails: "Default", "Armen over elkaar", "Duim omhoog"
-  - Closeup → enkele foto per kit (alleen "default")
-- Per-kit sectie:
-  - **keeper**: goalkeeper kit
-  - **player**: home / away / third
-- Upload/generate knoppen per variant slot
+### Variant grid
 
-### 3. Variant labels
+- Video varianten als horizontale thumbnail-rij per asset type
+- Hover: variant naam als tooltip
+- Click: open in asset viewer
+- `+` knop: nieuwe variant uploaden
+- Empty state: "Nog geen intro video voor home tenue"
+
+### Upload flow
 
 ```typescript
-const VARIANT_LABELS: Record<string, string> = {
-  default: "Standaard",
-  arms_crossed: "Armen over elkaar",
-  thumbs_up: "Duim omhoog",
-  hands_on_head: "Handen op hoofd",
-  // ... uitbreidbaar
+// Bij upload:
+const payload = {
+  membership_id: member.id,
+  asset_type: "intro",
+  kit_type: "home",
+  variant_id: "arms_crossed",
+  role: selectedRole,  // Van de actieve tab
 };
 ```
 
-### 4. Empty states
+## Checklist
 
-- Rol zonder assets: "Nog geen assets voor [rol]"
-- Variant slot leeg: ghost card met + icoon
-
-### CSS
-
-- `.roleSelector` — horizontal pills (re-use HubSelectieTab\.roleBadge styling)
-- `.variantGrid` — CSS grid voor variant thumbnails
-- `.variantCard` / `.variantCardEmpty` — thumbnail + label
-- Touch target ≥ 44×44px
-- Mobile: 2 kolommen, scrollable
-
-## Acceptatiecriteria
-
-- [ ] Role pills tonen alle rollen
-- [ ] Switch rol → assets updaten
-- [ ] Variant grid voor video types (intro, celebration)
-- [ ] Enkele asset voor image types (closeup, fullbody)
-- [ ] Upload/generate per variant slot
-- [ ] Empty state per variant
-- [ ] Responsive mobile layout
-- [ ] Keyboard navigeerbaar
+- [ ] Role tabs in MemberDetailPanel (conditioneel bij multi-role)
+- [ ] Tab badge met completeness %
+- [ ] Per-kit secties met image slots + video variants
+- [ ] Variant grid (horizontale thumbnails)
+- [ ] Upload stuurt role + variant mee
+- [ ] Empty states per kit/type
+- [ ] WCAG: focus management bij tab switch, keyboard navigatie
+- [ ] Touch targets ≥ 44×44px
+- [ ] `npx tsc --noEmit` 0 errors
+- [ ] `npx vite build` succesvol
