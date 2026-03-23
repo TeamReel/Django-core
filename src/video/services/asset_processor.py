@@ -72,6 +72,7 @@ class AssetProcessor:
         bg_removal_backend: str = "rvm",
         should_cancel: Callable[[], bool] | None = None,
         progress_callback: Callable[[int, int], None] | None = None,
+        role: str = "player",
     ) -> dict[str, Any]:
         """Process a raw asset to lineup-ready format.
 
@@ -120,7 +121,14 @@ class AssetProcessor:
         try:
             if isinstance(spec, ImageSpec):
                 processed_url, actual_specs = self._process_image(
-                    raw_url, spec, membership_id, asset_type, kit_type, variant_id, organisation_id
+                    raw_url,
+                    spec,
+                    membership_id,
+                    asset_type,
+                    kit_type,
+                    variant_id,
+                    organisation_id,
+                    role=role,
                 )
             elif isinstance(spec, VideoSpec):
                 logger.info(
@@ -139,6 +147,7 @@ class AssetProcessor:
                     bg_removal_backend=bg_removal_backend,
                     should_cancel=should_cancel,
                     progress_callback=progress_callback,
+                    role=role,
                 )
             else:
                 raise AssetProcessingError(f"Unsupported spec type: {type(spec)}")
@@ -206,6 +215,8 @@ class AssetProcessor:
         kit_type: str,
         variant_id: str | None,
         organisation_id: str | int | None,
+        *,
+        role: str = "player",
     ) -> tuple[str, dict]:
         """Process an image asset: download → bg remove → resize/crop → upload."""
         from files.utils import get_storage_backend
@@ -241,10 +252,16 @@ class AssetProcessor:
         buffer.seek(0)
 
         # 6. Upload processed version
-        variant_suffix = f"_{variant_id}" if variant_id else ""
-        storage_path = (
-            f"members/{membership_id}/processed/{asset_type}/"
-            f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}.png"
+        from src.video.utils.asset_metadata import build_s3_asset_path
+
+        storage_path = build_s3_asset_path(
+            member_id=membership_id,
+            role=role,
+            asset_type=asset_type,
+            kit=kit_type,
+            variant=variant_id or "default",
+            content_hash=uuid4().hex[:8],
+            ext="png",
         )
 
         t_up = time.monotonic()
@@ -277,6 +294,7 @@ class AssetProcessor:
         bg_removal_backend: str = "rembg",
         should_cancel: Callable[[], bool] | None = None,
         progress_callback: Callable[[int, int], None] | None = None,
+        role: str = "player",
     ) -> tuple[str, dict]:
         """Process a video asset: download → bg remove → re-encode → upload.
 
@@ -336,6 +354,7 @@ class AssetProcessor:
                     variant_id,
                     backend,
                     should_cancel=should_cancel,
+                    role=role,
                 )
 
             # Determine effective bg removal backend
@@ -364,6 +383,7 @@ class AssetProcessor:
                     backend,
                     should_cancel=should_cancel,
                     progress_callback=progress_callback,
+                    role=role,
                 )
 
             # Fall through to original rembg pipeline
@@ -380,6 +400,7 @@ class AssetProcessor:
                 variant_id,
                 backend,
                 should_cancel=should_cancel,
+                role=role,
             )
 
     def _process_video_passthrough(
@@ -392,6 +413,8 @@ class AssetProcessor:
         variant_id: str | None,
         storage_backend: Any,
         should_cancel: Callable[[], bool] | None = None,
+        *,
+        role: str = "player",
     ) -> tuple[str, dict]:
         """Process a composite video: resize + re-encode WITHOUT background removal.
 
@@ -472,11 +495,16 @@ class AssetProcessor:
         out_duration = self._get_video_duration(str(output_path))
 
         # Upload processed version
-        variant_suffix = f"_{variant_id}" if variant_id else ""
-        hash_suffix = uuid4().hex[:8]
-        storage_path = (
-            f"members/{membership_id}/processed/{asset_type}/"
-            f"{kit_type}{variant_suffix}_{hash_suffix}.mp4"
+        from src.video.utils.asset_metadata import build_s3_asset_path
+
+        storage_path = build_s3_asset_path(
+            member_id=membership_id,
+            role=role,
+            asset_type=asset_type,
+            kit=kit_type,
+            variant=variant_id or "default",
+            content_hash=uuid4().hex[:8],
+            ext="mp4",
         )
 
         t_up = time.monotonic()
@@ -512,6 +540,8 @@ class AssetProcessor:
         storage_backend: Any,
         should_cancel: Callable[[], bool] | None = None,
         progress_callback: Callable[[int, int], None] | None = None,
+        *,
+        role: str = "player",
     ) -> tuple[str, dict]:
         """Process video using RVM (Robust Video Matting).
 
@@ -573,13 +603,18 @@ class AssetProcessor:
             pass
 
         # Upload processed version
-        variant_suffix = f"_{variant_id}" if variant_id else ""
+        from src.video.utils.asset_metadata import build_s3_asset_path
 
-        ext = ".mov" if output_format == "mov" else ".webm"
+        file_ext = "mov" if output_format == "mov" else "webm"
         hash_suffix = uuid4().hex[:8]
-        storage_path = (
-            f"members/{membership_id}/processed/{asset_type}/"
-            f"{kit_type}{variant_suffix}_{hash_suffix}{ext}"
+        storage_path = build_s3_asset_path(
+            member_id=membership_id,
+            role=role,
+            asset_type=asset_type,
+            kit=kit_type,
+            variant=variant_id or "default",
+            content_hash=hash_suffix,
+            ext=file_ext,
         )
 
         t_up = time.monotonic()
@@ -602,9 +637,10 @@ class AssetProcessor:
                 membership_id=membership_id,
                 asset_type=asset_type,
                 kit_type=kit_type,
-                variant_suffix=variant_suffix,
+                variant_id=variant_id,
                 hash_suffix=hash_suffix,
                 storage_backend=storage_backend,
+                role=role,
             )
 
         actual_specs = {
@@ -630,9 +666,11 @@ class AssetProcessor:
         membership_id: str,
         asset_type: str,
         kit_type: str,
-        variant_suffix: str,
+        variant_id: str | None,
         hash_suffix: str,
         storage_backend: Any,
+        *,
+        role: str = "player",
     ) -> str | None:
         """Transcode a ProRes MOV (with alpha) to a browser-playable MP4 preview.
 
@@ -783,9 +821,16 @@ class AssetProcessor:
                 )
                 return None
 
-            storage_path = (
-                f"members/{membership_id}/processed/{asset_type}/"
-                f"{kit_type}{variant_suffix}_{hash_suffix}_preview.mp4"
+            from src.video.utils.asset_metadata import build_s3_asset_path
+
+            storage_path = build_s3_asset_path(
+                member_id=membership_id,
+                role=role,
+                asset_type=asset_type,
+                kit=kit_type,
+                variant=f"{variant_id or 'default'}_preview",
+                content_hash=hash_suffix,
+                ext="mp4",
             )
             t_up = time.monotonic()
             with open(preview_path, "rb") as f:
@@ -818,6 +863,8 @@ class AssetProcessor:
         variant_id: str | None,
         storage_backend: Any,
         should_cancel: Callable[[], bool] | None = None,
+        *,
+        role: str = "player",
     ) -> tuple[str, dict]:
         """Process video using rembg (per-frame U2-Net bg removal).
 
@@ -1019,10 +1066,16 @@ class AssetProcessor:
         out_duration = self._get_video_duration(str(output_path))
 
         # 7. Upload processed version (as .webm for transparency support)
-        variant_suffix = f"_{variant_id}" if variant_id else ""
-        storage_path = (
-            f"members/{membership_id}/processed/{asset_type}/"
-            f"{kit_type}{variant_suffix}_{uuid4().hex[:8]}.webm"
+        from src.video.utils.asset_metadata import build_s3_asset_path
+
+        storage_path = build_s3_asset_path(
+            member_id=membership_id,
+            role=role,
+            asset_type=asset_type,
+            kit=kit_type,
+            variant=variant_id or "default",
+            content_hash=uuid4().hex[:8],
+            ext="webm",
         )
 
         t_up = time.monotonic()

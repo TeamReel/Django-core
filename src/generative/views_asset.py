@@ -3749,6 +3749,7 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
                     kit_type=kit_type,
                     raw_url=storage_path,
                     bg_removal_backend="rembg",
+                    role=role,
                 )
                 logger.info(
                     "propagate_approved_image: queued process_member_asset for membership=%s kit=%s",

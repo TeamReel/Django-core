@@ -109,6 +109,7 @@ def process_member_asset(
     raw_url: str,
     variant_id: str | None = None,
     bg_removal_backend: str | None = None,
+    role: str | None = None,
 ) -> str:
     """Process a single TeamReel member asset and update metadata."""
 
@@ -131,6 +132,11 @@ def process_member_asset(
     if not membership:
         logger.warning("process_member_asset: membership not found", extra={"id": membership_id})
         return membership_id
+
+    # Resolve role: use explicit param, or infer from membership
+    from src.video.utils.asset_metadata import infer_role
+
+    effective_role = role or infer_role(membership, kit_type)
 
     # Mark processing state first (best-effort)
     try:
@@ -239,6 +245,7 @@ def process_member_asset(
             bg_removal_backend=effective_backend,
             should_cancel=should_cancel,
             progress_callback=progress_callback,
+            role=effective_role,
         )
 
         # Refresh before writing final result (avoid clobber)

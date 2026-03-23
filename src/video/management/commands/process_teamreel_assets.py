@@ -29,6 +29,7 @@ def _iter_variants_to_process(
     teamreel_assets: dict[str, Any],
     *,
     asset_types: set[str],
+    role_filter: str | None = None,
 ) -> list[dict[str, Any]]:
     """Return a list of variant refs describing what should be processed."""
 
@@ -36,6 +37,8 @@ def _iter_variants_to_process(
     roles_data = teamreel_assets.get("roles", {}) or {}
 
     for role_name, role_data in roles_data.items():
+        if role_filter and role_name != role_filter:
+            continue
         if not isinstance(role_data, dict):
             continue
 
@@ -57,6 +60,7 @@ def _iter_variants_to_process(
                     if raw_url and not processed_url:
                         refs.append(
                             {
+                                "role": role_name,
                                 "asset_type": asset_type,
                                 "kit_type": str(kit_type),
                                 "variant_id": variant_id if variant_id != "default" else None,
@@ -83,6 +87,7 @@ def _iter_variants_to_process(
                         continue
                     refs.append(
                         {
+                            "role": role_name,
                             "asset_type": video_type,
                             "kit_type": str(kit_type),
                             "variant_id": variant_id if variant_id != "default" else None,
@@ -149,6 +154,12 @@ class Command(BaseCommand):
             default=0,
             help="Optional max number of variants to process (0 = no limit)",
         )
+        parser.add_argument(
+            "--role",
+            required=False,
+            default=None,
+            help="Filter to a specific role (e.g. player, keeper). Omit for all roles.",
+        )
 
     def handle(self, *args, **options):
         project_slug: str = options["project_slug"]
@@ -156,6 +167,7 @@ class Command(BaseCommand):
         user_email: str | None = options.get("user_email")
         do_apply: bool = bool(options.get("apply"))
         limit: int = int(options.get("limit") or 0)
+        role_filter: str | None = options.get("role")
 
         asset_types_raw: str = options.get("asset_types") or ""
         requested_asset_types = [s.strip() for s in asset_types_raw.split(",") if s.strip()]
@@ -207,7 +219,7 @@ class Command(BaseCommand):
 
         for membership in qs.iterator(chunk_size=50):
             tr = (membership.metadata or {}).get("teamreel_assets", {}) or {}
-            refs = _iter_variants_to_process(tr, asset_types=asset_types)
+            refs = _iter_variants_to_process(tr, asset_types=asset_types, role_filter=role_filter)
 
             for ref in refs:
                 if limit and processed_count >= limit:
@@ -233,6 +245,7 @@ class Command(BaseCommand):
 
                 try:
                     bg_backend = "rvm" if asset_type in ("intro", "celebration") else "rembg"
+                    ref_role = ref.get("role", "player")
 
                     result = processor.process_asset(
                         raw_url=raw_url,
@@ -244,6 +257,7 @@ class Command(BaseCommand):
                         if hasattr(membership.project, "organisation_id")
                         else None,
                         bg_removal_backend=bg_backend,
+                        role=ref_role,
                     )
 
                     membership.refresh_from_db()

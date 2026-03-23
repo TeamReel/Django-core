@@ -676,6 +676,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             raw_url=raw_url,
             variant_id=variant_id,
             bg_removal_backend=backend,
+            role=role,
         )
 
         return Response(
@@ -883,6 +884,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 raw_url=v["raw_url"],
                 variant_id=v["variant_id"],
                 bg_removal_backend=backend,
+                role=role,
             )
 
             queued.append(
