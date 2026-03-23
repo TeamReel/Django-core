@@ -22,15 +22,11 @@
   flex-shrink: 0;
 }
 
-.assetDot[data-status="complete"] {
+.assetDot[data-status="present"] {
   background: var(--app-success);
 }
 
-.assetDot[data-status="partial"] {
-  background: var(--app-warning);
-}
-
-.assetDot[data-status="empty"] {
+.assetDot[data-status="absent"] {
   background: var(--app-error);
 }
 

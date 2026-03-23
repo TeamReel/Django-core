@@ -13,7 +13,9 @@ import { ListSection } from '../../components/ListSection';
 import { Avatar } from '../../components/ui';
 import { AppIcon } from '../../components/AppIcon';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
-import { getMemberAssetStatus, getMemberRoleStatuses } from '../../utils/assetStatus';
+import { getMemberSlotPresence } from '../../utils/assetStatus';
+import { iterVariants } from '../../utils/assetMetadata';
+import type { TeamreelAssets } from '../../utils/assetMetadata';
 import type { SquadMember } from '../periods/squadTabTypes';
 import s from './HubSelectieTab.module.css';
 
@@ -55,6 +57,12 @@ function groupByRole(members: SquadMember[]): Record<RoleGroup, SquadMember[]> {
     groups[group].push(m);
   }
 
+  // Alphabetical sort within each group
+  const collator = new Intl.Collator('nl', { sensitivity: 'base' });
+  for (const key of Object.keys(groups) as RoleGroup[]) {
+    groups[key].sort((a, b) => collator.compare(memberName(a), memberName(b)));
+  }
+
   return groups;
 }
 
@@ -65,14 +73,24 @@ function memberName(m: SquadMember): string {
 }
 
 function memberAvatarUrl(m: SquadMember): string | undefined {
-  // Priority: processed closeup in-tenue ONLY → user avatar
-  const tr = (m.metadata as Record<string, unknown> | undefined)?.teamreel_assets as Record<string, unknown> | undefined;
-  if (tr) {
-    const closeup = (tr.images as Record<string, unknown> | undefined)?.closeup as Record<string, unknown> | undefined;
-    // Check all kit types for processed closeup
-    for (const kitType of ['home', 'away', 'third', 'goalkeeper']) {
-      const kit = closeup?.[kitType] as Record<string, unknown> | undefined;
-      if (typeof kit?.processed === 'string' && kit.processed) return kit.processed;
+  // Priority: processed closeup in-tenue (role-aware kit order) → user avatar
+  const assets = (m.metadata as Record<string, unknown> | undefined)
+    ?.teamreel_assets as TeamreelAssets | undefined;
+  if (assets) {
+    const roles = getMemberAllRoles(m);
+    const isKeeper = roles.includes('keeper') || roles.includes('goalkeeper');
+    const role = isKeeper ? 'keeper' : 'player';
+    const kitOrder = isKeeper
+      ? ['goalkeeper', 'home', 'away', 'third']
+      : ['home', 'away', 'third', 'goalkeeper'];
+
+    for (const kit of kitOrder) {
+      const variants = iterVariants(assets, role, 'images', 'closeup', kit);
+      for (const v of variants) {
+        if (typeof v.value?.processed === 'string' && v.value.processed) {
+          return v.value.processed;
+        }
+      }
     }
   }
   return (m.user as Record<string, unknown> | undefined)?.avatar_url as string | undefined;
@@ -96,6 +114,14 @@ const ROLE_LABEL_MAP: Record<string, string> = {
   verzorger: 'Verzorger',
   manager: 'Manager',
   supporter: 'Supporter',
+};
+
+const SLOT_LABEL_MAP: Record<string, string> = {
+  profile: 'Upload',
+  kit: 'In tenue',
+  closeup: 'Close-up',
+  intro: 'Short intro',
+  celebration: 'Celebration',
 };
 
 function getMemberAllRoles(m: SquadMember): string[] {
@@ -213,7 +239,9 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
               const mid = String(m.id ?? '').trim();
               const name = memberName(m);
               const avatarUrl = memberAvatarUrl(m);
-              const roleStatuses = isStaf ? null : getMemberRoleStatuses(m as Record<string, unknown>);
+              const slotPresence = isStaf ? null : getMemberSlotPresence(m as Record<string, unknown>);
+              const filledCount = slotPresence?.filter((sp) => sp.present).length ?? 0;
+              const totalCount = slotPresence?.length ?? 0;
 
               const allRoles = getMemberAllRoles(m);
 
@@ -245,14 +273,14 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
                           ))}
                         </span>
                       )}
-                      {roleStatuses && roleStatuses.roles.length > 0 && (
-                        <span className={s.assetDots} aria-label={`${roleStatuses.overallScore}% assets compleet`}>
-                          {roleStatuses.roles.map((rs) => (
+                      {slotPresence && (
+                        <span className={s.assetDots} aria-label={`${filledCount}/${totalCount} assets compleet`}>
+                          {slotPresence.map((sp) => (
                             <span
-                              key={rs.role}
+                              key={sp.slotId}
                               className={s.assetDot}
-                              data-status={rs.status}
-                              title={`${ROLE_LABEL_MAP[rs.role] ?? rs.role}: ${rs.filled}/${rs.total}`}
+                              data-status={sp.present ? 'present' : 'absent'}
+                              title={`${SLOT_LABEL_MAP[sp.slotId] ?? sp.slotId}: ${sp.present ? 'aanwezig' : 'ontbreekt'}`}
                             />
                           ))}
                         </span>

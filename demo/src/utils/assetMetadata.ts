@@ -114,6 +114,9 @@ export function getAssetRoles(
 /**
  * Iterate all (kit, variantId, value) tuples for a given role + asset type.
  * If kit is provided, only iterate variants for that kit.
+ *
+ * Supports both the NEW nested format (roles.{role}.{mt}.{type}.{kit}.{variant})
+ * and the LEGACY flat format ({mt}.{type}.{kit} = variant_value).
  */
 export function iterVariants(
   assets: TeamreelAssets | undefined | null,
@@ -122,20 +125,40 @@ export function iterVariants(
   assetType: string,
   kit?: string,
 ): Array<{ kit: string; variantId: string; value: VariantValue }> {
+  // New nested format: roles.{role}.{mediaType}.{assetType}
   const assetData = assets?.roles?.[role]?.[mediaType]?.[assetType];
-  if (!assetData) return [];
+  if (assetData) {
+    const result: Array<{ kit: string; variantId: string; value: VariantValue }> = [];
+    const kitsToCheck = kit ? [kit] : Object.keys(assetData);
 
-  const result: Array<{ kit: string; variantId: string; value: VariantValue }> = [];
-  const kitsToCheck = kit ? [kit] : Object.keys(assetData);
-
-  for (const k of kitsToCheck) {
-    const kitData = assetData[k];
-    if (!kitData) continue;
-    for (const [variantId, value] of Object.entries(kitData)) {
-      result.push({ kit: k, variantId, value });
+    for (const k of kitsToCheck) {
+      const kitData = assetData[k];
+      if (!kitData) continue;
+      for (const [variantId, value] of Object.entries(kitData)) {
+        result.push({ kit: k, variantId, value });
+      }
     }
+    return result;
   }
 
+  // Legacy fallback: {mediaType}.{assetType} at root level.
+  // Legacy has one less nesting level — entries are variant values directly.
+  const rawAssets = assets as Record<string, unknown> | undefined;
+  const legacyBranch = rawAssets?.[mediaType];
+  if (!legacyBranch || typeof legacyBranch !== 'object') return [];
+  const legacyAsset = (legacyBranch as Record<string, unknown>)[assetType];
+  if (!legacyAsset || typeof legacyAsset !== 'object') return [];
+
+  const result: Array<{ kit: string; variantId: string; value: VariantValue }> = [];
+  for (const [k, val] of Object.entries(legacyAsset as Record<string, unknown>)) {
+    if (!val) continue;
+    if (kit && k !== kit) continue;
+    if (typeof val === 'string') {
+      result.push({ kit: k, variantId: 'default', value: { raw: val } });
+    } else if (typeof val === 'object') {
+      result.push({ kit: k, variantId: 'default', value: val as VariantValue });
+    }
+  }
   return result;
 }
 
