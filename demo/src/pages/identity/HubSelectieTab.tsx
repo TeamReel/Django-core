@@ -7,7 +7,7 @@
  */
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, UserMinus } from 'lucide-react';
+import { Check, Plus, Search, UserMinus } from 'lucide-react';
 import { Alert } from '@django-core/design-system';
 import { ListSection } from '../../components/ListSection';
 import { Avatar } from '../../components/ui';
@@ -30,8 +30,8 @@ interface HubSelectieTabProps {
   assignUsersToSeasonSquad?: (userIds: string[]) => Promise<void>;
   /** Remove a member from the season squad by membership ID (admin only) */
   removeFromSquad?: (membershipId: string) => Promise<void>;
-  /** Change a member's functional role */
-  onRoleChange?: (membershipId: string, role: 'keeper' | 'player' | 'coach' | 'assistant') => Promise<void>;
+  /** Change a member's functional roles (multi-select) */
+  onRolesChange?: (membershipId: string, roles: string[]) => Promise<void>;
   /** If provided, tapping a member calls this instead of navigating away */
   onMemberTap?: (m: SquadMember) => void;
 }
@@ -50,19 +50,9 @@ function groupByRole(members: SquadMember[]): Record<RoleGroup, SquadMember[]> {
   const groups: Record<RoleGroup, SquadMember[]> = { keepers: [], spelers: [], staf: [] };
 
   for (const m of members) {
-    const fr = (m as Record<string, unknown>).functional_roles as string[] | undefined;
-    const role = (m.role ?? '').toLowerCase();
-
-    if (fr?.includes('keeper') || fr?.includes('goalkeeper') || role === 'keeper' || role === 'goalkeeper') {
-      groups.keepers.push(m);
-    } else if (
-      fr?.includes('coach') || fr?.includes('assistant') ||
-      role === 'coach' || role === 'assistant'
-    ) {
-      groups.staf.push(m);
-    } else {
-      groups.spelers.push(m);
-    }
+    const roles = getMemberAllRoles(m);
+    const group = getPrimaryRoleGroup(roles);
+    groups[group].push(m);
   }
 
   return groups;
@@ -90,20 +80,38 @@ function memberAvatarUrl(m: SquadMember): string | undefined {
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 
-const ROLE_OPTIONS: { value: 'keeper' | 'player' | 'coach' | 'assistant'; label: string }[] = [
+const ROLE_OPTIONS: { value: string; label: string }[] = [
   { value: 'keeper', label: 'Keeper' },
   { value: 'player', label: 'Speler' },
   { value: 'coach', label: 'Coach' },
   { value: 'assistant', label: 'Assistent' },
 ];
 
-function getMemberFunctionalRole(m: SquadMember): string {
+const ROLE_LABEL_MAP: Record<string, string> = {
+  keeper: 'Keeper',
+  goalkeeper: 'Keeper',
+  player: 'Speler',
+  coach: 'Coach',
+  assistant: 'Assistent',
+  verzorger: 'Verzorger',
+  manager: 'Manager',
+  supporter: 'Supporter',
+};
+
+function getMemberAllRoles(m: SquadMember): string[] {
   const fr = (m as Record<string, unknown>).functional_roles as string[] | undefined;
+  if (fr && fr.length > 0) return fr;
   const role = (m.role ?? '').toLowerCase();
-  if (fr?.includes('keeper') || fr?.includes('goalkeeper') || role === 'keeper' || role === 'goalkeeper') return 'keeper';
-  if (fr?.includes('coach') || role === 'coach') return 'coach';
-  if (fr?.includes('assistant') || role === 'assistant') return 'assistant';
-  return 'player';
+  if (role === 'keeper' || role === 'goalkeeper') return ['keeper'];
+  if (role === 'coach') return ['coach'];
+  if (role === 'assistant') return ['assistant'];
+  return ['player'];
+}
+
+function getPrimaryRoleGroup(roles: string[]): RoleGroup {
+  if (roles.includes('keeper') || roles.includes('goalkeeper')) return 'keepers';
+  if (roles.includes('coach') || roles.includes('assistant')) return 'staf';
+  return 'spelers';
 }
 
 export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
@@ -116,7 +124,7 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
   teamRosterLoading,
   assignUsersToSeasonSquad,
   removeFromSquad,
-  onRoleChange,
+  onRolesChange,
   onMemberTap,
 }) => {
   const navigate = useNavigate();
@@ -140,10 +148,19 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
     setRolePicker((prev) => prev?.memberId === mid ? null : { memberId: mid, rect });
   }, []);
 
-  const handleRoleSelect = useCallback(async (mid: string, role: 'keeper' | 'player' | 'coach' | 'assistant') => {
-    setRolePicker(null);
-    await onRoleChange?.(mid, role);
-  }, [onRoleChange]);
+  const handleRoleToggle = useCallback(async (mid: string, role: string) => {
+    const member = members.find((m) => String(m.id) === mid);
+    if (!member) return;
+    const currentRoles = getMemberAllRoles(member);
+    let newRoles: string[];
+    if (currentRoles.includes(role)) {
+      if (currentRoles.length <= 1) return;
+      newRoles = currentRoles.filter(r => r !== role);
+    } else {
+      newRoles = [...currentRoles, role];
+    }
+    await onRolesChange?.(mid, newRoles);
+  }, [members, onRolesChange]);
 
   // Close role picker on Escape
   useEffect(() => {
@@ -198,8 +215,7 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
               const avatarUrl = memberAvatarUrl(m);
               const assetStatus = isStaf ? null : getMemberAssetStatus(m as Record<string, unknown>);
 
-              const currentRole = getMemberFunctionalRole(m);
-              const roleLabel = ROLE_OPTIONS.find((r) => r.value === currentRole)?.label ?? 'Lid';
+              const allRoles = getMemberAllRoles(m);
 
               return (
                 <ListSection.Row
@@ -209,20 +225,25 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
                   onTap={() => onMemberTap ? onMemberTap(m) : navigate(memberDetailHref(mid))}
                   trailing={
                     <div className={s.trailingGroup}>
-                      {isAdmin && onRoleChange && (
+                      {isAdmin && onRolesChange ? (
                         <button
                           type="button"
-                          className={s.roleChip}
+                          className={s.roleBadges}
                           onClick={(e) => handleRoleTap(e, mid)}
-                          aria-label={`Rol wijzigen voor ${name}`}
+                          aria-label={`Rollen wijzigen voor ${name}`}
                           aria-haspopup="listbox"
                           aria-expanded={rolePicker?.memberId === mid}
                         >
-                          {roleLabel}
+                          {allRoles.map(role => (
+                            <span key={role} className={s.roleBadge}>{ROLE_LABEL_MAP[role] ?? role}</span>
+                          ))}
                         </button>
-                      )}
-                      {!isAdmin && (
-                        <span className={s.roleLabel}>{roleLabel}</span>
+                      ) : (
+                        <span className={s.roleBadges}>
+                          {allRoles.map(role => (
+                            <span key={role} className={s.roleBadge}>{ROLE_LABEL_MAP[role] ?? role}</span>
+                          ))}
+                        </span>
                       )}
                       {assetStatus && (
                         <span
@@ -318,17 +339,23 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
           >
             {ROLE_OPTIONS.map((opt) => {
               const m = members.find((mem) => String(mem.id) === rolePicker.memberId);
-              const current = m ? getMemberFunctionalRole(m) : '';
+              const allRoles = m ? getMemberAllRoles(m) : [];
+              const isSelected = allRoles.includes(opt.value);
+              const isLastRole = isSelected && allRoles.length <= 1;
               return (
                 <button
                   key={opt.value}
                   type="button"
                   className={s.rolePickerOption}
                   role="option"
-                  aria-selected={current === opt.value}
-                  data-active={current === opt.value ? 'true' : undefined}
-                  onClick={() => handleRoleSelect(rolePicker.memberId, opt.value)}
+                  aria-selected={isSelected}
+                  data-active={isSelected ? 'true' : undefined}
+                  disabled={isLastRole}
+                  onClick={() => handleRoleToggle(rolePicker.memberId, opt.value)}
                 >
+                  <span className={s.checkBox} data-checked={isSelected ? 'true' : undefined}>
+                    {isSelected && <Check size={12} />}
+                  </span>
                   {opt.label}
                 </button>
               );

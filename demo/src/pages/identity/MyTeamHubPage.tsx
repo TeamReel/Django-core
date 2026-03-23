@@ -750,16 +750,15 @@ export const MyTeamHubPage: React.FC = () => {
               removeFromSquad={d.unassignMembershipsFromSeasonSquad
                 ? (id: string) => d.unassignMembershipsFromSeasonSquad([id])
                 : undefined}
-              onRoleChange={isAdmin && d.project?.id ? async (mid, role) => {
+              onRolesChange={isAdmin && d.project?.id ? async (mid, roles) => {
                 const member = (d.members as SquadMember[]).find((m) => String(m.id) === mid);
                 const userId = Number(member?.user?.id);
                 if (!userId) return;
                 const prevDirect = (member as Record<string, unknown>)?.functional_roles;
                 const prevRoles = Array.isArray(prevDirect) ? prevDirect.map((r: unknown) => String(r || '').trim()).filter(Boolean) : [];
-                const nextRoles: string[] = [role];
                 const prevSet = new Set(prevRoles);
-                const nextSet = new Set(nextRoles);
-                const toAdd = nextRoles.filter((r) => !prevSet.has(r));
+                const nextSet = new Set(roles);
+                const toAdd = roles.filter((r) => !prevSet.has(r));
                 const toRemove = prevRoles.filter((r) => !nextSet.has(r));
                 if (toRemove.length) await projectsApi.unassignFunctionalRoles(d.project!.id, { user_id: userId, roles: toRemove });
                 if (toAdd.length) await projectsApi.assignFunctionalRoles(d.project!.id, { user_id: userId, roles: toAdd });
