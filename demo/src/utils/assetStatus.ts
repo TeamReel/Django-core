@@ -3,6 +3,9 @@
  *
  * Checks completion of the 5 tracked media slots per member,
  * and club/team brand asset presence.
+ *
+ * Reads from roles.{role}.images/videos nested structure.
+ * When no role is given, checks across all roles.
  */
 import { getMediaProcessingState } from './mediaHelpers';
 import type { MediaSlotId } from '../constants/mediaSlots';

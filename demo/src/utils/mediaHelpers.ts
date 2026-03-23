@@ -18,6 +18,10 @@ interface MembershipWithMedia {
 }
 
 interface TeamReelAssets {
+  roles?: Record<string, {
+    images?: Record<string, Record<string, Record<string, unknown>>>;
+    videos?: Record<string, Record<string, Record<string, unknown>>>;
+  }>;
   media?: Record<string, { url?: string; caption?: string }>;
   images?: Record<string, Record<string, unknown>>;
   videos?: Record<string, Record<string, unknown>>;
@@ -214,42 +218,83 @@ export function getMediaProcessingState(
     return flatUrl ? 'processed' : 'empty';
   }
 
-  // Check per-variant data (images.fullbody.home, videos.intro.home_*, etc.)
-  const branchData = tr?.[mapping.branch]?.[mapping.category];
-  if (!branchData || typeof branchData !== 'object') {
-    return flatUrl ? 'raw' : 'empty';
-  }
-
-  // Check all variants in this category; best state wins
+  // Check per-variant data across all roles — best state wins.
+  // New nested format: roles.{role}.{branch}.{category}.{kit}.{variant}
   let hasRaw = false;
   let hasProcessing = false;
   let hasProcessed = false;
 
-  for (const [key, val] of Object.entries(branchData)) {
-    if (!val) continue;
-    // If variantKey is set, only check that specific variant
-    if (mapping.variantKey && key !== mapping.variantKey) continue;
-    // If excludeVariants is set, skip those variants
-    if (mapping.excludeVariants?.includes(key)) continue;
+  const roles = tr?.roles;
+  if (roles && typeof roles === 'object') {
+    for (const roleData of Object.values(roles)) {
+      if (!roleData || typeof roleData !== 'object') continue;
+      const branchData = (roleData as Record<string, unknown>)?.[mapping.branch];
+      if (!branchData || typeof branchData !== 'object') continue;
+      const categoryData = (branchData as Record<string, unknown>)?.[mapping.category];
+      if (!categoryData || typeof categoryData !== 'object') continue;
 
-    if (typeof val === 'string') {
-      hasRaw = true;
-      continue;
-    }
-    if (typeof val === 'object') {
-      const v = val as Record<string, unknown>;
-      const state = v.processing_state;
-      if (state === 'processed' && v.processed) {
-        // If processed URL equals raw URL, no actual processing happened
-        if (v.processed === v.raw) {
-          hasRaw = true;
-        } else {
-          hasProcessed = true;
+      // categoryData = { home: { default: {...}, arms_crossed: {...} }, away: {...} }
+      for (const [kitKey, kitData] of Object.entries(categoryData as Record<string, unknown>)) {
+        if (!kitData || typeof kitData !== 'object') continue;
+        for (const [variantKey, val] of Object.entries(kitData as Record<string, unknown>)) {
+          if (!val) continue;
+          // Apply variantKey / excludeVariants filters using kit_variant composite key
+          const compositeKey = `${kitKey}_${variantKey}`;
+          if (mapping.variantKey && kitKey !== mapping.variantKey && variantKey !== mapping.variantKey && compositeKey !== mapping.variantKey) continue;
+          if (mapping.excludeVariants?.includes(kitKey) || mapping.excludeVariants?.includes(variantKey) || mapping.excludeVariants?.includes(compositeKey)) continue;
+
+          if (typeof val === 'string') {
+            hasRaw = true;
+            continue;
+          }
+          if (typeof val === 'object') {
+            const v = val as Record<string, unknown>;
+            const state = v.processing_state;
+            if (state === 'processed' && v.processed) {
+              if (v.processed === v.raw) {
+                hasRaw = true;
+              } else {
+                hasProcessed = true;
+              }
+            } else if (state === 'processing') {
+              hasProcessing = true;
+            } else if (v.raw || v.processed) {
+              hasRaw = true;
+            }
+          }
         }
-      } else if (state === 'processing') {
-        hasProcessing = true;
-      } else if (v.raw || v.processed) {
-        hasRaw = true;
+      }
+    }
+  }
+
+  // Legacy fallback: check root-level images/videos for pre-migration data
+  if (!hasRaw && !hasProcessing && !hasProcessed) {
+    const legacyBranch = tr?.[mapping.branch]?.[mapping.category];
+    if (legacyBranch && typeof legacyBranch === 'object') {
+      for (const [key, val] of Object.entries(legacyBranch)) {
+        if (!val) continue;
+        if (mapping.variantKey && key !== mapping.variantKey) continue;
+        if (mapping.excludeVariants?.includes(key)) continue;
+
+        if (typeof val === 'string') {
+          hasRaw = true;
+          continue;
+        }
+        if (typeof val === 'object') {
+          const v = val as Record<string, unknown>;
+          const state = v.processing_state;
+          if (state === 'processed' && v.processed) {
+            if (v.processed === v.raw) {
+              hasRaw = true;
+            } else {
+              hasProcessed = true;
+            }
+          } else if (state === 'processing') {
+            hasProcessing = true;
+          } else if (v.raw || v.processed) {
+            hasRaw = true;
+          }
+        }
       }
     }
   }

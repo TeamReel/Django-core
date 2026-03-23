@@ -140,45 +140,78 @@ export function readAssetsFromMembership(membership: MembershipRecord): MemberMe
 export function readVideoVariantsFromMembership(membership: MembershipRecord): AssetVariantsMap {
   const meta = membership?.metadata || {};
   const tr = meta?.teamreel_assets || meta?.teamreelAssets || {};
-  const videos = tr?.videos || {};
-  const images = tr?.images || {};
 
   const safeObj = (obj: unknown): Record<string, AssetVariantRaw> =>
     (obj && typeof obj === 'object' ? { ...obj } : {});
 
-  const migrateVideoKeys = (raw: Record<string, AssetVariantRaw>): Record<string, AssetVariantRaw> => {
-    const migrated: Record<string, AssetVariantRaw> = {};
-    const styleVariants = ['arms_crossed', 'hand_up', 'thumbs_up', 'arms_wide', 'fist_pump', 'point_to_sky', 'slide'];
-    for (const [key, val] of Object.entries(raw)) {
-      if (!val) continue;
-      if (key.includes('_') && !styleVariants.includes(key)) {
-        migrated[key] = val;
-      } else if (styleVariants.includes(key)) {
-        migrated[`home_${key}`] = val;
-      } else {
-        migrated[key] = val;
+  // Flatten kit.variant structure into composite keys: { home_default: {...}, home_arms_crossed: {...} }
+  const flattenKitVariants = (
+    categoryData: Record<string, unknown> | undefined,
+  ): Record<string, AssetVariantRaw> => {
+    if (!categoryData || typeof categoryData !== 'object') return {};
+    const result: Record<string, AssetVariantRaw> = {};
+    for (const [kit, kitData] of Object.entries(categoryData)) {
+      if (!kitData || typeof kitData !== 'object') continue;
+      for (const [variantId, val] of Object.entries(kitData as Record<string, unknown>)) {
+        if (!val) continue;
+        const compositeKey = variantId === 'default' ? kit : `${kit}_${variantId}`;
+        result[compositeKey] = val as AssetVariantRaw;
       }
     }
-    return migrated;
+    return result;
   };
 
+  // Build result by merging all roles — later roles can override earlier ones
   const result: AssetVariantsMap = {
-    fullbody: safeObj(images?.fullbody),
-    halfbody: safeObj(images?.halfbody),
-    closeup: safeObj(images?.closeup),
-    intro: migrateVideoKeys(safeObj(videos?.intro)),
-    celebration: migrateVideoKeys(safeObj(videos?.celebration)),
-    then_vs_now: safeObj(videos?.then_vs_now),
-    photo_composite: {
-      ...safeObj(images?.photo_composite),
-      ...safeObj(videos?.photo_composite),
-    },
-    walking_composite: {
-      ...safeObj(images?.walking_composite),
-      ...safeObj(videos?.walking_composite),
-    },
-    action_photo: safeObj(images?.action_photo),
+    fullbody: {},
+    halfbody: {},
+    closeup: {},
+    intro: {},
+    celebration: {},
+    then_vs_now: {},
+    photo_composite: {},
+    walking_composite: {},
+    action_photo: {},
   };
+
+  const roles = tr?.roles;
+  if (roles && typeof roles === 'object') {
+    for (const roleData of Object.values(roles)) {
+      if (!roleData || typeof roleData !== 'object') continue;
+      const rd = roleData as Record<string, unknown>;
+      const images = rd.images as Record<string, unknown> | undefined;
+      const videos = rd.videos as Record<string, unknown> | undefined;
+
+      Object.assign(result.fullbody, flattenKitVariants(images?.fullbody as Record<string, unknown>));
+      Object.assign(result.halfbody, flattenKitVariants(images?.halfbody as Record<string, unknown>));
+      Object.assign(result.closeup, flattenKitVariants(images?.closeup as Record<string, unknown>));
+      Object.assign(result.intro, flattenKitVariants(videos?.intro as Record<string, unknown>));
+      Object.assign(result.celebration, flattenKitVariants(videos?.celebration as Record<string, unknown>));
+      Object.assign(result.then_vs_now, flattenKitVariants(videos?.then_vs_now as Record<string, unknown>));
+      Object.assign(result.photo_composite, flattenKitVariants(images?.photo_composite as Record<string, unknown>));
+      Object.assign(result.photo_composite, flattenKitVariants(videos?.photo_composite as Record<string, unknown>));
+      Object.assign(result.walking_composite, flattenKitVariants(images?.walking_composite as Record<string, unknown>));
+      Object.assign(result.walking_composite, flattenKitVariants(videos?.walking_composite as Record<string, unknown>));
+      Object.assign(result.action_photo, flattenKitVariants(images?.action_photo as Record<string, unknown>));
+    }
+  }
+
+  // Legacy fallback: root-level images/videos for pre-migration data
+  if (Object.values(result).every((v) => Object.keys(v).length === 0)) {
+    const images = tr?.images;
+    const videos = tr?.videos;
+    if (images && typeof images === 'object') {
+      Object.assign(result.fullbody, safeObj((images as Record<string, unknown>)?.fullbody));
+      Object.assign(result.halfbody, safeObj((images as Record<string, unknown>)?.halfbody));
+      Object.assign(result.closeup, safeObj((images as Record<string, unknown>)?.closeup));
+      Object.assign(result.action_photo, safeObj((images as Record<string, unknown>)?.action_photo));
+    }
+    if (videos && typeof videos === 'object') {
+      Object.assign(result.intro, safeObj((videos as Record<string, unknown>)?.intro));
+      Object.assign(result.celebration, safeObj((videos as Record<string, unknown>)?.celebration));
+      Object.assign(result.then_vs_now, safeObj((videos as Record<string, unknown>)?.then_vs_now));
+    }
+  }
 
   const media = tr?.media || {};
   if (!result.fullbody.home && media?.kit?.url) {
