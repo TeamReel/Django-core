@@ -6,7 +6,7 @@
 | Status | � IN UITVOERING |
 | Prioriteit | Hoog |
 | Geschatte effort | ~31 uur |
-| Voortgang | H0–H9 done (10/11 fases) |
+| Voortgang | H0–HX done (11/11 fases) |
 | Afhankelijkheid | F26 H13 (multi-role UI, done) |
 | Doelgroep | Club Admin, Team Admin |
 
