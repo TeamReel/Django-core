@@ -33,10 +33,13 @@ const ASSET_TYPE_LABELS: Record<string, string> = {
 };
 
 const ROLE_LABELS: Record<string, string> = {
+  keeper: 'Keeper',
   goalkeeper: 'Keeper',
   player: 'Speler',
   coach: 'Coach',
   assistant: 'Assistent',
+  verzorger: 'Verzorger',
+  manager: 'Manager',
   supporter: 'Supporter',
 };
 

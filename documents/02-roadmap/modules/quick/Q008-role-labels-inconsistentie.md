@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | ✅ DONE |
 | Bron | Code Review B70 H8 |
 | Impact | 🟡 important |
 | Effort | ~0.5 uur |
