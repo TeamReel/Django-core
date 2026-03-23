@@ -100,6 +100,6 @@ H0–H10 afgerond. H11–H13 nieuwe iteratie.
 - [x] **H11**: Counter toont "X / 28 met foto" (aantal leden met processed closeup)
 - [x] **H12**: Klik op Logo/Tenue/Sponsor in Overview → asset processing wizard
 - [x] **H12**: Na upload: "Verwerk met AI" knop → processing → preview → goedkeuren
-- [ ] **H13**: Multi-role tonen in Selectie UI (keeper + speler badges)
-- [ ] **H13**: Role picker is multi-select met checkboxes
-- [ ] **H13**: API unassign endpoint voor rol verwijderen
+- [x] **H13**: Multi-role tonen in Selectie UI (keeper + speler badges)
+- [x] **H13**: Role picker is multi-select met checkboxes
+- [x] **H13**: API unassign endpoint voor rol verwijderen
