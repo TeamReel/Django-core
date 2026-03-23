@@ -5,7 +5,7 @@
  * Toont avatar, naam, rol, asset-previews en quick-actions.
  */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, ArrowRight, Pencil, Image, Video, Sparkles, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight, Pencil, Image, Video, Sparkles, Clock, Crop, ArrowLeftRight, Camera } from 'lucide-react';
 import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { Avatar } from '../../components/ui';
 import { getMemberRoleStatuses } from '../../utils/assetStatus';
@@ -86,30 +86,46 @@ function getPrimaryRole(m: SquadMember): string {
 
 /** Summary of assets for one role. */
 interface AssetPreview {
-  type: 'fullbody' | 'intro' | 'celebration';
+  type: string;
   label: string;
   thumbnail: string | null;
-  mediaType: 'images' | 'videos';
   /** Tab id to open in editor */
   editTab: string;
   icon: React.ReactNode;
 }
 
-function getAssetPreviews(assets: TeamreelAssets | undefined, role: string): AssetPreview[] {
-  return [
+interface AssetSection {
+  id: string;
+  label: string;
+  gridClass: string;
+  assets: AssetPreview[];
+  filled: number;
+  total: number;
+}
+
+function getAssetSections(assets: TeamreelAssets | undefined, role: string): AssetSection[] {
+  const photoAssets: AssetPreview[] = [
     {
       type: 'fullbody',
       label: 'Fullbody',
       thumbnail: getFirstAssetUrl(assets, role, 'images', 'fullbody'),
-      mediaType: 'images',
       editTab: 'assets',
       icon: <Image size={16} />,
     },
     {
+      type: 'closeup',
+      label: 'Close-up',
+      thumbnail: getFirstAssetUrl(assets, role, 'images', 'closeup'),
+      editTab: 'assets',
+      icon: <Crop size={16} />,
+    },
+  ];
+
+  const videoAssets: AssetPreview[] = [
+    {
       type: 'intro',
       label: 'Intro',
       thumbnail: getFirstAssetUrl(assets, role, 'videos', 'intro'),
-      mediaType: 'videos',
       editTab: 'intro',
       icon: <Video size={16} />,
     },
@@ -117,9 +133,41 @@ function getAssetPreviews(assets: TeamreelAssets | undefined, role: string): Ass
       type: 'celebration',
       label: 'Celebration',
       thumbnail: getFirstAssetUrl(assets, role, 'videos', 'celebration'),
-      mediaType: 'videos',
       editTab: 'celebration',
       icon: <Sparkles size={16} />,
+    },
+    {
+      type: 'then_vs_now',
+      label: 'Then vs Now',
+      thumbnail: getFirstAssetUrl(assets, role, 'videos', 'then_vs_now'),
+      editTab: 'then_vs_now',
+      icon: <ArrowLeftRight size={16} />,
+    },
+    {
+      type: 'action_photo',
+      label: 'Actiefoto',
+      thumbnail: getFirstAssetUrl(assets, role, 'images', 'action_photo'),
+      editTab: 'action_photo',
+      icon: <Camera size={16} />,
+    },
+  ];
+
+  return [
+    {
+      id: 'photos',
+      label: "Foto's",
+      gridClass: s.gridPhotos,
+      assets: photoAssets,
+      filled: photoAssets.filter((a) => a.thumbnail !== null).length,
+      total: photoAssets.length,
+    },
+    {
+      id: 'videos',
+      label: "Video's",
+      gridClass: s.gridVideos,
+      assets: videoAssets,
+      filled: videoAssets.filter((a) => a.thumbnail !== null).length,
+      total: videoAssets.length,
     },
   ];
 }
@@ -208,7 +256,7 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
     [member],
   );
   const primaryRole = member ? getPrimaryRole(member) : 'player';
-  const previews = useMemo(() => getAssetPreviews(tr, primaryRole), [tr, primaryRole]);
+  const sections = useMemo(() => getAssetSections(tr, primaryRole), [tr, primaryRole]);
   const legacyPhotoUrl = useMemo(() => getLegacyPhotoUrl(tr), [tr]);
   const roleStatuses = member ? getMemberRoleStatuses(member as Record<string, unknown>) : null;
 
@@ -265,48 +313,56 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
               <p className={s.memberRole}>{clubName || 'Lid'}</p>
             </div>
 
-            {/* ── Main asset cards: Fullbody, Intro, Celebration ── */}
-            <div className={s.assetCards}>
-              {previews.map((asset) => (
-                <button
-                  key={asset.type}
-                  type="button"
-                  className={s.assetCard}
-                  data-status={asset.thumbnail ? 'done' : 'missing'}
-                  onClick={() => {
-                    if (onEdit && member) {
-                      onClose();
-                      onEdit(member, asset.editTab);
-                    }
-                  }}
-                  disabled={!onEdit}
-                  aria-label={`${asset.label} ${asset.thumbnail ? 'bewerken' : 'genereren'}`}
-                >
-                  <div className={s.assetCardPreview}>
-                    {asset.thumbnail ? (
-                      <img
-                        src={asset.thumbnail}
-                        alt={asset.label}
-                        className={s.assetCardImg}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <span className={s.assetCardIcon}>{asset.icon}</span>
-                    )}
-                  </div>
-                  <span className={s.assetCardLabel}>{asset.label}</span>
-                  <span className={s.assetCardAction}>
-                    {asset.thumbnail ? <Pencil size={12} /> : 'Maak'}
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* Auto-derived note */}
-            <p className={s.autoNote}>
-              <Clock size={12} aria-hidden="true" />
-              Halfbody en close-up worden automatisch afgeleid van fullbody
-            </p>
+            {/* ── Asset sections: Foto's + Video's ── */}
+            {sections.map((section) => (
+              <div key={section.id} className={s.assetSection}>
+                <div className={s.sectionHeader}>
+                  <span className={s.sectionLabel}>{section.label}</span>
+                  <span className={s.sectionCount}>{section.filled}/{section.total}</span>
+                </div>
+                <div className={section.gridClass}>
+                  {section.assets.map((asset) => (
+                    <button
+                      key={asset.type}
+                      type="button"
+                      className={s.assetCard}
+                      data-status={asset.thumbnail ? 'done' : 'missing'}
+                      onClick={() => {
+                        if (onEdit && member) {
+                          onClose();
+                          onEdit(member, asset.editTab);
+                        }
+                      }}
+                      disabled={!onEdit}
+                      aria-label={`${asset.label} ${asset.thumbnail ? 'bewerken' : 'genereren'}`}
+                    >
+                      <div className={s.assetCardPreview}>
+                        {asset.thumbnail ? (
+                          <img
+                            src={asset.thumbnail}
+                            alt={asset.label}
+                            className={s.assetCardImg}
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span className={s.assetCardIcon}>{asset.icon}</span>
+                        )}
+                      </div>
+                      <span className={s.assetCardLabel}>{asset.label}</span>
+                      <span className={s.assetCardAction}>
+                        {asset.thumbnail ? <Pencil size={12} /> : 'Maak'}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                {section.id === 'photos' && (
+                  <p className={s.autoNote}>
+                    <Clock size={12} aria-hidden="true" />
+                    Halfbody wordt automatisch afgeleid van fullbody
+                  </p>
+                )}
+              </div>
+            ))}
 
             {/* ── Progress per role ── */}
             {roleStatuses && roleStatuses.roles.length > 0 && (
@@ -343,7 +399,7 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
                   />
                   <div className={s.legacyInfo}>
                     <span className={s.legacyInfoText}>Historische foto beschikbaar</span>
-                    {previews[0].thumbnail && (
+                    {getFirstAssetUrl(tr, primaryRole, 'images', 'fullbody') && (
                       <span className={s.legacyInfoHint}>Klaar voor transformatie-video</span>
                     )}
                   </div>
