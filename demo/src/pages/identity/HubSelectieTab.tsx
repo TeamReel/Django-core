@@ -40,6 +40,12 @@ interface HubSelectieTabProps {
 
 type RoleGroup = 'keepers' | 'spelers' | 'staf';
 
+interface GroupEntry {
+  member: SquadMember;
+  /** The role this row represents (a member can appear in multiple groups). */
+  displayRole: string;
+}
+
 const GROUP_LABELS: Record<RoleGroup, string> = {
   keepers: 'Keepers',
   spelers: 'Spelers',
@@ -48,19 +54,33 @@ const GROUP_LABELS: Record<RoleGroup, string> = {
 
 /* ── Helpers ───────────────────────────────────────────────────────────── */
 
-function groupByRole(members: SquadMember[]): Record<RoleGroup, SquadMember[]> {
-  const groups: Record<RoleGroup, SquadMember[]> = { keepers: [], spelers: [], staf: [] };
+function groupByRole(members: SquadMember[]): Record<RoleGroup, GroupEntry[]> {
+  const groups: Record<RoleGroup, GroupEntry[]> = { keepers: [], spelers: [], staf: [] };
 
   for (const m of members) {
     const roles = getMemberAllRoles(m);
-    const group = getPrimaryRoleGroup(roles);
-    groups[group].push(m);
+    let placed = false;
+    for (const role of roles) {
+      if (role === 'keeper' || role === 'goalkeeper') {
+        groups.keepers.push({ member: m, displayRole: 'keeper' });
+        placed = true;
+      } else if (role === 'player') {
+        groups.spelers.push({ member: m, displayRole: 'player' });
+        placed = true;
+      } else if (role === 'coach' || role === 'assistant' || role === 'verzorger' || role === 'manager') {
+        groups.staf.push({ member: m, displayRole: role });
+        placed = true;
+      }
+    }
+    if (!placed) {
+      groups.spelers.push({ member: m, displayRole: 'player' });
+    }
   }
 
   // Alphabetical sort within each group
   const collator = new Intl.Collator('nl', { sensitivity: 'base' });
   for (const key of Object.keys(groups) as RoleGroup[]) {
-    groups[key].sort((a, b) => collator.compare(memberName(a), memberName(b)));
+    groups[key].sort((a, b) => collator.compare(memberName(a.member), memberName(b.member)));
   }
 
   return groups;
@@ -72,18 +92,18 @@ function memberName(m: SquadMember): string {
   return u?.name || u?.email || 'Onbekend';
 }
 
-function memberAvatarUrl(m: SquadMember): string | undefined {
-  // Priority: processed closeup in-tenue (role-aware kit order) → user avatar
+function memberAvatarUrl(m: SquadMember, displayRole?: string): string | undefined {
+  // Priority: processed closeup from iterVariants → media.closeup.url → user avatar
   const assets = (m.metadata as Record<string, unknown> | undefined)
     ?.teamreel_assets as TeamreelAssets | undefined;
   if (assets) {
-    const roles = getMemberAllRoles(m);
-    const isKeeper = roles.includes('keeper') || roles.includes('goalkeeper');
-    const role = isKeeper ? 'keeper' : 'player';
+    const role = displayRole ?? (getMemberAllRoles(m).includes('keeper') ? 'keeper' : 'player');
+    const isKeeper = role === 'keeper';
     const kitOrder = isKeeper
       ? ['goalkeeper', 'home', 'away', 'third']
       : ['home', 'away', 'third', 'goalkeeper'];
 
+    // Try per-variant closeup (new nested or legacy flat)
     for (const kit of kitOrder) {
       const variants = iterVariants(assets, role, 'images', 'closeup', kit);
       for (const v of variants) {
@@ -91,6 +111,13 @@ function memberAvatarUrl(m: SquadMember): string | undefined {
           return v.value.processed;
         }
       }
+    }
+
+    // Fallback: flat media.closeup.url
+    const rawAssets = assets as unknown as Record<string, unknown>;
+    const media = rawAssets?.media as Record<string, { url?: string }> | undefined;
+    if (typeof media?.closeup?.url === 'string' && media.closeup.url) {
+      return media.closeup.url;
     }
   }
   return (m.user as Record<string, unknown> | undefined)?.avatar_url as string | undefined;
@@ -132,12 +159,6 @@ function getMemberAllRoles(m: SquadMember): string[] {
   if (role === 'coach') return ['coach'];
   if (role === 'assistant') return ['assistant'];
   return ['player'];
-}
-
-function getPrimaryRoleGroup(roles: string[]): RoleGroup {
-  if (roles.includes('keeper') || roles.includes('goalkeeper')) return 'keepers';
-  if (roles.includes('coach') || roles.includes('assistant')) return 'staf';
-  return 'spelers';
 }
 
 export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
@@ -235,10 +256,11 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
 
         return (
           <ListSection key={key} title={GROUP_LABELS[key]}>
-            {group.map((m) => {
+            {group.map((entry) => {
+              const m = entry.member;
               const mid = String(m.id ?? '').trim();
               const name = memberName(m);
-              const avatarUrl = memberAvatarUrl(m);
+              const avatarUrl = memberAvatarUrl(m, entry.displayRole);
               const slotPresence = isStaf ? null : getMemberSlotPresence(m as Record<string, unknown>);
               const filledCount = slotPresence?.filter((sp) => sp.present).length ?? 0;
               const totalCount = slotPresence?.length ?? 0;
@@ -247,7 +269,7 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
 
               return (
                 <ListSection.Row
-                  key={mid}
+                  key={`${mid}-${entry.displayRole}`}
                   label={name}
                   leading={<Avatar src={avatarUrl} name={name} size="sm" />}
                   onTap={() => onMemberTap ? onMemberTap(m) : navigate(memberDetailHref(mid))}
@@ -262,15 +284,11 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
                           aria-haspopup="listbox"
                           aria-expanded={rolePicker?.memberId === mid}
                         >
-                          {allRoles.map(role => (
-                            <span key={role} className={s.roleBadge}>{ROLE_LABEL_MAP[role] ?? role}</span>
-                          ))}
+                          <span className={s.roleBadge}>{ROLE_LABEL_MAP[entry.displayRole] ?? entry.displayRole}</span>
                         </button>
                       ) : (
                         <span className={s.roleBadges}>
-                          {allRoles.map(role => (
-                            <span key={role} className={s.roleBadge}>{ROLE_LABEL_MAP[role] ?? role}</span>
-                          ))}
+                          <span className={s.roleBadge}>{ROLE_LABEL_MAP[entry.displayRole] ?? entry.displayRole}</span>
                         </span>
                       )}
                       {slotPresence && (
