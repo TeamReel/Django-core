@@ -34,6 +34,7 @@ export function MemberThenVsNowTab({
   startProcessingPoll,
   setVideoPreviewUrl,
   setMembership,
+  selectedRole,
 }: MemberTabCommonProps) {
   const confirm = useConfirm();
   const legacyFullbodyUrl =
@@ -141,7 +142,7 @@ export function MemberThenVsNowTab({
                           </Button>
                           {!variantProcessing && (
                             <Button size="sm" variant="secondary" onClick={async () => {
-                              const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'then_vs_now', 'transformation', variant.id);
+                              const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'then_vs_now', 'transformation', variant.id, selectedRole);
                               if (result.ok) {
                                 const rawUrl = getVariantRawUrl(variantRaw) || '';
                                 const newVV: VideoVariantsMap = { ...videoVariants, then_vs_now: { ...videoVariants.then_vs_now, [compositeKey]: { raw: rawUrl, processed: null, processing_state: 'processing' as const } } };
@@ -155,7 +156,7 @@ export function MemberThenVsNowTab({
                           {isCancellingOrProcessing && (
                             <Button size="sm" variant="ghost" onClick={async () => {
                               const isCancelling = normalizedVariant?.processing_state === 'cancelling';
-                              const result = await cancelAssetProcessing(apiBaseUrl, membershipId!, 'then_vs_now', 'transformation', variant.id, isCancelling);
+                              const result = await cancelAssetProcessing(apiBaseUrl, membershipId!, 'then_vs_now', 'transformation', variant.id, isCancelling, selectedRole);
                               if (result.ok) {
                                 if (isCancelling) {
                                   try {

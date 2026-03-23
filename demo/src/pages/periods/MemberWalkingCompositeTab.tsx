@@ -30,6 +30,7 @@ export function MemberWalkingCompositeTab({
   setVideoPreviewUrl,
   setMembership,
   form,
+  selectedRole,
 }: MemberTabCommonProps) {
   const legacyFullbodyUrl =
     resolveDisplayUrl(getBestUrl(videoVariants.fullbody.legacy)) || null;
@@ -171,7 +172,7 @@ export function MemberWalkingCompositeTab({
                       </Button>
                       {!walkingVideoProcessing && (
                         <Button size="sm" variant="secondary" onClick={async () => {
-                          const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'walking_composite', 'default', null);
+                          const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'walking_composite', 'default', null, selectedRole);
                           if (result.ok) {
                             const rawUrl = getVariantRawUrl(walkingVideoData) || '';
                             setVideoVariants(prev => ({ ...prev, walking_composite: { ...prev.walking_composite, default: { raw: rawUrl, processed: null, processing_state: 'processing' as const } } }));
@@ -184,7 +185,7 @@ export function MemberWalkingCompositeTab({
                       {walkingVideoCancellingOrProcessing && (
                         <Button size="sm" variant="ghost" onClick={async () => {
                           const isCancelling = walkingVideoNormalized?.processing_state === 'cancelling';
-                          const result = await cancelAssetProcessing(apiBaseUrl, membershipId!, 'walking_composite', 'default', null, isCancelling);
+                          const result = await cancelAssetProcessing(apiBaseUrl, membershipId!, 'walking_composite', 'default', null, isCancelling, selectedRole);
                           if (result.ok) {
                             if (isCancelling) {
                               try {

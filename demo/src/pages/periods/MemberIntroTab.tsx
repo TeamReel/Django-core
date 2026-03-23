@@ -153,7 +153,7 @@ export function MemberIntroTab({
                               {isCancellingOrProcessing && (
                                 <Button size="sm" variant="ghost" onClick={async () => {
                                   const isCancelling = normalizedVariant?.processing_state === 'cancelling';
-                                  const result = await cancelAssetProcessing(apiBaseUrl, membershipId!, 'intro', kit.id, variant.id, isCancelling);
+                                  const result = await cancelAssetProcessing(apiBaseUrl, membershipId!, 'intro', kit.id, variant.id, isCancelling, selectedRole);
                                   if (result.ok) {
                                     if (isCancelling) {
                                       try {
