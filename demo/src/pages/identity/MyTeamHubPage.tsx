@@ -178,6 +178,7 @@ export const MyTeamHubPage: React.FC = () => {
   const [selectedMatch, setSelectedMatch] = useState<MatchRecord | null>(null);
   const [selectedMember, setSelectedMember] = useState<SquadMember | null>(null);
   const [detailMemberId, setDetailMemberId] = useState<string | null>(null);
+  const [detailDefaultTab, setDetailDefaultTab] = useState<string | undefined>(undefined);
   const [panelClosing, setPanelClosing] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const [activeAssetSheet, setActiveAssetSheet] = useState<AssetSheetType | null>(null);
@@ -891,8 +892,9 @@ export const MyTeamHubPage: React.FC = () => {
             setDetailMemberId(String(selectedMember?.id ?? ''));
             setSelectedMember(null);
           }}
-          onEdit={isAdmin ? (m) => {
+          onEdit={isAdmin ? (m, tab?) => {
             setSelectedMember(null);
+            setDetailDefaultTab(tab);
             setDetailMemberId(String(m.id ?? ''));
           } : undefined}
           onPrev={handleMemberPrev}
@@ -984,8 +986,9 @@ export const MyTeamHubPage: React.FC = () => {
               clubBrand={d.clubBrand}
               teamBrand={d.teamBrand}
               batchBrandKits={d.batchBrandKits}
+              defaultTab={detailDefaultTab}
               onClose={handleClosePanel}
-              onNavigate={(mid) => setDetailMemberId(mid)}
+              onNavigate={(mid) => { setDetailDefaultTab(undefined); setDetailMemberId(mid); }}
               onMemberUpdated={() => d.setMembersReloadToken((t: number) => t + 1)}
             />
           </div>

@@ -73,6 +73,8 @@ export interface MemberDetailPanelProps {
   onNavigate: (membershipId: string) => void;
   /** Called after save so media tab can refresh */
   onMemberUpdated?: () => void;
+  /** Tab to open initially (Assets, Intro, Celebration, Actiefoto) */
+  defaultTab?: string;
 }
 
 const PANEL_TABS = [
@@ -97,11 +99,12 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
   onClose,
   onNavigate,
   onMemberUpdated,
+  defaultTab,
 }) => {
   const [membership, setMembership] = useState<MembershipRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('assets');
+  const [activeTab, setActiveTab] = useState(defaultTab || 'assets');
   const [selectedRole, setSelectedRole] = useState<string>('player');
   const [saving, setSaving] = useState(false);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
