@@ -643,6 +643,7 @@ def generate_asset_view(request: Request) -> Response:
                 "asset_type": asset_type,
                 "save_to_brand": save_to_brand,
                 "save_to_media_library": save_to_media_library,
+                "role": params.get("role") or None,
             }
 
             # Store initial task status
@@ -751,6 +752,7 @@ def generate_asset_view(request: Request) -> Response:
             "asset_type": asset_type,
             "save_to_brand": save_to_brand,
             "save_to_media_library": save_to_media_library,
+            "role": params.get("role") or None,
         }
 
         _set_task(

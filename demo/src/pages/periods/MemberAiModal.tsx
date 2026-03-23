@@ -41,6 +41,9 @@ export interface MemberAiModalProps {
   setPresignedCache: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   handleMetadataUpdate: (meta: Record<string, unknown>, targetId?: string) => Promise<void>;
   setMembership: React.Dispatch<React.SetStateAction<MembershipRecord | null>>;
+
+  // Role from active role tab
+  selectedRole: string;
 }
 
 /** Imperative handle so the parent can call openAiModal */
@@ -60,7 +63,7 @@ export function MemberAiModal({
   clubBrand, teamBrand, batchBrandKits,
   form, setForm, videoVariants, setVideoVariants,
   resolveDisplayUrl, setPresignedCache, handleMetadataUpdate, setMembership,
-  aiModalRef,
+  aiModalRef, selectedRole,
 }: MemberAiModalProps & { aiModalRef: React.MutableRefObject<MemberAiModalHandle | null> }) {
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiPreselectedTemplate, setAiPreselectedTemplate] = useState<string | undefined>();
@@ -239,9 +242,7 @@ export function MemberAiModal({
       inputAssets={inputAssets}
       initialParams={{
         kit_type: aiSelectedKitType,
-        ...(aiSelectedKitType === 'goalkeeper' ? { role: 'goalkeeper' } : {}),
-        ...(aiSelectedKitType === 'coach' ? { role: 'coach' } : {}),
-        ...(aiSelectedKitType === 'assistant' ? { role: 'assistant' } : {}),
+        role: selectedRole,
         ...(aiSelectedStyleVariant ? { style_variant: aiSelectedStyleVariant } : {}),
       }}
       previousResultUrl={previousResultUrl}

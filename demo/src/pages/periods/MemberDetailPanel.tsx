@@ -25,9 +25,29 @@ import type { MemberMediaForm } from '../../constants/mediaSlots';
 import type { UseBrandProfileReturn } from '../../hooks/useBrandProfile';
 import type { SeasonProject, SeasonOrganisation } from '../../types/season';
 import type { ProjectMembership } from '../../types/api/project';
+import { ROLE_KIT_MAP } from '../../utils/assetMetadata';
 import styles from './MemberDetailPanel.module.css';
 import s from './ProjectSeasonMemberDetailPage.module.css';
 import { logger } from '@/utils/logger';
+
+const ROLE_LABELS: Record<string, string> = {
+  player: 'Speler',
+  keeper: 'Keeper',
+  coach: 'Coach',
+  assistant: 'Assistent',
+  verzorger: 'Verzorger',
+  supporter: 'Supporter',
+  manager: 'Manager',
+};
+
+/** Derive functional roles from the membership, falling back to the primary role. */
+function getMemberRoles(m: MembershipRecord | null): string[] {
+  if (!m) return ['player'];
+  if (m.functional_roles?.length) return m.functional_roles;
+  if (m.role === 'goalkeeper') return ['keeper'];
+  if (m.role) return [m.role];
+  return ['player'];
+}
 
 const KIT_ROLE_META = [
   { id: 'home', label: 'Home', icon: 'home' },
@@ -82,9 +102,21 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('assets');
+  const [selectedRole, setSelectedRole] = useState<string>('player');
   const [saving, setSaving] = useState(false);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   useEscapeKey(onClose);
+
+  // Derive roles from membership
+  const memberRoles = useMemo(() => getMemberRoles(membership), [membership]);
+  const showRoleTabs = memberRoles.length > 1;
+
+  // Reset selectedRole when membership changes
+  useEffect(() => {
+    if (memberRoles.length > 0 && !memberRoles.includes(selectedRole)) {
+      setSelectedRole(memberRoles[0]);
+    }
+  }, [memberRoles]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // AI modal
   const aiModalRef = useRef<MemberAiModalHandle | null>(null);
@@ -92,11 +124,17 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
     aiModalRef.current?.open(templateId, defaultKitType, playerInTenueUrl, styleVariant, referenceOverride);
   }, []);
 
-  // Effective kits from brand
-  const effectiveKits = useMemo(() =>
+  // Effective kits from brand — filtered by selected role
+  const allKits = useMemo(() =>
     KIT_ROLE_META.map(role => ({ id: role.id, label: role.label, icon: role.icon, url: batchBrandKits[role.id] ?? null })),
     [batchBrandKits],
   );
+  const effectiveKits = useMemo(() => {
+    const roleConfig = ROLE_KIT_MAP[selectedRole];
+    if (!roleConfig?.kits.length) return allKits; // roles without kit config show all kits
+    const allowedKits = new Set(roleConfig.kits);
+    return allKits.filter(k => allowedKits.has(k.id));
+  }, [allKits, selectedRole]);
 
   // Fetch membership data
   useEffect(() => {
@@ -186,6 +224,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
     setVideoPreviewUrl,
     setMembership,
     effectiveKits,
+    selectedRole,
   };
 
   return (
@@ -226,6 +265,25 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
           </button>
         </div>
       </div>
+
+      {/* ── Role tabs (only for multi-role members) ── */}
+      {showRoleTabs && (
+        <div className={styles.roleTabBar} role="tablist" aria-label="Rol selectie">
+          {memberRoles.map((role) => (
+            <button
+              key={role}
+              type="button"
+              role="tab"
+              aria-selected={selectedRole === role}
+              className={styles.roleTabBtn}
+              data-active={selectedRole === role ? 'true' : undefined}
+              onClick={() => setSelectedRole(role)}
+            >
+              {ROLE_LABELS[role] || role}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* ── Tab bar (local, no URL navigation) ── */}
       <div className={styles.tabBar}>
@@ -295,6 +353,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
           setPresignedCache={media.setPresignedCache}
           handleMetadataUpdate={media.handleMetadataUpdate}
           setMembership={setMembership}
+          selectedRole={selectedRole}
         />
       )}
 

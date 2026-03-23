@@ -24,6 +24,7 @@ export function MemberActionPhotoTab({
   openAiModal,
   handleMetadataUpdate,
   effectiveKits,
+  selectedRole,
 }: MemberTabCommonProps) {
   const confirm = useConfirm();
   const actionVariants = videoVariants.action_photo || {};
@@ -121,7 +122,7 @@ export function MemberActionPhotoTab({
                         <div className={s.actionButtonRow}>
                           {url && !isProcessingState && userCanEditProject && (
                             <Button size="sm" variant="secondary" onClick={async () => {
-                              await triggerAssetProcessing(apiBaseUrl, membershipId!, 'action_photo', variantKey, null);
+                              await triggerAssetProcessing(apiBaseUrl, membershipId!, 'action_photo', variantKey, null, selectedRole);
                             }} className={s.btnProcess}>
                               {isProcessed ? 'Opnieuw' : 'Bewerken'}
                             </Button>

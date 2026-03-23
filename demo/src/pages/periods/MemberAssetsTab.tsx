@@ -46,6 +46,7 @@ export function MemberAssetsTab({
   org,
   club,
   project,
+  selectedRole,
 }: MemberAssetsTabProps) {
   const confirm = useConfirm();
   return (
@@ -120,7 +121,7 @@ export function MemberAssetsTab({
                       </Button>
                       {fbUrl && !fbProcessing && (
                         <Button size="sm" variant="secondary" onClick={async () => {
-                          const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'fullbody', kit.id);
+                          const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'fullbody', kit.id, null, selectedRole);
                           if (result.ok) {
                             const rawUrl = getVariantRawUrl(fbVal);
                             setVideoVariants(prev => ({ ...prev, fullbody: { ...prev.fullbody, [kit.id]: { raw: rawUrl || '', processed: null, processing_state: 'processing' as const } } }));
@@ -209,7 +210,7 @@ export function MemberAssetsTab({
                       </Button>
                       {cuUrl && !cuProcessing && (
                         <Button size="sm" variant="secondary" onClick={async () => {
-                          const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'closeup', kit.id);
+                          const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'closeup', kit.id, null, selectedRole);
                           if (result.ok) {
                             const rawUrl = getVariantRawUrl(cuVal);
                             setVideoVariants(prev => ({ ...prev, closeup: { ...prev.closeup, [kit.id]: { raw: rawUrl || '', processed: null, processing_state: 'processing' as const } } }));

@@ -17,6 +17,7 @@ export interface MembershipRecord {
   id?: string | number;
   user?: { id?: string | number; name?: string; first_name?: string; last_name?: string; email?: string; avatar_url?: string };
   role?: string;
+  functional_roles?: string[];
   metadata?: Record<string, any>; // Deeply nested, truly polymorphic structure
   [key: string]: unknown;
 }
@@ -70,6 +71,7 @@ export interface MemberTabCommonProps {
   setVideoPreviewUrl: (url: string | null) => void;
   setMembership: (m: MembershipRecord) => void;
   effectiveKits: EffectiveKit[];
+  selectedRole: string;
 }
 
 // ─── Pure helpers ────────────────────────────────────────────────────
@@ -297,6 +299,7 @@ export async function triggerAssetProcessing(
   assetType: string,
   kitType: string,
   variantId?: string | null,
+  role?: string | null,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     await api.post('/video/jobs/process-asset/', {
@@ -304,6 +307,7 @@ export async function triggerAssetProcessing(
       asset_type: assetType,
       kit_type: kitType,
       variant_id: variantId || null,
+      ...(role ? { role } : {}),
     });
     return { ok: true };
   } catch (e) {
@@ -319,6 +323,7 @@ export async function cancelAssetProcessing(
   kitType: string,
   variantId?: string | null,
   force?: boolean,
+  role?: string | null,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     await api.post('/video/jobs/cancel-asset-processing/', {
@@ -327,6 +332,7 @@ export async function cancelAssetProcessing(
       kit_type: kitType,
       variant_id: variantId || null,
       force: force || false,
+      ...(role ? { role } : {}),
     });
     return { ok: true };
   } catch (e) {

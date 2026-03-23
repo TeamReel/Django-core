@@ -9,7 +9,7 @@
  *
  * Route: /:orgSlug/:clubSlug/:teamSlug/seasons/:seasonKey/members/:competitionId
  */
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader, type BreadcrumbItem } from '@django-core/page-templates';
@@ -18,6 +18,7 @@ import MobileTabBar from '../../components/MobileTabBar';
 import { WorkflowPanel } from '../../components/Workflows';
 import { useGenerationJobs } from '../../hooks/useGenerationJobs';
 import { getUserDisplayName } from './memberDetailUtils';
+import type { MembershipRecord } from './memberDetailUtils';
 import { MemberOverviewTab } from './MemberOverviewTab';
 import { MemberInputTab } from './MemberInputTab';
 import { MemberIntroTab } from './MemberIntroTab';
@@ -90,6 +91,23 @@ export default function ProjectSeasonMemberDetailPage() {
   // ── Video Preview Modal ──
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
 
+  // ── Role selection ──
+  const [selectedRole, setSelectedRole] = useState<string>('player');
+  const memberRoles = useMemo(() => {
+    const m = membership as MembershipRecord | null;
+    if (!m) return ['player'];
+    if ((m.functional_roles as string[] | undefined)?.length) return m.functional_roles as string[];
+    if (m.role === 'goalkeeper') return ['keeper'];
+    if (m.role) return [m.role as string];
+    return ['player'];
+  }, [membership]);
+
+  useEffect(() => {
+    if (memberRoles.length > 0 && !memberRoles.includes(selectedRole)) {
+      setSelectedRole(memberRoles[0]);
+    }
+  }, [memberRoles]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Active AI jobs for this member ──
   const { activeJobs: memberActiveJobs } = useGenerationJobs({
     membership_id: membershipId,
@@ -134,6 +152,7 @@ export default function ProjectSeasonMemberDetailPage() {
     setVideoPreviewUrl,
     setMembership,
     effectiveKits,
+    selectedRole,
   };
 
   return (
@@ -302,6 +321,7 @@ export default function ProjectSeasonMemberDetailPage() {
         videoVariants={media.videoVariants} setVideoVariants={media.setVideoVariants}
         resolveDisplayUrl={media.resolveDisplayUrl} setPresignedCache={media.setPresignedCache}
         handleMetadataUpdate={media.handleMetadataUpdate} setMembership={setMembership}
+        selectedRole={selectedRole}
       />
 
       {/* Video Preview Modal */}

@@ -36,6 +36,7 @@ export function MemberCelebrationTab({
   setVideoPreviewUrl,
   setMembership,
   effectiveKits,
+  selectedRole,
 }: MemberTabCommonProps) {
   const confirm = useConfirm();
   return (
@@ -124,7 +125,7 @@ export function MemberCelebrationTab({
                               </Button>
                               {!variantProcessing && (
                                 <Button size="sm" variant="secondary" onClick={async () => {
-                                  const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'celebration', kit.id, variant.id);
+                                  const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'celebration', kit.id, variant.id, selectedRole);
                                   if (result.ok) {
                                     const rawUrl = getVariantRawUrl(variantRaw) || '';
                                     const newVV: VideoVariantsMap = { ...videoVariants, celebration: { ...videoVariants.celebration, [compositeKey]: { raw: rawUrl, processed: null, processing_state: 'processing' as const } } };
