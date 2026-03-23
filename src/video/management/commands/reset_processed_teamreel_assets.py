@@ -274,156 +274,171 @@ class Command(BaseCommand):
             meta = membership.metadata or {}
             tr = meta.get("teamreel_assets", {}) or {}
 
-            images = tr.get("images", {}) or {}
-            videos = tr.get("videos", {}) or {}
+            roles_data = tr.get("roles", {}) or {}
             media = tr.get("media", {}) or {}
 
             membership_changed = False
 
-            # Images: images.{fullbody|closeup}.{kit_type}
-            for asset_type in ("fullbody", "closeup"):
-                if asset_type not in asset_types:
+            for role_name, role_data in roles_data.items():
+                if not isinstance(role_data, dict):
                     continue
-                cat = images.get(asset_type, {})
-                if not isinstance(cat, dict):
-                    continue
-                for kit_type, variant_val in list(cat.items()):
-                    new_variant, processed_to_delete, safe_to_delete = _normalize_reset_variant(
-                        variant_val
-                    )
-                    if not new_variant:
+
+                # Images: roles.{role}.images.{asset_type}.{kit}.{variant}
+                role_images = role_data.get("images", {}) or {}
+                for asset_type in ("fullbody", "closeup"):
+                    if asset_type not in asset_types:
+                        continue
+                    asset_data = role_images.get(asset_type, {})
+                    if not isinstance(asset_data, dict):
+                        continue
+                    for kit_type, kit_data in list(asset_data.items()):
+                        if not isinstance(kit_data, dict):
+                            continue
+                        for variant_id, variant_val in list(kit_data.items()):
+                            (
+                                new_variant,
+                                processed_to_delete,
+                                safe_to_delete,
+                            ) = _normalize_reset_variant(variant_val)
+                            if not new_variant:
+                                continue
+
+                            old_processed = processed_to_delete
+                            if isinstance(variant_val, dict) and variant_val.get("processed"):
+                                cleared += 1
+
+                            if (
+                                isinstance(variant_val, dict)
+                                and not variant_val.get("raw")
+                                and variant_val.get("processed")
+                            ):
+                                salvaged += 1
+
+                            kit_data[variant_id] = new_variant
+                            membership_changed = True
+
+                            # Keep legacy media slots in sync
+                            best_url = new_variant.get("raw")
+                            if best_url:
+                                media.setdefault(asset_type, {})
+                                if isinstance(media[asset_type], dict):
+                                    media[asset_type]["url"] = best_url
+                                else:
+                                    media[asset_type] = {"url": best_url, "caption": ""}
+
+                                if asset_type == "fullbody":
+                                    media.setdefault("kit", {})
+                                    if isinstance(media["kit"], dict):
+                                        media["kit"]["url"] = best_url
+                                    else:
+                                        media["kit"] = {"url": best_url, "caption": ""}
+
+                                if asset_type == "closeup":
+                                    media.setdefault("closeup", {})
+                                    if isinstance(media["closeup"], dict):
+                                        media["closeup"]["url"] = best_url
+                                    else:
+                                        media["closeup"] = {"url": best_url, "caption": ""}
+
+                            if delete_processed and backend and old_processed and safe_to_delete:
+                                key = _storage_key_from_value(old_processed)
+                                raw_key = _storage_key_from_value(best_url) if best_url else None
+                                if key and (not raw_key or key != raw_key):
+                                    deletions_attempted += 1
+                                    if do_apply:
+                                        ok = backend.delete(key)
+                                        if ok:
+                                            deletions_succeeded += 1
+
+                            if enqueue:
+                                raw_url = new_variant.get("raw")
+                                if raw_url:
+                                    to_reprocess.append(
+                                        VariantRef(
+                                            membership_id=str(membership.id),
+                                            asset_type=asset_type,
+                                            kit_type=str(kit_type),
+                                            variant_id=variant_id
+                                            if variant_id != "default"
+                                            else None,
+                                            raw_url=str(raw_url),
+                                        )
+                                    )
+
+                # Videos: roles.{role}.videos.{asset_type}.{kit}.{variant}
+                role_videos = role_data.get("videos", {}) or {}
+                for asset_type in ("intro", "celebration"):
+                    if asset_type not in asset_types:
+                        continue
+                    asset_data = role_videos.get(asset_type, {})
+                    if not isinstance(asset_data, dict):
                         continue
 
-                    old_processed = processed_to_delete
-                    if isinstance(variant_val, dict) and variant_val.get("processed"):
-                        cleared += 1
+                    for kit_type, kit_data in list(asset_data.items()):
+                        if not isinstance(kit_data, dict):
+                            continue
+                        for variant_id, variant_val in list(kit_data.items()):
+                            (
+                                new_variant,
+                                processed_to_delete,
+                                safe_to_delete,
+                            ) = _normalize_reset_variant(variant_val)
+                            if not new_variant:
+                                continue
 
-                    if (
-                        isinstance(variant_val, dict)
-                        and not variant_val.get("raw")
-                        and variant_val.get("processed")
-                    ):
-                        salvaged += 1
+                            if isinstance(variant_val, dict) and variant_val.get("processed"):
+                                cleared += 1
 
-                    cat[kit_type] = new_variant
-                    membership_changed = True
+                            if (
+                                isinstance(variant_val, dict)
+                                and not variant_val.get("raw")
+                                and variant_val.get("processed")
+                            ):
+                                salvaged += 1
 
-                    # Keep legacy media slots in sync
-                    best_url = new_variant.get("raw")
-                    if best_url:
-                        media.setdefault(asset_type, {})
-                        if isinstance(media[asset_type], dict):
-                            media[asset_type]["url"] = best_url
-                        else:
-                            media[asset_type] = {"url": best_url, "caption": ""}
+                            kit_data[variant_id] = new_variant
+                            membership_changed = True
 
-                        if asset_type == "fullbody":
-                            media.setdefault("kit", {})
-                            if isinstance(media["kit"], dict):
-                                media["kit"]["url"] = best_url
-                            else:
-                                media["kit"] = {"url": best_url, "caption": ""}
+                            # Sync media.intro/media.celebration
+                            best_url = new_variant.get("raw")
+                            if best_url:
+                                media.setdefault(asset_type, {})
+                                if isinstance(media[asset_type], dict):
+                                    media[asset_type]["url"] = best_url
+                                else:
+                                    media[asset_type] = {"url": best_url, "caption": ""}
 
-                        if asset_type == "closeup":
-                            media.setdefault("closeup", {})
-                            if isinstance(media["closeup"], dict):
-                                media["closeup"]["url"] = best_url
-                            else:
-                                media["closeup"] = {"url": best_url, "caption": ""}
+                            if (
+                                delete_processed
+                                and backend
+                                and processed_to_delete
+                                and safe_to_delete
+                            ):
+                                key = _storage_key_from_value(processed_to_delete)
+                                raw_key = _storage_key_from_value(best_url) if best_url else None
+                                if key and (not raw_key or key != raw_key):
+                                    deletions_attempted += 1
+                                    if do_apply:
+                                        ok = backend.delete(key)
+                                        if ok:
+                                            deletions_succeeded += 1
 
-                    if delete_processed and backend and old_processed and safe_to_delete:
-                        key = _storage_key_from_value(old_processed)
-                        raw_key = _storage_key_from_value(best_url) if best_url else None
-                        if key and (not raw_key or key != raw_key):
-                            deletions_attempted += 1
-                            if do_apply:
-                                ok = backend.delete(key)
-                                if ok:
-                                    deletions_succeeded += 1
-                            else:
-                                # dry-run: don't call delete
-                                pass
-
-                    if enqueue:
-                        raw_url = new_variant.get("raw")
-                        if raw_url:
-                            to_reprocess.append(
-                                VariantRef(
-                                    membership_id=str(membership.id),
-                                    asset_type=asset_type,
-                                    kit_type=str(kit_type),
-                                    variant_id=None,
-                                    raw_url=str(raw_url),
-                                )
-                            )
-
-            # Videos: videos.{intro|celebration}.{composite_key}
-            for asset_type in ("intro", "celebration"):
-                if asset_type not in asset_types:
-                    continue
-                cat = videos.get(asset_type, {})
-                if not isinstance(cat, dict):
-                    continue
-
-                for composite_key, variant_val in list(cat.items()):
-                    # composite_key examples: "home_arms_crossed", "goalkeeper_thumbs_up", "home"
-                    kit_type = composite_key.split("_", 1)[0]
-                    variant_id = composite_key.split("_", 1)[1] if "_" in composite_key else None
-
-                    new_variant, processed_to_delete, safe_to_delete = _normalize_reset_variant(
-                        variant_val
-                    )
-                    if not new_variant:
-                        continue
-
-                    if isinstance(variant_val, dict) and variant_val.get("processed"):
-                        cleared += 1
-
-                    if (
-                        isinstance(variant_val, dict)
-                        and not variant_val.get("raw")
-                        and variant_val.get("processed")
-                    ):
-                        salvaged += 1
-
-                    cat[composite_key] = new_variant
-                    membership_changed = True
-
-                    # Sync media.intro/media.celebration
-                    best_url = new_variant.get("raw")
-                    if best_url:
-                        media.setdefault(asset_type, {})
-                        if isinstance(media[asset_type], dict):
-                            media[asset_type]["url"] = best_url
-                        else:
-                            media[asset_type] = {"url": best_url, "caption": ""}
-
-                    if delete_processed and backend and processed_to_delete and safe_to_delete:
-                        key = _storage_key_from_value(processed_to_delete)
-                        raw_key = _storage_key_from_value(best_url) if best_url else None
-                        if key and (not raw_key or key != raw_key):
-                            deletions_attempted += 1
-                            if do_apply:
-                                ok = backend.delete(key)
-                                if ok:
-                                    deletions_succeeded += 1
-
-                    if enqueue:
-                        raw_url = new_variant.get("raw")
-                        if raw_url:
-                            to_reprocess.append(
-                                VariantRef(
-                                    membership_id=str(membership.id),
-                                    asset_type=asset_type,
-                                    kit_type=str(kit_type),
-                                    variant_id=variant_id,
-                                    raw_url=str(raw_url),
-                                )
-                            )
+                            if enqueue:
+                                raw_url = new_variant.get("raw")
+                                if raw_url:
+                                    to_reprocess.append(
+                                        VariantRef(
+                                            membership_id=str(membership.id),
+                                            asset_type=asset_type,
+                                            kit_type=str(kit_type),
+                                            variant_id=variant_id
+                                            if variant_id != "default"
+                                            else None,
+                                            raw_url=str(raw_url),
+                                        )
+                                    )
 
             if membership_changed:
-                tr["images"] = images
-                tr["videos"] = videos
                 tr["media"] = media
                 meta["teamreel_assets"] = tr
 

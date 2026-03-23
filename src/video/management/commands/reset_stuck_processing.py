@@ -43,43 +43,55 @@ class Command(BaseCommand):
         for membership in queryset.iterator():
             meta = getattr(membership, "metadata", None) or {}
             tr = meta.get("teamreel_assets", {})
-            
+
             changed = False
-            
-            # Check images (fullbody, closeup)
-            images = tr.get("images", {})
-            for asset_type, kits in images.items():
-                if isinstance(kits, dict):
-                    for kit_type, variant in kits.items():
-                        if isinstance(variant, dict):
-                            state = variant.get("processing_state")
-                            if state in stuck_states:
-                                self.stdout.write(
-                                    f"  [{membership.id}] {asset_type}/{kit_type}: "
-                                    f"state={state}"
-                                )
-                                if not dry_run:
-                                    variant["processing_state"] = None
-                                    variant.pop("cancel_requested_at", None)
-                                changed = True
-            
-            # Check videos (intro, celebration)
-            videos = tr.get("videos", {})
-            for asset_type, variants in videos.items():
-                if isinstance(variants, dict):
-                    for variant_key, variant in variants.items():
-                        if isinstance(variant, dict):
-                            state = variant.get("processing_state")
-                            if state in stuck_states:
-                                self.stdout.write(
-                                    f"  [{membership.id}] {asset_type}/{variant_key}: "
-                                    f"state={state}"
-                                )
-                                if not dry_run:
-                                    variant["processing_state"] = None
-                                    variant.pop("cancel_requested_at", None)
-                                changed = True
-            
+
+            # Check all roles
+            roles_data = tr.get("roles", {}) or {}
+            for role_name, role_data in roles_data.items():
+                if not isinstance(role_data, dict):
+                    continue
+
+                # Check images (fullbody, closeup)
+                for asset_type, asset_data in (role_data.get("images", {}) or {}).items():
+                    if not isinstance(asset_data, dict):
+                        continue
+                    for kit_type, kit_data in asset_data.items():
+                        if not isinstance(kit_data, dict):
+                            continue
+                        for variant_id, variant in kit_data.items():
+                            if isinstance(variant, dict):
+                                state = variant.get("processing_state")
+                                if state in stuck_states:
+                                    self.stdout.write(
+                                        f"  [{membership.id}] {asset_type}/{kit_type}: "
+                                        f"state={state}"
+                                    )
+                                    if not dry_run:
+                                        variant["processing_state"] = None
+                                        variant.pop("cancel_requested_at", None)
+                                    changed = True
+
+                # Check videos (intro, celebration)
+                for asset_type, asset_data in (role_data.get("videos", {}) or {}).items():
+                    if not isinstance(asset_data, dict):
+                        continue
+                    for kit_type, kit_data in asset_data.items():
+                        if not isinstance(kit_data, dict):
+                            continue
+                        for variant_id, variant in kit_data.items():
+                            if isinstance(variant, dict):
+                                state = variant.get("processing_state")
+                                if state in stuck_states:
+                                    self.stdout.write(
+                                        f"  [{membership.id}] {asset_type}/{kit_type}: "
+                                        f"state={state}"
+                                    )
+                                    if not dry_run:
+                                        variant["processing_state"] = None
+                                        variant.pop("cancel_requested_at", None)
+                                    changed = True
+
             if changed:
                 reset_count += 1
                 if not dry_run:

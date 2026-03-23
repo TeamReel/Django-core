@@ -418,10 +418,10 @@ def auto_crop_closeup_from_fullbody(
         return None
 
     # ── Read processed fullbody path ──────────────────────────────────────────
-    meta = membership.metadata or {}
-    ta = meta.get("teamreel_assets", {})
-    images = ta.get("images", {})
-    fullbody = images.get("fullbody", {}).get(kit_type, {})
+    from src.video.utils.asset_metadata import get_variant_value, infer_role
+
+    role = infer_role(membership, kit_type)
+    fullbody = get_variant_value(membership, role, "images", "fullbody", kit_type, "default")
 
     if not isinstance(fullbody, dict):
         logger.warning(
@@ -554,10 +554,10 @@ def auto_crop_halfbody_from_fullbody(
         return None
 
     # ── Read processed fullbody path ──────────────────────────────────────────
-    meta = membership.metadata or {}
-    ta = meta.get("teamreel_assets", {})
-    images = ta.get("images", {})
-    fullbody = images.get("fullbody", {}).get(kit_type, {})
+    from src.video.utils.asset_metadata import get_variant_value, infer_role
+
+    role = infer_role(membership, kit_type)
+    fullbody = get_variant_value(membership, role, "images", "fullbody", kit_type, "default")
 
     if not isinstance(fullbody, dict):
         logger.warning(
@@ -692,130 +692,149 @@ def reprocess_stuck_assets_periodic(self, *, stuck_minutes: int = 60) -> dict:
         if not tr:
             continue
 
-        images = tr.get("images", {})
+        roles_data = tr.get("roles", {}) or {}
         member_changed = False
 
-        # ── 1. Reset stuck images ────────────────────────────────
-        for asset_type in list(images.keys()):
-            kits = images.get(asset_type, {})
-            if not isinstance(kits, dict):
+        for role_name, role_data in roles_data.items():
+            if not isinstance(role_data, dict):
                 continue
-            for kit_type, variant in kits.items():
-                if not isinstance(variant, dict):
-                    continue
-                state = variant.get("processing_state")
-                if state not in ("processing", "cancelling"):
-                    continue
 
-                # Check threshold
-                started_at = variant.get("processing_started_at")
-                if started_at:
-                    try:
-                        from django.utils.dateparse import parse_datetime
-
-                        started = parse_datetime(started_at)
-                        if started and started > stuck_threshold:
-                            continue  # Still within time window
-                    except (ValueError, TypeError):
-                        pass
-
-                variant["processing_state"] = "pending"
-                variant.pop("processing_started_at", None)
-                variant.pop("cancel_requested_at", None)
-                member_changed = True
-                stats["images_reset"] += 1
-                logger.info(
-                    "reprocess_stuck: reset images.%s.%s for membership %s",
-                    asset_type,
-                    kit_type,
-                    membership.id,
-                )
-
-        # ── 2. Reset stuck videos ────────────────────────────────
-        videos = tr.get("videos", {})
-        for asset_type in list(videos.keys()):
-            variants = videos.get(asset_type, {})
-            if not isinstance(variants, dict):
-                continue
-            for variant_key, variant in variants.items():
-                if not isinstance(variant, dict):
+            # ── 1. Reset stuck images ────────────────────────────────
+            for asset_type, asset_data in (role_data.get("images", {}) or {}).items():
+                if not isinstance(asset_data, dict):
                     continue
-                state = variant.get("processing_state")
-                if state not in ("processing", "cancelling"):
-                    continue
+                for kit_type, kit_data in asset_data.items():
+                    if not isinstance(kit_data, dict):
+                        continue
+                    for variant_id, variant in kit_data.items():
+                        if not isinstance(variant, dict):
+                            continue
+                        state = variant.get("processing_state")
+                        if state not in ("processing", "cancelling"):
+                            continue
 
-                raw_url = variant.get("raw")
-                if not raw_url:
-                    variant["processing_state"] = "failed"
-                    variant["error"] = "periodic_cleanup: no raw URL"
-                else:
-                    variant["processing_state"] = "pending"
-                    variant.pop("processing_started_at", None)
-                    variant.pop("cancel_requested_at", None)
-                    variant.pop("progress_frames", None)
-                member_changed = True
-                stats["videos_reset"] += 1
-                logger.info(
-                    "reprocess_stuck: reset videos.%s.%s for membership %s",
-                    asset_type,
-                    variant_key,
-                    membership.id,
-                )
+                        # Check threshold
+                        started_at = variant.get("processing_started_at")
+                        if started_at:
+                            try:
+                                from django.utils.dateparse import parse_datetime
 
-        # ── 3. Queue missing crops ───────────────────────────────
-        fullbodies = images.get("fullbody", {})
-        if isinstance(fullbodies, dict):
-            for kit_type, fb_data in fullbodies.items():
-                if not isinstance(fb_data, dict):
-                    continue
-                if fb_data.get("processing_state") != "processed":
-                    continue
-                if not (fb_data.get("processed") or fb_data.get("raw")):
-                    continue
+                                started = parse_datetime(started_at)
+                                if started and started > stuck_threshold:
+                                    continue  # Still within time window
+                            except (ValueError, TypeError):
+                                pass
 
-                # Missing closeup?
-                closeups = images.get("closeup", {})
-                cu_data = closeups.get(kit_type, {}) if isinstance(closeups, dict) else {}
-                if not isinstance(cu_data, dict) or not cu_data.get("processed"):
-                    try:
-                        auto_crop_closeup_from_fullbody.delay(
-                            membership_id=str(membership.id),
-                            kit_type=kit_type,
-                        )
-                        stats["closeups_queued"] += 1
+                        variant["processing_state"] = "pending"
+                        variant.pop("processing_started_at", None)
+                        variant.pop("cancel_requested_at", None)
+                        member_changed = True
+                        stats["images_reset"] += 1
                         logger.info(
-                            "reprocess_stuck: queued closeup crop for membership=%s kit=%s",
-                            membership.id,
+                            "reprocess_stuck: reset %s.images.%s.%s for membership %s",
+                            role_name,
+                            asset_type,
                             kit_type,
-                        )
-                    except Exception:  # noqa: BLE001
-                        logger.warning(
-                            "reprocess_stuck: failed to queue closeup crop for %s/%s",
                             membership.id,
-                            kit_type,
                         )
 
-                # Missing halfbody?
-                halfbodies = images.get("halfbody", {})
-                hb_data = halfbodies.get(kit_type, {}) if isinstance(halfbodies, dict) else {}
-                if not isinstance(hb_data, dict) or not hb_data.get("processed"):
-                    try:
-                        auto_crop_halfbody_from_fullbody.delay(
-                            membership_id=str(membership.id),
-                            kit_type=kit_type,
-                        )
-                        stats["halfbodies_queued"] += 1
+            # ── 2. Reset stuck videos ────────────────────────────────
+            for asset_type, asset_data in (role_data.get("videos", {}) or {}).items():
+                if not isinstance(asset_data, dict):
+                    continue
+                for kit_type, kit_data in asset_data.items():
+                    if not isinstance(kit_data, dict):
+                        continue
+                    for variant_id, variant in kit_data.items():
+                        if not isinstance(variant, dict):
+                            continue
+                        state = variant.get("processing_state")
+                        if state not in ("processing", "cancelling"):
+                            continue
+
+                        raw_url = variant.get("raw")
+                        if not raw_url:
+                            variant["processing_state"] = "failed"
+                            variant["error"] = "periodic_cleanup: no raw URL"
+                        else:
+                            variant["processing_state"] = "pending"
+                            variant.pop("processing_started_at", None)
+                            variant.pop("cancel_requested_at", None)
+                            variant.pop("progress_frames", None)
+                        member_changed = True
+                        stats["videos_reset"] += 1
                         logger.info(
-                            "reprocess_stuck: queued halfbody crop for membership=%s kit=%s",
-                            membership.id,
+                            "reprocess_stuck: reset %s.videos.%s.%s for membership %s",
+                            role_name,
+                            asset_type,
                             kit_type,
-                        )
-                    except Exception:  # noqa: BLE001
-                        logger.warning(
-                            "reprocess_stuck: failed to queue halfbody crop for %s/%s",
                             membership.id,
-                            kit_type,
                         )
+
+            # ── 3. Queue missing crops ───────────────────────────────
+            role_images = role_data.get("images", {}) or {}
+            fullbodies = role_images.get("fullbody", {})
+            if isinstance(fullbodies, dict):
+                for kit_type, kit_data in fullbodies.items():
+                    if not isinstance(kit_data, dict):
+                        continue
+                    for variant_id, fb_data in kit_data.items():
+                        if not isinstance(fb_data, dict):
+                            continue
+                        if fb_data.get("processing_state") != "processed":
+                            continue
+                        if not (fb_data.get("processed") or fb_data.get("raw")):
+                            continue
+
+                        # Missing closeup?
+                        closeup_kit = (role_images.get("closeup", {}) or {}).get(kit_type, {})
+                        cu_data = (
+                            closeup_kit.get(variant_id, {}) if isinstance(closeup_kit, dict) else {}
+                        )
+                        if not isinstance(cu_data, dict) or not cu_data.get("processed"):
+                            try:
+                                auto_crop_closeup_from_fullbody.delay(
+                                    membership_id=str(membership.id),
+                                    kit_type=kit_type,
+                                )
+                                stats["closeups_queued"] += 1
+                                logger.info(
+                                    "reprocess_stuck: queued closeup crop for membership=%s kit=%s",
+                                    membership.id,
+                                    kit_type,
+                                )
+                            except Exception:  # noqa: BLE001
+                                logger.warning(
+                                    "reprocess_stuck: failed to queue closeup crop for %s/%s",
+                                    membership.id,
+                                    kit_type,
+                                )
+
+                        # Missing halfbody?
+                        halfbody_kit = (role_images.get("halfbody", {}) or {}).get(kit_type, {})
+                        hb_data = (
+                            halfbody_kit.get(variant_id, {})
+                            if isinstance(halfbody_kit, dict)
+                            else {}
+                        )
+                        if not isinstance(hb_data, dict) or not hb_data.get("processed"):
+                            try:
+                                auto_crop_halfbody_from_fullbody.delay(
+                                    membership_id=str(membership.id),
+                                    kit_type=kit_type,
+                                )
+                                stats["halfbodies_queued"] += 1
+                                logger.info(
+                                    "reprocess_stuck: queued halfbody crop for membership=%s kit=%s",
+                                    membership.id,
+                                    kit_type,
+                                )
+                            except Exception:  # noqa: BLE001
+                                logger.warning(
+                                    "reprocess_stuck: failed to queue halfbody crop for %s/%s",
+                                    membership.id,
+                                    kit_type,
+                                )
 
         # Save metadata changes
         if member_changed:

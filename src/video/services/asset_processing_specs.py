@@ -183,10 +183,10 @@ ASSET_SPECS: dict[str, ImageSpec | VideoSpec] = {
 
 
 def normalize_variant_value(value: str | dict | None) -> dict | None:
-    """Normalize a variant value to the new object format.
+    """Validate and normalize a variant value dict.
 
-    Handles both old format (plain URL string) and new format (dict with
-    raw/processed keys).
+    After migration all values are dicts. Bare URL strings are treated as
+    legacy data and wrapped for compatibility.
 
     Returns:
         Normalized dict or None if empty.
@@ -195,6 +195,7 @@ def normalize_variant_value(value: str | dict | None) -> dict | None:
         return None
 
     if isinstance(value, str):
+        # Legacy data — wrap in dict for compatibility
         return {
             "raw": value,
             "processed": None,
@@ -202,11 +203,10 @@ def normalize_variant_value(value: str | dict | None) -> dict | None:
         }
 
     if isinstance(value, dict):
-        # Already new format — ensure required keys
         return {
             "raw": value.get("raw", ""),
             "processed": value.get("processed"),
-            "processed_source": value.get("processed_source"),  # full-quality alpha file
+            "processed_source": value.get("processed_source"),
             "processing_state": value.get("processing_state", ProcessingState.RAW.value),
             "specs": value.get("specs"),
             "error": value.get("error"),

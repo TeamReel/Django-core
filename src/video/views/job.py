@@ -31,6 +31,7 @@ from src.video.serializers.job import (
 from src.video.utils.asset_metadata import (
     get_variant_value,
     infer_role,
+    iter_variants,
     media_type_for_asset,
     set_variant_value,
     update_media_aliases,
@@ -620,42 +621,12 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         role = request.data.get("role") or infer_role(membership, kit_type)
         variant = variant_id if variant_id and variant_id != kit_type else "default"
 
-        # Resolve the raw URL — try new nested format first, old format as fallback
+        # Direct lookup in new nested format — no fallbacks
         mt = media_type_for_asset(asset_type)
         variant_val = get_variant_value(membership, role, mt, asset_type, kit_type, variant)
         raw_url = None
         if isinstance(variant_val, dict):
             raw_url = variant_val.get("raw") or variant_val.get("processed")
-
-        # Fallback: read from old flat format (pre-migration data)
-        if not raw_url:
-            teamreel_assets = (membership.metadata or {}).get("teamreel_assets", {})
-            if asset_type in ("fullbody", "closeup", "action_photo"):
-                images = teamreel_assets.get("images", {})
-                old_val = (images.get(asset_type, {}) or {}).get(kit_type)
-                if isinstance(old_val, dict):
-                    raw_url = old_val.get("raw") or old_val.get("processed")
-                elif isinstance(old_val, str):
-                    raw_url = old_val
-                if not raw_url and kit_type == "home":
-                    media = teamreel_assets.get("media", {})
-                    slot = (
-                        "kit"
-                        if asset_type == "fullbody"
-                        else ("closeup" if asset_type == "closeup" else "action_photo")
-                    )
-                    raw_url = (media.get(slot, {}) or {}).get("url")
-            else:
-                videos = teamreel_assets.get("videos", {})
-                asset_variants = videos.get(asset_type, {}) or {}
-                composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
-                old_val = asset_variants.get(composite_key)
-                if not old_val and variant_id:
-                    old_val = asset_variants.get(variant_id)
-                if isinstance(old_val, dict):
-                    raw_url = old_val.get("raw") or old_val.get("processed")
-                elif isinstance(old_val, str):
-                    raw_url = old_val
 
         if not raw_url:
             composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
@@ -767,18 +738,18 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         ).exists():
             raise PermissionDenied("You must be a project member.")
 
-        teamreel_assets = (membership.metadata or {}).get("teamreel_assets", {})
-        videos = teamreel_assets.get("videos", {})
-        asset_variants = videos.get(asset_type, {}) or {}
+        # Determine role for this membership + asset type
+        role = infer_role(membership, "home")
 
-        # Find all variants that need processing
-        # Key format: {kit_type}_{style} e.g. "home_arms_crossed", "goalkeeper_thumbs_up"
+        # Find all variants that need processing using the new nested structure
         variants_to_process = []
         skipped = []
 
-        for key, val in asset_variants.items():
+        for kit, variant_id_raw, val in iter_variants(membership, role, "videos", asset_type):
             if not val:
                 continue
+
+            key = f"{kit}_{variant_id_raw}" if variant_id_raw != "default" else kit
 
             # Extract raw URL and current state
             if isinstance(val, dict):
@@ -863,22 +834,11 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                     skipped.append({"key": key, "reason": "already_processing"})
                     continue
 
-            # Parse kit_type and variant_id from composite key
-            # Format: {kit_type}_{variant_id} or bare {variant_id}
-            if "_" in key:
-                parts = key.split("_", 1)
-                kit_type = parts[0]
-                variant_id = parts[1]
-            else:
-                # Bare key like "arms_crossed" - assume home kit
-                kit_type = "home"
-                variant_id = key
-
             variants_to_process.append(
                 {
                     "key": key,
-                    "kit_type": kit_type,
-                    "variant_id": variant_id,
+                    "kit_type": kit,
+                    "variant_id": variant_id_raw if variant_id_raw != "default" else None,
                     "raw_url": raw_url,
                 }
             )
@@ -1206,63 +1166,71 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         for membership in memberships:
             meta = membership.metadata or {}
             tr = meta.get("teamreel_assets", {})
+            roles_data = tr.get("roles", {})
 
-            # Check videos
-            for asset_type, variants in (tr.get("videos", {}) or {}).items():
-                if not isinstance(variants, dict):
+            for role_name, role_data in roles_data.items():
+                if not isinstance(role_data, dict):
                     continue
-                for key, val in variants.items():
-                    if not isinstance(val, dict):
-                        continue
-                    state = val.get("processing_state")
-                    if state in ("processing", "cancelling"):
-                        # Parse composite key into kit_type and variant_id
-                        parts = key.split("_", 1)
-                        kit_type = parts[0]
-                        variant_id = parts[1] if len(parts) > 1 else None
 
-                        jobs.append(
-                            {
-                                "membership_id": str(membership.id),
-                                "member_name": membership.user.get_full_name()
-                                if hasattr(membership, "user") and membership.user
-                                else str(membership.id),
-                                "asset_type": asset_type,
-                                "kit_type": kit_type,
-                                "variant_id": variant_id,
-                                "processing_state": state,
-                                "progress_frames": val.get("progress_frames"),
-                                "total_frames": val.get("total_frames"),
-                                "processing_started_at": val.get("processing_started_at"),
-                                "raw_url": val.get("raw"),
-                            }
-                        )
-
-            # Check images
-            for asset_type, variants in (tr.get("images", {}) or {}).items():
-                if not isinstance(variants, dict):
-                    continue
-                for kit_type, val in variants.items():
-                    if not isinstance(val, dict):
+                # Check videos
+                for asset_type, asset_data in (role_data.get("videos", {}) or {}).items():
+                    if not isinstance(asset_data, dict):
                         continue
-                    state = val.get("processing_state")
-                    if state in ("processing", "cancelling"):
-                        jobs.append(
-                            {
-                                "membership_id": str(membership.id),
-                                "member_name": membership.user.get_full_name()
-                                if hasattr(membership, "user") and membership.user
-                                else str(membership.id),
-                                "asset_type": asset_type,
-                                "kit_type": kit_type,
-                                "variant_id": None,
-                                "processing_state": state,
-                                "progress_frames": None,
-                                "total_frames": None,
-                                "processing_started_at": val.get("processing_started_at"),
-                                "raw_url": val.get("raw"),
-                            }
-                        )
+                    for kit_type, kit_data in asset_data.items():
+                        if not isinstance(kit_data, dict):
+                            continue
+                        for variant_id, val in kit_data.items():
+                            if not isinstance(val, dict):
+                                continue
+                            state = val.get("processing_state")
+                            if state in ("processing", "cancelling"):
+                                jobs.append(
+                                    {
+                                        "membership_id": str(membership.id),
+                                        "member_name": membership.user.get_full_name()
+                                        if hasattr(membership, "user") and membership.user
+                                        else str(membership.id),
+                                        "asset_type": asset_type,
+                                        "kit_type": kit_type,
+                                        "variant_id": variant_id
+                                        if variant_id != "default"
+                                        else None,
+                                        "processing_state": state,
+                                        "progress_frames": val.get("progress_frames"),
+                                        "total_frames": val.get("total_frames"),
+                                        "processing_started_at": val.get("processing_started_at"),
+                                        "raw_url": val.get("raw"),
+                                    }
+                                )
+
+                # Check images
+                for asset_type, asset_data in (role_data.get("images", {}) or {}).items():
+                    if not isinstance(asset_data, dict):
+                        continue
+                    for kit_type, kit_data in asset_data.items():
+                        if not isinstance(kit_data, dict):
+                            continue
+                        for variant_id, val in kit_data.items():
+                            if not isinstance(val, dict):
+                                continue
+                            state = val.get("processing_state")
+                            if state in ("processing", "cancelling"):
+                                jobs.append(
+                                    {
+                                        "membership_id": str(membership.id),
+                                        "member_name": membership.user.get_full_name()
+                                        if hasattr(membership, "user") and membership.user
+                                        else str(membership.id),
+                                        "asset_type": asset_type,
+                                        "kit_type": kit_type,
+                                        "variant_id": None,
+                                        "processing_state": state,
+                                        "progress_frames": None,
+                                        "total_frames": None,
+                                        "processing_started_at": val.get("processing_started_at"),
+                                        "raw_url": val.get("raw"),
+                                    }
+                                )
 
         return Response({"jobs": jobs}, status=status.HTTP_200_OK)
 

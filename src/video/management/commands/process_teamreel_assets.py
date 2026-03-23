@@ -33,73 +33,62 @@ def _iter_variants_to_process(
     """Return a list of variant refs describing what should be processed."""
 
     refs: list[dict[str, Any]] = []
+    roles_data = teamreel_assets.get("roles", {}) or {}
 
-    images = teamreel_assets.get("images", {}) or {}
-    videos = teamreel_assets.get("videos", {}) or {}
+    for role_name, role_data in roles_data.items():
+        if not isinstance(role_data, dict):
+            continue
 
-    if "fullbody" in asset_types:
-        cat = images.get("fullbody", {})
-        if isinstance(cat, dict):
-            for kit_type, variant_val in cat.items():
-                if not isinstance(variant_val, dict):
+        # Images: roles.{role}.images.{asset_type}.{kit}.{variant}
+        for asset_type in ("fullbody", "closeup"):
+            if asset_type not in asset_types:
+                continue
+            asset_data = (role_data.get("images", {}) or {}).get(asset_type, {})
+            if not isinstance(asset_data, dict):
+                continue
+            for kit_type, kit_data in asset_data.items():
+                if not isinstance(kit_data, dict):
                     continue
-                raw_url = variant_val.get("raw")
-                processed_url = variant_val.get("processed")
-                if raw_url and not processed_url:
+                for variant_id, variant_val in kit_data.items():
+                    if not isinstance(variant_val, dict):
+                        continue
+                    raw_url = variant_val.get("raw")
+                    processed_url = variant_val.get("processed")
+                    if raw_url and not processed_url:
+                        refs.append(
+                            {
+                                "asset_type": asset_type,
+                                "kit_type": str(kit_type),
+                                "variant_id": variant_id if variant_id != "default" else None,
+                                "raw_url": str(raw_url),
+                            }
+                        )
+
+        # Videos: roles.{role}.videos.{asset_type}.{kit}.{variant}
+        for video_type in ("intro", "celebration"):
+            if video_type not in asset_types:
+                continue
+            asset_data = (role_data.get("videos", {}) or {}).get(video_type, {})
+            if not isinstance(asset_data, dict):
+                continue
+            for kit_type, kit_data in asset_data.items():
+                if not isinstance(kit_data, dict):
+                    continue
+                for variant_id, variant_val in kit_data.items():
+                    if not isinstance(variant_val, dict):
+                        continue
+                    raw_url = variant_val.get("raw")
+                    processed_url = variant_val.get("processed")
+                    if not raw_url or processed_url:
+                        continue
                     refs.append(
                         {
-                            "asset_type": "fullbody",
+                            "asset_type": video_type,
                             "kit_type": str(kit_type),
-                            "variant_id": None,
+                            "variant_id": variant_id if variant_id != "default" else None,
                             "raw_url": str(raw_url),
                         }
                     )
-
-    if "closeup" in asset_types:
-        cat = images.get("closeup", {})
-        if isinstance(cat, dict):
-            for kit_type, variant_val in cat.items():
-                if not isinstance(variant_val, dict):
-                    continue
-                raw_url = variant_val.get("raw")
-                processed_url = variant_val.get("processed")
-                if raw_url and not processed_url:
-                    refs.append(
-                        {
-                            "asset_type": "closeup",
-                            "kit_type": str(kit_type),
-                            "variant_id": None,
-                            "raw_url": str(raw_url),
-                        }
-                    )
-
-    for video_type in ("intro", "celebration"):
-        if video_type not in asset_types:
-            continue
-        cat = videos.get(video_type, {})
-        if not isinstance(cat, dict):
-            continue
-
-        for composite_key, variant_val in cat.items():
-            if not isinstance(variant_val, dict):
-                continue
-
-            raw_url = variant_val.get("raw")
-            processed_url = variant_val.get("processed")
-            if not raw_url or processed_url:
-                continue
-
-            kit_type = composite_key.split("_", 1)[0]
-            variant_id = composite_key.split("_", 1)[1] if "_" in composite_key else None
-
-            refs.append(
-                {
-                    "asset_type": video_type,
-                    "kit_type": str(kit_type),
-                    "variant_id": variant_id,
-                    "raw_url": str(raw_url),
-                }
-            )
 
     return refs
 

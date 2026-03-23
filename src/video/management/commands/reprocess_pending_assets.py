@@ -136,163 +136,194 @@ class Command(BaseCommand):
 
             # ── 1. Fix stuck/failed images ──────────────────────────────
             if not missing_crops_only:
-                images = tr.get("images", {})
-                for asset_type in list(images.keys()):
-                    kits = images.get(asset_type, {})
-                    if not isinstance(kits, dict):
+                roles_data = tr.get("roles", {}) or {}
+                for role_name, role_data in roles_data.items():
+                    if not isinstance(role_data, dict):
                         continue
-                    for kit_type, variant in list(kits.items()):
-                        if not isinstance(variant, dict):
+                    images = role_data.get("images", {}) or {}
+                    for asset_type, asset_data in images.items():
+                        if not isinstance(asset_data, dict):
                             continue
+                        for kit_type, kit_data in asset_data.items():
+                            if not isinstance(kit_data, dict):
+                                continue
+                            for variant_id, variant in list(kit_data.items()):
+                                if not isinstance(variant, dict):
+                                    continue
 
-                        state = variant.get("processing_state")
-                        raw_url = variant.get("raw")
+                                state = variant.get("processing_state")
+                                raw_url = variant.get("raw")
 
-                        if state in STUCK_STATES:
-                            # Check if actually stuck (older than threshold)
-                            started_at = variant.get("processing_started_at")
-                            if started_at:
-                                try:
-                                    from django.utils.dateparse import parse_datetime
+                                if state in STUCK_STATES:
+                                    started_at = variant.get("processing_started_at")
+                                    if started_at:
+                                        try:
+                                            from django.utils.dateparse import parse_datetime
 
-                                    started = parse_datetime(started_at)
-                                    if started and started > stuck_threshold:
-                                        continue  # Still within time window
-                                except (ValueError, TypeError):
-                                    pass
+                                            started = parse_datetime(started_at)
+                                            if started and started > stuck_threshold:
+                                                continue
+                                        except (ValueError, TypeError):
+                                            pass
 
-                            self.stdout.write(
-                                f"  [{member_name}] images.{asset_type}.{kit_type}: "
-                                f"STUCK ({state})"
-                            )
+                                    self.stdout.write(
+                                        f"  [{member_name}] {role_name}.images.{asset_type}.{kit_type}: "
+                                        f"STUCK ({state})"
+                                    )
 
-                            if not is_dry_run:
-                                if requeue and raw_url:
-                                    self._requeue_image(membership, asset_type, kit_type, raw_url)
-                                    stats["images_requeued"] += 1
-                                else:
-                                    # Reset to pending so it can be re-processed
-                                    variant["processing_state"] = "pending"
-                                    variant.pop("processing_started_at", None)
-                                    variant.pop("cancel_requested_at", None)
-                                    stats["images_reset"] += 1
-                                member_changed = True
-                            else:
-                                stats["images_reset"] += 1
+                                    if not is_dry_run:
+                                        if requeue and raw_url:
+                                            self._requeue_image(
+                                                membership, asset_type, kit_type, raw_url
+                                            )
+                                            stats["images_requeued"] += 1
+                                        else:
+                                            variant["processing_state"] = "pending"
+                                            variant.pop("processing_started_at", None)
+                                            variant.pop("cancel_requested_at", None)
+                                            stats["images_reset"] += 1
+                                        member_changed = True
+                                    else:
+                                        stats["images_reset"] += 1
 
-                        elif state in REPROCESS_STATES and not stuck_only:
-                            self.stdout.write(
-                                f"  [{member_name}] images.{asset_type}.{kit_type}: "
-                                f"NEEDS REPROCESS ({state})"
-                            )
-                            if not is_dry_run and requeue and raw_url:
-                                self._requeue_image(membership, asset_type, kit_type, raw_url)
-                                stats["images_requeued"] += 1
-                                member_changed = True
-                            elif not is_dry_run:
-                                stats["images_reset"] += 1
-                                member_changed = True
+                                elif state in REPROCESS_STATES and not stuck_only:
+                                    self.stdout.write(
+                                        f"  [{member_name}] {role_name}.images.{asset_type}.{kit_type}: "
+                                        f"NEEDS REPROCESS ({state})"
+                                    )
+                                    if not is_dry_run and requeue and raw_url:
+                                        self._requeue_image(
+                                            membership, asset_type, kit_type, raw_url
+                                        )
+                                        stats["images_requeued"] += 1
+                                        member_changed = True
+                                    elif not is_dry_run:
+                                        stats["images_reset"] += 1
+                                        member_changed = True
 
                 # ── 1b. Fix stuck/failed videos ─────────────────────────────
-                videos = tr.get("videos", {})
-                for asset_type in list(videos.keys()):
-                    variants = videos.get(asset_type, {})
-                    if not isinstance(variants, dict):
+                for role_name, role_data in roles_data.items():
+                    if not isinstance(role_data, dict):
                         continue
-                    for variant_key, variant in list(variants.items()):
-                        if not isinstance(variant, dict):
+                    videos = role_data.get("videos", {}) or {}
+                    for asset_type, asset_data in videos.items():
+                        if not isinstance(asset_data, dict):
                             continue
+                        for kit_type, kit_data in asset_data.items():
+                            if not isinstance(kit_data, dict):
+                                continue
+                            for variant_id, variant in list(kit_data.items()):
+                                if not isinstance(variant, dict):
+                                    continue
 
-                        state = variant.get("processing_state")
-                        raw_url = variant.get("raw")
+                                state = variant.get("processing_state")
+                                raw_url = variant.get("raw")
 
-                        if state in STUCK_STATES:
-                            started_at = variant.get("processing_started_at")
-                            if started_at:
-                                try:
-                                    from django.utils.dateparse import parse_datetime
+                                if state in STUCK_STATES:
+                                    started_at = variant.get("processing_started_at")
+                                    if started_at:
+                                        try:
+                                            from django.utils.dateparse import parse_datetime
 
-                                    started = parse_datetime(started_at)
-                                    if started and started > stuck_threshold:
-                                        continue
-                                except (ValueError, TypeError):
-                                    pass
+                                            started = parse_datetime(started_at)
+                                            if started and started > stuck_threshold:
+                                                continue
+                                        except (ValueError, TypeError):
+                                            pass
 
-                            self.stdout.write(
-                                f"  [{member_name}] videos.{asset_type}.{variant_key}: "
-                                f"STUCK ({state})"
-                            )
-
-                            if not is_dry_run:
-                                # For videos with empty raw URL, just mark as failed
-                                if not raw_url:
-                                    variant["processing_state"] = "failed"
-                                    variant["error"] = "reset_stuck: no raw URL available"
-                                    stats["videos_reset"] += 1
-                                elif requeue:
-                                    self._requeue_video(
-                                        membership, asset_type, variant_key, raw_url
+                                    self.stdout.write(
+                                        f"  [{member_name}] {role_name}.videos.{asset_type}.{kit_type}: "
+                                        f"STUCK ({state})"
                                     )
-                                    stats["videos_requeued"] += 1
-                                else:
-                                    variant["processing_state"] = "pending"
-                                    variant.pop("processing_started_at", None)
-                                    variant.pop("cancel_requested_at", None)
-                                    variant.pop("progress_frames", None)
-                                    stats["videos_reset"] += 1
-                                member_changed = True
-                            else:
-                                stats["videos_reset"] += 1
+
+                                    if not is_dry_run:
+                                        if not raw_url:
+                                            variant["processing_state"] = "failed"
+                                            variant["error"] = "reset_stuck: no raw URL available"
+                                            stats["videos_reset"] += 1
+                                        elif requeue:
+                                            self._requeue_video(
+                                                membership,
+                                                asset_type,
+                                                kit_type,
+                                                variant_id if variant_id != "default" else None,
+                                                raw_url,
+                                            )
+                                            stats["videos_requeued"] += 1
+                                        else:
+                                            variant["processing_state"] = "pending"
+                                            variant.pop("processing_started_at", None)
+                                            variant.pop("cancel_requested_at", None)
+                                            variant.pop("progress_frames", None)
+                                            stats["videos_reset"] += 1
+                                        member_changed = True
+                                    else:
+                                        stats["videos_reset"] += 1
 
             # ── 2. Create missing closeup/halfbody from processed fullbody ──
             if not stuck_only:
-                images = tr.get("images", {})
-                fullbodies = images.get("fullbody", {})
-                if isinstance(fullbodies, dict):
-                    for kit_type, fb_data in fullbodies.items():
-                        if not isinstance(fb_data, dict):
+                roles_data = tr.get("roles", {}) or {}
+                for role_name, role_data in roles_data.items():
+                    if not isinstance(role_data, dict):
+                        continue
+                    images = role_data.get("images", {}) or {}
+                    fullbodies = images.get("fullbody", {})
+                    if not isinstance(fullbodies, dict):
+                        continue
+                    for kit_type, kit_data in fullbodies.items():
+                        if not isinstance(kit_data, dict):
                             continue
-                        if fb_data.get("processing_state") != "processed":
-                            continue
-                        processed_path = fb_data.get("processed")
-                        if not processed_path:
-                            continue
+                        # Check all variants (usually just "default")
+                        for variant_id, fb_data in kit_data.items():
+                            if not isinstance(fb_data, dict):
+                                continue
+                            if fb_data.get("processing_state") != "processed":
+                                continue
+                            processed_path = fb_data.get("processed")
+                            if not processed_path:
+                                continue
 
-                        # Check if closeup exists for this kit_type
-                        closeups = images.get("closeup", {})
-                        closeup_data = (
-                            closeups.get(kit_type, {}) if isinstance(closeups, dict) else {}
-                        )
-                        if not isinstance(closeup_data, dict) or not closeup_data.get("processed"):
-                            self.stdout.write(
-                                f"  [{member_name}] MISSING closeup/{kit_type} "
-                                f"(fullbody processed)"
+                            # Check if closeup exists for this kit_type
+                            closeup_kit = (images.get("closeup", {}) or {}).get(kit_type, {})
+                            closeup_val = (
+                                closeup_kit.get(variant_id, {})
+                                if isinstance(closeup_kit, dict)
+                                else {}
                             )
-                            if not is_dry_run:
-                                self._queue_closeup_crop(membership, kit_type)
-                                stats["closeups_created"] += 1
-                                member_changed = True
-                            else:
-                                stats["closeups_created"] += 1
+                            if not isinstance(closeup_val, dict) or not closeup_val.get(
+                                "processed"
+                            ):
+                                self.stdout.write(
+                                    f"  [{member_name}] MISSING closeup/{kit_type} "
+                                    f"(fullbody processed)"
+                                )
+                                if not is_dry_run:
+                                    self._queue_closeup_crop(membership, kit_type)
+                                    stats["closeups_created"] += 1
+                                    member_changed = True
+                                else:
+                                    stats["closeups_created"] += 1
 
-                        # Check if halfbody exists for this kit_type
-                        halfbodies = images.get("halfbody", {})
-                        halfbody_data = (
-                            halfbodies.get(kit_type, {}) if isinstance(halfbodies, dict) else {}
-                        )
-                        if not isinstance(halfbody_data, dict) or not halfbody_data.get(
-                            "processed"
-                        ):
-                            self.stdout.write(
-                                f"  [{member_name}] MISSING halfbody/{kit_type} "
-                                f"(fullbody processed)"
+                            # Check if halfbody exists for this kit_type
+                            halfbody_kit = (images.get("halfbody", {}) or {}).get(kit_type, {})
+                            halfbody_val = (
+                                halfbody_kit.get(variant_id, {})
+                                if isinstance(halfbody_kit, dict)
+                                else {}
                             )
-                            if not is_dry_run:
-                                self._queue_halfbody_crop(membership, kit_type)
-                                stats["halfbodies_created"] += 1
-                                member_changed = True
-                            else:
-                                stats["halfbodies_created"] += 1
+                            if not isinstance(halfbody_val, dict) or not halfbody_val.get(
+                                "processed"
+                            ):
+                                self.stdout.write(
+                                    f"  [{member_name}] MISSING halfbody/{kit_type} "
+                                    f"(fullbody processed)"
+                                )
+                                if not is_dry_run:
+                                    self._queue_halfbody_crop(membership, kit_type)
+                                    stats["halfbodies_created"] += 1
+                                    member_changed = True
+                                else:
+                                    stats["halfbodies_created"] += 1
 
             # Save metadata changes if needed
             if member_changed and not is_dry_run:
@@ -333,14 +364,9 @@ class Command(BaseCommand):
         except Exception as exc:
             self.stderr.write(f"    ✗ Failed to queue: {exc}")
 
-    def _requeue_video(self, membership, asset_type, variant_key, raw_url):
+    def _requeue_video(self, membership, asset_type, kit_type, variant_id, raw_url):
         """Re-queue a video for Celery processing."""
         from src.video.tasks.asset_processing import process_member_asset
-
-        # Parse kit_type and variant_id from composite key
-        parts = variant_key.split("_", 1)
-        kit_type = parts[0]
-        variant_id = parts[1] if len(parts) > 1 else None
 
         try:
             process_member_asset.delay(
@@ -350,7 +376,8 @@ class Command(BaseCommand):
                 raw_url=raw_url,
                 variant_id=variant_id,
             )
-            self.stdout.write(f"    → Queued process_member_asset for {asset_type}/{variant_key}")
+            label = f"{kit_type}_{variant_id}" if variant_id else kit_type
+            self.stdout.write(f"    → Queued process_member_asset for {asset_type}/{label}")
         except Exception as exc:
             self.stderr.write(f"    ✗ Failed to queue: {exc}")
 

@@ -3186,11 +3186,10 @@ def crop_closeup_from_fullbody_view(request: Request) -> Response:
         return Response({"error": "Membership not found."}, status=status.HTTP_404_NOT_FOUND)
 
     # ── Find fullbody storage path ────────────────────────────────────────────
-    metadata = membership.metadata or {}
-    ta = metadata.get("teamreel_assets", {})
-    images = ta.get("images", {})
-    fullbody_variants = images.get("fullbody", {})
-    fullbody_val = fullbody_variants.get(kit_type)
+    from src.video.utils.asset_metadata import get_variant_value, infer_role
+
+    role = infer_role(membership, kit_type)
+    fullbody_val = get_variant_value(membership, role, "images", "fullbody", kit_type, "default")
 
     if not fullbody_val:
         return Response(
@@ -3198,11 +3197,7 @@ def crop_closeup_from_fullbody_view(request: Request) -> Response:
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    # Prefer the processed path; fall back to raw
-    if isinstance(fullbody_val, dict):
-        storage_path = fullbody_val.get("processed") or fullbody_val.get("raw") or ""
-    else:
-        storage_path = str(fullbody_val)
+    storage_path = fullbody_val.get("processed") or fullbody_val.get("raw") or ""
 
     if not storage_path:
         return Response(
@@ -3354,11 +3349,10 @@ def crop_halfbody_from_fullbody_view(request: Request) -> Response:
         return Response({"error": "Membership not found."}, status=status.HTTP_404_NOT_FOUND)
 
     # ── Find fullbody storage path ────────────────────────────────────────────
-    metadata = membership.metadata or {}
-    ta = metadata.get("teamreel_assets", {})
-    images = ta.get("images", {})
-    fullbody_variants = images.get("fullbody", {})
-    fullbody_val = fullbody_variants.get(kit_type)
+    from src.video.utils.asset_metadata import get_variant_value, infer_role
+
+    role = infer_role(membership, kit_type)
+    fullbody_val = get_variant_value(membership, role, "images", "fullbody", kit_type, "default")
 
     if not fullbody_val:
         return Response(
@@ -3366,11 +3360,7 @@ def crop_halfbody_from_fullbody_view(request: Request) -> Response:
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    # Prefer the processed path; fall back to raw
-    if isinstance(fullbody_val, dict):
-        storage_path = fullbody_val.get("processed") or fullbody_val.get("raw") or ""
-    else:
-        storage_path = str(fullbody_val)
+    storage_path = fullbody_val.get("processed") or fullbody_val.get("raw") or ""
 
     if not storage_path:
         return Response(
