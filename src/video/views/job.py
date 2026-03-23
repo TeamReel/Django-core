@@ -28,6 +28,13 @@ from src.video.serializers.job import (
     VideoJobDetailSerializer,
     VideoJobListSerializer,
 )
+from src.video.utils.asset_metadata import (
+    get_variant_value,
+    infer_role,
+    media_type_for_asset,
+    set_variant_value,
+    update_media_aliases,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -609,99 +616,49 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         ).exists():
             raise PermissionDenied("You must be a project member.")
 
-        # Resolve the raw URL from metadata
-        teamreel_assets = (membership.metadata or {}).get("teamreel_assets", {})
+        # Resolve role — accept from request or infer
+        role = request.data.get("role") or infer_role(membership, kit_type)
+        variant = variant_id if variant_id and variant_id != kit_type else "default"
 
+        # Resolve the raw URL — try new nested format first, old format as fallback
+        mt = media_type_for_asset(asset_type)
+        variant_val = get_variant_value(membership, role, mt, asset_type, kit_type, variant)
         raw_url = None
-        if asset_type in ("fullbody", "closeup", "action_photo"):
-            images = teamreel_assets.get("images", {})
-            variant_val = (images.get(asset_type, {}) or {}).get(kit_type)
-            # Handle both old string and new object format
-            if isinstance(variant_val, dict):
-                raw_url = variant_val.get("raw") or variant_val.get("processed")
-            elif isinstance(variant_val, str):
-                raw_url = variant_val
-            # Fallback: if home, check media.kit / media.closeup
-            if not raw_url and kit_type == "home":
-                media = teamreel_assets.get("media", {})
-                slot = (
-                    "kit"
-                    if asset_type == "fullbody"
-                    else ("closeup" if asset_type == "closeup" else "action_photo")
-                )
-                raw_url = (media.get(slot, {}) or {}).get("url")
-        else:
-            # intro / celebration / then_vs_now → videos.{asset_type}.{kit_type}_{variant_id}
-            videos = teamreel_assets.get("videos", {})
-            asset_variants = videos.get(asset_type, {}) or {}
-            composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
-            variant_val = asset_variants.get(composite_key)
+        if isinstance(variant_val, dict):
+            raw_url = variant_val.get("raw") or variant_val.get("processed")
 
-            # Fallback 1: bare variant_id key (old metadata format stored
-            # "arms_crossed" instead of "home_arms_crossed")
-            if not variant_val and variant_id:
-                variant_val = asset_variants.get(variant_id)
-                if variant_val:
-                    logger.info(
-                        "process-asset: found old bare key '%s' for %s (expected '%s')",
-                        variant_id,
-                        asset_type,
-                        composite_key,
+        # Fallback: read from old flat format (pre-migration data)
+        if not raw_url:
+            teamreel_assets = (membership.metadata or {}).get("teamreel_assets", {})
+            if asset_type in ("fullbody", "closeup", "action_photo"):
+                images = teamreel_assets.get("images", {})
+                old_val = (images.get(asset_type, {}) or {}).get(kit_type)
+                if isinstance(old_val, dict):
+                    raw_url = old_val.get("raw") or old_val.get("processed")
+                elif isinstance(old_val, str):
+                    raw_url = old_val
+                if not raw_url and kit_type == "home":
+                    media = teamreel_assets.get("media", {})
+                    slot = (
+                        "kit"
+                        if asset_type == "fullbody"
+                        else ("closeup" if asset_type == "closeup" else "action_photo")
                     )
-
-            # Fallback 1b: bare kit_type key without variant suffix.
-            # AI propagation stores then_vs_now transformation under
-            # "transformation" but process-asset looks for
-            # "transformation_hands_on_head".  Find the bare key.
-            if not variant_val and variant_id:
-                variant_val = asset_variants.get(kit_type)
-                if variant_val:
-                    logger.info(
-                        "process-asset: found bare kit_type key '%s' for %s (expected '%s')",
-                        kit_type,
-                        asset_type,
-                        composite_key,
-                    )
-
-            # Fallback 2: no variant specified — find first key starting with kit_type
-            if not variant_val and not variant_id:
-                for key, val in asset_variants.items():
-                    if key.startswith(kit_type):
-                        variant_val = val
-                        variant_id = key[len(kit_type) + 1 :] if "_" in key else None
-                        composite_key = key
-                        break
-
-            # Fallback 3: still nothing — try any bare style key (old format
-            # stored "arms_crossed" without kit prefix)
-            if not variant_val and not variant_id:
-                for key, val in asset_variants.items():
-                    if key and not key.startswith(("home", "away", "third", "goalkeeper")):
-                        variant_val = val
-                        variant_id = key  # Store the bare key as variant_id
-                        composite_key = f"{kit_type}_{key}"
-                        logger.info(
-                            "process-asset: found bare style key '%s' for %s, using as %s",
-                            key,
-                            asset_type,
-                            composite_key,
-                        )
-                        break
-
-            if isinstance(variant_val, dict):
-                raw_url = variant_val.get("raw") or variant_val.get("processed")
-            elif isinstance(variant_val, str):
-                raw_url = variant_val
-
-            if not raw_url:
-                logger.warning(
-                    "process-asset: no raw URL for %s.%s — available keys: %s",
-                    asset_type,
-                    composite_key,
-                    list(asset_variants.keys()),
-                )
+                    raw_url = (media.get(slot, {}) or {}).get("url")
+            else:
+                videos = teamreel_assets.get("videos", {})
+                asset_variants = videos.get(asset_type, {}) or {}
+                composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
+                old_val = asset_variants.get(composite_key)
+                if not old_val and variant_id:
+                    old_val = asset_variants.get(variant_id)
+                if isinstance(old_val, dict):
+                    raw_url = old_val.get("raw") or old_val.get("processed")
+                elif isinstance(old_val, str):
+                    raw_url = old_val
 
         if not raw_url:
+            composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
             return Response(
                 {"error": f"No raw asset found for {asset_type}.{composite_key}"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -1316,45 +1273,26 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         kit_type: str,
         variant_id: str | None,
         variant_value: dict,
+        *,
+        role: str | None = None,
     ) -> None:
         """Update membership.metadata.teamreel_assets with a variant value."""
-        meta = membership.metadata or {}
-        tr = meta.get("teamreel_assets", {})
+        if role is None:
+            role = infer_role(membership, kit_type)
 
-        if asset_type in ("fullbody", "closeup", "action_photo"):
-            images = tr.setdefault("images", {})
-            cat = images.setdefault(asset_type, {})
-            cat[kit_type] = variant_value
-        else:
-            videos = tr.setdefault("videos", {})
-            cat = videos.setdefault(asset_type, {})
-            composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
-            cat[composite_key] = variant_value
-            # Clean up old bare variant key if it exists (migrate on write)
-            if variant_id and variant_id in cat and variant_id != composite_key:
-                cat.pop(variant_id, None)
+        mt = media_type_for_asset(asset_type)
+        variant = variant_id if variant_id and variant_id != kit_type else "default"
 
-        # Keep the flat media.{slot}.url in sync with the best available URL.
-        # The frontend reads media.{slot}.url as a quick lookup; prefer the
-        # processed (WebM/transparent) URL when available, otherwise raw.
-        # Prefer a browser-playable preview URL (e.g. MP4) for the frontend.
-        # Falls back to the processed URL, then raw.
+        set_variant_value(membership, role, mt, asset_type, kit_type, variant, variant_value)
+
         best_url = (
             variant_value.get("preview_url")
             or variant_value.get("processed")
             or variant_value.get("raw")
         )
         if best_url:
-            media = tr.setdefault("media", {})
-            media_slot = media.get(asset_type, {})
-            if isinstance(media_slot, dict):
-                media_slot["url"] = best_url
-            else:
-                media_slot = {"url": best_url, "caption": ""}
-            media[asset_type] = media_slot
+            update_media_aliases(membership, asset_type, best_url)
 
-        meta["teamreel_assets"] = tr
-        membership.metadata = meta
         membership.save(update_fields=["metadata", "updated_at"])
 
     @staticmethod
@@ -1363,24 +1301,17 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         asset_type: str,
         kit_type: str,
         variant_id: str | None,
-    ) -> dict | str | None:
+        *,
+        role: str | None = None,
+    ) -> dict | None:
         """Read the variant value from membership.metadata.teamreel_assets."""
-        meta = membership.metadata or {}
-        tr = meta.get("teamreel_assets") or {}
+        if role is None:
+            role = infer_role(membership, kit_type)
 
-        if asset_type in ("fullbody", "closeup", "action_photo"):
-            images = tr.get("images", {}) or {}
-            return ((images.get(asset_type) or {}) or {}).get(kit_type)
+        mt = media_type_for_asset(asset_type)
+        variant = variant_id if variant_id and variant_id != kit_type else "default"
 
-        videos = tr.get("videos", {}) or {}
-        cat = videos.get(asset_type, {}) or {}
-        composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
-        if composite_key in cat:
-            return cat.get(composite_key)
-        if variant_id and variant_id in cat:
-            # Support old metadata keying (bare variant_id)
-            return cat.get(variant_id)
-        return None
+        return get_variant_value(membership, role, mt, asset_type, kit_type, variant)
 
     @action(detail=False, methods=["post"], url_path="lineup-from-template")
     def lineup_from_template(self, request: Request) -> Response:

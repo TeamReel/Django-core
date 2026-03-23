@@ -125,6 +125,22 @@ def get_functional_roles(membership: Any) -> list[str]:
     return list(meta.get("functional_roles") or [])
 
 
+def infer_role(membership: Any, kit: str) -> str:
+    """Infer the role for an asset based on kit type and membership roles.
+
+    - ``goalkeeper`` kit → ``keeper`` role
+    - Otherwise → first functional role that has kits (``player`` default)
+    """
+    if kit == "goalkeeper":
+        return "keeper"
+    roles = get_functional_roles(membership)
+    if "player" in roles:
+        return "player"
+    if roles:
+        return roles[0]
+    return "player"
+
+
 def get_asset_roles(membership: Any) -> list[str]:
     """Return roles that have asset data in teamreel_assets.roles."""
     meta = getattr(membership, "metadata", None) or {}

@@ -112,39 +112,27 @@ def _update_variant_metadata(
     variant_id: str | None,
     variant_value: dict[str, Any],
 ) -> None:
-    meta = getattr(membership, "metadata", None) or {}
-    tr = meta.get("teamreel_assets", {}) or {}
+    from src.video.utils.asset_metadata import (
+        infer_role,
+        media_type_for_asset,
+        set_variant_value,
+        update_media_aliases,
+    )
 
-    if asset_type in ("fullbody", "closeup"):
-        images = tr.setdefault("images", {})
-        cat = images.setdefault(asset_type, {})
-        cat[kit_type] = variant_value
-    else:
-        videos = tr.setdefault("videos", {})
-        cat = videos.setdefault(asset_type, {})
-        composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
-        cat[composite_key] = variant_value
+    role = infer_role(membership, kit_type)
+    mt = media_type_for_asset(asset_type)
+    variant = variant_id if variant_id and variant_id != kit_type else "default"
 
-    best_url = variant_value.get("processed") or variant_value.get("raw")
+    set_variant_value(membership, role, mt, asset_type, kit_type, variant, variant_value)
+
+    best_url = (
+        variant_value.get("preview_url")
+        or variant_value.get("processed")
+        or variant_value.get("raw")
+    )
     if best_url:
-        media = tr.setdefault("media", {})
-        slot = media.get(asset_type, {})
-        if isinstance(slot, dict):
-            slot["url"] = best_url
-        else:
-            slot = {"url": best_url, "caption": ""}
-        media[asset_type] = slot
+        update_media_aliases(membership, asset_type, best_url)
 
-        if asset_type == "fullbody":
-            kit_slot = media.get("kit", {})
-            if isinstance(kit_slot, dict):
-                kit_slot["url"] = best_url
-            else:
-                kit_slot = {"url": best_url, "caption": ""}
-            media["kit"] = kit_slot
-
-    meta["teamreel_assets"] = tr
-    membership.metadata = meta
     membership.save(update_fields=["metadata", "updated_at"])
 
 

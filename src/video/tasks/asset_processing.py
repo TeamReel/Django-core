@@ -23,6 +23,13 @@ from django.utils import timezone
 from src.video.services.asset_processing_specs import ProcessingState
 from src.video.services.asset_processor import AssetProcessor
 from src.video.services.asset_processor import AssetProcessingCancelled
+from src.video.utils.asset_metadata import (
+    get_variant_value,
+    infer_role,
+    media_type_for_asset,
+    set_variant_value,
+    update_media_aliases,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,49 +41,29 @@ def _update_variant_metadata(
     kit_type: str,
     variant_id: str | None,
     variant_value: dict,
+    role: str | None = None,
 ) -> None:
     """Update membership.metadata.teamreel_assets with a variant value.
 
-    Mirrors the logic in the API view, but lives here so Celery can update
-    metadata without importing DRF.
+    Writes to the new nested ``roles.{role}`` structure via set_variant_value.
+    Also maintains backward-compatible ``media.*`` aliases.
     """
+    if role is None:
+        role = infer_role(membership, kit_type)
 
-    meta = getattr(membership, "metadata", None) or {}
-    tr = meta.get("teamreel_assets", {})
+    media_type = media_type_for_asset(asset_type)
+    variant = variant_id if variant_id and variant_id != kit_type else "default"
 
-    if asset_type in ("fullbody", "closeup", "halfbody", "action_photo"):
-        images = tr.setdefault("images", {})
-        cat = images.setdefault(asset_type, {})
-        cat[kit_type] = variant_value
-    else:
-        videos = tr.setdefault("videos", {})
-        cat = videos.setdefault(asset_type, {})
-        composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
-        cat[composite_key] = variant_value
-        if variant_id and variant_id in cat and variant_id != composite_key:
-            cat.pop(variant_id, None)
+    set_variant_value(membership, role, media_type, asset_type, kit_type, variant, variant_value)
 
-    best_url = variant_value.get("processed") or variant_value.get("raw")
+    best_url = (
+        variant_value.get("preview_url")
+        or variant_value.get("processed")
+        or variant_value.get("raw")
+    )
     if best_url:
-        media = tr.setdefault("media", {})
-        slot = media.get(asset_type, {})
-        if isinstance(slot, dict):
-            slot["url"] = best_url
-        else:
-            slot = {"url": best_url, "caption": ""}
-        media[asset_type] = slot
+        update_media_aliases(membership, asset_type, best_url)
 
-        # Legacy alias: fullbody is also stored/read via media.kit in some places.
-        if asset_type == "fullbody":
-            kit_slot = media.get("kit", {})
-            if isinstance(kit_slot, dict):
-                kit_slot["url"] = best_url
-            else:
-                kit_slot = {"url": best_url, "caption": ""}
-            media["kit"] = kit_slot
-
-    meta["teamreel_assets"] = tr
-    membership.metadata = meta
     membership.save(update_fields=["metadata", "updated_at"])
 
 
@@ -86,22 +73,21 @@ def _get_variant_state(
     asset_type: str,
     kit_type: str,
     variant_id: str | None,
+    role: str | None = None,
 ) -> str | None:
     """Get the current processing_state for a variant.
 
     Returns the state string or None if not found.
     """
-    meta = getattr(membership, "metadata", None) or {}
-    tr = meta.get("teamreel_assets", {})
+    if role is None:
+        role = infer_role(membership, kit_type)
 
-    if asset_type in ("fullbody", "closeup", "halfbody", "action_photo"):
-        variant_val = (tr.get("images", {}).get(asset_type, {}) or {}).get(kit_type)
-    else:
-        composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
-        variant_val = (tr.get("videos", {}).get(asset_type, {}) or {}).get(composite_key)
+    media_type = media_type_for_asset(asset_type)
+    variant = variant_id if variant_id and variant_id != kit_type else "default"
 
-    if isinstance(variant_val, dict):
-        return variant_val.get("processing_state")
+    value = get_variant_value(membership, role, media_type, asset_type, kit_type, variant)
+    if isinstance(value, dict):
+        return value.get("processing_state")
     return None
 
 

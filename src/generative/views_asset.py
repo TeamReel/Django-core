@@ -3264,6 +3264,12 @@ def crop_closeup_from_fullbody_view(request: Request) -> Response:
 
     # ── Persist in membership metadata ────────────────────────────────────────
     try:
+        from src.video.utils.asset_metadata import (
+            infer_role,
+            set_variant_value,
+            update_media_aliases,
+        )
+
         variant_value = {
             "raw": new_storage_path,
             "processed": new_storage_path,
@@ -3277,11 +3283,10 @@ def crop_closeup_from_fullbody_view(request: Request) -> Response:
             },
         }
 
-        metadata.setdefault("teamreel_assets", {}).setdefault("images", {}).setdefault(
-            "closeup", {}
-        )[kit_type] = variant_value
-        membership.metadata = metadata
-        membership.save(update_fields=["metadata"])
+        role = infer_role(membership, kit_type)
+        set_variant_value(membership, role, "images", "closeup", kit_type, "default", variant_value)
+        update_media_aliases(membership, "closeup", new_storage_path)
+        membership.save(update_fields=["metadata", "updated_at"])
         logger.info(
             "crop_closeup: saved closeup for membership=%s kit=%s path=%s",
             membership_id,
@@ -3427,6 +3432,12 @@ def crop_halfbody_from_fullbody_view(request: Request) -> Response:
 
     # ── Persist in membership metadata ────────────────────────────────────────
     try:
+        from src.video.utils.asset_metadata import (
+            infer_role,
+            set_variant_value,
+            update_media_aliases,
+        )
+
         variant_value = {
             "raw": new_storage_path,
             "processed": new_storage_path,
@@ -3440,11 +3451,12 @@ def crop_halfbody_from_fullbody_view(request: Request) -> Response:
             },
         }
 
-        metadata.setdefault("teamreel_assets", {}).setdefault("images", {}).setdefault(
-            "halfbody", {}
-        )[kit_type] = variant_value
-        membership.metadata = metadata
-        membership.save(update_fields=["metadata"])
+        role = infer_role(membership, kit_type)
+        set_variant_value(
+            membership, role, "images", "halfbody", kit_type, "default", variant_value
+        )
+        update_media_aliases(membership, "halfbody", new_storage_path)
+        membership.save(update_fields=["metadata", "updated_at"])
         logger.info(
             "crop_halfbody: saved halfbody for membership=%s kit=%s path=%s",
             membership_id,
@@ -3657,17 +3669,6 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
     except Exception:  # noqa: BLE001
         return
 
-    meta = membership.metadata or {}
-    ta = meta.setdefault("teamreel_assets", {})
-    if not isinstance(ta, dict):
-        return
-    asset_group_dict = ta.setdefault(asset_group, {})
-    if not isinstance(asset_group_dict, dict):
-        return
-    asset_type_dict = asset_group_dict.setdefault(asset_type, {})
-    if not isinstance(asset_type_dict, dict):
-        return
-
     changed = False
 
     # Use the first approved variant as the canonical version (best pick)
@@ -3690,13 +3691,24 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
         kit_type = kit_match.group(1) if kit_match else "home"
 
     # Action photo uses composite key: {kit_type}_{style_variant} (e.g. home_dribbling)
+    variant_name = "default"
     if job.template_id == "member_action_photo":
         style_match = re.search(r"style_variant-([a-z]+(?:_[a-z]{2,})*)", source_str)
         style_variant = style_match.group(1) if style_match else None
         if style_variant:
-            kit_type = f"{kit_type}_{style_variant}"
+            variant_name = style_variant
 
     if storage_path:
+        from src.video.utils.asset_metadata import (
+            infer_role,
+            media_type_for_asset,
+            set_variant_value,
+            update_media_aliases,
+        )
+
+        role = infer_role(membership, kit_type)
+        mt = media_type_for_asset(asset_type)
+
         # Photo composite / walking composite images are already composited —
         # no bg removal needed.  They go directly to "processed" state.
         # Action photo DOES need processing (bg removal) like fullbody.
@@ -3704,27 +3716,29 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
             "photo_composite",
             "walking_composite",
         )
-        asset_type_dict[kit_type] = {
+        variant_value = {
             "raw": storage_path,
             "processed": None if needs_processing else storage_path,
             "processing_state": "pending" if needs_processing else "processed",
             "specs": {},
             "source": "ai_generated",
         }
+        set_variant_value(membership, role, mt, asset_type, kit_type, variant_name, variant_value)
+        update_media_aliases(membership, asset_type, storage_path)
         changed = True
         logger.info(
-            "propagate_approved_image: membership=%s, %s.%s → %s (needs_processing=%s)",
+            "propagate_approved_image: membership=%s, %s.%s.%s → %s (needs_processing=%s)",
             job.membership_id,
             asset_type,
             kit_type,
+            variant_name,
             storage_path,
             needs_processing,
         )
 
     if changed:
-        membership.metadata = meta
         try:
-            membership.save(update_fields=["metadata"])
+            membership.save(update_fields=["metadata", "updated_at"])
         except Exception as exc:  # noqa: BLE001
             logger.warning(
                 "propagate_approved_image: failed to save membership %s: %s",
@@ -3798,55 +3812,43 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
     except Exception:  # noqa: BLE001
         return
 
-    meta = membership.metadata or {}
-    ta = meta.setdefault("teamreel_assets", {})
-    if not isinstance(ta, dict):
-        return
-    videos = ta.setdefault("videos", {})
-    if not isinstance(videos, dict):
-        return
-    asset_dict = videos.setdefault(asset_type, {})
-    if not isinstance(asset_dict, dict):
-        return
+    from src.video.utils.asset_metadata import (
+        get_variant_value,
+        infer_role,
+        set_variant_value,
+        update_media_aliases,
+    )
 
     now_iso = timezone.now().isoformat()
     changed = False
-    _auto_process_queue: list[tuple[str, str]] = []  # (composite_key, storage_path)
+    _auto_process_queue: list[tuple[str, str, str, str]] = []  # (kit, variant, composite_key, path)
 
     for variant in approved_variants:
         storage_path = variant.get("storage_path", "")
         filename = variant.get("filename", "")
 
-        # Derive the composite key based on template type
+        # Derive kit + variant based on template type
         if asset_type == "then_vs_now":
-            # then_vs_now_sidebyside → "sidebyside", then_vs_now_transformation → "transformation"
             base_key = job.template_id.replace("then_vs_now_", "")
-            # Also parse style_variant from filename for per-variant keying
-            # e.g. "then_vs_now_transformation_kit_type-home_style_variant-snap_..." → "transformation_snap"
             source_str = filename or storage_path or ""
             style_match = re.search(r"style_variant-([a-z]+(?:_[a-z]{2,})*)", source_str)
-            if style_match:
-                style_variant = style_match.group(1)
-                composite_key = f"{base_key}_{style_variant}"
-            else:
-                composite_key = base_key
+            kit_type = "home"
+            variant_name = f"{base_key}_{style_match.group(1)}" if style_match else base_key
         elif asset_type in ("photo_composite", "walking_composite"):
-            # photo_composite_video / walking_composite_video → use "default" as key (single variant per member)
-            composite_key = "default"
+            kit_type = "home"
+            variant_name = "default"
         else:
-            # Parse kit_type and style_variant from filename or storage_path
-            # Pattern: member_intro_kit_type-{kit}_style_variant-{style}_{hash}_{idx}.mp4
             source_str = filename or storage_path or ""
             kit_match = re.search(r"kit_type-([a-zA-Z0-9]+)", source_str)
             style_match = re.search(r"style_variant-([a-z]+(?:_[a-z]{2,})*)", source_str)
-
             kit_type = kit_match.group(1) if kit_match else "home"
-            style_variant = style_match.group(1) if style_match else None
+            variant_name = style_match.group(1) if style_match else "default"
 
-            composite_key = f"{kit_type}_{style_variant}" if style_variant else kit_type
+        role = infer_role(membership, kit_type)
+        composite_key = f"{kit_type}_{variant_name}" if variant_name != "default" else kit_type
 
         # Guard: don't re-process if the same raw asset is already fully processed
-        existing = asset_dict.get(composite_key)
+        existing = get_variant_value(membership, role, "videos", asset_type, kit_type, variant_name)
         if (
             isinstance(existing, dict)
             and existing.get("processing_state") == "processed"
@@ -3859,10 +3861,6 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
             )
             continue
 
-        # All video types with visual assets benefit from RVM processing:
-        # - intro/celebration: removes bg for lineup video compositing
-        # - then_vs_now: removes bg for compilation compositing
-        # Auto-queue RVM processing after save (see below).
         needs_processing = asset_type in (
             "intro",
             "celebration",
@@ -3870,58 +3868,46 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
             "photo_composite",
             "walking_composite",
         )
-        asset_dict[composite_key] = {
+        variant_value = {
             "raw": storage_path,
             "processing_state": "processing" if needs_processing else "processed",
-            "processed": storage_path,  # always set: UI preview while RVM runs
+            "processed": storage_path,
             "processed_at": None if needs_processing else now_iso,
             "specs": {},
             "source": "ai_generated",
         }
+        set_variant_value(
+            membership, role, "videos", asset_type, kit_type, variant_name, variant_value
+        )
         changed = True
 
-        # Collect for auto-dispatch after save
         if needs_processing and storage_path:
-            _auto_process_queue.append((composite_key, storage_path))
+            _auto_process_queue.append((kit_type, variant_name, composite_key, storage_path))
 
         logger.info(
-            "propagate_approved_video: membership=%s, %s.%s → %s (auto_process=%s)",
+            "propagate_approved_video: membership=%s, %s.%s.%s → %s (auto_process=%s)",
             job.membership_id,
             asset_type,
-            composite_key,
+            kit_type,
+            variant_name,
             storage_path,
             needs_processing,
         )
 
     if changed:
-        # Also update flat media.{slotId}.url so the media matrix picks it up
-        ASSET_TYPE_TO_MEDIA_SLOT = {
-            "intro": "intro",
-            "celebration": "celebration",
-        }
-        media_slot = ASSET_TYPE_TO_MEDIA_SLOT.get(asset_type)
-        if media_slot and storage_path:
-            media = ta.setdefault("media", {})
-            if isinstance(media, dict):
-                slot_data = media.get(media_slot, {})
-                if not isinstance(slot_data, dict):
-                    slot_data = {}
-                slot_data["url"] = storage_path
-                media[media_slot] = slot_data
+        if storage_path:
+            update_media_aliases(membership, asset_type, storage_path)
 
-        membership.metadata = meta
         try:
-            membership.save(update_fields=["metadata"])
+            membership.save(update_fields=["metadata", "updated_at"])
         except Exception as exc:  # noqa: BLE001
             logger.warning(
                 "propagate_approved_video: failed to save membership %s: %s",
                 job.membership_id,
                 exc,
             )
-            return  # Don't auto-dispatch if save failed
+            return
 
-        # Auto-dispatch RVM processing for approved AI videos.
-        # Runs after the metadata save so the worker can read the variant.
         if _auto_process_queue:
             _auto_dispatch_rvm_processing(str(membership.id), asset_type, _auto_process_queue)
 
@@ -3929,7 +3915,7 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
 def _auto_dispatch_rvm_processing(
     membership_id: str,
     asset_type: str,
-    items: list[tuple[str, str]],
+    items: list[tuple[str, str, str, str]],
 ) -> None:
     """Auto-dispatch RVM background removal for newly-approved AI video variants.
 
@@ -3940,28 +3926,14 @@ def _auto_dispatch_rvm_processing(
     Args:
         membership_id: ProjectMembership UUID
         asset_type: "intro", "celebration", "then_vs_now", "photo_composite", or "walking_composite"
-        items: list of (composite_key, raw_storage_path)
+        items: list of (kit_type, variant_name, composite_key, raw_storage_path)
     """
     from django.db import transaction
 
     from src.video.tasks.asset_processing import process_member_asset
 
-    KIT_PREFIXES = ("home", "away", "third", "goalkeeper")
-
-    for composite_key, raw_url in items:
-        # Split composite_key → kit_type + variant_id for process_member_asset.
-        # then_vs_now uses bare keys: "sidebyside", "transformation"
-        # photo_composite uses bare key: "default"
-        # intro/celebration use: "home_arms_crossed" → kit="home", var="arms_crossed"
-        if asset_type in ("then_vs_now", "photo_composite", "walking_composite"):
-            kit_type, variant_id = composite_key, None
-        else:
-            kit_type, variant_id = composite_key, None
-            for prefix in KIT_PREFIXES:
-                if composite_key.startswith(f"{prefix}_"):
-                    kit_type = prefix
-                    variant_id = composite_key[len(prefix) + 1 :]
-                    break
+    for kit_type, variant_name, composite_key, raw_url in items:
+        variant_id = variant_name if variant_name != "default" else None
 
         # Use default args to capture loop variables in the closure
         def _dispatch(
