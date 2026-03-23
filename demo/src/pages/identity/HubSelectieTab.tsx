@@ -331,7 +331,18 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
           <div
             className={s.rolePickerPopover}
             role="listbox"
-            aria-label="Kies rol"
+            aria-label="Kies rollen"
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                const opts = e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
+                const idx = Array.from(opts).indexOf(document.activeElement as HTMLButtonElement);
+                const next = e.key === 'ArrowDown'
+                  ? opts[(idx + 1) % opts.length]
+                  : opts[(idx - 1 + opts.length) % opts.length];
+                next?.focus();
+              }
+            }}
             style={{
               top: Math.min(rolePicker.rect.bottom + 4, window.innerHeight - 220),
               left: Math.min(rolePicker.rect.left, window.innerWidth - 160),
@@ -351,6 +362,7 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
                   aria-selected={isSelected}
                   data-active={isSelected ? 'true' : undefined}
                   disabled={isLastRole}
+                  title={isLastRole ? 'Minstens één rol vereist' : undefined}
                   onClick={() => handleRoleToggle(rolePicker.memberId, opt.value)}
                 >
                   <span className={s.checkBox} data-checked={isSelected ? 'true' : undefined}>

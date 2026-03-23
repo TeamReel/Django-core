@@ -58,6 +58,11 @@
   color: var(--app-muted-text);
 }
 
+.searchInput:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
 /* ── Add button (Plus icon) ── */
 .addBtn {
   display: inline-flex;
@@ -272,7 +277,7 @@ button.roleBadges:focus-visible {
 .checkBox[data-checked="true"] {
   background: var(--app-primary);
   border-color: var(--app-primary);
-  color: white;
+  color: var(--app-on-primary, #fff);
 }
 
 @media (prefers-reduced-motion: reduce) {
