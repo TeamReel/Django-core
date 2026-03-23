@@ -13,7 +13,7 @@ import { ListSection } from '../../components/ListSection';
 import { Avatar } from '../../components/ui';
 import { AppIcon } from '../../components/AppIcon';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
-import { getMemberAssetStatus } from '../../utils/assetStatus';
+import { getMemberAssetStatus, getMemberRoleStatuses } from '../../utils/assetStatus';
 import type { SquadMember } from '../periods/squadTabTypes';
 import s from './HubSelectieTab.module.css';
 
@@ -213,7 +213,7 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
               const mid = String(m.id ?? '').trim();
               const name = memberName(m);
               const avatarUrl = memberAvatarUrl(m);
-              const assetStatus = isStaf ? null : getMemberAssetStatus(m as Record<string, unknown>);
+              const roleStatuses = isStaf ? null : getMemberRoleStatuses(m as Record<string, unknown>);
 
               const allRoles = getMemberAllRoles(m);
 
@@ -245,12 +245,17 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
                           ))}
                         </span>
                       )}
-                      {assetStatus && (
-                        <span
-                          className={s.assetDot}
-                          data-status={assetStatus.status}
-                          aria-label={`${assetStatus.filled} van 5 assets`}
-                        />
+                      {roleStatuses && roleStatuses.roles.length > 0 && (
+                        <span className={s.assetDots} aria-label={`${roleStatuses.overallScore}% assets compleet`}>
+                          {roleStatuses.roles.map((rs) => (
+                            <span
+                              key={rs.role}
+                              className={s.assetDot}
+                              data-status={rs.status}
+                              title={`${ROLE_LABEL_MAP[rs.role] ?? rs.role}: ${rs.filled}/${rs.total}`}
+                            />
+                          ))}
+                        </span>
                       )}
                       {isAdmin && removeFromSquad && (
                         <button

@@ -7,7 +7,13 @@
   flex-direction: column;
 }
 
-/* ── Asset status dot (8px circle) ── */
+/* ── Asset status dots (per-role, 8px circles) ── */
+.assetDots {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .assetDot {
   display: inline-block;
   width: 8px;

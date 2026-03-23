@@ -8,6 +8,14 @@
  * When no role is given, checks across all roles.
  */
 import { getMediaProcessingState } from './mediaHelpers';
+import {
+  ASSET_TYPES_BY_ROLE,
+  ROLE_KIT_MAP,
+  iterVariants,
+  mediaTypeForAsset,
+  getAssetRoles,
+} from './assetMetadata';
+import type { TeamreelAssets } from './assetMetadata';
 import type { MediaSlotId } from '../constants/mediaSlots';
 
 const TRACKED_SLOT_IDS: MediaSlotId[] = ['profile', 'kit', 'closeup', 'intro', 'celebration'];
@@ -49,6 +57,79 @@ export function getMemberSlotPresence(member: Record<string, unknown>): MemberSl
     const state = getMediaProcessingState(member, slotId);
     return { slotId, present: state === 'processed' || state === 'raw' };
   });
+}
+
+/* ── Per-role asset status ────────────────────────────────────────────── */
+
+export interface RoleAssetStatus {
+  role: string;
+  filled: number;
+  total: number;
+  status: 'complete' | 'partial' | 'empty';
+  /** Per asset-type presence for this role. */
+  types: Array<{ assetType: string; present: boolean }>;
+}
+
+/**
+ * Calculate asset completeness for a single role.
+ * Checks the tracked asset types for that role (from ASSET_TYPES_BY_ROLE)
+ * across all kits, counting a type as filled if any kit has data.
+ */
+export function getMemberAssetStatusForRole(
+  member: Record<string, unknown>,
+  role: string,
+): RoleAssetStatus {
+  const assets = (member?.metadata as Record<string, unknown> | undefined)
+    ?.teamreel_assets as TeamreelAssets | undefined;
+  const trackedTypes = ASSET_TYPES_BY_ROLE[role] ?? ASSET_TYPES_BY_ROLE['player'] ?? [];
+  const total = trackedTypes.length;
+  let filled = 0;
+  const types: Array<{ assetType: string; present: boolean }> = [];
+
+  for (const assetType of trackedTypes) {
+    const mt = mediaTypeForAsset(assetType);
+    const variants = iterVariants(assets, role, mt, assetType);
+    const hasData = variants.some((v) => {
+      if (!v.value) return false;
+      if (typeof v.value === 'string') return true;
+      return !!(v.value.raw || v.value.processed);
+    });
+    if (hasData) filled++;
+    types.push({ assetType, present: hasData });
+  }
+
+  return {
+    role,
+    filled,
+    total,
+    status: total === 0 ? 'empty' : filled === total ? 'complete' : filled > 0 ? 'partial' : 'empty',
+    types,
+  };
+}
+
+/**
+ * Get asset status for all roles a member has.
+ * Returns an array of per-role statuses + an overall weighted score.
+ */
+export function getMemberRoleStatuses(
+  member: Record<string, unknown>,
+): { roles: RoleAssetStatus[]; overallScore: number } {
+  const assets = (member?.metadata as Record<string, unknown> | undefined)
+    ?.teamreel_assets as TeamreelAssets | undefined;
+  const memberRoles = getAssetRoles(assets);
+  // Fallback: if no role data, check functional_roles
+  const funcRoles = (member as Record<string, unknown>).functional_roles as string[] | undefined;
+  const roles = memberRoles.length > 0 ? memberRoles : (funcRoles && funcRoles.length > 0 ? funcRoles : ['player']);
+
+  const statuses = roles
+    .filter((r) => ROLE_KIT_MAP[r]?.kits.length > 0)
+    .map((r) => getMemberAssetStatusForRole(member, r));
+
+  const totalSlots = statuses.reduce((sum, s) => sum + s.total, 0);
+  const totalFilled = statuses.reduce((sum, s) => sum + s.filled, 0);
+  const overallScore = totalSlots > 0 ? Math.round((totalFilled / totalSlots) * 100) : 0;
+
+  return { roles: statuses, overallScore };
 }
 
 /** Check club-level brand assets (logo + sponsor). */

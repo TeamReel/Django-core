@@ -8,7 +8,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Check, Minus, ArrowRight, Pencil } from 'lucide-react';
 import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { Avatar } from '../../components/ui';
-import { getMemberSlotPresence, getMemberAssetStatus } from '../../utils/assetStatus';
+import { getMemberSlotPresence, getMemberAssetStatus, getMemberRoleStatuses } from '../../utils/assetStatus';
 import type { SquadMember } from '../periods/squadTabTypes';
 import type { MediaSlotId } from '../../constants/mediaSlots';
 import s from './MemberSummarySheet.module.css';
@@ -21,6 +21,15 @@ const SLOT_LABELS: Partial<Record<MediaSlotId, string>> = {
   closeup: 'Close-up',
   intro: 'Intro video',
   celebration: 'Celebration',
+};
+
+const ASSET_TYPE_LABELS: Record<string, string> = {
+  fullbody: 'Fullbody',
+  halfbody: 'Halfbody',
+  closeup: 'Close-up',
+  intro: 'Intro video',
+  celebration: 'Celebration',
+  profile: 'Portretfoto',
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -133,6 +142,7 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
 
   const assetStatus = member ? getMemberAssetStatus(member as Record<string, unknown>) : null;
   const slotPresence = member ? getMemberSlotPresence(member as Record<string, unknown>) : [];
+  const roleStatuses = member ? getMemberRoleStatuses(member as Record<string, unknown>) : null;
 
   const showNav = !!(onPrev || onNext);
   const showCounter = currentIndex !== undefined && totalCount !== undefined;
@@ -187,30 +197,69 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
               <p className={s.memberRole}>{clubName || 'Lid'}</p>
             </div>
 
-            {/* Asset slots list */}
+            {/* Asset slots — grouped per role */}
             <div className={s.assetSection}>
               <p className={s.sectionLabel}>Assets</p>
-              <ul className={s.slotList}>
-                {slotPresence.map(({ slotId, present }) => (
-                  <li
-                    key={slotId}
-                    className={s.slotRow}
-                    data-present={present ? 'true' : 'false'}
-                  >
-                    <span className={s.slotIcon} aria-hidden="true">
-                      {present ? <Check size={16} /> : <Minus size={16} />}
-                    </span>
-                    <span className={s.slotLabel}>
-                      {SLOT_LABELS[slotId] ?? slotId}
-                    </span>
-                    <span className="sr-only">{present ? 'aanwezig' : 'ontbreekt'}</span>
-                  </li>
-                ))}
-              </ul>
-              {assetStatus && (
-                <p className={s.assetSummary}>
-                  {assetStatus.filled} van {assetStatus.total} assets compleet
-                </p>
+              {roleStatuses && roleStatuses.roles.length > 0 ? (
+                <>
+                  {roleStatuses.roles.map((rs) => {
+                    return (
+                      <div key={rs.role} className={s.roleGroup}>
+                        {roleStatuses.roles.length > 1 && (
+                          <p className={s.roleGroupLabel}>
+                            {ROLE_LABELS[rs.role] ?? rs.role}
+                            <span className={s.roleGroupCount}>{rs.filled}/{rs.total}</span>
+                          </p>
+                        )}
+                        <ul className={s.slotList}>
+                          {rs.types.map(({ assetType, present }) => (
+                            <li
+                              key={assetType}
+                              className={s.slotRow}
+                              data-present={present ? 'true' : 'false'}
+                            >
+                              <span className={s.slotIcon} aria-hidden="true">
+                                {present ? <Check size={16} /> : <Minus size={16} />}
+                              </span>
+                              <span className={s.slotLabel}>
+                                {ASSET_TYPE_LABELS[assetType] ?? assetType}
+                              </span>
+                              <span className="sr-only">{present ? 'aanwezig' : 'ontbreekt'}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                  <p className={s.assetSummary}>
+                    {roleStatuses.overallScore}% compleet
+                  </p>
+                </>
+              ) : (
+                <>
+                  <ul className={s.slotList}>
+                    {slotPresence.map(({ slotId, present }) => (
+                      <li
+                        key={slotId}
+                        className={s.slotRow}
+                        data-present={present ? 'true' : 'false'}
+                      >
+                        <span className={s.slotIcon} aria-hidden="true">
+                          {present ? <Check size={16} /> : <Minus size={16} />}
+                        </span>
+                        <span className={s.slotLabel}>
+                          {SLOT_LABELS[slotId] ?? slotId}
+                        </span>
+                        <span className="sr-only">{present ? 'aanwezig' : 'ontbreekt'}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {assetStatus && (
+                    <p className={s.assetSummary}>
+                      {assetStatus.filled} van {assetStatus.total} assets compleet
+                    </p>
+                  )}
+                </>
               )}
             </div>
           </div>
