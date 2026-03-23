@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
+import { ChevronDown } from 'lucide-react';
 import { isLineupReady, isProcessing } from '../../constants/assetProcessingSpecs';
 import { AssetsTab } from '../../components/AssetsTab';
 import type { MemberTabCommonProps } from './memberDetailUtils';
@@ -49,6 +50,22 @@ export function MemberAssetsTab({
   selectedRole,
 }: MemberAssetsTabProps) {
   const confirm = useConfirm();
+
+  // First kit expanded by default, rest collapsed on mobile
+  const [expandedKits, setExpandedKits] = useState<Set<string>>(
+    () => new Set(effectiveKits.length > 0 ? [effectiveKits[0].id] : []),
+  );
+  const [inheritedOpen, setInheritedOpen] = useState(false);
+
+  const toggleKit = useCallback((kitId: string) => {
+    setExpandedKits((prev) => {
+      const next = new Set(prev);
+      if (next.has(kitId)) next.delete(kitId);
+      else next.add(kitId);
+      return next;
+    });
+  }, []);
+
   return (
     <Card>
       <div className={s.cardPadding}>
@@ -86,14 +103,34 @@ export function MemberAssetsTab({
 
           return (
             <div key={`assets-kit-${kit.id}`} className={s.kitSectionMargin}>
-              <div className={`${s.flexCenterGap8} mb-12`}>
-                {kit.url ? (
-                  <img src={kit.url} alt={kit.label} className={s.kitIconImg} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                ) : (
-                  <span className="fs-20">{kit.icon}</span>
-                )}
-                <div className={s.sectionTitle}>{kit.label}</div>
-              </div>
+              <button
+                type="button"
+                className={m.kitAccordionBtn}
+                onClick={() => toggleKit(kit.id)}
+                aria-expanded={expandedKits.has(kit.id)}
+              >
+                <div className={s.flexCenterGap8}>
+                  {kit.url ? (
+                    <img src={kit.url} alt={kit.label} className={s.kitIconImg} loading="lazy" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  ) : (
+                    <span className="fs-20">{kit.icon}</span>
+                  )}
+                  <div className={s.sectionTitle}>{kit.label}</div>
+                  {/* Quick status summary when collapsed */}
+                  {!expandedKits.has(kit.id) && (
+                    <span className={m.kitStatusHint}>
+                      {[fbUrl, hbUrl, cuUrl].filter(Boolean).length}/3
+                    </span>
+                  )}
+                </div>
+                <ChevronDown
+                  size={16}
+                  className={m.kitChevron}
+                  data-open={expandedKits.has(kit.id) ? 'true' : undefined}
+                />
+              </button>
+
+              {expandedKits.has(kit.id) && (
 
               <div className={s.variantGrid}>
                 {/* Fullbody Card */}
@@ -236,24 +273,41 @@ export function MemberAssetsTab({
                   </div>
                 </div>
               </div>
+              )}
             </div>
           );
         })}
 
         {/* Team/Club Assets Section */}
         <div className={`pt-24 border-top ${m.inheritedSection}`}>
-          <h4 className="fs-14 fw-600 mb-8">Geërfde Team Assets</h4>
-          <p className={`fs-12 mb-16 ${m.inheritedDescription}`}>
-            Deze assets worden geërfd van het team/seizoen en worden gebruikt als basis voor generatie.
-          </p>
-          <AssetsTab
-            level="member"
-            organisationId={String(org?.id || '')}
-            projectId={project?.id ? String(project.id) : undefined}
-            parentProjectId={club?.id ? String(club.id) : undefined}
-            entityName={getUserDisplayName(membership)}
-            readOnly
-          />
+          <button
+            type="button"
+            className={m.kitAccordionBtn}
+            onClick={() => setInheritedOpen((prev) => !prev)}
+            aria-expanded={inheritedOpen}
+          >
+            <h4 className="fs-14 fw-600">Geërfde Team Assets</h4>
+            <ChevronDown
+              size={16}
+              className={m.kitChevron}
+              data-open={inheritedOpen ? 'true' : undefined}
+            />
+          </button>
+          {inheritedOpen && (
+            <>
+              <p className={`fs-12 mb-16 ${m.inheritedDescription}`}>
+                Deze assets worden geërfd van het team/seizoen en worden gebruikt als basis voor generatie.
+              </p>
+              <AssetsTab
+                level="member"
+                organisationId={String(org?.id || '')}
+                projectId={project?.id ? String(project.id) : undefined}
+                parentProjectId={club?.id ? String(club.id) : undefined}
+                entityName={getUserDisplayName(membership)}
+                readOnly
+              />
+            </>
+          )}
         </div>
 
         {!userCanEditProject && (
