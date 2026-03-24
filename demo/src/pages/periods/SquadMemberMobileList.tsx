@@ -63,9 +63,9 @@ const SquadMemberMobileList: React.FC<SquadMemberMobileListProps> = ({
               <div className={st.memberCardBody}>
                 <div className={st.memberCardRow}>
                   {href ? (
-                    <Link to={href} className={st.memberCardName}>{name}</Link>
+                    <Link to={href} className={st.memberCardName} title={name}>{name}</Link>
                   ) : (
-                    <span className={st.memberCardName}>{name}</span>
+                    <span className={st.memberCardName} title={name}>{name}</span>
                   )}
                   {meta && <span className={st.memberCardMeta}>{meta}</span>}
                   <button
@@ -129,9 +129,9 @@ const SquadMemberMobileList: React.FC<SquadMemberMobileListProps> = ({
             <div className={st.memberCardBody}>
               <div className={st.memberCardRow}>
                 {href ? (
-                  <Link to={href} className={st.memberCardName}>{name}</Link>
+                  <Link to={href} className={st.memberCardName} title={name}>{name}</Link>
                 ) : (
-                  <span className={st.memberCardName}>{name}</span>
+                  <span className={st.memberCardName} title={name}>{name}</span>
                 )}
                 {meta && <span className={st.memberCardMeta}>{meta}</span>}
                 <button
