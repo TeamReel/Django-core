@@ -1907,6 +1907,11 @@ def update_avatar(request):
         user.avatar.name = saved_path
         user.save(update_fields=["avatar"])
         audit_log.record("auth.avatar_updated", user=user, request=request)
+
+        # Sync avatar path to active project membership metadata
+        from accounts.utils import sync_avatar_to_memberships
+
+        sync_avatar_to_memberships(user)
     except Exception:
         import logging
 
@@ -1996,6 +2001,11 @@ def set_avatar_from_path(request):
         audit_log.record(
             "auth.avatar_path_set", user=user, request=request, metadata={"path": path}
         )
+
+        # Sync avatar path to active project membership metadata
+        from accounts.utils import sync_avatar_to_memberships
+
+        sync_avatar_to_memberships(user)
     except Exception:
         import logging
 
@@ -2169,6 +2179,11 @@ def admin_update_avatar(request, user_id):
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+    # Sync avatar path to active project membership metadata
+    from accounts.utils import sync_avatar_to_memberships
+
+    sync_avatar_to_memberships(target_user)
 
     try:
         audit_log.record(

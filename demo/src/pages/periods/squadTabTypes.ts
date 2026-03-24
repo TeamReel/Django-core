@@ -1,8 +1,9 @@
 /** Shape for a squad membership record. */
 export interface SquadMember {
   id?: string;
-  user?: { id?: string; name?: string; first_name?: string; last_name?: string; email?: string };
+  user?: { id?: string; name?: string; first_name?: string; last_name?: string; email?: string; avatar_url?: string };
   role?: string;
+  functional_roles?: string[];
   metadata?: { position?: string; shirt_number?: string | number; [key: string]: unknown };
   [key: string]: unknown;
 }

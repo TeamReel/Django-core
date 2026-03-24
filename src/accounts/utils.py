@@ -1,7 +1,54 @@
 """Utility functions for accounts module."""
 
+import logging
 import os
+
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
+
+def sync_avatar_to_memberships(user) -> int:
+    """Sync User.avatar path to all active ProjectMembership metadata.
+
+    Writes the raw S3 path into ``metadata.teamreel_assets.media.profile.url``
+    so the frontend can resolve it via ``getAssetUrl()``.
+
+    Returns the number of memberships updated.
+    """
+    from projects.models import ProjectMembership
+
+    avatar_name = getattr(user.avatar, "name", None) if user.avatar else None
+    if not avatar_name:
+        return 0
+
+    memberships = ProjectMembership.objects.filter(
+        user=user,
+        deleted_at__isnull=True,
+    )
+
+    updated = 0
+    for m in memberships:
+        meta = m.metadata or {}
+        tr = meta.get("teamreel_assets")
+        if tr is None:
+            continue
+        media = tr.setdefault("media", {})
+        profile = media.setdefault("profile", {})
+        if profile.get("url") == avatar_name:
+            continue
+        profile["url"] = avatar_name
+        m.metadata = meta
+        m.save(update_fields=["metadata"])
+        updated += 1
+
+    if updated:
+        logger.info(
+            "Synced avatar to %d membership(s) for user %s",
+            updated,
+            user.id,
+        )
+    return updated
 
 
 def get_avatar_url(avatar_field):
