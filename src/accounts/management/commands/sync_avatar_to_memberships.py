@@ -53,8 +53,8 @@ class Command(BaseCommand):
 
                 if dry_run:
                     self.stdout.write(
-                        f"  [DRY RUN] {user.email} → membership {m.id}: "
-                        f"'{old_url}' → '{avatar_name}'"
+                        f"  [DRY RUN] {user.email} -> membership {m.id}: "
+                        f"'{old_url}' -> '{avatar_name}'"
                     )
                 else:
                     m.save(update_fields=["metadata"])
