@@ -221,11 +221,17 @@ export const MyTeamHubPage: React.FC = () => {
       const assets = (m.metadata as Record<string, unknown> | undefined)
         ?.teamreel_assets as TeamreelAssets | undefined;
       if (!assets) return false;
-      // Check all kits for a processed closeup using iterVariants (handles both nested + legacy)
-      const fr = (m as Record<string, unknown>).functional_roles as string[] | undefined;
-      const role = fr?.includes('keeper') ? 'keeper' : 'player';
-      const variants = iterVariants(assets, role, 'images', 'closeup');
-      return variants.some((v) => typeof v.value?.processed === 'string' && v.value.processed);
+      // Check all roles for a processed closeup using iterVariants (handles both nested + legacy)
+      const allRoles = Object.keys(assets.roles ?? {});
+      if (allRoles.length === 0) {
+        // Legacy flat format — iterVariants with any role checks root level
+        const variants = iterVariants(assets, 'player', 'images', 'closeup');
+        return variants.some((v) => typeof v.value?.processed === 'string' && v.value.processed);
+      }
+      return allRoles.some((role) => {
+        const variants = iterVariants(assets, role, 'images', 'closeup');
+        return variants.some((v) => typeof v.value?.processed === 'string' && v.value.processed);
+      });
     }).length;
   }, [d.members]);
 

@@ -104,12 +104,25 @@ function memberAvatarUrl(m: SquadMember, displayRole?: string): string | undefin
       ? ['goalkeeper', 'home', 'away', 'third']
       : ['home', 'away', 'third', 'goalkeeper'];
 
-    // Try per-variant closeup (new nested or legacy flat)
+    // Try per-variant closeup for the primary role
     for (const kit of kitOrder) {
       const variants = iterVariants(assets, role, 'images', 'closeup', kit);
       for (const v of variants) {
         if (typeof v.value?.processed === 'string' && v.value.processed) {
           return getAssetUrl(v.value.processed) ?? undefined;
+        }
+      }
+    }
+
+    // Cross-role fallback: assets may be stored under a different role key
+    const availableRoles = Object.keys(assets.roles ?? {}).filter(r => r !== role);
+    for (const altRole of availableRoles) {
+      for (const kit of kitOrder) {
+        const variants = iterVariants(assets, altRole, 'images', 'closeup', kit);
+        for (const v of variants) {
+          if (typeof v.value?.processed === 'string' && v.value.processed) {
+            return getAssetUrl(v.value.processed) ?? undefined;
+          }
         }
       }
     }

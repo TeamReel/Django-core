@@ -55,6 +55,19 @@ function memberAvatarUrl(m: SquadMember, role?: string): string | undefined {
     }
   }
 
+  // Cross-role fallback: assets may be stored under a different role key
+  const availableRoles = Object.keys(assets.roles ?? {}).filter(r => r !== effectiveRole);
+  for (const altRole of availableRoles) {
+    for (const kit of kitOrder) {
+      const variants = iterVariants(assets, altRole, 'images', 'closeup', kit);
+      for (const v of variants) {
+        if (typeof v.value?.processed === 'string' && v.value.processed) {
+          return getAssetUrl(v.value.processed) ?? undefined;
+        }
+      }
+    }
+  }
+
   // Fallback: flat media.closeup.url
   if (typeof assets.media?.closeup?.url === 'string' && assets.media.closeup.url) {
     return getAssetUrl(assets.media.closeup.url) ?? undefined;
