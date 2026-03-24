@@ -139,11 +139,17 @@
   aspect-ratio: 3 / 4;
 }
 
-/* Video's grid: 4 kolommen, 9:16 aspect */
+/* Video's grid: 2 kolommen mobiel, 4 kolommen desktop, 9:16 aspect */
 .gridVideos {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .gridVideos {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .gridVideos .assetCardPreview {
@@ -163,6 +169,7 @@
   transition: background var(--duration-fast) ease, border-color var(--duration-fast) ease;
   -webkit-tap-highlight-color: transparent;
   min-height: 44px;
+  min-width: 0;
 }
 
 .assetCard:disabled {
@@ -217,12 +224,12 @@
 }
 
 .assetCardAction {
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: var(--font-medium);
   color: var(--app-primary);
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-1);
 }
 
 /* ── Auto-derived note ────────────────────────────────────────────── */
@@ -328,7 +335,7 @@
 .legacyInfo {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-1);
   min-width: 0;
 }
 

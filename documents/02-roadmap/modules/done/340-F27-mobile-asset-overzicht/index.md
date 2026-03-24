@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Code | F27 |
-| Status | 📐 READY |
+| Status | ✅ DONE |
 | Prioriteit | Hoog |
 | Geschatte effort | ~6 uur |
 | Afhankelijkheid | B70 (assets per role — afgerond) |

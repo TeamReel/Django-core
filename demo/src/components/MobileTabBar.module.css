@@ -7,7 +7,6 @@
   flex-direction: column;
   position: relative;
   margin-bottom: var(--space-2);
-  padding: 0 var(--space-4);
 }
 
 /* Right-edge fade hint when more pills are scrollable */
@@ -30,7 +29,7 @@
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
-  padding: var(--space-1) 0;
+  padding: var(--space-1) var(--space-4);
 }
 
 .inlineBar::-webkit-scrollbar {
