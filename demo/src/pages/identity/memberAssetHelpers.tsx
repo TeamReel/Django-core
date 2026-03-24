@@ -4,7 +4,7 @@
  * Extracted from MemberSummarySheet.tsx to keep the component under 500 lines.
  */
 import React from 'react';
-import { Video, Sparkles, Crop, ArrowLeftRight, Camera, Upload, Shirt, ImageIcon } from 'lucide-react';
+import { Video, Sparkles, Crop, ArrowLeftRight, Camera, Upload, Shirt, ImageIcon, Footprints, Users } from 'lucide-react';
 import { iterVariants, getAssetRoles, ROLE_KIT_MAP, type TeamreelAssets } from '../../utils/assetMetadata';
 import { getAssetUrl } from '../../hooks/brandProfileConstants';
 import type { SquadMember } from '../periods/squadTabTypes';
@@ -273,6 +273,28 @@ export function buildAssetChecklist(
       thumbnail: getFirstAssetUrl(assets, role, 'videos', 'then_vs_now'),
       hasAsset: hasAnyVariant(assets, role, 'videos', 'then_vs_now'),
       editTab: 'then_vs_now',
+      expandable: true,
+      mediaType: 'videos',
+      isVideo: true,
+    },
+    {
+      id: 'walking_composite',
+      label: 'Walking Composite',
+      icon: <Footprints size={16} />,
+      thumbnail: getFirstAssetUrl(assets, role, 'videos', 'walking_composite'),
+      hasAsset: hasAnyVariant(assets, role, 'videos', 'walking_composite'),
+      editTab: 'walking_composite',
+      expandable: true,
+      mediaType: 'videos',
+      isVideo: true,
+    },
+    {
+      id: 'duo_portret',
+      label: 'Duo Portret',
+      icon: <Users size={16} />,
+      thumbnail: getFirstAssetUrl(assets, role, 'videos', 'photo_composite'),
+      hasAsset: hasAnyVariant(assets, role, 'videos', 'photo_composite'),
+      editTab: 'photo_composite',
       expandable: true,
       mediaType: 'videos',
       isVideo: true,
