@@ -26,6 +26,7 @@ import { SeasonSwitcher, type SeasonOption } from '../../components/SeasonSwitch
 import { isSeasonPeriod, useSeasonContext } from '../../providers/SeasonProvider';
 
 import { periodPathKey } from '../../utils/periodPath';
+import { iterVariants, type TeamreelAssets } from '../../utils/assetMetadata';
 import { setActiveContext } from '../../utils/activeContext';
 import { ListSection } from '../../components/ListSection';
 import { AppIcon } from '../../components/AppIcon';
@@ -217,16 +218,14 @@ export const MyTeamHubPage: React.FC = () => {
   // Count members with processed closeup photo
   const membersWithPhoto = useMemo(() => {
     return (d.members as SquadMember[]).filter((m) => {
-      const tr = (m.metadata as Record<string, unknown> | undefined)?.teamreel_assets as Record<string, unknown> | undefined;
-      if (!tr) return false;
-      const closeup = (tr.images as Record<string, unknown> | undefined)?.closeup as Record<string, unknown> | undefined;
-      if (!closeup) return false;
-      // Check if any kit type has processed closeup
-      for (const kitType of ['home', 'away', 'third', 'goalkeeper']) {
-        const kit = closeup[kitType] as Record<string, unknown> | undefined;
-        if (typeof kit?.processed === 'string' && kit.processed) return true;
-      }
-      return false;
+      const assets = (m.metadata as Record<string, unknown> | undefined)
+        ?.teamreel_assets as TeamreelAssets | undefined;
+      if (!assets) return false;
+      // Check all kits for a processed closeup using iterVariants (handles both nested + legacy)
+      const fr = (m as Record<string, unknown>).functional_roles as string[] | undefined;
+      const role = fr?.includes('keeper') ? 'keeper' : 'player';
+      const variants = iterVariants(assets, role, 'images', 'closeup');
+      return variants.some((v) => typeof v.value?.processed === 'string' && v.value.processed);
     }).length;
   }, [d.members]);
 
@@ -258,12 +257,23 @@ export const MyTeamHubPage: React.FC = () => {
     setTimeout(() => { setPanelClosing(false); close(); }, PANEL_CLOSE_MS);
   }, []);
 
-  // Scroll lock when member detail panel is open
+  // Scroll lock when member detail panel is open — preserve scroll position
   useEffect(() => {
     if (!detailMemberId) return;
-    const prev = document.body.style.overflow;
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, scrollY);
+    };
   }, [detailMemberId]);
 
   // Focus trap inside member detail panel

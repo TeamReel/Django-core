@@ -35,14 +35,29 @@ function memberName(m: SquadMember): string {
   return u?.name || u?.email || 'Onbekend';
 }
 
-function memberAvatarUrl(m: SquadMember): string | undefined {
-  const tr = (m.metadata as Record<string, unknown> | undefined)?.teamreel_assets as Record<string, unknown> | undefined;
-  if (tr) {
-    const closeup = (tr.images as Record<string, unknown> | undefined)?.closeup as Record<string, unknown> | undefined;
-    for (const kitType of ['home', 'away', 'third', 'goalkeeper']) {
-      const kit = closeup?.[kitType] as Record<string, unknown> | undefined;
-      if (typeof kit?.processed === 'string' && kit.processed) return getAssetUrl(kit.processed) ?? undefined;
+function memberAvatarUrl(m: SquadMember, role?: string): string | undefined {
+  const assets = (m.metadata as Record<string, unknown> | undefined)
+    ?.teamreel_assets as TeamreelAssets | undefined;
+  if (!assets) return undefined;
+
+  const effectiveRole = role ?? getPrimaryRole(m);
+  const isKeeper = effectiveRole === 'keeper';
+  const kitOrder = isKeeper
+    ? ['goalkeeper', 'home', 'away', 'third']
+    : ['home', 'away', 'third', 'goalkeeper'];
+
+  for (const kit of kitOrder) {
+    const variants = iterVariants(assets, effectiveRole, 'images', 'closeup', kit);
+    for (const v of variants) {
+      if (typeof v.value?.processed === 'string' && v.value.processed) {
+        return getAssetUrl(v.value.processed) ?? undefined;
+      }
     }
+  }
+
+  // Fallback: flat media.closeup.url
+  if (typeof assets.media?.closeup?.url === 'string' && assets.media.closeup.url) {
+    return getAssetUrl(assets.media.closeup.url) ?? undefined;
   }
   return undefined;
 }
