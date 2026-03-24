@@ -58,9 +58,14 @@ function getFirstAssetUrl(
     if (!v.value) continue;
     if (typeof v.value === 'string') return v.value;
     const val = v.value as Record<string, unknown>;
+    // For preview_url (thumbnail image) — always valid for any media type
     if (val.preview_url && typeof val.preview_url === 'string') return val.preview_url;
-    if (val.processed && typeof val.processed === 'string') return val.processed;
-    if (val.raw && typeof val.raw === 'string') return val.raw;
+    // For images: processed/raw are image URLs — safe to use in <img>
+    // For videos: processed is a .mp4 URL — cannot render in <img>, skip
+    if (mediaType === 'images') {
+      if (val.processed && typeof val.processed === 'string') return val.processed;
+      if (val.raw && typeof val.raw === 'string') return val.raw;
+    }
   }
   return null;
 }
@@ -343,10 +348,20 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
                             alt={asset.label}
                             className={s.assetCardImg}
                             loading="lazy"
+                            onError={(e) => {
+                              // Hide broken img, show icon fallback
+                              (e.currentTarget as HTMLImageElement).style.display = 'none';
+                              const icon = e.currentTarget.nextElementSibling as HTMLElement | null;
+                              if (icon) icon.style.display = '';
+                            }}
                           />
-                        ) : (
-                          <span className={s.assetCardIcon}>{asset.icon}</span>
-                        )}
+                        ) : null}
+                        <span
+                          className={s.assetCardIcon}
+                          style={asset.thumbnail ? { display: 'none' } : undefined}
+                        >
+                          {asset.icon}
+                        </span>
                       </div>
                       <span className={s.assetCardLabel}>{asset.label}</span>
                       <span className={s.assetCardAction}>
