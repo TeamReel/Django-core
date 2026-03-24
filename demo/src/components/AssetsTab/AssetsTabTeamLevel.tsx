@@ -7,12 +7,16 @@
  */
 
 import React, { useRef } from 'react';
-import { Sparkles, Upload, Trash2, Clock, Wand2 } from 'lucide-react';
+import { Sparkles, Upload, Trash2, Clock, Wand2, Shirt, Image } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { KIT_ROLES, getAssetUrl } from '../../hooks/useBrandProfile';
 
 /** Team-level kit order: important roles first (Thuis, Keeper, Legacy) */
 const TEAM_KIT_ORDER = ['home', 'goalkeeper', 'legacy', 'away', 'third', 'coach', 'assistant', 'training'] as const;
 const TEAM_KIT_ROLES = TEAM_KIT_ORDER.map(id => KIT_ROLES.find(r => r.id === id)!).filter(Boolean);
+
+/** Kits that are AI-generated from other sources (no upload row) */
+const AI_ONLY_KITS = new Set(['goalkeeper']);
 import { ListSection } from '../ListSection';
 import { AppIcon } from '../AppIcon';
 import { SharedAssetModals } from './AssetsTabShared';
@@ -162,21 +166,61 @@ function AssetRow({
   );
 }
 
+/* ── Quick-action upload button ────────────────────────────────────────── */
+
+function QuickUploadBtn({ label, assetType, icon, d }: { label: string; assetType: string; icon: LucideIcon; d: AssetsTabData }) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <input ref={ref} type="file" accept="image/*" className={s.hiddenInput}
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) d.handleUpload(f, assetType); e.target.value = ''; }} />
+      <button type="button" className={s.quickAction} onClick={() => ref.current?.click()}
+        aria-label={`${label} uploaden`}>
+        <AppIcon icon={icon} size={14} /> {label}
+      </button>
+    </>
+  );
+}
+
 /* ── Main component ────────────────────────────────────────────────────── */
 
 export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, organisationId }) => (
   <div className={s.root}>
-    {/* Compact AI quick-action button */}
+    {/* Quick actions: upload shortcuts + keeper AI */}
     {!readOnly && (
-      <button
-        type="button"
-        className={s.aiQuickBtn}
-        onClick={() => { d.setAiPreselectedTemplate(undefined); d.setAiInitialParams({}); d.setAiCustomInputs(d.baseAiInputAssets); d.setShowAiModal(true); }}
-      >
-        <AppIcon icon={Sparkles} size={16} /> AI Asset Genereren
-      </button>
+      <div className={s.quickActions}>
+        <QuickUploadBtn label="Tenue" assetType="kit_home_upload" icon={Shirt} d={d} />
+        <QuickUploadBtn label="Logo" assetType="logo_upload" icon={Image} d={d} />
+        <QuickUploadBtn label="Sponsor" assetType="sponsor_logo_upload" icon={Image} d={d} />
+        <button type="button" className={`${s.quickAction} ${s.quickActionAi}`}
+          onClick={() => { d.setAiPreselectedTemplate('keeper_tenue'); d.setAiInitialParams({}); d.setAiCustomInputs(d.baseAiInputAssets); d.setShowAiModal(true); }}
+          aria-label="Keeper tenue genereren">
+          <AppIcon icon={Sparkles} size={14} /> Keeper
+        </button>
+        <QuickUploadBtn label="Legacy" assetType="kit_legacy_upload" icon={Shirt} d={d} />
+      </div>
     )}
     <SharedAssetModals d={d} projectId={projectId} organisationId={organisationId} />
+
+    {/* Tenues (first — most important) */}
+    <ListSection title="Tenues">
+      {TEAM_KIT_ROLES.map((role) => {
+        const uploadType = `kit_${role.id}_upload`;
+        const processedType = `kit_${role.id}`;
+        const isAiOnly = AI_ONLY_KITS.has(role.id);
+        const upload = isAiOnly ? { asset: undefined, inherited: false } : d.getEffectiveAsset(uploadType);
+        const eff = d.getEffectiveAsset(processedType);
+        const processing = d.postProcessingAsset === processedType || d.uploadProcessingAsset === processedType;
+        return (
+          <React.Fragment key={role.id}>
+            {!isAiOnly && (
+              <AssetRow label={`${role.label} (upload)`} assetType={uploadType} asset={upload.asset} inherited={upload.inherited} isUpload d={d} readOnly={readOnly} />
+            )}
+            <AssetRow label={`${role.label} (bewerkt)`} assetType={processedType} asset={eff.asset} inherited={eff.inherited} hasUploadSource={!isAiOnly && !!upload.asset} isProcessing={processing} d={d} readOnly={readOnly} showHistory />
+          </React.Fragment>
+        );
+      })}
+    </ListSection>
 
     {/* Logo & Sponsor */}
     <ListSection title="Logo & Sponsor">
@@ -192,23 +236,6 @@ export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, or
       {(() => { const e = d.getEffectiveAsset('sponsor_logo'); const u = d.getEffectiveAsset('sponsor_logo_upload'); return (
         <AssetRow label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={e.asset} inherited={e.inherited} hasUploadSource={!!u.asset} isProcessing={d.postProcessingAsset === 'sponsor_logo' || d.uploadProcessingAsset === 'sponsor_logo'} d={d} readOnly={readOnly} />
       ); })()}
-    </ListSection>
-
-    {/* Tenues */}
-    <ListSection title="Tenues">
-      {TEAM_KIT_ROLES.map((role) => {
-        const uploadType = `kit_${role.id}_upload`;
-        const processedType = `kit_${role.id}`;
-        const upload = d.getEffectiveAsset(uploadType);
-        const eff = d.getEffectiveAsset(processedType);
-        const processing = d.postProcessingAsset === processedType || d.uploadProcessingAsset === processedType;
-        return (
-          <React.Fragment key={role.id}>
-            <AssetRow label={`${role.label} (upload)`} assetType={uploadType} asset={upload.asset} inherited={upload.inherited} isUpload d={d} readOnly={readOnly} />
-            <AssetRow label={`${role.label} (bewerkt)`} assetType={processedType} asset={eff.asset} inherited={eff.inherited} hasUploadSource={!!upload.asset} isProcessing={processing} d={d} readOnly={readOnly} showHistory />
-          </React.Fragment>
-        );
-      })}
     </ListSection>
 
     {/* Locatie */}
