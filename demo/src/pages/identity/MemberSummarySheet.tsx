@@ -188,21 +188,23 @@ interface AssetItem {
 function buildAssetChecklist(
   assets: TeamreelAssets | undefined,
   role: string,
+  avatarUrl?: string | null,
 ): AssetItem[] {
   const legacyPhotoUrl = getLegacyPhotoUrl(assets);
   const legacyFullbodyUrl = getLegacyFullbodyUrl(assets, role);
 
-  // Upload = original profile photo (before AI processing) — no legacy fallback
+  // Upload = user avatar (the original uploaded photo)
   const profileMedia = assets?.media?.profile;
   const profileUrl = profileMedia?.url ? getAssetUrl(profileMedia.url) : null;
+  const uploadUrl = profileUrl ?? avatarUrl ?? null;
 
   return [
     {
       id: 'upload',
       label: 'Upload',
       icon: <Upload size={16} />,
-      thumbnail: profileUrl,
-      hasAsset: profileUrl !== null,
+      thumbnail: uploadUrl,
+      hasAsset: uploadUrl !== null,
       editTab: 'assets',
     },
     {
@@ -378,7 +380,8 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
     [member],
   );
   const primaryRole = member ? getPrimaryRole(member) : 'player';
-  const checklist = useMemo(() => buildAssetChecklist(tr, primaryRole), [tr, primaryRole]);
+  const avatarUrl = (member?.user as Record<string, unknown> | undefined)?.avatar_url as string | undefined;
+  const checklist = useMemo(() => buildAssetChecklist(tr, primaryRole, avatarUrl), [tr, primaryRole, avatarUrl]);
   const filledCount = checklist.filter((a) => a.hasAsset).length;
   const totalCount = checklist.length;
 
