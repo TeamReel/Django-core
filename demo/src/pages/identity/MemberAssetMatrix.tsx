@@ -24,7 +24,6 @@ interface MemberAssetMatrixProps {
 }
 
 const SLOT_LABELS: Record<string, string> = {
-  profile: 'prof',
   closeup: 'clo',
   intro: 'intr',
   celebration: 'cele',

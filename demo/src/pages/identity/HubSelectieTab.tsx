@@ -144,7 +144,6 @@ const ROLE_LABEL_MAP: Record<string, string> = {
 };
 
 const SLOT_LABEL_MAP: Record<string, string> = {
-  profile: 'Upload',
   closeup: 'Close-up',
   intro: 'Short intro',
   celebration: 'Celebration',

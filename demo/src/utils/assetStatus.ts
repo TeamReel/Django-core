@@ -18,7 +18,7 @@ import {
 import type { TeamreelAssets } from './assetMetadata';
 import type { MediaSlotId } from '../constants/mediaSlots';
 
-const TRACKED_SLOT_IDS: MediaSlotId[] = ['profile', 'closeup', 'intro', 'celebration', 'then_vs_now', 'action_photo'];
+const TRACKED_SLOT_IDS: MediaSlotId[] = ['closeup', 'intro', 'celebration', 'then_vs_now', 'action_photo'];
 
 export interface MemberAssetStatus {
   status: 'complete' | 'partial' | 'empty';
@@ -45,9 +45,9 @@ export function getMemberAssetStatus(member: Record<string, unknown>): MemberAss
     }
   }
   return {
-    status: filled === 6 ? 'complete' : filled > 0 ? 'partial' : 'empty',
+    status: filled === 5 ? 'complete' : filled > 0 ? 'partial' : 'empty',
     filled,
-    total: 6,
+    total: 5,
   };
 }
 
