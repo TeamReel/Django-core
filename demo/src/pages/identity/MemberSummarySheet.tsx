@@ -89,6 +89,16 @@ function getFirstAssetUrl(
       }
     }
   }
+  // For videos: try all variants without kit filter (handles composite names like home_hand_up)
+  if (mediaType === 'videos') {
+    const allVariants = iterVariants(assets, role, 'videos', assetType);
+    for (const v of allVariants) {
+      if (!v.value) continue;
+      const val = v.value as Record<string, unknown>;
+      if (val.preview_url && typeof val.preview_url === 'string') return getAssetUrl(val.preview_url);
+      if (val.processed && typeof val.processed === 'string') return getAssetUrl(val.processed);
+    }
+  }
   // Fallback: check media aliases (catches legacy kits and flat-format data)
   const mediaUrl = assets?.media?.[assetType]?.url;
   if (mediaUrl && mediaType === 'images') return getAssetUrl(mediaUrl);
@@ -169,6 +179,8 @@ interface AssetItem {
   expandable?: boolean;
   /** Media type for accordion content rendering */
   mediaType?: 'images' | 'videos';
+  /** true when thumbnail is a video URL (render <video> instead of <img>) */
+  isVideo?: boolean;
 }
 
 function buildAssetChecklist(
@@ -180,7 +192,8 @@ function buildAssetChecklist(
 
   // Upload = original profile photo (before AI processing)
   const profileMedia = assets?.media?.profile;
-  const uploadUrl = profileMedia?.url ? getAssetUrl(profileMedia.url) : getLegacyPhotoUrl(assets);
+  const profileUrl = profileMedia?.url ? getAssetUrl(profileMedia.url) : null;
+  const uploadUrl = profileUrl || getLegacyPhotoUrl(assets);
 
   return [
     {
@@ -221,6 +234,7 @@ function buildAssetChecklist(
       anyVariantSufficient: true,
       expandable: true,
       mediaType: 'videos',
+      isVideo: true,
     },
     {
       id: 'celebration',
@@ -231,6 +245,7 @@ function buildAssetChecklist(
       editTab: 'celebration',
       expandable: true,
       mediaType: 'videos',
+      isVideo: true,
     },
     {
       id: 'action_photo',
@@ -267,6 +282,7 @@ function buildAssetChecklist(
       editTab: 'then_vs_now',
       expandable: true,
       mediaType: 'videos',
+      isVideo: true,
     },
   ];
 }
@@ -498,17 +514,32 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
                       {/* Thumbnail or icon */}
                       <div className={s.checklistThumb}>
                         {item.thumbnail ? (
-                          <img
-                            src={item.thumbnail}
-                            alt=""
-                            className={s.checklistThumbImg}
-                            loading="lazy"
-                            onError={(e) => {
-                              (e.currentTarget as HTMLImageElement).style.display = 'none';
-                              const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
-                              if (fallback) fallback.style.display = '';
-                            }}
-                          />
+                          item.isVideo ? (
+                            <video
+                              src={item.thumbnail}
+                              className={s.checklistThumbImg}
+                              preload="metadata"
+                              muted
+                              playsInline
+                              onError={(e) => {
+                                (e.currentTarget as HTMLVideoElement).style.display = 'none';
+                                const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
+                                if (fallback) fallback.style.display = '';
+                              }}
+                            />
+                          ) : (
+                            <img
+                              src={item.thumbnail}
+                              alt=""
+                              className={s.checklistThumbImg}
+                              loading="lazy"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
+                                if (fallback) fallback.style.display = '';
+                              }}
+                            />
+                          )
                         ) : null}
                         <span
                           className={s.checklistThumbIcon}
