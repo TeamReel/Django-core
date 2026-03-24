@@ -62,7 +62,8 @@ function memberAvatarUrl(m: SquadMember, role?: string): string | undefined {
 /** Extract first available *displayable image* URL for an asset type.
  *  For videos only preview_url (poster frame) is returned — video file URLs
  *  cannot be rendered as <img>.
- *  Role-strict: only searches kits allowed for the given role. */
+ *  Role-strict: only searches kits allowed for the given role.
+ *  Falls back to media aliases when role/kit lookup misses (e.g. legacy kits). */
 function getFirstAssetUrl(
   assets: TeamreelAssets | undefined,
   role: string,
@@ -88,11 +89,15 @@ function getFirstAssetUrl(
       }
     }
   }
+  // Fallback: check media aliases (catches legacy kits and flat-format data)
+  const mediaUrl = assets?.media?.[assetType]?.url;
+  if (mediaUrl && mediaType === 'images') return getAssetUrl(mediaUrl);
   return null;
 }
 
 /** Check whether ANY variant data exists for a given asset type (for presence indicators).
- *  Role-strict: only checks kits allowed for the given role. */
+ *  Role-strict: only checks kits allowed for the given role.
+ *  Falls back to media aliases when role/kit lookup misses (e.g. legacy kits). */
 function hasAnyVariant(
   assets: TeamreelAssets | undefined,
   role: string,
@@ -110,6 +115,9 @@ function hasAnyVariant(
       if (val.url || val.preview_url || val.processed || val.raw) return true;
     }
   }
+  // Fallback: check media aliases (catches legacy kits and flat-format data)
+  const mediaUrl = assets?.media?.[assetType]?.url;
+  if (mediaUrl) return true;
   return false;
 }
 
