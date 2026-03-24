@@ -914,6 +914,7 @@ export const MyTeamHubPage: React.FC = () => {
           onClose={() => setSelectedMember(null)}
           clubName={d.club?.name}
           onViewProfile={() => {
+            panelSourceMemberRef.current = selectedMember ?? null;
             setDetailMemberId(String(selectedMember?.id ?? ''));
             setSelectedMember(null);
           }}
