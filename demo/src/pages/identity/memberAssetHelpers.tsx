@@ -92,9 +92,13 @@ export function getFirstAssetUrl(
       if (val.preview_url && typeof val.preview_url === 'string') return getAssetUrl(val.preview_url);
     }
   }
-  // Fallback: check media aliases (catches legacy kits, flat-format data, and video previews)
-  const mediaUrl = assets?.media?.[assetType]?.url;
-  if (mediaUrl) return getAssetUrl(mediaUrl);
+  // Fallback: check media aliases — images only. Video media aliases point to the
+  // video file itself (not a poster frame), so they can't be used as a <video> thumbnail.
+  // For videos, only preview_url fields (poster frames) are usable as thumbnails.
+  if (mediaType === 'images') {
+    const mediaUrl = assets?.media?.[assetType]?.url;
+    if (mediaUrl) return getAssetUrl(mediaUrl);
+  }
   return null;
 }
 
