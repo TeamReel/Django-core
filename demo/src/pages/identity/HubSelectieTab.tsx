@@ -14,7 +14,7 @@ import { Avatar } from '../../components/ui';
 import { AppIcon } from '../../components/AppIcon';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { getMemberAssetStatus } from '../../utils/assetStatus';
-import { iterVariants } from '../../utils/assetMetadata';
+import { iterVariants, ROLE_KIT_MAP } from '../../utils/assetMetadata';
 import { getAssetUrl } from '../../hooks/brandProfileConstants';
 import type { TeamreelAssets } from '../../utils/assetMetadata';
 import type { SquadMember } from '../periods/squadTabTypes';
@@ -94,44 +94,21 @@ function memberName(m: SquadMember): string {
 }
 
 function memberAvatarUrl(m: SquadMember, displayRole?: string): string | undefined {
-  // Priority: processed closeup from iterVariants → media.closeup.url → user avatar
+  // Priority: processed closeup from iterVariants → media.closeup.url
+  // Role-strict: keeper only gets goalkeeper kit, player only gets home/away/third
   const assets = (m.metadata as Record<string, unknown> | undefined)
     ?.teamreel_assets as TeamreelAssets | undefined;
   if (assets) {
     const role = displayRole ?? (getMemberAllRoles(m).includes('keeper') ? 'keeper' : 'player');
-    const isKeeper = role === 'keeper';
-    const kitOrder = isKeeper
-      ? ['goalkeeper', 'home', 'away', 'third']
-      : ['home', 'away', 'third', 'goalkeeper'];
+    const allowedKits = ROLE_KIT_MAP[role]?.kits ?? ['home', 'away', 'third'];
 
-    // Try per-variant closeup for the primary role
-    for (const kit of kitOrder) {
+    for (const kit of allowedKits) {
       const variants = iterVariants(assets, role, 'images', 'closeup', kit);
       for (const v of variants) {
         if (typeof v.value?.processed === 'string' && v.value.processed) {
           return getAssetUrl(v.value.processed) ?? undefined;
         }
       }
-    }
-
-    // Cross-role fallback: assets may be stored under a different role key
-    const availableRoles = Object.keys(assets.roles ?? {}).filter(r => r !== role);
-    for (const altRole of availableRoles) {
-      for (const kit of kitOrder) {
-        const variants = iterVariants(assets, altRole, 'images', 'closeup', kit);
-        for (const v of variants) {
-          if (typeof v.value?.processed === 'string' && v.value.processed) {
-            return getAssetUrl(v.value.processed) ?? undefined;
-          }
-        }
-      }
-    }
-
-    // Fallback: flat media.closeup.url
-    const rawAssets = assets as unknown as Record<string, unknown>;
-    const media = rawAssets?.media as Record<string, { url?: string }> | undefined;
-    if (typeof media?.closeup?.url === 'string' && media.closeup.url) {
-      return getAssetUrl(media.closeup.url) ?? undefined;
     }
   }
   return undefined;

@@ -37,7 +37,9 @@ class MembershipService:
                 user=user,
                 period=period,
                 deleted_at__isnull=False,
+                metadata__teamreel_assets__isnull=False,
             )
+            .exclude(metadata__teamreel_assets={})
             .order_by("-deleted_at")
             .only("metadata")
             .first()

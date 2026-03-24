@@ -26,7 +26,7 @@ import { SeasonSwitcher, type SeasonOption } from '../../components/SeasonSwitch
 import { isSeasonPeriod, useSeasonContext } from '../../providers/SeasonProvider';
 
 import { periodPathKey } from '../../utils/periodPath';
-import { iterVariants, type TeamreelAssets } from '../../utils/assetMetadata';
+import { iterVariants, ROLE_KIT_MAP, type TeamreelAssets } from '../../utils/assetMetadata';
 import { setActiveContext } from '../../utils/activeContext';
 import { ListSection } from '../../components/ListSection';
 import { AppIcon } from '../../components/AppIcon';
@@ -215,21 +215,18 @@ export const MyTeamHubPage: React.FC = () => {
     return (d.members as SquadMember[]).findIndex((m) => String(m.id) === String(selectedMember.id));
   }, [selectedMember, d.members]);
 
-  // Count members with processed closeup photo
+  // Count members with processed closeup photo for their primary role
   const membersWithPhoto = useMemo(() => {
     return (d.members as SquadMember[]).filter((m) => {
       const assets = (m.metadata as Record<string, unknown> | undefined)
         ?.teamreel_assets as TeamreelAssets | undefined;
       if (!assets) return false;
-      // Check all roles for a processed closeup using iterVariants (handles both nested + legacy)
-      const allRoles = Object.keys(assets.roles ?? {});
-      if (allRoles.length === 0) {
-        // Legacy flat format — iterVariants with any role checks root level
-        const variants = iterVariants(assets, 'player', 'images', 'closeup');
-        return variants.some((v) => typeof v.value?.processed === 'string' && v.value.processed);
-      }
-      return allRoles.some((role) => {
-        const variants = iterVariants(assets, role, 'images', 'closeup');
+      // Determine primary role for this member
+      const funcRoles = (m as Record<string, unknown>).functional_roles as string[] | undefined;
+      const primaryRole = funcRoles?.[0] ?? 'player';
+      const allowedKits = ROLE_KIT_MAP[primaryRole]?.kits ?? ['home', 'away', 'third'];
+      return allowedKits.some((kit) => {
+        const variants = iterVariants(assets, primaryRole, 'images', 'closeup', kit);
         return variants.some((v) => typeof v.value?.processed === 'string' && v.value.processed);
       });
     }).length;

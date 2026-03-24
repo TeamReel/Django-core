@@ -207,7 +207,9 @@ class Command(BaseCommand):
                     user=m.user,
                     period=m.period,
                     deleted_at__isnull=False,
+                    metadata__teamreel_assets__isnull=False,
                 )
+                .exclude(metadata__teamreel_assets={})
                 .order_by("-deleted_at")
                 .only("id", "metadata")
                 .first()

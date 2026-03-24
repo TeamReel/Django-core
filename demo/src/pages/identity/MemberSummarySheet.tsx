@@ -9,7 +9,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight, Pencil, Image, Video, Sparkles, Clock, Crop, ArrowLeftRight, Camera, Upload, Shirt, ImageIcon, Wand2, Check, AlertCircle } from 'lucide-react';
 import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { Avatar } from '../../components/ui';
-import { iterVariants, getAssetRoles, type TeamreelAssets } from '../../utils/assetMetadata';
+import { iterVariants, getAssetRoles, ROLE_KIT_MAP, type TeamreelAssets } from '../../utils/assetMetadata';
 import { getAssetUrl } from '../../hooks/brandProfileConstants';
 import type { SquadMember } from '../periods/squadTabTypes';
 import s from './MemberSummarySheet.module.css';
@@ -40,13 +40,11 @@ function memberAvatarUrl(m: SquadMember, role?: string): string | undefined {
     ?.teamreel_assets as TeamreelAssets | undefined;
   if (!assets) return undefined;
 
+  // Role-strict: keeper only gets goalkeeper kit, player only gets home/away/third
   const effectiveRole = role ?? getPrimaryRole(m);
-  const isKeeper = effectiveRole === 'keeper';
-  const kitOrder = isKeeper
-    ? ['goalkeeper', 'home', 'away', 'third']
-    : ['home', 'away', 'third', 'goalkeeper'];
+  const allowedKits = ROLE_KIT_MAP[effectiveRole]?.kits ?? ['home', 'away', 'third'];
 
-  for (const kit of kitOrder) {
+  for (const kit of allowedKits) {
     const variants = iterVariants(assets, effectiveRole, 'images', 'closeup', kit);
     for (const v of variants) {
       if (typeof v.value?.processed === 'string' && v.value.processed) {
@@ -54,67 +52,59 @@ function memberAvatarUrl(m: SquadMember, role?: string): string | undefined {
       }
     }
   }
-
-  // Cross-role fallback: assets may be stored under a different role key
-  const availableRoles = Object.keys(assets.roles ?? {}).filter(r => r !== effectiveRole);
-  for (const altRole of availableRoles) {
-    for (const kit of kitOrder) {
-      const variants = iterVariants(assets, altRole, 'images', 'closeup', kit);
-      for (const v of variants) {
-        if (typeof v.value?.processed === 'string' && v.value.processed) {
-          return getAssetUrl(v.value.processed) ?? undefined;
-        }
-      }
-    }
-  }
-
-  // Fallback: flat media.closeup.url
-  if (typeof assets.media?.closeup?.url === 'string' && assets.media.closeup.url) {
-    return getAssetUrl(assets.media.closeup.url) ?? undefined;
-  }
   return undefined;
 }
 
 /** Extract first available *displayable image* URL for an asset type.
  *  For videos only preview_url (poster frame) is returned — video file URLs
- *  cannot be rendered as <img>. */
+ *  cannot be rendered as <img>.
+ *  Role-strict: only searches kits allowed for the given role. */
 function getFirstAssetUrl(
   assets: TeamreelAssets | undefined,
   role: string,
   mediaType: 'images' | 'videos',
   assetType: string,
 ): string | null {
-  const variants = iterVariants(assets, role, mediaType, assetType);
-  for (const v of variants) {
-    if (!v.value) continue;
-    if (typeof v.value === 'string') {
-      // Raw string URL — only usable as thumbnail for images, not videos
-      if (mediaType === 'images') return getAssetUrl(v.value);
-      continue;
-    }
-    const val = v.value as Record<string, unknown>;
-    if (val.preview_url && typeof val.preview_url === 'string') return getAssetUrl(val.preview_url);
-    if (mediaType === 'images') {
-      if (val.processed && typeof val.processed === 'string') return getAssetUrl(val.processed);
-      if (val.raw && typeof val.raw === 'string') return getAssetUrl(val.raw);
+  const allowedKits = ROLE_KIT_MAP[role]?.kits ?? [];
+  // Search only role-appropriate kits (or all if role has no kit restrictions)
+  const kitsToSearch = allowedKits.length > 0 ? allowedKits : [undefined as string | undefined];
+  for (const kit of kitsToSearch) {
+    const variants = iterVariants(assets, role, mediaType, assetType, kit);
+    for (const v of variants) {
+      if (!v.value) continue;
+      if (typeof v.value === 'string') {
+        if (mediaType === 'images') return getAssetUrl(v.value);
+        continue;
+      }
+      const val = v.value as Record<string, unknown>;
+      if (val.preview_url && typeof val.preview_url === 'string') return getAssetUrl(val.preview_url);
+      if (mediaType === 'images') {
+        if (val.processed && typeof val.processed === 'string') return getAssetUrl(val.processed);
+        if (val.raw && typeof val.raw === 'string') return getAssetUrl(val.raw);
+      }
     }
   }
   return null;
 }
 
-/** Check whether ANY variant data exists for a given asset type (for presence indicators). */
+/** Check whether ANY variant data exists for a given asset type (for presence indicators).
+ *  Role-strict: only checks kits allowed for the given role. */
 function hasAnyVariant(
   assets: TeamreelAssets | undefined,
   role: string,
   mediaType: 'images' | 'videos',
   assetType: string,
 ): boolean {
-  const variants = iterVariants(assets, role, mediaType, assetType);
-  for (const v of variants) {
-    if (!v.value) continue;
-    if (typeof v.value === 'string') return true;
-    const val = v.value as Record<string, unknown>;
-    if (val.url || val.preview_url || val.processed || val.raw) return true;
+  const allowedKits = ROLE_KIT_MAP[role]?.kits ?? [];
+  const kitsToSearch = allowedKits.length > 0 ? allowedKits : [undefined as string | undefined];
+  for (const kit of kitsToSearch) {
+    const variants = iterVariants(assets, role, mediaType, assetType, kit);
+    for (const v of variants) {
+      if (!v.value) continue;
+      if (typeof v.value === 'string') return true;
+      const val = v.value as Record<string, unknown>;
+      if (val.url || val.preview_url || val.processed || val.raw) return true;
+    }
   }
   return false;
 }

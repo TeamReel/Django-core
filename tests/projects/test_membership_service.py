@@ -435,6 +435,48 @@ class TestMembershipAssetRecovery:
         ]["url"]
         assert url == "NEWER"
 
+    def test_recover_skips_empty_predecessor_finds_older(
+        self, user_factory, organisation_factory, project_factory
+    ):
+        """When the most recent deleted has no assets, recovery finds the next one that does."""
+        owner, org, project, member, season = self._setup(
+            user_factory, organisation_factory, project_factory
+        )
+        service = MembershipService()
+
+        # First: add with assets, then remove
+        m1 = service.add_member(
+            project,
+            member,
+            ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+            metadata={"teamreel_assets": self.SAMPLE_ASSETS},
+        )
+        service.remove_member(m1, actor=owner)
+
+        # Second: add WITHOUT assets, then remove (the newer empty one)
+        m2 = service.add_member(
+            project,
+            member,
+            ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+        )
+        service.remove_member(m2, actor=owner)
+
+        # Re-add: should skip m2 (no assets) and recover from m1
+        m3 = service.add_member(
+            project,
+            member,
+            ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+        )
+
+        assert "teamreel_assets" in m3.metadata
+        assert m3.metadata["teamreel_assets"]["roles"]["player"]["images"]["closeup"]
+
 
 @pytest.mark.django_db
 class TestRepairMemberAssetsRecoverCommand:
@@ -494,6 +536,54 @@ class TestRepairMemberAssetsRecoverCommand:
         )
         m_old.soft_delete(user=owner)
 
+        ProjectMembership.objects.create(
+            project=project,
+            user=member,
+            role="viewer",
+            metadata={},
+        )
+
+        out = StringIO()
+        call_command("repair_member_assets", "--recover", "--commit", stdout=out)
+        output = out.getvalue()
+
+        assert "Recovered assets for 1" in output
+
+        active = ProjectMembership.objects.get(
+            project=project, user=member, deleted_at__isnull=True
+        )
+        assert "teamreel_assets" in active.metadata
+        assert active.metadata["teamreel_assets"]["roles"]["player"]
+
+    def test_recover_skips_empty_predecessor(
+        self, user_factory, organisation_factory, project_factory
+    ):
+        """Recovery should skip a newer deleted pred without assets and find the older one."""
+        owner = user_factory()
+        org = organisation_factory(creator=owner)
+        project = project_factory(organisation=org, creator=owner)
+        member = user_factory(first_name="Test", last_name="SkipEmpty")
+        Membership.objects.create(user=member, organisation=org, role="member")
+
+        # Older deleted membership WITH assets
+        m_old = ProjectMembership.objects.create(
+            project=project,
+            user=member,
+            role="viewer",
+            metadata={"teamreel_assets": self.SAMPLE_ASSETS},
+        )
+        m_old.soft_delete(user=owner)
+
+        # Newer deleted membership WITHOUT assets (the one that was causing the bug)
+        m_empty = ProjectMembership.objects.create(
+            project=project,
+            user=member,
+            role="viewer",
+            metadata={},
+        )
+        m_empty.soft_delete(user=owner)
+
+        # Active membership without assets
         ProjectMembership.objects.create(
             project=project,
             user=member,
