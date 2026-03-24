@@ -56,6 +56,9 @@ function memberAvatarUrl(m: SquadMember, role?: string): string | undefined {
       }
     }
   }
+  // Fallback: media alias (catches legacy kits not in ROLE_KIT_MAP)
+  const mediaUrl = assets?.media?.closeup?.url;
+  if (mediaUrl) return getAssetUrl(mediaUrl) ?? undefined;
   return undefined;
 }
 
