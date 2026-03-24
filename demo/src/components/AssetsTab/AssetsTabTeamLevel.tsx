@@ -9,6 +9,10 @@
 import React, { useRef } from 'react';
 import { Sparkles, Upload, Trash2, Clock } from 'lucide-react';
 import { KIT_ROLES, getAssetUrl } from '../../hooks/useBrandProfile';
+
+/** Team-level kit order: important roles first (Thuis, Keeper, Legacy) */
+const TEAM_KIT_ORDER = ['home', 'goalkeeper', 'legacy', 'away', 'third', 'coach', 'assistant', 'training'] as const;
+const TEAM_KIT_ROLES = TEAM_KIT_ORDER.map(id => KIT_ROLES.find(r => r.id === id)!).filter(Boolean);
 import { ListSection } from '../ListSection';
 import { AppIcon } from '../AppIcon';
 import { SharedAssetModals, AiButtonsRow } from './AssetsTabShared';
@@ -165,7 +169,7 @@ export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, or
 
     {/* Tenues */}
     <ListSection title="Tenues">
-      {KIT_ROLES.map((role) => {
+      {TEAM_KIT_ROLES.map((role) => {
         const uploadType = `kit_${role.id}_upload`;
         const processedType = `kit_${role.id}`;
         const eff = d.getEffectiveAsset(processedType);
