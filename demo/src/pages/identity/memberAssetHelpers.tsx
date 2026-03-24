@@ -183,10 +183,12 @@ export function buildAssetChecklist(
   const legacyPhotoUrl = getLegacyPhotoUrl(assets);
   const legacyFullbodyUrl = getLegacyFullbodyUrl(assets, role);
 
-  // Upload = user avatar (the original uploaded photo)
+  // Upload = user avatar (the original uploaded photo).
+  // Prefer avatarUrl (presigned URL from API) over profileUrl (direct S3 URL that
+  // may require public bucket access). They point to the same file.
   const profileMedia = assets?.media?.profile;
   const profileUrl = profileMedia?.url ? getAssetUrl(profileMedia.url) : null;
-  const uploadUrl = profileUrl ?? avatarUrl ?? null;
+  const uploadUrl = avatarUrl ?? profileUrl ?? null;
 
   return [
     {

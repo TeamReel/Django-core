@@ -255,7 +255,7 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
                         {item.thumbnail ? (
                           item.isVideo ? (
                             <video
-                              src={item.thumbnail}
+                              src={`${item.thumbnail}#t=0.001`}
                               className={s.checklistThumbImg}
                               data-asset={item.id}
                               preload="metadata"
