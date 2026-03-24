@@ -24,6 +24,7 @@ from src.video.services.asset_processing_specs import ProcessingState
 from src.video.services.asset_processor import AssetProcessor
 from src.video.services.asset_processor import AssetProcessingCancelled
 from src.video.utils.asset_metadata import (
+    build_s3_asset_path,
     get_variant_value,
     infer_role,
     media_type_for_asset,
@@ -477,12 +478,18 @@ def auto_crop_closeup_from_fullbody(
 
     # ── Upload closeup to S3 ──────────────────────────────────────────────────
     try:
-        timestamp = timezone.now().strftime("%Y%m%d")
         unique = str(_uuid.uuid4())[:8]
-        filename = f"member_closeup_kit_type-{kit_type}_crop_{timestamp}_{unique}.png"
-        upload_path = f"members/{membership_id}/generated/output/closeup/{filename}"
+        upload_path = build_s3_asset_path(
+            member_id=str(membership_id),
+            role=role,
+            asset_type="closeup",
+            kit=kit_type,
+            variant="default",
+            content_hash=unique,
+            ext="png",
+        )
 
-        file_obj = ContentFile(closeup_bytes, name=filename)
+        file_obj = ContentFile(closeup_bytes, name=upload_path.rsplit("/", 1)[-1])
         storage_path = storage.save(upload_path, file_obj)
     except Exception as exc:
         logger.exception("auto_crop_closeup: upload failed: %s", exc)
@@ -613,12 +620,18 @@ def auto_crop_halfbody_from_fullbody(
 
     # ── Upload halfbody to S3 ──────────────────────────────────────────────────
     try:
-        timestamp = timezone.now().strftime("%Y%m%d")
         unique = str(_uuid.uuid4())[:8]
-        filename = f"member_halfbody_kit_type-{kit_type}_crop_{timestamp}_{unique}.png"
-        upload_path = f"members/{membership_id}/generated/output/halfbody/{filename}"
+        upload_path = build_s3_asset_path(
+            member_id=str(membership_id),
+            role=role,
+            asset_type="halfbody",
+            kit=kit_type,
+            variant="default",
+            content_hash=unique,
+            ext="png",
+        )
 
-        file_obj = ContentFile(halfbody_bytes, name=filename)
+        file_obj = ContentFile(halfbody_bytes, name=upload_path.rsplit("/", 1)[-1])
         storage_path = storage.save(upload_path, file_obj)
     except Exception as exc:
         logger.exception("auto_crop_halfbody: upload failed: %s", exc)

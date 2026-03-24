@@ -4,7 +4,7 @@
  * Shows one KitCard per allowed kit (e.g. home, away, goalkeeper).
  * Empty kits show a dashed placeholder. Filtered by ROLE_KIT_MAP.
  */
-import React from 'react';
+import React, { useCallback } from 'react';
 import { iterVariants, ROLE_KIT_MAP, type TeamreelAssets, type VariantValue } from '../../utils/assetMetadata';
 import { getAssetUrl } from '../../hooks/brandProfileConstants';
 import s from './KitCardStrip.module.css';
@@ -45,6 +45,14 @@ interface KitCardStripProps {
 
 export function KitCardStrip({ assets, role, assetType }: KitCardStripProps) {
   const allowedKits = ROLE_KIT_MAP[role]?.kits ?? [];
+
+  /** Hide broken images — show placeholder instead of alt text. */
+  const handleImgError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.style.display = 'none';
+    const placeholder = e.currentTarget.nextElementSibling as HTMLElement | null;
+    if (placeholder) placeholder.style.display = '';
+  }, []);
+
   if (allowedKits.length === 0) return null;
 
   // Collect data per kit
@@ -63,12 +71,20 @@ export function KitCardStrip({ assets, role, assetType }: KitCardStripProps) {
         <div key={kit} className={s.card} role="listitem" data-status={status}>
           <div className={s.thumbWrap}>
             {thumbUrl ? (
-              <img
-                src={thumbUrl}
-                alt={`${KIT_LABELS[kit] ?? kit} ${assetType}`}
-                className={s.thumb}
-                loading="lazy"
-              />
+              <>
+                <img
+                  src={thumbUrl}
+                  alt={`${KIT_LABELS[kit] ?? kit} ${assetType}`}
+                  className={s.thumb}
+                  loading="lazy"
+                  onError={handleImgError}
+                />
+                <span className={s.emptyIcon} aria-hidden="true" style={{ display: 'none' }}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <rect x="1" y="1" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 3" />
+                  </svg>
+                </span>
+              </>
             ) : (
               <span className={s.emptyIcon} aria-hidden="true">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">

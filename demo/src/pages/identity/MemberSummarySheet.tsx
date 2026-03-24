@@ -170,8 +170,9 @@ function buildAssetChecklist(
   const legacyPhotoUrl = getLegacyPhotoUrl(assets);
   const legacyFullbodyUrl = getLegacyFullbodyUrl(assets, role);
 
-  // Upload = raw profile/fullbody input
-  const uploadUrl = getFirstAssetUrl(assets, role, 'images', 'fullbody');
+  // Upload = original profile photo (before AI processing)
+  const profileMedia = assets?.media?.profile;
+  const uploadUrl = profileMedia?.url ? getAssetUrl(profileMedia.url) : getLegacyPhotoUrl(assets);
 
   return [
     {
