@@ -13,7 +13,7 @@ import { ListSection } from '../../components/ListSection';
 import { Avatar } from '../../components/ui';
 import { AppIcon } from '../../components/AppIcon';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
-import { getMemberSlotPresence } from '../../utils/assetStatus';
+import { getMemberAssetStatus } from '../../utils/assetStatus';
 import { iterVariants } from '../../utils/assetMetadata';
 import type { TeamreelAssets } from '../../utils/assetMetadata';
 import type { SquadMember } from '../periods/squadTabTypes';
@@ -143,14 +143,6 @@ const ROLE_LABEL_MAP: Record<string, string> = {
   supporter: 'Supporter',
 };
 
-const SLOT_LABEL_MAP: Record<string, string> = {
-  closeup: 'Close-up',
-  intro: 'Short intro',
-  celebration: 'Celebration',
-  then_vs_now: 'Then vs Now',
-  action_photo: 'Actiefoto',
-};
-
 function getMemberAllRoles(m: SquadMember): string[] {
   const fr = (m as Record<string, unknown>).functional_roles as string[] | undefined;
   if (fr && fr.length > 0) return fr;
@@ -261,9 +253,9 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
               const mid = String(m.id ?? '').trim();
               const name = memberName(m);
               const avatarUrl = memberAvatarUrl(m, entry.displayRole);
-              const slotPresence = isStaf ? null : getMemberSlotPresence(m as Record<string, unknown>);
-              const filledCount = slotPresence?.filter((sp) => sp.present).length ?? 0;
-              const totalCount = slotPresence?.length ?? 0;
+              const assetStatus = isStaf ? null : getMemberAssetStatus(m as Record<string, unknown>);
+              const filledCount = assetStatus?.filled ?? 0;
+              const totalCount = assetStatus?.total ?? 0;
 
               const allRoles = getMemberAllRoles(m);
 
@@ -291,16 +283,21 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
                           <span className={s.roleBadge}>{ROLE_LABEL_MAP[entry.displayRole] ?? entry.displayRole}</span>
                         </span>
                       )}
-                      {slotPresence && (
-                        <span className={s.assetDots} aria-label={`${filledCount}/${totalCount} assets compleet`}>
-                          {slotPresence.map((sp) => (
-                            <span
-                              key={sp.slotId}
-                              className={s.assetDot}
-                              data-status={sp.present ? 'present' : 'absent'}
-                              title={`${SLOT_LABEL_MAP[sp.slotId] ?? sp.slotId}: ${sp.present ? 'aanwezig' : 'ontbreekt'}`}
+                      {assetStatus && (
+                        <span className={s.progressRing} aria-label={`${filledCount}/${totalCount} assets compleet`}>
+                          <svg viewBox="0 0 28 28" className={s.progressRingSvg}>
+                            <circle cx="14" cy="14" r="11" fill="none" stroke="var(--app-border)" strokeWidth="3" />
+                            <circle
+                              cx="14" cy="14" r="11" fill="none"
+                              stroke={filledCount === totalCount ? 'var(--app-success)' : 'var(--app-primary)'}
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeDasharray={`${2 * Math.PI * 11}`}
+                              strokeDashoffset={`${2 * Math.PI * 11 * (1 - filledCount / totalCount)}`}
+                              transform="rotate(-90 14 14)"
                             />
-                          ))}
+                          </svg>
+                          <span className={s.progressRingLabel}>{filledCount}/{totalCount}</span>
                         </span>
                       )}
                       {isAdmin && removeFromSquad && (

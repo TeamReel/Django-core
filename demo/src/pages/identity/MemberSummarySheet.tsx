@@ -2,13 +2,13 @@
  * MemberSummarySheet — Read-only lid-preview in NavigationSheet.
  *
  * Opent als gebruiker op een lid tikt in Selectie-tab of Media-tab.
- * Toont avatar, naam, rol, asset-previews en quick-actions.
+ * Toont avatar, naam, rol, checklist van alle assets met thumbnails,
+ * en een quick-action om ontbrekende assets te genereren.
  */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, ArrowRight, Pencil, Image, Video, Sparkles, Clock, Crop, ArrowLeftRight, Camera } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight, Pencil, Image, Video, Sparkles, Clock, Crop, ArrowLeftRight, Camera, Upload, Shirt, ImageIcon, Wand2, Check, AlertCircle } from 'lucide-react';
 import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { Avatar } from '../../components/ui';
-import { getMemberRoleStatuses } from '../../utils/assetStatus';
 import { iterVariants, getAssetRoles, type TeamreelAssets } from '../../utils/assetMetadata';
 import type { SquadMember } from '../periods/squadTabTypes';
 import s from './MemberSummarySheet.module.css';
@@ -58,10 +58,7 @@ function getFirstAssetUrl(
     if (!v.value) continue;
     if (typeof v.value === 'string') return v.value;
     const val = v.value as Record<string, unknown>;
-    // For preview_url (thumbnail image) — always valid for any media type
     if (val.preview_url && typeof val.preview_url === 'string') return val.preview_url;
-    // For images: processed/raw are image URLs — safe to use in <img>
-    // For videos: processed is a .mp4 URL — cannot render in <img>, skip
     if (mediaType === 'images') {
       if (val.processed && typeof val.processed === 'string') return val.processed;
       if (val.raw && typeof val.raw === 'string') return val.raw;
@@ -74,9 +71,20 @@ function getFirstAssetUrl(
 function getLegacyPhotoUrl(assets: TeamreelAssets | undefined): string | null {
   if (!assets) return null;
   if (assets.media?.legacy_photo?.url) return assets.media.legacy_photo.url;
-  // Fallback: old.profile_photo_url (not in typed interface, access via cast)
   const old = (assets as Record<string, unknown>).old as Record<string, unknown> | undefined;
   if (old?.profile_photo_url && typeof old.profile_photo_url === 'string') return old.profile_photo_url;
+  return null;
+}
+
+/** Get legacy fullbody (in tenue, legacy variant) URL. */
+function getLegacyFullbodyUrl(assets: TeamreelAssets | undefined, role: string): string | null {
+  const variants = iterVariants(assets, role, 'images', 'fullbody', 'legacy');
+  for (const v of variants) {
+    if (!v.value) continue;
+    const val = v.value as Record<string, unknown>;
+    if (val.processed && typeof val.processed === 'string') return val.processed;
+    if (val.raw && typeof val.raw === 'string') return val.raw;
+  }
   return null;
 }
 
@@ -89,90 +97,93 @@ function getPrimaryRole(m: SquadMember): string {
   return funcRoles?.[0] ?? 'player';
 }
 
-/** Summary of assets for one role. */
-interface AssetPreview {
-  type: string;
-  label: string;
-  thumbnail: string | null;
-  /** Tab id to open in editor */
-  editTab: string;
-  icon: React.ReactNode;
-}
+/* ── Asset checklist definition ──────────────────────────────────────── */
 
-interface AssetSection {
+interface AssetItem {
   id: string;
   label: string;
-  gridClass: string;
-  assets: AssetPreview[];
-  filled: number;
-  total: number;
+  icon: React.ReactNode;
+  thumbnail: string | null;
+  /** Tab to open in editor when tapped */
+  editTab: string;
+  /** true = at least 1 variant present is enough (e.g. intro) */
+  anyVariantSufficient?: boolean;
 }
 
-function getAssetSections(assets: TeamreelAssets | undefined, role: string): AssetSection[] {
-  const photoAssets: AssetPreview[] = [
-    {
-      type: 'fullbody',
-      label: 'Fullbody',
-      thumbnail: getFirstAssetUrl(assets, role, 'images', 'fullbody'),
-      editTab: 'assets',
-      icon: <Image size={16} />,
-    },
-    {
-      type: 'closeup',
-      label: 'Close-up',
-      thumbnail: getFirstAssetUrl(assets, role, 'images', 'closeup'),
-      editTab: 'assets',
-      icon: <Crop size={16} />,
-    },
-  ];
+function buildAssetChecklist(
+  assets: TeamreelAssets | undefined,
+  role: string,
+): AssetItem[] {
+  const legacyPhotoUrl = getLegacyPhotoUrl(assets);
+  const legacyFullbodyUrl = getLegacyFullbodyUrl(assets, role);
 
-  const videoAssets: AssetPreview[] = [
-    {
-      type: 'intro',
-      label: 'Intro',
-      thumbnail: getFirstAssetUrl(assets, role, 'videos', 'intro'),
-      editTab: 'intro',
-      icon: <Video size={16} />,
-    },
-    {
-      type: 'celebration',
-      label: 'Celebration',
-      thumbnail: getFirstAssetUrl(assets, role, 'videos', 'celebration'),
-      editTab: 'celebration',
-      icon: <Sparkles size={16} />,
-    },
-    {
-      type: 'then_vs_now',
-      label: 'Then vs Now',
-      thumbnail: getFirstAssetUrl(assets, role, 'videos', 'then_vs_now'),
-      editTab: 'then_vs_now',
-      icon: <ArrowLeftRight size={16} />,
-    },
-    {
-      type: 'action_photo',
-      label: 'Actiefoto',
-      thumbnail: getFirstAssetUrl(assets, role, 'images', 'action_photo'),
-      editTab: 'action_photo',
-      icon: <Camera size={16} />,
-    },
-  ];
+  // Upload = raw profile/fullbody input
+  const uploadUrl = getFirstAssetUrl(assets, role, 'images', 'fullbody');
 
   return [
     {
-      id: 'photos',
-      label: "Foto's",
-      gridClass: s.gridPhotos,
-      assets: photoAssets,
-      filled: photoAssets.filter((a) => a.thumbnail !== null).length,
-      total: photoAssets.length,
+      id: 'upload',
+      label: 'Upload',
+      icon: <Upload size={16} />,
+      thumbnail: uploadUrl,
+      editTab: 'assets',
     },
     {
-      id: 'videos',
-      label: "Video's",
-      gridClass: s.gridVideos,
-      assets: videoAssets,
-      filled: videoAssets.filter((a) => a.thumbnail !== null).length,
-      total: videoAssets.length,
+      id: 'fullbody',
+      label: 'Fullbody in tenue',
+      icon: <Shirt size={16} />,
+      thumbnail: getFirstAssetUrl(assets, role, 'images', 'fullbody'),
+      editTab: 'assets',
+    },
+    {
+      id: 'closeup',
+      label: 'Close-up',
+      icon: <Crop size={16} />,
+      thumbnail: getFirstAssetUrl(assets, role, 'images', 'closeup'),
+      editTab: 'assets',
+    },
+    {
+      id: 'intro',
+      label: 'Short intro',
+      icon: <Video size={16} />,
+      thumbnail: getFirstAssetUrl(assets, role, 'videos', 'intro'),
+      editTab: 'intro',
+      anyVariantSufficient: true,
+    },
+    {
+      id: 'celebration',
+      label: 'Goal celebration',
+      icon: <Sparkles size={16} />,
+      thumbnail: getFirstAssetUrl(assets, role, 'videos', 'celebration'),
+      editTab: 'celebration',
+    },
+    {
+      id: 'action_photo',
+      label: 'Actiefoto',
+      icon: <Camera size={16} />,
+      thumbnail: getFirstAssetUrl(assets, role, 'images', 'action_photo'),
+      editTab: 'action_photo',
+    },
+    {
+      id: 'legacy_photo',
+      label: 'Legacy foto',
+      icon: <ImageIcon size={16} />,
+      thumbnail: legacyPhotoUrl,
+      editTab: 'assets',
+    },
+    {
+      id: 'legacy_fullbody',
+      label: 'Legacy in tenue',
+      icon: <Shirt size={16} />,
+      thumbnail: legacyFullbodyUrl,
+      editTab: 'assets',
+    },
+    {
+      id: 'then_vs_now',
+      label: 'Then vs Now',
+      icon: <ArrowLeftRight size={16} />,
+      thumbnail: getFirstAssetUrl(assets, role, 'videos', 'then_vs_now'),
+      editTab: 'then_vs_now',
     },
   ];
 }
@@ -216,7 +227,7 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
   hasPrev = false,
   hasNext = false,
   currentIndex,
-  totalCount,
+  totalCount: totalCountProp,
   membersWithPhoto,
 }) => {
   const [switching, setSwitching] = useState(false);
@@ -261,12 +272,22 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
     [member],
   );
   const primaryRole = member ? getPrimaryRole(member) : 'player';
-  const sections = useMemo(() => getAssetSections(tr, primaryRole), [tr, primaryRole]);
-  const legacyPhotoUrl = useMemo(() => getLegacyPhotoUrl(tr), [tr]);
-  const roleStatuses = member ? getMemberRoleStatuses(member as Record<string, unknown>) : null;
+  const checklist = useMemo(() => buildAssetChecklist(tr, primaryRole), [tr, primaryRole]);
+  const filledCount = checklist.filter((a) => a.thumbnail !== null).length;
+  const totalCount = checklist.length;
+
+  /** First missing asset = suggested quick action */
+  const PRIORITY_ORDER = ['fullbody', 'closeup', 'intro', 'celebration', 'action_photo', 'then_vs_now'];
+  const quickAction = useMemo(() => {
+    for (const id of PRIORITY_ORDER) {
+      const item = checklist.find((a) => a.id === id && !a.thumbnail);
+      if (item) return item;
+    }
+    return null;
+  }, [checklist]);
 
   const showNav = !!(onPrev || onNext);
-  const showCounter = currentIndex !== undefined && totalCount !== undefined;
+  const showCounter = currentIndex !== undefined && totalCountProp !== undefined;
 
   return (
     <NavigationSheet isOpen={isOpen} onClose={onClose} title="Selectie">
@@ -285,8 +306,8 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
               </button>
               {showCounter && (
                 <span className={s.navCounter}>
-                  {currentIndex + 1} / {totalCount}
-                  {membersWithPhoto !== undefined && totalCount !== undefined && (
+                  {(currentIndex ?? 0) + 1} / {totalCountProp}
+                  {membersWithPhoto !== undefined && totalCountProp !== undefined && (
                     <span className={s.photoCount}> · {membersWithPhoto} met foto</span>
                   )}
                 </span>
@@ -307,7 +328,7 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
             className={s.memberContent}
             data-switching={switching ? 'true' : undefined}
           >
-            {/* Avatar hero */}
+            {/* Avatar hero + progress summary */}
             <div className={s.avatarHero}>
               <Avatar
                 src={memberAvatarUrl(member)}
@@ -315,112 +336,103 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
                 size="xl"
               />
               <h2 className={s.memberName}>{memberName(member)}</h2>
-              <p className={s.memberRole}>{clubName || 'Lid'}</p>
+              <p className={s.memberRole}>
+                {ROLE_LABELS[primaryRole] ?? primaryRole}
+                {clubName ? ` · ${clubName}` : ''}
+              </p>
+              <div className={s.progressSummary}>
+                <div className={s.progressBar}>
+                  <div
+                    className={s.progressFill}
+                    data-complete={filledCount === totalCount ? 'true' : undefined}
+                    style={{ width: `${totalCount > 0 ? Math.round((filledCount / totalCount) * 100) : 0}%` }}
+                  />
+                </div>
+                <span className={s.progressLabel}>{filledCount}/{totalCount} assets</span>
+              </div>
             </div>
 
-            {/* ── Asset sections: Foto's + Video's ── */}
-            {sections.map((section) => (
-              <div key={section.id} className={s.assetSection}>
-                <div className={s.sectionHeader}>
-                  <span className={s.sectionLabel}>{section.label}</span>
-                  <span className={s.sectionCount}>{section.filled}/{section.total}</span>
-                </div>
-                <div className={section.gridClass}>
-                  {section.assets.map((asset) => (
-                    <button
-                      key={asset.type}
-                      type="button"
-                      className={s.assetCard}
-                      data-status={asset.thumbnail ? 'done' : 'missing'}
-                      onClick={() => {
-                        if (onEdit && member) {
-                          onClose();
-                          onEdit(member, asset.editTab);
-                        }
-                      }}
-                      disabled={!onEdit}
-                      aria-label={`${asset.label} ${asset.thumbnail ? 'bewerken' : 'genereren'}`}
-                    >
-                      <div className={s.assetCardPreview}>
-                        {asset.thumbnail ? (
-                          <img
-                            src={asset.thumbnail}
-                            alt={asset.label}
-                            className={s.assetCardImg}
-                            loading="lazy"
-                            onError={(e) => {
-                              // Hide broken img, show icon fallback
-                              (e.currentTarget as HTMLImageElement).style.display = 'none';
-                              const icon = e.currentTarget.nextElementSibling as HTMLElement | null;
-                              if (icon) icon.style.display = '';
-                            }}
-                          />
-                        ) : null}
-                        <span
-                          className={s.assetCardIcon}
-                          style={asset.thumbnail ? { display: 'none' } : undefined}
-                        >
-                          {asset.icon}
-                        </span>
-                      </div>
-                      <span className={s.assetCardLabel}>{asset.label}</span>
-                      <span className={s.assetCardAction}>
-                        {asset.thumbnail ? <Pencil size={12} /> : 'Maak'}
+            {/* ── Quick action for missing assets ── */}
+            {quickAction && onEdit && (
+              <button
+                type="button"
+                className={s.quickAction}
+                onClick={() => {
+                  onClose();
+                  onEdit(member, quickAction.editTab);
+                }}
+              >
+                <Wand2 size={18} aria-hidden="true" />
+                <span className={s.quickActionText}>
+                  Genereer <strong>{quickAction.label}</strong>
+                </span>
+                <ArrowRight size={16} aria-hidden="true" />
+              </button>
+            )}
+
+            {/* ── Asset checklist ── */}
+            <div className={s.assetChecklist}>
+              {checklist.map((item) => {
+                const present = item.thumbnail !== null;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={s.checklistRow}
+                    data-status={present ? 'done' : 'missing'}
+                    onClick={() => {
+                      if (onEdit && member) {
+                        onClose();
+                        onEdit(member, item.editTab);
+                      }
+                    }}
+                    disabled={!onEdit}
+                    aria-label={`${item.label} — ${present ? 'aanwezig' : 'ontbreekt'}`}
+                  >
+                    {/* Thumbnail or icon */}
+                    <div className={s.checklistThumb}>
+                      {item.thumbnail ? (
+                        <img
+                          src={item.thumbnail}
+                          alt=""
+                          className={s.checklistThumbImg}
+                          loading="lazy"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = 'none';
+                            const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
+                            if (fallback) fallback.style.display = '';
+                          }}
+                        />
+                      ) : null}
+                      <span
+                        className={s.checklistThumbIcon}
+                        style={item.thumbnail ? { display: 'none' } : undefined}
+                      >
+                        {item.icon}
                       </span>
-                    </button>
-                  ))}
-                </div>
-                {section.id === 'photos' && (
-                  <p className={s.autoNote}>
-                    <Clock size={12} aria-hidden="true" />
-                    Halfbody wordt automatisch afgeleid van fullbody
-                  </p>
-                )}
-              </div>
-            ))}
-
-            {/* ── Progress per role ── */}
-            {roleStatuses && roleStatuses.roles.length > 0 && (
-              <div className={s.progressSection}>
-                {roleStatuses.roles.map((rs) => (
-                  <div key={rs.role} className={s.progressRow}>
-                    {roleStatuses.roles.length > 1 && (
-                      <span className={s.progressLabel}>{ROLE_LABELS[rs.role] ?? rs.role}</span>
-                    )}
-                    <div className={s.progressBar}>
-                      <div
-                        className={s.progressFill}
-                        style={{ width: `${rs.total > 0 ? Math.round((rs.filled / rs.total) * 100) : 0}%` }}
-                      />
                     </div>
-                    <span className={s.progressValue}>{rs.filled}/{rs.total}</span>
-                  </div>
-                ))}
-              </div>
-            )}
 
-            {/* ── Legacy section ── */}
-            {legacyPhotoUrl && (
-              <div className={s.legacySection}>
-                <div className={s.legacySectionHeader}>
-                  <span className={s.legacySectionLabel}>Then vs Now</span>
-                </div>
-                <div className={s.legacyPreview}>
-                  <img
-                    src={legacyPhotoUrl}
-                    alt="Legacy foto"
-                    className={s.legacyThumb}
-                    loading="lazy"
-                  />
-                  <div className={s.legacyInfo}>
-                    <span className={s.legacyInfoText}>Historische foto beschikbaar</span>
-                    {getFirstAssetUrl(tr, primaryRole, 'images', 'fullbody') && (
-                      <span className={s.legacyInfoHint}>Klaar voor transformatie-video</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+                    {/* Label */}
+                    <span className={s.checklistLabel}>{item.label}</span>
+
+                    {/* Status indicator */}
+                    <span className={s.checklistStatus}>
+                      {present ? (
+                        <Check size={16} />
+                      ) : (
+                        <AlertCircle size={16} />
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Auto-derived note */}
+            <p className={s.autoNote}>
+              <Clock size={12} aria-hidden="true" />
+              Close-up &amp; halfbody worden automatisch afgeleid
+            </p>
           </div>
 
           {/* Action buttons */}

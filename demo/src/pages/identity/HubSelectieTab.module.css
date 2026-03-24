@@ -7,27 +7,26 @@
   flex-direction: column;
 }
 
-/* ── Asset status dots (per-role, 8px circles) ── */
-.assetDots {
+/* ── Progress ring (replaces individual dots) ── */
+.progressRing {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-}
-
-.assetDot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-full);
   flex-shrink: 0;
 }
 
-.assetDot[data-status="present"] {
-  background: var(--app-success);
+.progressRingSvg {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
 }
 
-.assetDot[data-status="absent"] {
-  background: var(--app-error);
+.progressRingLabel {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--app-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* ── Search row inside "Niet in selectie" ── */
