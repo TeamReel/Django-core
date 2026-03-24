@@ -46,7 +46,7 @@ import { HubWedstrijdenTab } from './HubWedstrijdenTab';
 import { TeamBeheerTab } from './TeamBeheerTab';
 import { HubClubTab } from './HubClubTab';
 import { HubSelectieTab } from './HubSelectieTab';
-import { HubMediaTab } from './HubMediaTab';
+import { AssetsTab } from '../../components/AssetsTab';
 import { MemberAssetMatrix } from './MemberAssetMatrix';
 import { MemberDetailPanel } from '../periods/MemberDetailPanel';
 import { AssetDetailSheet, type AssetSheetType } from './AssetDetailSheet';
@@ -713,47 +713,15 @@ export const MyTeamHubPage: React.FC = () => {
             />
           )}
 
-          {/* Assets — club assets, team overrides, member photos */}
-          {activeTab === 'assets' && !isSupporter && (
-            <HubMediaTab>
-              {/* Club assets status */}
-              <ListSection title="Club assets">
-                <ListSection.Row
-                  icon={Building2}
-                  label="Clublogo"
-                  status={Boolean((team.club as Record<string, unknown> | null)?.logo_url || (team.club as Record<string, unknown> | null)?.crest_url) ? 'success' : 'warning'}
-                />
-                <ListSection.Row
-                  icon={Palette}
-                  label="Club-sponsor"
-                  status={hasSponsor ? 'success' : 'warning'}
-                />
-                <ListSection.Row
-                  icon={Shirt}
-                  label="Club kits"
-                  status={hasAnyKit ? 'success' : 'warning'}
-                />
-              </ListSection>
-
-              {/* Team overrides */}
-              <ListSection title="Team instellingen">
-                <ListSection.Row
-                  icon={Shirt}
-                  label="Team kits"
-                  status={teamAssetStatus === 'complete' ? 'success' : 'warning'}
-                />
-              </ListSection>
-
-              {/* Member photos */}
-              <ListSection title="Ledenfoto's">
-                <ListSection.Row
-                  icon={Camera}
-                  label="Foto's"
-                  value={`${memberAssetSummary.complete}/${memberAssetSummary.total}`}
-                  status={memberPhotosStatus === 'complete' ? 'success' : 'warning'}
-                />
-              </ListSection>
-            </HubMediaTab>
+          {/* Assets — team-level brand assets (logo, kits, sponsor, location) */}
+          {activeTab === 'assets' && !isSupporter && team.org && team.team && (
+            <AssetsTab
+              level="team"
+              organisationId={team.orgIdForDirectoryLists}
+              projectId={team.teamIdForDirectoryLists}
+              parentProjectId={team.clubIdForDirectoryLists || undefined}
+              entityName={team.team.name}
+            />
           )}
 
           {/* Selectie — iOS-style grouped squad */}
