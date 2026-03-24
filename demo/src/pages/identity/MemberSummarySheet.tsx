@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight, ArrowRight, Pencil, Image, Video, Sparkles, 
 import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { Avatar } from '../../components/ui';
 import { iterVariants, getAssetRoles, type TeamreelAssets } from '../../utils/assetMetadata';
+import { getAssetUrl } from '../../hooks/brandProfileConstants';
 import type { SquadMember } from '../periods/squadTabTypes';
 import s from './MemberSummarySheet.module.css';
 
@@ -40,7 +41,7 @@ function memberAvatarUrl(m: SquadMember): string | undefined {
     const closeup = (tr.images as Record<string, unknown> | undefined)?.closeup as Record<string, unknown> | undefined;
     for (const kitType of ['home', 'away', 'third', 'goalkeeper']) {
       const kit = closeup?.[kitType] as Record<string, unknown> | undefined;
-      if (typeof kit?.processed === 'string' && kit.processed) return kit.processed;
+      if (typeof kit?.processed === 'string' && kit.processed) return getAssetUrl(kit.processed) ?? undefined;
     }
   }
   return (m.user as Record<string, unknown> | undefined)?.avatar_url as string | undefined;
@@ -58,10 +59,10 @@ function getFirstAssetUrl(
     if (!v.value) continue;
     if (typeof v.value === 'string') return v.value;
     const val = v.value as Record<string, unknown>;
-    if (val.preview_url && typeof val.preview_url === 'string') return val.preview_url;
+    if (val.preview_url && typeof val.preview_url === 'string') return getAssetUrl(val.preview_url);
     if (mediaType === 'images') {
-      if (val.processed && typeof val.processed === 'string') return val.processed;
-      if (val.raw && typeof val.raw === 'string') return val.raw;
+      if (val.processed && typeof val.processed === 'string') return getAssetUrl(val.processed);
+      if (val.raw && typeof val.raw === 'string') return getAssetUrl(val.raw);
     }
   }
   return null;
@@ -70,9 +71,9 @@ function getFirstAssetUrl(
 /** Get legacy photo URL from metadata. */
 function getLegacyPhotoUrl(assets: TeamreelAssets | undefined): string | null {
   if (!assets) return null;
-  if (assets.media?.legacy_photo?.url) return assets.media.legacy_photo.url;
+  if (assets.media?.legacy_photo?.url) return getAssetUrl(assets.media.legacy_photo.url);
   const old = (assets as Record<string, unknown>).old as Record<string, unknown> | undefined;
-  if (old?.profile_photo_url && typeof old.profile_photo_url === 'string') return old.profile_photo_url;
+  if (old?.profile_photo_url && typeof old.profile_photo_url === 'string') return getAssetUrl(old.profile_photo_url);
   return null;
 }
 
@@ -82,8 +83,8 @@ function getLegacyFullbodyUrl(assets: TeamreelAssets | undefined, role: string):
   for (const v of variants) {
     if (!v.value) continue;
     const val = v.value as Record<string, unknown>;
-    if (val.processed && typeof val.processed === 'string') return val.processed;
-    if (val.raw && typeof val.raw === 'string') return val.raw;
+    if (val.processed && typeof val.processed === 'string') return getAssetUrl(val.processed);
+    if (val.raw && typeof val.raw === 'string') return getAssetUrl(val.raw);
   }
   return null;
 }

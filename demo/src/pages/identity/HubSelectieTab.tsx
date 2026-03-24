@@ -15,6 +15,7 @@ import { AppIcon } from '../../components/AppIcon';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { getMemberAssetStatus } from '../../utils/assetStatus';
 import { iterVariants } from '../../utils/assetMetadata';
+import { getAssetUrl } from '../../hooks/brandProfileConstants';
 import type { TeamreelAssets } from '../../utils/assetMetadata';
 import type { SquadMember } from '../periods/squadTabTypes';
 import s from './HubSelectieTab.module.css';
@@ -108,7 +109,7 @@ function memberAvatarUrl(m: SquadMember, displayRole?: string): string | undefin
       const variants = iterVariants(assets, role, 'images', 'closeup', kit);
       for (const v of variants) {
         if (typeof v.value?.processed === 'string' && v.value.processed) {
-          return v.value.processed;
+          return getAssetUrl(v.value.processed) ?? undefined;
         }
       }
     }
@@ -117,7 +118,7 @@ function memberAvatarUrl(m: SquadMember, displayRole?: string): string | undefin
     const rawAssets = assets as unknown as Record<string, unknown>;
     const media = rawAssets?.media as Record<string, { url?: string }> | undefined;
     if (typeof media?.closeup?.url === 'string' && media.closeup.url) {
-      return media.closeup.url;
+      return getAssetUrl(media.closeup.url) ?? undefined;
     }
   }
   return (m.user as Record<string, unknown> | undefined)?.avatar_url as string | undefined;
