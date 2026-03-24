@@ -96,12 +96,11 @@ function getFirstAssetUrl(
       if (!v.value) continue;
       const val = v.value as Record<string, unknown>;
       if (val.preview_url && typeof val.preview_url === 'string') return getAssetUrl(val.preview_url);
-      if (val.processed && typeof val.processed === 'string') return getAssetUrl(val.processed);
     }
   }
-  // Fallback: check media aliases (catches legacy kits and flat-format data)
+  // Fallback: check media aliases (catches legacy kits, flat-format data, and video previews)
   const mediaUrl = assets?.media?.[assetType]?.url;
-  if (mediaUrl && mediaType === 'images') return getAssetUrl(mediaUrl);
+  if (mediaUrl) return getAssetUrl(mediaUrl);
   return null;
 }
 
