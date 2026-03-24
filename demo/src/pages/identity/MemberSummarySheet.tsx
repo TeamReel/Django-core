@@ -192,18 +192,17 @@ function buildAssetChecklist(
   const legacyPhotoUrl = getLegacyPhotoUrl(assets);
   const legacyFullbodyUrl = getLegacyFullbodyUrl(assets, role);
 
-  // Upload = original profile photo (before AI processing)
+  // Upload = original profile photo (before AI processing) — no legacy fallback
   const profileMedia = assets?.media?.profile;
   const profileUrl = profileMedia?.url ? getAssetUrl(profileMedia.url) : null;
-  const uploadUrl = profileUrl || getLegacyPhotoUrl(assets);
 
   return [
     {
       id: 'upload',
       label: 'Upload',
       icon: <Upload size={16} />,
-      thumbnail: uploadUrl,
-      hasAsset: uploadUrl !== null,
+      thumbnail: profileUrl,
+      hasAsset: profileUrl !== null,
       editTab: 'assets',
     },
     {

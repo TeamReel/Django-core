@@ -138,10 +138,11 @@ export function iterVariants(
         result.push({ kit: k, variantId, value });
       }
     }
-    return result;
+    if (result.length > 0) return result;
+    // Roles structure exists but requested kit not found — fall through to flat
   }
 
-  // Legacy fallback: {mediaType}.{assetType} at root level.
+  // Legacy/flat fallback: {mediaType}.{assetType} at root level.
   // Legacy has one less nesting level — entries are variant values directly.
   const rawAssets = assets as Record<string, unknown> | undefined;
   const legacyBranch = rawAssets?.[mediaType];
