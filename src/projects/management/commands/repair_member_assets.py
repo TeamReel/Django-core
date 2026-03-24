@@ -222,7 +222,7 @@ class Command(BaseCommand):
 
             recovered += 1
             self.stdout.write(
-                self.style.WARNING(f"  {uname} | active={m.id} ← deleted={predecessor.id}")
+                self.style.WARNING(f"  {uname} | active={m.id} <- deleted={predecessor.id}")
             )
 
             images = pred_tr.get("images", {})

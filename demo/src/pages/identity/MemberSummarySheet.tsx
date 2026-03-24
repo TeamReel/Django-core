@@ -47,7 +47,9 @@ function memberAvatarUrl(m: SquadMember): string | undefined {
   return undefined;
 }
 
-/** Extract first available display URL for an asset type across all kits. */
+/** Extract first available *displayable image* URL for an asset type.
+ *  For videos only preview_url (poster frame) is returned — video file URLs
+ *  cannot be rendered as <img>. */
 function getFirstAssetUrl(
   assets: TeamreelAssets | undefined,
   role: string,
@@ -57,7 +59,11 @@ function getFirstAssetUrl(
   const variants = iterVariants(assets, role, mediaType, assetType);
   for (const v of variants) {
     if (!v.value) continue;
-    if (typeof v.value === 'string') return v.value;
+    if (typeof v.value === 'string') {
+      // Raw string URL — only usable as thumbnail for images, not videos
+      if (mediaType === 'images') return getAssetUrl(v.value);
+      continue;
+    }
     const val = v.value as Record<string, unknown>;
     if (val.preview_url && typeof val.preview_url === 'string') return getAssetUrl(val.preview_url);
     if (mediaType === 'images') {
@@ -66,6 +72,23 @@ function getFirstAssetUrl(
     }
   }
   return null;
+}
+
+/** Check whether ANY variant data exists for a given asset type (for presence indicators). */
+function hasAnyVariant(
+  assets: TeamreelAssets | undefined,
+  role: string,
+  mediaType: 'images' | 'videos',
+  assetType: string,
+): boolean {
+  const variants = iterVariants(assets, role, mediaType, assetType);
+  for (const v of variants) {
+    if (!v.value) continue;
+    if (typeof v.value === 'string') return true;
+    const val = v.value as Record<string, unknown>;
+    if (val.url || val.preview_url || val.processed || val.raw) return true;
+  }
+  return false;
 }
 
 /** Get legacy photo URL from metadata. */
@@ -104,7 +127,10 @@ interface AssetItem {
   id: string;
   label: string;
   icon: React.ReactNode;
+  /** Displayable image URL for visual preview (null if no preview available) */
   thumbnail: string | null;
+  /** Whether the asset data exists in metadata (drives checkmark + progress) */
+  hasAsset: boolean;
   /** Tab to open in editor when tapped */
   editTab: string;
   /** true = at least 1 variant present is enough (e.g. intro) */
@@ -127,6 +153,7 @@ function buildAssetChecklist(
       label: 'Upload',
       icon: <Upload size={16} />,
       thumbnail: uploadUrl,
+      hasAsset: uploadUrl !== null,
       editTab: 'assets',
     },
     {
@@ -134,6 +161,7 @@ function buildAssetChecklist(
       label: 'Fullbody in tenue',
       icon: <Shirt size={16} />,
       thumbnail: getFirstAssetUrl(assets, role, 'images', 'fullbody'),
+      hasAsset: hasAnyVariant(assets, role, 'images', 'fullbody'),
       editTab: 'assets',
     },
     {
@@ -141,6 +169,7 @@ function buildAssetChecklist(
       label: 'Close-up',
       icon: <Crop size={16} />,
       thumbnail: getFirstAssetUrl(assets, role, 'images', 'closeup'),
+      hasAsset: hasAnyVariant(assets, role, 'images', 'closeup'),
       editTab: 'assets',
     },
     {
@@ -148,6 +177,7 @@ function buildAssetChecklist(
       label: 'Short intro',
       icon: <Video size={16} />,
       thumbnail: getFirstAssetUrl(assets, role, 'videos', 'intro'),
+      hasAsset: hasAnyVariant(assets, role, 'videos', 'intro'),
       editTab: 'intro',
       anyVariantSufficient: true,
     },
@@ -156,6 +186,7 @@ function buildAssetChecklist(
       label: 'Goal celebration',
       icon: <Sparkles size={16} />,
       thumbnail: getFirstAssetUrl(assets, role, 'videos', 'celebration'),
+      hasAsset: hasAnyVariant(assets, role, 'videos', 'celebration'),
       editTab: 'celebration',
     },
     {
@@ -163,6 +194,7 @@ function buildAssetChecklist(
       label: 'Actiefoto',
       icon: <Camera size={16} />,
       thumbnail: getFirstAssetUrl(assets, role, 'images', 'action_photo'),
+      hasAsset: hasAnyVariant(assets, role, 'images', 'action_photo'),
       editTab: 'action_photo',
     },
     {
@@ -170,6 +202,7 @@ function buildAssetChecklist(
       label: 'Legacy foto',
       icon: <ImageIcon size={16} />,
       thumbnail: legacyPhotoUrl,
+      hasAsset: legacyPhotoUrl !== null,
       editTab: 'assets',
     },
     {
@@ -177,6 +210,7 @@ function buildAssetChecklist(
       label: 'Legacy in tenue',
       icon: <Shirt size={16} />,
       thumbnail: legacyFullbodyUrl,
+      hasAsset: legacyFullbodyUrl !== null,
       editTab: 'assets',
     },
     {
@@ -184,6 +218,7 @@ function buildAssetChecklist(
       label: 'Then vs Now',
       icon: <ArrowLeftRight size={16} />,
       thumbnail: getFirstAssetUrl(assets, role, 'videos', 'then_vs_now'),
+      hasAsset: hasAnyVariant(assets, role, 'videos', 'then_vs_now'),
       editTab: 'then_vs_now',
     },
   ];
@@ -274,14 +309,14 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
   );
   const primaryRole = member ? getPrimaryRole(member) : 'player';
   const checklist = useMemo(() => buildAssetChecklist(tr, primaryRole), [tr, primaryRole]);
-  const filledCount = checklist.filter((a) => a.thumbnail !== null).length;
+  const filledCount = checklist.filter((a) => a.hasAsset).length;
   const totalCount = checklist.length;
 
   /** First missing asset = suggested quick action */
   const PRIORITY_ORDER = ['fullbody', 'closeup', 'intro', 'celebration', 'action_photo', 'then_vs_now'];
   const quickAction = useMemo(() => {
     for (const id of PRIORITY_ORDER) {
-      const item = checklist.find((a) => a.id === id && !a.thumbnail);
+      const item = checklist.find((a) => a.id === id && !a.hasAsset);
       if (item) return item;
     }
     return null;
@@ -374,7 +409,7 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
             {/* ── Asset checklist ── */}
             <div className={s.assetChecklist}>
               {checklist.map((item) => {
-                const present = item.thumbnail !== null;
+                const present = item.hasAsset;
                 return (
                   <button
                     key={item.id}
