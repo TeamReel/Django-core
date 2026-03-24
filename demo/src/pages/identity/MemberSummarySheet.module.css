@@ -185,6 +185,10 @@
   background: var(--app-surface);
 }
 
+.checklistItem + .checklistItem {
+  border-top: 1px solid var(--app-border);
+}
+
 .checklistRow {
   display: flex;
   align-items: center;
@@ -198,10 +202,6 @@
   min-height: 52px;
   width: 100%;
   text-align: left;
-}
-
-.checklistRow + .checklistRow {
-  border-top: 1px solid var(--app-border);
 }
 
 .checklistRow:disabled {
@@ -278,6 +278,29 @@
 
 .checklistRow[data-status='missing'] .checklistLabel {
   color: var(--app-text-muted);
+}
+
+/* ── Row chevron (expandable rows) ─────────────────────────────────── */
+
+.checklistChevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--app-text-muted);
+  transition: transform var(--duration-normal) ease;
+}
+
+.checklistChevron[data-open] {
+  transform: rotate(180deg);
+}
+
+/* ── Accordion content area ────────────────────────────────────────── */
+
+.accordionContent {
+  padding: var(--space-2) var(--space-3) var(--space-3);
 }
 
 /* ── Auto-derived note ────────────────────────────────────────────── */
@@ -376,6 +399,10 @@
   }
 
   .progressFill {
+    transition: none;
+  }
+
+  .checklistChevron {
     transition: none;
   }
 }

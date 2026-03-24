@@ -6,11 +6,15 @@
  * en een quick-action om ontbrekende assets te genereren.
  */
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, ArrowRight, Pencil, Image, Video, Sparkles, Clock, Crop, ArrowLeftRight, Camera, Upload, Shirt, ImageIcon, Wand2, Check, AlertCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, ArrowRight, Video, Sparkles, Clock, Crop, ArrowLeftRight, Camera, Upload, Shirt, ImageIcon, Wand2, Check, AlertCircle } from 'lucide-react';
 import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { Avatar } from '../../components/ui';
 import { iterVariants, getAssetRoles, ROLE_KIT_MAP, type TeamreelAssets } from '../../utils/assetMetadata';
 import { getAssetUrl } from '../../hooks/brandProfileConstants';
+import { AssetAccordion } from './AssetAccordion';
+import { KitCardStrip } from './KitCardStrip';
+import { VariantCardStrip } from './VariantCardStrip';
+import { AccordionActionBar } from './AccordionActionBar';
 import type { SquadMember } from '../periods/squadTabTypes';
 import s from './MemberSummarySheet.module.css';
 
@@ -153,6 +157,10 @@ interface AssetItem {
   editTab: string;
   /** true = at least 1 variant present is enough (e.g. intro) */
   anyVariantSufficient?: boolean;
+  /** Whether this row supports inline accordion expansion */
+  expandable?: boolean;
+  /** Media type for accordion content rendering */
+  mediaType?: 'images' | 'videos';
 }
 
 function buildAssetChecklist(
@@ -181,6 +189,8 @@ function buildAssetChecklist(
       thumbnail: getFirstAssetUrl(assets, role, 'images', 'fullbody'),
       hasAsset: hasAnyVariant(assets, role, 'images', 'fullbody'),
       editTab: 'assets',
+      expandable: true,
+      mediaType: 'images',
     },
     {
       id: 'closeup',
@@ -189,6 +199,8 @@ function buildAssetChecklist(
       thumbnail: getFirstAssetUrl(assets, role, 'images', 'closeup'),
       hasAsset: hasAnyVariant(assets, role, 'images', 'closeup'),
       editTab: 'assets',
+      expandable: true,
+      mediaType: 'images',
     },
     {
       id: 'intro',
@@ -198,6 +210,8 @@ function buildAssetChecklist(
       hasAsset: hasAnyVariant(assets, role, 'videos', 'intro'),
       editTab: 'intro',
       anyVariantSufficient: true,
+      expandable: true,
+      mediaType: 'videos',
     },
     {
       id: 'celebration',
@@ -206,6 +220,8 @@ function buildAssetChecklist(
       thumbnail: getFirstAssetUrl(assets, role, 'videos', 'celebration'),
       hasAsset: hasAnyVariant(assets, role, 'videos', 'celebration'),
       editTab: 'celebration',
+      expandable: true,
+      mediaType: 'videos',
     },
     {
       id: 'action_photo',
@@ -214,6 +230,8 @@ function buildAssetChecklist(
       thumbnail: getFirstAssetUrl(assets, role, 'images', 'action_photo'),
       hasAsset: hasAnyVariant(assets, role, 'images', 'action_photo'),
       editTab: 'action_photo',
+      expandable: true,
+      mediaType: 'images',
     },
     {
       id: 'legacy_photo',
@@ -238,6 +256,8 @@ function buildAssetChecklist(
       thumbnail: getFirstAssetUrl(assets, role, 'videos', 'then_vs_now'),
       hasAsset: hasAnyVariant(assets, role, 'videos', 'then_vs_now'),
       editTab: 'then_vs_now',
+      expandable: true,
+      mediaType: 'videos',
     },
   ];
 }
@@ -285,6 +305,12 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
   membersWithPhoto,
 }) => {
   const [switching, setSwitching] = useState(false);
+  const [openAccordionId, setOpenAccordionId] = useState<string | null>(null);
+
+  // Reset open accordion when switching members
+  useEffect(() => {
+    setOpenAccordionId(null);
+  }, [member?.id]);
 
   const handlePrev = useCallback(() => {
     if (!hasPrev || !onPrev) return;
@@ -428,56 +454,117 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
             <div className={s.assetChecklist}>
               {checklist.map((item) => {
                 const present = item.hasAsset;
+                const isExpanded = openAccordionId === item.id;
+                const triggerId = `checklist-trigger-${item.id}`;
+                const panelId = `checklist-panel-${item.id}`;
+
                 return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={s.checklistRow}
-                    data-status={present ? 'done' : 'missing'}
-                    onClick={() => {
-                      if (onEdit && member) {
-                        onClose();
-                        onEdit(member, item.editTab);
-                      }
-                    }}
-                    disabled={!onEdit}
-                    aria-label={`${item.label} — ${present ? 'aanwezig' : 'ontbreekt'}`}
-                  >
-                    {/* Thumbnail or icon */}
-                    <div className={s.checklistThumb}>
-                      {item.thumbnail ? (
-                        <img
-                          src={item.thumbnail}
-                          alt=""
-                          className={s.checklistThumbImg}
-                          loading="lazy"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).style.display = 'none';
-                            const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
-                            if (fallback) fallback.style.display = '';
-                          }}
-                        />
-                      ) : null}
-                      <span
-                        className={s.checklistThumbIcon}
-                        style={item.thumbnail ? { display: 'none' } : undefined}
-                      >
-                        {item.icon}
+                  <div key={item.id} className={s.checklistItem}>
+                    <button
+                      id={triggerId}
+                      type="button"
+                      className={s.checklistRow}
+                      data-status={present ? 'done' : 'missing'}
+                      data-expandable={item.expandable || undefined}
+                      aria-expanded={item.expandable ? isExpanded : undefined}
+                      aria-controls={item.expandable ? panelId : undefined}
+                      onClick={() => {
+                        if (item.expandable) {
+                          setOpenAccordionId(isExpanded ? null : item.id);
+                        } else if (onEdit && member) {
+                          onClose();
+                          onEdit(member, item.editTab);
+                        }
+                      }}
+                      disabled={!item.expandable && !onEdit}
+                      aria-label={`${item.label} — ${present ? 'aanwezig' : 'ontbreekt'}`}
+                    >
+                      {/* Thumbnail or icon */}
+                      <div className={s.checklistThumb}>
+                        {item.thumbnail ? (
+                          <img
+                            src={item.thumbnail}
+                            alt=""
+                            className={s.checklistThumbImg}
+                            loading="lazy"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).style.display = 'none';
+                              const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
+                              if (fallback) fallback.style.display = '';
+                            }}
+                          />
+                        ) : null}
+                        <span
+                          className={s.checklistThumbIcon}
+                          style={item.thumbnail ? { display: 'none' } : undefined}
+                        >
+                          {item.icon}
+                        </span>
+                      </div>
+
+                      {/* Label */}
+                      <span className={s.checklistLabel}>{item.label}</span>
+
+                      {/* Status indicator + chevron */}
+                      <span className={s.checklistStatus}>
+                        {present ? (
+                          <Check size={16} />
+                        ) : (
+                          <AlertCircle size={16} />
+                        )}
                       </span>
-                    </div>
-
-                    {/* Label */}
-                    <span className={s.checklistLabel}>{item.label}</span>
-
-                    {/* Status indicator */}
-                    <span className={s.checklistStatus}>
-                      {present ? (
-                        <Check size={16} />
-                      ) : (
-                        <AlertCircle size={16} />
+                      {item.expandable && (
+                        <span className={s.checklistChevron} data-open={isExpanded || undefined}>
+                          <ChevronDown size={16} />
+                        </span>
                       )}
-                    </span>
-                  </button>
+                    </button>
+
+                    {/* Accordion panel (expandable rows only) */}
+                    {item.expandable && (
+                      <AssetAccordion
+                        isOpen={isExpanded}
+                        id={panelId}
+                        triggerId={triggerId}
+                      >
+                        <div className={s.accordionContent}>
+                          {item.mediaType === 'images' ? (
+                            <KitCardStrip
+                              assets={tr}
+                              role={primaryRole}
+                              assetType={item.id}
+                            />
+                          ) : (
+                            <VariantCardStrip
+                              assets={tr}
+                              role={primaryRole}
+                              assetType={item.id}
+                              isVisible={isExpanded}
+                            />
+                          )}
+                          {onEdit && member && (
+                            <AccordionActionBar
+                              assets={tr}
+                              role={primaryRole}
+                              assetType={item.id}
+                              onGenerate={() => {
+                                onClose();
+                                onEdit(member, item.editTab);
+                              }}
+                              onUpload={() => {
+                                onClose();
+                                onEdit(member, item.editTab);
+                              }}
+                              onReprocess={() => {
+                                onClose();
+                                onEdit(member, item.editTab);
+                              }}
+                            />
+                          )}
+                        </div>
+                      </AssetAccordion>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -491,12 +578,6 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
 
           {/* Action buttons */}
           <div className={s.actions}>
-            {onEdit && member && (
-              <button className={s.editButton} onClick={() => { onClose(); onEdit(member); }}>
-                <Pencil size={18} aria-hidden="true" />
-                <span>Bewerken</span>
-              </button>
-            )}
             <button className={s.profileButton} onClick={handleViewProfile}>
               <span>Bekijk profiel</span>
               <ArrowRight size={18} aria-hidden="true" />

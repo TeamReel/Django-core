@@ -1,0 +1,24 @@
+/* AssetAccordion — Animated expand/collapse panel
+   Uses CSS grid rows 0fr→1fr for smooth height transitions. */
+
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--duration-slow) ease;
+}
+
+.panel[data-open] {
+  grid-template-rows: 1fr;
+}
+
+.panelInner {
+  overflow: hidden;
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    transition: none;
+  }
+}
