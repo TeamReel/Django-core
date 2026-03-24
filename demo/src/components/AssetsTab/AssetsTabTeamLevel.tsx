@@ -7,7 +7,7 @@
  */
 
 import React, { useRef } from 'react';
-import { Sparkles, Upload, Trash2, Clock } from 'lucide-react';
+import { Sparkles, Upload, Trash2, Clock, Wand2 } from 'lucide-react';
 import { KIT_ROLES, getAssetUrl } from '../../hooks/useBrandProfile';
 
 /** Team-level kit order: important roles first (Thuis, Keeper, Legacy) */
@@ -15,7 +15,7 @@ const TEAM_KIT_ORDER = ['home', 'goalkeeper', 'legacy', 'away', 'third', 'coach'
 const TEAM_KIT_ROLES = TEAM_KIT_ORDER.map(id => KIT_ROLES.find(r => r.id === id)!).filter(Boolean);
 import { ListSection } from '../ListSection';
 import { AppIcon } from '../AppIcon';
-import { SharedAssetModals, AiButtonsRow } from './AssetsTabShared';
+import { SharedAssetModals } from './AssetsTabShared';
 import type { AssetsTabData } from './useAssetsTabData';
 import type { BrandAsset } from '../../hooks/useBrandProfile';
 import s from './AssetsTabTeamLevel.module.css';
@@ -44,6 +44,7 @@ interface AssetRowProps {
   inherited?: boolean;
   isUpload?: boolean;
   isProcessing?: boolean;
+  hasUploadSource?: boolean;
   d: AssetsTabData;
   readOnly: boolean;
   showHistory?: boolean;
@@ -56,6 +57,7 @@ function AssetRow({
   inherited = false,
   isUpload = false,
   isProcessing = false,
+  hasUploadSource = false,
   d,
   readOnly,
   showHistory = false,
@@ -114,6 +116,18 @@ function AssetRow({
               >
                 <AppIcon icon={Sparkles} size={16} />
               </button>
+              {/* Bewerk (post-process from upload) */}
+              {hasUploadSource && (
+                <button
+                  type="button"
+                  className={s.actionBtn}
+                  onClick={() => d.handlePostProcess(assetType)}
+                  aria-label={`${label} bewerken`}
+                  title="Bewerk"
+                >
+                  <AppIcon icon={Wand2} size={16} />
+                </button>
+              )}
             </>
           )}
 
@@ -152,18 +166,31 @@ function AssetRow({
 
 export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, organisationId }) => (
   <div className={s.root}>
-    <AiButtonsRow d={d} />
+    {/* Compact AI quick-action button */}
+    {!readOnly && (
+      <button
+        type="button"
+        className={s.aiQuickBtn}
+        onClick={() => { d.setAiPreselectedTemplate(undefined); d.setAiInitialParams({}); d.setAiCustomInputs(d.baseAiInputAssets); d.setShowAiModal(true); }}
+      >
+        <AppIcon icon={Sparkles} size={16} /> AI Asset Genereren
+      </button>
+    )}
     <SharedAssetModals d={d} projectId={projectId} organisationId={organisationId} />
 
     {/* Logo & Sponsor */}
     <ListSection title="Logo & Sponsor">
-      <AssetRow label="Logo (upload)" assetType="logo_upload" asset={d.getAsset('logo_upload')} isUpload d={d} readOnly={readOnly} />
-      {(() => { const e = d.getEffectiveAsset('logo'); return (
-        <AssetRow label="Logo (bewerkt)" assetType="logo" asset={e.asset} inherited={e.inherited} isProcessing={d.postProcessingAsset === 'logo' || d.uploadProcessingAsset === 'logo'} d={d} readOnly={readOnly} />
+      {(() => { const e = d.getEffectiveAsset('logo_upload'); return (
+        <AssetRow label="Logo (upload)" assetType="logo_upload" asset={e.asset} inherited={e.inherited} isUpload d={d} readOnly={readOnly} />
       ); })()}
-      <AssetRow label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={d.getAsset('sponsor_logo_upload')} isUpload d={d} readOnly={readOnly} />
-      {(() => { const e = d.getEffectiveAsset('sponsor_logo'); return (
-        <AssetRow label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={e.asset} inherited={e.inherited} isProcessing={d.postProcessingAsset === 'sponsor_logo' || d.uploadProcessingAsset === 'sponsor_logo'} d={d} readOnly={readOnly} />
+      {(() => { const e = d.getEffectiveAsset('logo'); const u = d.getEffectiveAsset('logo_upload'); return (
+        <AssetRow label="Logo (bewerkt)" assetType="logo" asset={e.asset} inherited={e.inherited} hasUploadSource={!!u.asset} isProcessing={d.postProcessingAsset === 'logo' || d.uploadProcessingAsset === 'logo'} d={d} readOnly={readOnly} />
+      ); })()}
+      {(() => { const e = d.getEffectiveAsset('sponsor_logo_upload'); return (
+        <AssetRow label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={e.asset} inherited={e.inherited} isUpload d={d} readOnly={readOnly} />
+      ); })()}
+      {(() => { const e = d.getEffectiveAsset('sponsor_logo'); const u = d.getEffectiveAsset('sponsor_logo_upload'); return (
+        <AssetRow label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={e.asset} inherited={e.inherited} hasUploadSource={!!u.asset} isProcessing={d.postProcessingAsset === 'sponsor_logo' || d.uploadProcessingAsset === 'sponsor_logo'} d={d} readOnly={readOnly} />
       ); })()}
     </ListSection>
 
@@ -172,12 +199,13 @@ export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, or
       {TEAM_KIT_ROLES.map((role) => {
         const uploadType = `kit_${role.id}_upload`;
         const processedType = `kit_${role.id}`;
+        const upload = d.getEffectiveAsset(uploadType);
         const eff = d.getEffectiveAsset(processedType);
         const processing = d.postProcessingAsset === processedType || d.uploadProcessingAsset === processedType;
         return (
           <React.Fragment key={role.id}>
-            <AssetRow label={`${role.label} (upload)`} assetType={uploadType} asset={d.getAsset(uploadType)} isUpload d={d} readOnly={readOnly} />
-            <AssetRow label={`${role.label} (bewerkt)`} assetType={processedType} asset={eff.asset} inherited={eff.inherited} isProcessing={processing} d={d} readOnly={readOnly} showHistory />
+            <AssetRow label={`${role.label} (upload)`} assetType={uploadType} asset={upload.asset} inherited={upload.inherited} isUpload d={d} readOnly={readOnly} />
+            <AssetRow label={`${role.label} (bewerkt)`} assetType={processedType} asset={eff.asset} inherited={eff.inherited} hasUploadSource={!!upload.asset} isProcessing={processing} d={d} readOnly={readOnly} showHistory />
           </React.Fragment>
         );
       })}
@@ -185,9 +213,11 @@ export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, or
 
     {/* Locatie */}
     <ListSection title="Locatie">
-      <AssetRow label="Veld foto (upload)" assetType="location_photo" asset={d.getAsset('location_photo')} isUpload d={d} readOnly={readOnly} />
-      {(() => { const e = d.getEffectiveAsset('stadium_background'); return (
-        <AssetRow label="Achtergrond (bewerkt)" assetType="stadium_background" asset={e.asset} inherited={e.inherited} isProcessing={d.postProcessingAsset === 'stadium_background'} d={d} readOnly={readOnly} />
+      {(() => { const e = d.getEffectiveAsset('location_photo'); return (
+        <AssetRow label="Veld foto (upload)" assetType="location_photo" asset={e.asset} inherited={e.inherited} isUpload d={d} readOnly={readOnly} />
+      ); })()}
+      {(() => { const e = d.getEffectiveAsset('stadium_background'); const u = d.getEffectiveAsset('location_photo'); return (
+        <AssetRow label="Achtergrond (bewerkt)" assetType="stadium_background" asset={e.asset} inherited={e.inherited} hasUploadSource={!!u.asset} isProcessing={d.postProcessingAsset === 'stadium_background'} d={d} readOnly={readOnly} />
       ); })()}
     </ListSection>
 
