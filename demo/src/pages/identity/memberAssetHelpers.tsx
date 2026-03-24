@@ -289,7 +289,7 @@ export function buildAssetChecklist(
       isVideo: true,
     },
     {
-      id: 'duo_portret',
+      id: 'photo_composite',
       label: 'Duo Portret',
       icon: <Users size={16} />,
       thumbnail: getFirstAssetUrl(assets, role, 'videos', 'photo_composite'),
