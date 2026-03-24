@@ -6,7 +6,7 @@
  */
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import {
-  ChevronLeft, ChevronRight, X,
+  ArrowLeft, ChevronLeft, ChevronRight, X,
 } from 'lucide-react';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { Badge, Button, Card } from '@django-core/design-system';
@@ -76,6 +76,8 @@ export interface MemberDetailPanelProps {
   onMemberUpdated?: () => void;
   /** Tab to open initially (Assets, Intro, Celebration, Actiefoto) */
   defaultTab?: string;
+  /** When set, shows a back-arrow button with this label (e.g. "Overzicht") */
+  backLabel?: string;
 }
 
 const PANEL_TABS = [
@@ -102,6 +104,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
   onNavigate,
   onMemberUpdated,
   defaultTab,
+  backLabel,
 }) => {
   const [membership, setMembership] = useState<MembershipRecord | null>(null);
   const [loading, setLoading] = useState(true);
@@ -265,6 +268,12 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
         </div>
 
         <div className={styles.headerActions}>
+          {backLabel && (
+            <button type="button" className={styles.backBtn} onClick={onClose} title={backLabel}>
+              <ArrowLeft size={16} />
+              <span>{backLabel}</span>
+            </button>
+          )}
           <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Sluiten" title="Sluiten">
             <X size={18} />
           </button>

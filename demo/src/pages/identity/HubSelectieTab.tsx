@@ -121,7 +121,7 @@ function memberAvatarUrl(m: SquadMember, displayRole?: string): string | undefin
       return getAssetUrl(media.closeup.url) ?? undefined;
     }
   }
-  return (m.user as Record<string, unknown> | undefined)?.avatar_url as string | undefined;
+  return undefined;
 }
 
 /* ── Component ─────────────────────────────────────────────────────────── */

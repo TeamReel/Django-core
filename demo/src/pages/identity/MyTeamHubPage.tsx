@@ -1000,6 +1000,7 @@ export const MyTeamHubPage: React.FC = () => {
               onClose={handleClosePanel}
               onNavigate={(mid) => { setDetailDefaultTab(undefined); setDetailMemberId(mid); }}
               onMemberUpdated={() => d.setMembersReloadToken((t: number) => t + 1)}
+              backLabel={panelSourceMemberRef.current ? 'Overzicht' : undefined}
             />
           </div>
         </>

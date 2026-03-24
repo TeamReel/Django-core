@@ -44,7 +44,7 @@ function memberAvatarUrl(m: SquadMember): string | undefined {
       if (typeof kit?.processed === 'string' && kit.processed) return getAssetUrl(kit.processed) ?? undefined;
     }
   }
-  return (m.user as Record<string, unknown> | undefined)?.avatar_url as string | undefined;
+  return undefined;
 }
 
 /** Extract first available display URL for an asset type across all kits. */
