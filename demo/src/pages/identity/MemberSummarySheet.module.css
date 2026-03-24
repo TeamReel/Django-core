@@ -138,7 +138,13 @@
   flex-shrink: 0;
 }
 
-/* ── Quick action ─────────────────────────────────────────────────────── */
+/* ── Quick actions ────────────────────────────────────────────────────── */
+
+.quickActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
 
 .quickAction {
   display: flex;

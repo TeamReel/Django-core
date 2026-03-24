@@ -357,14 +357,16 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
   const filledCount = checklist.filter((a) => a.hasAsset).length;
   const totalCount = checklist.length;
 
-  /** First missing asset = suggested quick action */
+  /** Missing assets that have quick actions — show up to 2 */
   const PRIORITY_ORDER = ['fullbody', 'closeup', 'intro', 'celebration', 'action_photo', 'then_vs_now'];
-  const quickAction = useMemo(() => {
+  const quickActions = useMemo(() => {
+    const items: AssetItem[] = [];
     for (const id of PRIORITY_ORDER) {
       const item = checklist.find((a) => a.id === id && !a.hasAsset);
-      if (item) return item;
+      if (item) items.push(item);
+      if (items.length >= 2) break;
     }
-    return null;
+    return items;
   }, [checklist]);
 
   const showNav = !!(onPrev || onNext);
@@ -433,22 +435,27 @@ export const MemberSummarySheet: React.FC<MemberSummarySheetProps> = ({
               </div>
             </div>
 
-            {/* ── Quick action for missing assets ── */}
-            {quickAction && onEdit && (
-              <button
-                type="button"
-                className={s.quickAction}
-                onClick={() => {
-                  onClose();
-                  onEdit(member, quickAction.editTab);
-                }}
-              >
-                <Wand2 size={18} aria-hidden="true" />
-                <span className={s.quickActionText}>
-                  Genereer <strong>{quickAction.label}</strong>
-                </span>
-                <ArrowRight size={16} aria-hidden="true" />
-              </button>
+            {/* ── Quick actions for missing assets ── */}
+            {quickActions.length > 0 && onEdit && (
+              <div className={s.quickActions}>
+                {quickActions.map((qa) => (
+                  <button
+                    key={qa.id}
+                    type="button"
+                    className={s.quickAction}
+                    onClick={() => {
+                      onClose();
+                      onEdit(member, qa.editTab);
+                    }}
+                  >
+                    <Wand2 size={18} aria-hidden="true" />
+                    <span className={s.quickActionText}>
+                      Genereer <strong>{qa.label}</strong>
+                    </span>
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
             )}
 
             {/* ── Asset checklist ── */}
