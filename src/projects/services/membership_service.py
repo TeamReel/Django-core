@@ -15,6 +15,38 @@ User = get_user_model()
 class MembershipService:
     """Service for managing project memberships."""
 
+    @staticmethod
+    def _recover_asset_metadata(
+        project: Project,
+        user: User,
+        period,
+    ) -> Optional[dict]:
+        """Find teamreel_assets from the most recent soft-deleted predecessor.
+
+        When a member is removed and re-added, S3 assets still exist under
+        the old membership UUID.  This method retrieves the asset metadata
+        from the most recent soft-deleted record so it can be carried over
+        to the new membership, preserving the link to processed assets.
+
+        Returns the ``teamreel_assets`` dict, or ``None`` if no recoverable
+        predecessor exists.
+        """
+        previous = (
+            ProjectMembership.all_objects.filter(
+                project=project,
+                user=user,
+                period=period,
+                deleted_at__isnull=False,
+            )
+            .order_by("-deleted_at")
+            .only("metadata")
+            .first()
+        )
+        if previous is None:
+            return None
+
+        return (previous.metadata or {}).get("teamreel_assets") or None
+
     @transaction.atomic
     def add_member(
         self,
@@ -69,13 +101,19 @@ class MembershipService:
         ).exists():
             raise ValueError("User is already a member of this project for this period.")
 
+        # Recover asset metadata from a soft-deleted predecessor, if any.
+        effective_metadata = dict(metadata) if metadata else {}
+        recovered_assets = self._recover_asset_metadata(project, user, period)
+        if recovered_assets and "teamreel_assets" not in effective_metadata:
+            effective_metadata["teamreel_assets"] = recovered_assets
+
         membership = ProjectMembership.objects.create(
             project=project,
             user=user,
             role=role,
             assignment_reason=reason,
             period=period,
-            metadata=metadata or {},
+            metadata=effective_metadata,
         )
 
         # TeamReel: If adding a member to a child team, also ensure they're added to the parent club
@@ -119,17 +157,20 @@ class MembershipService:
 
         # Audit log
         try:
+            audit_meta = {
+                "project_id": str(project.id),
+                "user_id": str(user.id),
+                "role": role,
+                "period_id": str(period.id) if period else None,
+                "reason": reason,
+            }
+            if recovered_assets:
+                audit_meta["assets_recovered"] = True
             audit_log.record(
                 "project.membership.created",
                 user=actor,
                 project=project,
-                metadata={
-                    "project_id": str(project.id),
-                    "user_id": str(user.id),
-                    "role": role,
-                    "period_id": str(period.id) if period else None,
-                    "reason": reason,
-                },
+                metadata=audit_meta,
             )
         except Exception:
             # Never fail core membership creation because audit logging is down/misconfigured.

@@ -16,6 +16,12 @@ Usage:
 
     # Commit swap (move teamreel_assets from wrong member to correct one):
     python manage.py repair_member_assets --from-id <UUID> --to-id <UUID> --commit
+
+    # Recover assets from soft-deleted predecessors (dry-run):
+    python manage.py repair_member_assets --recover
+
+    # Recover assets from soft-deleted predecessors (commit):
+    python manage.py repair_member_assets --recover --commit
 """
 
 from django.core.management.base import BaseCommand
@@ -43,6 +49,12 @@ class Command(BaseCommand):
             help="Membership UUID that SHOULD have the asset",
         )
         parser.add_argument(
+            "--recover",
+            action="store_true",
+            default=False,
+            help="Recover assets from soft-deleted predecessors for active memberships missing them",
+        )
+        parser.add_argument(
             "--commit",
             action="store_true",
             default=False,
@@ -58,8 +70,12 @@ class Command(BaseCommand):
                 to_id=options["to_id"],
                 commit=options["commit"],
             )
+        elif options["recover"]:
+            self._recover(commit=options["commit"])
         else:
-            self.stdout.write(self.style.ERROR("Provide --inspect LAST_NAME or --from-id/--to-id"))
+            self.stdout.write(
+                self.style.ERROR("Provide --inspect LAST_NAME, --from-id/--to-id, or --recover")
+            )
 
     def _tr(self, meta):
         return (meta or {}).get("teamreel_assets", {})
@@ -150,3 +166,87 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(f"\n[OK] Swapped teamreel_assets: {src_name} <-> {dst_name}")
         )
+
+    def _recover(self, commit: bool):
+        """Recover teamreel_assets from soft-deleted predecessors.
+
+        For every active membership that has no teamreel_assets, look for the
+        most recent soft-deleted membership of the same user+project+period
+        that *does* have assets.  Copy them over.
+        """
+        # All active memberships without teamreel_assets
+        active_qs = ProjectMembership.objects.filter(deleted_at__isnull=True).select_related(
+            "user", "project", "period"
+        )
+
+        candidates = []
+        for m in active_qs.iterator():
+            tr = self._tr(m.metadata)
+            if tr:
+                continue  # already has assets
+            candidates.append(m)
+
+        if not candidates:
+            self.stdout.write(
+                self.style.SUCCESS("All active memberships already have assets (or none exist).")
+            )
+            return
+
+        self.stdout.write(
+            f"\nFound {len(candidates)} active membership(s) without teamreel_assets.\n"
+        )
+
+        recovered = 0
+        for m in candidates:
+            uname = f"{m.user.first_name} {m.user.last_name}".strip() if m.user else "?"
+
+            # Find the most recent soft-deleted predecessor with assets
+            predecessor = (
+                ProjectMembership.all_objects.filter(
+                    project=m.project,
+                    user=m.user,
+                    period=m.period,
+                    deleted_at__isnull=False,
+                )
+                .order_by("-deleted_at")
+                .only("id", "metadata")
+                .first()
+            )
+
+            if predecessor is None:
+                continue
+
+            pred_tr = self._tr(predecessor.metadata)
+            if not pred_tr:
+                continue
+
+            recovered += 1
+            self.stdout.write(
+                self.style.WARNING(f"  {uname} | active={m.id} ← deleted={predecessor.id}")
+            )
+
+            images = pred_tr.get("images", {})
+            for cat, variants in images.items():
+                for kit, url in (variants if isinstance(variants, dict) else {}).items():
+                    if url:
+                        self.stdout.write(f"    images.{cat}.{kit} : {str(url)[:80]}")
+
+            if commit:
+                meta = dict(m.metadata or {})
+                meta["teamreel_assets"] = pred_tr
+                m.metadata = meta
+                m.save(update_fields=["metadata"])
+
+        self.stdout.write("")
+        if recovered == 0:
+            self.stdout.write(self.style.SUCCESS("No recoverable predecessors found."))
+        elif commit:
+            self.stdout.write(
+                self.style.SUCCESS(f"[OK] Recovered assets for {recovered} membership(s).")
+            )
+        else:
+            self.stdout.write(
+                self.style.WARNING(
+                    f"[DRY RUN] {recovered} membership(s) can be recovered. Add --commit to apply."
+                )
+            )

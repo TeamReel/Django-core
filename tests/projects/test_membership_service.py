@@ -1,6 +1,8 @@
 import pytest
 from datetime import date
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
+from io import StringIO
 from activities.models import Period
 from projects.models import ProjectMembership
 from projects.services.membership_service import MembershipService
@@ -231,3 +233,282 @@ class TestMembershipServiceAdd:
         )
 
         assert membership.project_id == project.id
+
+
+@pytest.mark.django_db
+class TestMembershipAssetRecovery:
+    """Tests for automatic asset recovery when re-adding a deleted member."""
+
+    SAMPLE_ASSETS = {
+        "roles": {
+            "player": {
+                "images": {
+                    "closeup": {"home": {"original": {"url": "s3://closeup.jpg"}}},
+                    "fullbody": {"home": {"original": {"url": "s3://fullbody.jpg"}}},
+                },
+            }
+        },
+        "media": {
+            "closeup": {"url": "s3://closeup.jpg"},
+            "kit": {"url": "s3://fullbody.jpg"},
+        },
+    }
+
+    def _setup(self, user_factory, organisation_factory, project_factory):
+        owner = user_factory()
+        org = organisation_factory(creator=owner)
+        project = project_factory(organisation=org, creator=owner)
+        member = user_factory(first_name="Bram", last_name="Gerrits")
+        Membership.objects.create(user=member, organisation=org, role="member")
+        season = Period.objects.create(
+            name="2024/2025",
+            start_date=date(2024, 7, 1),
+            end_date=date(2025, 6, 30),
+            organisation=org,
+        )
+        return owner, org, project, member, season
+
+    def test_recover_assets_from_deleted_predecessor(
+        self, user_factory, organisation_factory, project_factory
+    ):
+        owner, org, project, member, season = self._setup(
+            user_factory, organisation_factory, project_factory
+        )
+        service = MembershipService()
+
+        # Add member with assets
+        m1 = service.add_member(
+            project,
+            member,
+            ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+            metadata={"teamreel_assets": self.SAMPLE_ASSETS},
+        )
+        assert m1.metadata["teamreel_assets"]["roles"]["player"]
+
+        # Remove member (soft-delete preserves metadata)
+        service.remove_member(m1, actor=owner)
+        m1.refresh_from_db()
+        assert m1.deleted_at is not None
+
+        # Re-add member — should automatically recover assets
+        m2 = service.add_member(
+            project,
+            member,
+            ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+        )
+
+        assert m2.id != m1.id
+        assert "teamreel_assets" in m2.metadata
+        assert m2.metadata["teamreel_assets"]["roles"]["player"]["images"]["closeup"]
+
+    def test_no_recovery_when_no_predecessor(
+        self, user_factory, organisation_factory, project_factory
+    ):
+        owner, org, project, member, season = self._setup(
+            user_factory, organisation_factory, project_factory
+        )
+        service = MembershipService()
+
+        # Add fresh member — no predecessor exists
+        m1 = service.add_member(
+            project,
+            member,
+            ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+        )
+
+        assert m1.metadata == {}
+
+    def test_no_recovery_when_predecessor_has_no_assets(
+        self, user_factory, organisation_factory, project_factory
+    ):
+        owner, org, project, member, season = self._setup(
+            user_factory, organisation_factory, project_factory
+        )
+        service = MembershipService()
+
+        # Add member without assets, then remove
+        m1 = service.add_member(
+            project,
+            member,
+            ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+        )
+        service.remove_member(m1, actor=owner)
+
+        # Re-add — predecessor has no assets, should stay empty
+        m2 = service.add_member(
+            project,
+            member,
+            ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+        )
+
+        assert m2.metadata == {}
+
+    def test_no_recovery_when_metadata_already_has_assets(
+        self, user_factory, organisation_factory, project_factory
+    ):
+        owner, org, project, member, season = self._setup(
+            user_factory, organisation_factory, project_factory
+        )
+        service = MembershipService()
+
+        # Add member with assets and remove
+        m1 = service.add_member(
+            project,
+            member,
+            ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+            metadata={"teamreel_assets": self.SAMPLE_ASSETS},
+        )
+        service.remove_member(m1, actor=owner)
+
+        # Re-add with different assets already specified — should NOT overwrite
+        new_assets = {"roles": {"coach": {}}}
+        m2 = service.add_member(
+            project,
+            member,
+            ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+            metadata={"teamreel_assets": new_assets},
+        )
+
+        assert m2.metadata["teamreel_assets"] == new_assets
+
+    def test_recover_uses_most_recent_deleted(
+        self, user_factory, organisation_factory, project_factory
+    ):
+        owner, org, project, member, season = self._setup(
+            user_factory, organisation_factory, project_factory
+        )
+        service = MembershipService()
+
+        # First add+remove with old assets
+        old_assets = {
+            "roles": {"player": {"images": {"closeup": {"home": {"original": {"url": "OLD"}}}}}}
+        }
+        m1 = service.add_member(
+            project,
+            member,
+            ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+            metadata={"teamreel_assets": old_assets},
+        )
+        service.remove_member(m1, actor=owner)
+
+        # Second add+remove with newer assets
+        newer_assets = {
+            "roles": {"player": {"images": {"closeup": {"home": {"original": {"url": "NEWER"}}}}}}
+        }
+        m2 = service.add_member(
+            project,
+            member,
+            ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+            metadata={"teamreel_assets": newer_assets},
+        )
+        service.remove_member(m2, actor=owner)
+
+        # Re-add — should recover the NEWER assets (most recent deleted)
+        m3 = service.add_member(
+            project,
+            member,
+            ProjectMembership.Role.VIEWER,
+            period_id=str(season.id),
+            actor=owner,
+        )
+
+        url = m3.metadata["teamreel_assets"]["roles"]["player"]["images"]["closeup"]["home"][
+            "original"
+        ]["url"]
+        assert url == "NEWER"
+
+
+@pytest.mark.django_db
+class TestRepairMemberAssetsRecoverCommand:
+    """Tests for the --recover flag of repair_member_assets."""
+
+    SAMPLE_ASSETS = TestMembershipAssetRecovery.SAMPLE_ASSETS
+
+    def test_recover_dry_run(self, user_factory, organisation_factory, project_factory):
+        owner = user_factory()
+        org = organisation_factory(creator=owner)
+        project = project_factory(organisation=org, creator=owner)
+        member = user_factory(first_name="Sander", last_name="Bakhuis")
+        Membership.objects.create(user=member, organisation=org, role="member")
+
+        # Create soft-deleted membership with assets
+        m_old = ProjectMembership.objects.create(
+            project=project,
+            user=member,
+            role="viewer",
+            metadata={"teamreel_assets": self.SAMPLE_ASSETS},
+        )
+        m_old.soft_delete(user=owner)
+
+        # Create active membership without assets
+        ProjectMembership.objects.create(
+            project=project,
+            user=member,
+            role="viewer",
+            metadata={},
+        )
+
+        out = StringIO()
+        call_command("repair_member_assets", "--recover", stdout=out)
+        output = out.getvalue()
+
+        assert "DRY RUN" in output
+        assert "Sander Bakhuis" in output
+
+        # Should NOT have been saved
+        active = ProjectMembership.objects.get(
+            project=project, user=member, deleted_at__isnull=True
+        )
+        assert "teamreel_assets" not in active.metadata
+
+    def test_recover_commit(self, user_factory, organisation_factory, project_factory):
+        owner = user_factory()
+        org = organisation_factory(creator=owner)
+        project = project_factory(organisation=org, creator=owner)
+        member = user_factory(first_name="Diederik", last_name="Hulshof")
+        Membership.objects.create(user=member, organisation=org, role="member")
+
+        m_old = ProjectMembership.objects.create(
+            project=project,
+            user=member,
+            role="viewer",
+            metadata={"teamreel_assets": self.SAMPLE_ASSETS},
+        )
+        m_old.soft_delete(user=owner)
+
+        ProjectMembership.objects.create(
+            project=project,
+            user=member,
+            role="viewer",
+            metadata={},
+        )
+
+        out = StringIO()
+        call_command("repair_member_assets", "--recover", "--commit", stdout=out)
+        output = out.getvalue()
+
+        assert "Recovered assets for 1" in output
+
+        active = ProjectMembership.objects.get(
+            project=project, user=member, deleted_at__isnull=True
+        )
+        assert "teamreel_assets" in active.metadata
+        assert active.metadata["teamreel_assets"]["roles"]["player"]
