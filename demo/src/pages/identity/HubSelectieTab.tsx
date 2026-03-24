@@ -145,10 +145,11 @@ const ROLE_LABEL_MAP: Record<string, string> = {
 
 const SLOT_LABEL_MAP: Record<string, string> = {
   profile: 'Upload',
-  kit: 'In tenue',
   closeup: 'Close-up',
   intro: 'Short intro',
   celebration: 'Celebration',
+  then_vs_now: 'Then vs Now',
+  action_photo: 'Actiefoto',
 };
 
 function getMemberAllRoles(m: SquadMember): string[] {

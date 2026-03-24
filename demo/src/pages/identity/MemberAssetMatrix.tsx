@@ -25,10 +25,11 @@ interface MemberAssetMatrixProps {
 
 const SLOT_LABELS: Record<string, string> = {
   profile: 'prof',
-  kit: 'full',
   closeup: 'clo',
   intro: 'intr',
   celebration: 'cele',
+  then_vs_now: 't/n',
+  action_photo: 'act',
 };
 
 function memberName(m: SquadMember): string {

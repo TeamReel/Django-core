@@ -1,7 +1,7 @@
 /**
  * Asset status helpers for the "Mijn Team" hub.
  *
- * Checks completion of the 5 tracked media slots per member,
+ * Checks completion of the 6 tracked media slots per member,
  * and club/team brand asset presence.
  *
  * Reads from roles.{role}.images/videos nested structure.
@@ -18,12 +18,12 @@ import {
 import type { TeamreelAssets } from './assetMetadata';
 import type { MediaSlotId } from '../constants/mediaSlots';
 
-const TRACKED_SLOT_IDS: MediaSlotId[] = ['profile', 'kit', 'closeup', 'intro', 'celebration'];
+const TRACKED_SLOT_IDS: MediaSlotId[] = ['profile', 'closeup', 'intro', 'celebration', 'then_vs_now', 'action_photo'];
 
 export interface MemberAssetStatus {
   status: 'complete' | 'partial' | 'empty';
   filled: number;
-  total: 5;
+  total: number;
 }
 
 /** Per-slot presence for a single member. */
@@ -45,9 +45,9 @@ export function getMemberAssetStatus(member: Record<string, unknown>): MemberAss
     }
   }
   return {
-    status: filled === 5 ? 'complete' : filled > 0 ? 'partial' : 'empty',
+    status: filled === 6 ? 'complete' : filled > 0 ? 'partial' : 'empty',
     filled,
-    total: 5,
+    total: 6,
   };
 }
 
