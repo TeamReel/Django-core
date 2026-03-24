@@ -1,14 +1,13 @@
 /**
- * AssetsTabTeamLevel — Team-level asset display (accordion style)
+ * AssetsTabTeamLevel — Team-level asset display (collapsible categories)
  *
- * Uses ListSection rows (same pattern as HubSelectieTab) for a compact,
- * scannable overview. Each row shows a small thumbnail, label, status
- * badge, and action buttons.
+ * Each category (Logo & Sponsor, Tenues, Locatie) has a collapsible header
+ * with a progress ring showing completion. Rows show thumbnail, label,
+ * status badge, and action buttons.
  */
 
-import React, { useRef } from 'react';
-import { Sparkles, Upload, Trash2, Clock, Wand2, Shirt, Image } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Sparkles, Upload, Trash2, Clock, Wand2, ChevronDown } from 'lucide-react';
 import { KIT_ROLES, getAssetUrl } from '../../hooks/useBrandProfile';
 
 /** Team-level kit order: important roles first (Thuis, Keeper, Legacy) */
@@ -17,7 +16,6 @@ const TEAM_KIT_ROLES = TEAM_KIT_ORDER.map(id => KIT_ROLES.find(r => r.id === id)
 
 /** Kits that are AI-generated from other sources (no upload row) */
 const AI_ONLY_KITS = new Set(['goalkeeper']);
-import { ListSection } from '../ListSection';
 import { AppIcon } from '../AppIcon';
 import { SharedAssetModals } from './AssetsTabShared';
 import type { AssetsTabData } from './useAssetsTabData';
@@ -166,92 +164,131 @@ function AssetRow({
   );
 }
 
-/* ── Quick-action upload button ────────────────────────────────────────── */
+/* ── Progress counting ─────────────────────────────────────────────────── */
 
-function QuickUploadBtn({ label, assetType, icon, d }: { label: string; assetType: string; icon: LucideIcon; d: AssetsTabData }) {
-  const ref = useRef<HTMLInputElement>(null);
+function countAssets(d: AssetsTabData, types: string[]): { filled: number; total: number } {
+  let filled = 0;
+  for (const t of types) {
+    const { asset } = d.getEffectiveAsset(t);
+    if (asset) filled++;
+  }
+  return { filled, total: types.length };
+}
+
+/* ── Collapsible category section with progress ring ───────────────────── */
+
+function CategorySection({ title, filled, total, defaultOpen = true, children }: {
+  title: string;
+  filled: number;
+  total: number;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+
   return (
-    <>
-      <input ref={ref} type="file" accept="image/*" className={s.hiddenInput}
-        onChange={(e) => { const f = e.target.files?.[0]; if (f) d.handleUpload(f, assetType); e.target.value = ''; }} />
-      <button type="button" className={s.quickAction} onClick={() => ref.current?.click()}
-        aria-label={`${label} uploaden`}>
-        <AppIcon icon={icon} size={14} /> {label}
+    <div className={s.category}>
+      <button
+        type="button"
+        className={s.categoryHeader}
+        onClick={() => setOpen(v => !v)}
+        aria-expanded={open}
+      >
+        <span className={s.categoryTitle}>{title}</span>
+        <span className={s.categoryRight}>
+          <span className={s.progressRing} aria-label={`${filled}/${total} compleet`}>
+            <svg viewBox="0 0 28 28" className={s.progressRingSvg}>
+              <circle cx="14" cy="14" r="11" fill="none" stroke="var(--app-border)" strokeWidth="3" />
+              {total > 0 && (
+                <circle
+                  cx="14" cy="14" r="11" fill="none"
+                  stroke={filled === total ? 'var(--app-success)' : 'var(--app-primary)'}
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 11}`}
+                  strokeDashoffset={`${2 * Math.PI * 11 * (1 - filled / total)}`}
+                  transform="rotate(-90 14 14)"
+                />
+              )}
+            </svg>
+            <span className={s.progressRingLabel}>{filled}/{total}</span>
+          </span>
+          <AppIcon icon={ChevronDown} size={16} className={`${s.chevron} ${open ? s.chevronOpen : ''}`} />
+        </span>
       </button>
-    </>
+      {open && <div className={s.categoryBody}>{children}</div>}
+    </div>
   );
 }
 
 /* ── Main component ────────────────────────────────────────────────────── */
 
-export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, organisationId }) => (
-  <div className={s.root}>
-    {/* Quick actions: upload shortcuts + keeper AI */}
-    {!readOnly && (
-      <div className={s.quickActions}>
-        <QuickUploadBtn label="Tenue" assetType="kit_home_upload" icon={Shirt} d={d} />
-        <QuickUploadBtn label="Logo" assetType="logo_upload" icon={Image} d={d} />
-        <QuickUploadBtn label="Sponsor" assetType="sponsor_logo_upload" icon={Image} d={d} />
-        <button type="button" className={`${s.quickAction} ${s.quickActionAi}`}
-          onClick={() => { d.setAiPreselectedTemplate('keeper_tenue'); d.setAiInitialParams({}); d.setAiCustomInputs(d.baseAiInputAssets); d.setShowAiModal(true); }}
-          aria-label="Keeper tenue genereren">
-          <AppIcon icon={Sparkles} size={14} /> Keeper
-        </button>
-        <QuickUploadBtn label="Legacy" assetType="kit_legacy_upload" icon={Shirt} d={d} />
-      </div>
-    )}
-    <SharedAssetModals d={d} projectId={projectId} organisationId={organisationId} />
+export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, organisationId }) => {
+  const logoTypes = ['logo_upload', 'logo', 'sponsor_logo_upload', 'sponsor_logo'];
+  const tenueTypes = TEAM_KIT_ROLES.flatMap(r =>
+    AI_ONLY_KITS.has(r.id) ? [`kit_${r.id}`] : [`kit_${r.id}_upload`, `kit_${r.id}`]
+  );
+  const locatieTypes = ['location_photo', 'stadium_background'];
 
-    {/* Tenues (first — most important) */}
-    <ListSection title="Tenues">
-      {TEAM_KIT_ROLES.map((role) => {
-        const uploadType = `kit_${role.id}_upload`;
-        const processedType = `kit_${role.id}`;
-        const isAiOnly = AI_ONLY_KITS.has(role.id);
-        const upload = isAiOnly ? { asset: undefined, inherited: false } : d.getEffectiveAsset(uploadType);
-        const eff = d.getEffectiveAsset(processedType);
-        const processing = d.postProcessingAsset === processedType || d.uploadProcessingAsset === processedType;
-        return (
-          <React.Fragment key={role.id}>
-            {!isAiOnly && (
-              <AssetRow label={`${role.label} (upload)`} assetType={uploadType} asset={upload.asset} inherited={upload.inherited} isUpload d={d} readOnly={readOnly} />
-            )}
-            <AssetRow label={`${role.label} (bewerkt)`} assetType={processedType} asset={eff.asset} inherited={eff.inherited} hasUploadSource={!isAiOnly && !!upload.asset} isProcessing={processing} d={d} readOnly={readOnly} showHistory />
-          </React.Fragment>
-        );
-      })}
-    </ListSection>
+  const logoProgress = countAssets(d, logoTypes);
+  const tenueProgress = countAssets(d, tenueTypes);
+  const locatieProgress = countAssets(d, locatieTypes);
 
-    {/* Logo & Sponsor */}
-    <ListSection title="Logo & Sponsor">
-      {(() => { const e = d.getEffectiveAsset('logo_upload'); return (
-        <AssetRow label="Logo (upload)" assetType="logo_upload" asset={e.asset} inherited={e.inherited} isUpload d={d} readOnly={readOnly} />
-      ); })()}
-      {(() => { const e = d.getEffectiveAsset('logo'); const u = d.getEffectiveAsset('logo_upload'); return (
-        <AssetRow label="Logo (bewerkt)" assetType="logo" asset={e.asset} inherited={e.inherited} hasUploadSource={!!u.asset} isProcessing={d.postProcessingAsset === 'logo' || d.uploadProcessingAsset === 'logo'} d={d} readOnly={readOnly} />
-      ); })()}
-      {(() => { const e = d.getEffectiveAsset('sponsor_logo_upload'); return (
-        <AssetRow label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={e.asset} inherited={e.inherited} isUpload d={d} readOnly={readOnly} />
-      ); })()}
-      {(() => { const e = d.getEffectiveAsset('sponsor_logo'); const u = d.getEffectiveAsset('sponsor_logo_upload'); return (
-        <AssetRow label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={e.asset} inherited={e.inherited} hasUploadSource={!!u.asset} isProcessing={d.postProcessingAsset === 'sponsor_logo' || d.uploadProcessingAsset === 'sponsor_logo'} d={d} readOnly={readOnly} />
-      ); })()}
-    </ListSection>
+  return (
+    <div className={s.root}>
+      <SharedAssetModals d={d} projectId={projectId} organisationId={organisationId} />
 
-    {/* Locatie */}
-    <ListSection title="Locatie">
-      {(() => { const e = d.getEffectiveAsset('location_photo'); return (
-        <AssetRow label="Veld foto (upload)" assetType="location_photo" asset={e.asset} inherited={e.inherited} isUpload d={d} readOnly={readOnly} />
-      ); })()}
-      {(() => { const e = d.getEffectiveAsset('stadium_background'); const u = d.getEffectiveAsset('location_photo'); return (
-        <AssetRow label="Achtergrond (bewerkt)" assetType="stadium_background" asset={e.asset} inherited={e.inherited} hasUploadSource={!!u.asset} isProcessing={d.postProcessingAsset === 'stadium_background'} d={d} readOnly={readOnly} />
-      ); })()}
-    </ListSection>
+      {/* Logo & Sponsor (first — most important) */}
+      <CategorySection title="Logo & Sponsor" filled={logoProgress.filled} total={logoProgress.total}>
+        {(() => { const e = d.getEffectiveAsset('logo_upload'); return (
+          <AssetRow label="Logo (upload)" assetType="logo_upload" asset={e.asset} inherited={e.inherited} isUpload d={d} readOnly={readOnly} />
+        ); })()}
+        {(() => { const e = d.getEffectiveAsset('logo'); const u = d.getEffectiveAsset('logo_upload'); return (
+          <AssetRow label="Logo (bewerkt)" assetType="logo" asset={e.asset} inherited={e.inherited} hasUploadSource={!!u.asset} isProcessing={d.postProcessingAsset === 'logo' || d.uploadProcessingAsset === 'logo'} d={d} readOnly={readOnly} />
+        ); })()}
+        {(() => { const e = d.getEffectiveAsset('sponsor_logo_upload'); return (
+          <AssetRow label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={e.asset} inherited={e.inherited} isUpload d={d} readOnly={readOnly} />
+        ); })()}
+        {(() => { const e = d.getEffectiveAsset('sponsor_logo'); const u = d.getEffectiveAsset('sponsor_logo_upload'); return (
+          <AssetRow label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={e.asset} inherited={e.inherited} hasUploadSource={!!u.asset} isProcessing={d.postProcessingAsset === 'sponsor_logo' || d.uploadProcessingAsset === 'sponsor_logo'} d={d} readOnly={readOnly} />
+        ); })()}
+      </CategorySection>
 
-    {!d.profile && (
-      <div className={s.warningBox}>
-        Nog geen brand profiel voor dit team. Upload of genereer een asset — het profiel wordt automatisch aangemaakt.
-      </div>
-    )}
-  </div>
-);
+      {/* Tenues */}
+      <CategorySection title="Tenues" filled={tenueProgress.filled} total={tenueProgress.total}>
+        {TEAM_KIT_ROLES.map((role) => {
+          const uploadType = `kit_${role.id}_upload`;
+          const processedType = `kit_${role.id}`;
+          const isAiOnly = AI_ONLY_KITS.has(role.id);
+          const upload = isAiOnly ? { asset: undefined, inherited: false } : d.getEffectiveAsset(uploadType);
+          const eff = d.getEffectiveAsset(processedType);
+          const processing = d.postProcessingAsset === processedType || d.uploadProcessingAsset === processedType;
+          return (
+            <React.Fragment key={role.id}>
+              {!isAiOnly && (
+                <AssetRow label={`${role.label} (upload)`} assetType={uploadType} asset={upload.asset} inherited={upload.inherited} isUpload d={d} readOnly={readOnly} />
+              )}
+              <AssetRow label={`${role.label} (bewerkt)`} assetType={processedType} asset={eff.asset} inherited={eff.inherited} hasUploadSource={!isAiOnly && !!upload.asset} isProcessing={processing} d={d} readOnly={readOnly} showHistory />
+            </React.Fragment>
+          );
+        })}
+      </CategorySection>
+
+      {/* Locatie */}
+      <CategorySection title="Locatie" filled={locatieProgress.filled} total={locatieProgress.total}>
+        {(() => { const e = d.getEffectiveAsset('location_photo'); return (
+          <AssetRow label="Veld foto (upload)" assetType="location_photo" asset={e.asset} inherited={e.inherited} isUpload d={d} readOnly={readOnly} />
+        ); })()}
+        {(() => { const e = d.getEffectiveAsset('stadium_background'); const u = d.getEffectiveAsset('location_photo'); return (
+          <AssetRow label="Achtergrond (bewerkt)" assetType="stadium_background" asset={e.asset} inherited={e.inherited} hasUploadSource={!!u.asset} isProcessing={d.postProcessingAsset === 'stadium_background'} d={d} readOnly={readOnly} />
+        ); })()}
+      </CategorySection>
+
+      {!d.profile && (
+        <div className={s.warningBox}>
+          Nog geen brand profiel voor dit team. Upload of genereer een asset — het profiel wordt automatisch aangemaakt.
+        </div>
+      )}
+    </div>
+  );
+};
