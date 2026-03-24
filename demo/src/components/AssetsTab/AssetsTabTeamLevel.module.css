@@ -270,6 +270,83 @@
   border: 0;
 }
 
+/* ── Asset action sheet (bottom overlay) ── */
+.sheetBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 101;
+  background: var(--app-surface);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  animation: sheetSlideUp 0.2s ease;
+}
+
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet {
+    animation: none;
+  }
+}
+
+.sheetHeader {
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--app-text);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.sheetBody {
+  padding: var(--space-2) 0;
+}
+
+.sheetAction {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-5);
+  border: none;
+  background: none;
+  color: var(--app-text);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  min-height: 44px;
+  text-align: left;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .sheetAction:hover {
+    background: var(--app-hover-bg, rgba(0, 0, 0, 0.04));
+  }
+}
+
+.sheetAction:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: -2px;
+}
+
+.sheetActionDanger {
+  color: var(--app-danger, var(--color-red-500));
+}
+
 /* ── Warning box ── */
 .warningBox {
   padding: var(--space-4);
