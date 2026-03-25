@@ -336,18 +336,17 @@
   color: var(--app-primary);
 }
 
-/* ── Score badge ── */
-.scoreBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-sm);
-  background: var(--app-primary);
-  color: var(--app-primary-text, #fff);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-  min-width: 36px;
+/* ── Content indicator dot ── */
+.contentDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--app-success);
+  flex-shrink: 0;
+}
+
+/* ── Upcoming match highlight ── */
+.matchRowUpcoming {
+  border-left: 3px solid var(--app-primary);
 }

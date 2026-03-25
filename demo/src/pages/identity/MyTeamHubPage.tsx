@@ -704,7 +704,7 @@ export const MyTeamHubPage: React.FC = () => {
               isTeamRoute={d.isTeamRoute}
               seasonsBasePath={d.seasonsBasePath}
               seasonPathKey={d.seasonPathKey}
-              userCanEditProject={d.userCanEditProject}
+              canManageContent={isAdmin || d.userCanEditProject}
               matchDisplayTitle={d.matchDisplayTitle}
               setIsCreateMatchModalOpen={d.setIsCreateMatchModalOpen}
               setIsCreateCompetitionModalOpen={d.setIsCreateCompetitionModalOpen}

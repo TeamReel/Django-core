@@ -25,7 +25,7 @@ interface HubWedstrijdenTabProps {
   isTeamRoute: boolean;
   seasonsBasePath: string;
   seasonPathKey: string;
-  userCanEditProject: boolean;
+  canManageContent: boolean;
   matchDisplayTitle: (m: MatchRecord) => string;
   setIsCreateMatchModalOpen: (v: boolean) => void;
   setIsCreateCompetitionModalOpen?: (v: boolean) => void;
@@ -57,14 +57,14 @@ function getMatchPath(
     : `/matches/${String(matchKey)}`;
 }
 
-function getScore(m: MatchRecord): string | null {
+/** Check if match has any content created (lineup, photos, etc.) */
+function hasContent(m: MatchRecord): boolean {
   const meta = m.metadata;
-  if (!meta) return null;
-  const tr = meta.teamreel as Record<string, Record<string, unknown>> | undefined;
-  const home = meta.score_home ?? tr?.match_context?.score_home;
-  const away = meta.score_away ?? tr?.match_context?.score_away;
-  if (home != null && away != null) return `${home}-${away}`;
-  return null;
+  if (!meta) return false;
+  if (meta.lineup || meta.formation) return true;
+  const teamreel = meta.teamreel as Record<string, unknown> | undefined;
+  if (teamreel?.content_status || teamreel?.has_content) return true;
+  return false;
 }
 
 function fmtDate(d: Date): string {
@@ -91,9 +91,8 @@ function getVenue(m: MatchRecord): 'home' | 'away' | null {
 
 function isUpcoming(m: MatchRecord): boolean {
   const d = parseMatchDate(m);
-  const score = getScore(m);
   const status = String(m.metadata?.status || 'scheduled').toLowerCase();
-  return !score && status !== 'finished' && status !== 'completed' && !!d && d.getTime() > Date.now();
+  return status !== 'finished' && status !== 'completed' && !!d && d.getTime() > Date.now();
 }
 
 // ── Grouping ─────────────────────────────────────────────────────────────────
@@ -179,6 +178,7 @@ const CompetitionSection: React.FC<CompetitionSectionProps> = ({
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   const total = group.matches.length;
+  const contentReady = group.matches.filter((m) => hasContent(m)).length;
 
   return (
     <div className={s.compSection}>
@@ -203,14 +203,14 @@ const CompetitionSection: React.FC<CompetitionSectionProps> = ({
         <div className={s.compBody}>
           {group.matches.map((m) => {
             const d = parseMatchDate(m);
-            const score = getScore(m);
             const venue = getVenue(m);
             const upcoming = isUpcoming(m);
+            const content = hasContent(m);
             return (
               <button
                 key={m.id}
                 type="button"
-                className={s.matchRow}
+                className={`${s.matchRow} ${upcoming ? s.matchRowUpcoming : ''}`}
                 onClick={() => onMatchTap(m)}
               >
                 <span className={s.matchMain}>
@@ -227,7 +227,7 @@ const CompetitionSection: React.FC<CompetitionSectionProps> = ({
                       {upcoming ? fmtDate(d) : fmtDateShort(d)}
                     </span>
                   )}
-                  {score && <span className={s.scoreBadge}>{score}</span>}
+                  {content && <span className={s.contentDot} title="Content aanwezig" />}
                 </span>
               </button>
             );
@@ -246,7 +246,7 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
   isTeamRoute,
   seasonsBasePath,
   seasonPathKey,
-  userCanEditProject,
+  canManageContent,
   matchDisplayTitle,
   setIsCreateMatchModalOpen,
   setIsCreateCompetitionModalOpen,
@@ -290,7 +290,7 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
     return (
       <div className={s.container}>
         <div className={s.empty}>Nog geen wedstrijden in dit seizoen.</div>
-        {userCanEditProject && (
+        {canManageContent && (
           <div className={s.emptyActions}>
             <button type="button" className={s.emptyAction} onClick={() => setIsCreateMatchModalOpen(true)}>
               <AppIcon icon={Swords} size={16} />
@@ -315,7 +315,7 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
         <div className={s.headerLeft}>
           {seasonName && <span className={s.seasonBarLabel}>{seasonName}</span>}
         </div>
-        {userCanEditProject && (
+        {canManageContent && (
           <div className={s.addMenuWrap} ref={addMenuRef}>
             <button
               type="button"
@@ -387,7 +387,6 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
         <ListSection title="Overig">
           {data.ungrouped.map((m) => {
             const d = parseMatchDate(m);
-            const score = getScore(m);
             const venue = getVenue(m);
             return (
               <ListSection.Row
@@ -399,7 +398,6 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
                     {d && <span className={s.matchDate}>{fmtDateShort(d)}</span>}
                   </span>
                 }
-                trailing={score ? <span className={s.scoreBadge}>{score}</span> : undefined}
                 onTap={() => goToMatch(m)}
               />
             );
