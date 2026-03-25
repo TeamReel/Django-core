@@ -709,7 +709,7 @@ export const MyTeamHubPage: React.FC = () => {
               setIsCreateMatchModalOpen={d.setIsCreateMatchModalOpen}
               setIsCreateCompetitionModalOpen={d.setIsCreateCompetitionModalOpen}
               onMatchTap={setSelectedMatch}
-              seasonName={d.season?.name as string | undefined}
+              seasonName={(d.season?.name || seasonCtx.season?.name) as string | undefined}
               competitions={seasonCtx.competitions}
             />
           )}
