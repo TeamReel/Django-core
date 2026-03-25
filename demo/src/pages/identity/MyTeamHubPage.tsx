@@ -52,7 +52,10 @@ import { MemberDetailPanel } from '../periods/MemberDetailPanel';
 import { AssetDetailSheet, type AssetSheetType } from './AssetDetailSheet';
 import { NavigationSheet } from '../../components/ui/NavigationSheet';
 import { formatCredits } from './detail/useTeamCreditsData';
-import { creditsApi, projectsApi } from '../../api';
+import { api, creditsApi, projectsApi } from '../../api';
+import PeriodCreateModal from './PeriodCreateModal';
+import type { PeriodCreatePayload } from './PeriodCreateModal/types';
+import type { Period } from '../../types/season';
 import type { ProjectCreditsBalance } from '../../types/api/credits';
 
 
@@ -183,6 +186,30 @@ export const MyTeamHubPage: React.FC = () => {
   const [panelClosing, setPanelClosing] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const [activeAssetSheet, setActiveAssetSheet] = useState<AssetSheetType | null>(null);
+
+  // ── Season Create ──
+  const [isCreateSeasonModalOpen, setIsCreateSeasonModalOpen] = useState(false);
+  const handleCreateSeason = useCallback(async (payload: PeriodCreatePayload) => {
+    const orgId = String(payload.organisation_id || d.org?.id || '').trim();
+    const teamId = String(payload.project_id || d.project?.id || '').trim();
+    if (!orgId) throw new Error('Selecteer eerst een organisatie');
+    if (!teamId) throw new Error('Selecteer eerst een team');
+    const created = await api.post<Period>('/periods/', {
+      organisation_id: orgId,
+      project_id: teamId ? Number(teamId) : undefined,
+      parent_period_id: null,
+      name: payload.name,
+      description: payload.description,
+      start_date: payload.start_date,
+      end_date: payload.end_date,
+      metadata: { type: 'season' },
+    });
+    setIsCreateSeasonModalOpen(false);
+    if (created?.id) {
+      seasonCtx.reloadSeason();
+      seasonCtx.setSelectedSeasonId(String(created.id));
+    }
+  }, [d.org?.id, d.project?.id, seasonCtx]);
 
   // ── Credits balance (H1) ──
   const [creditsBalance, setCreditsBalance] = useState<ProjectCreditsBalance | null>(null);
@@ -506,6 +533,27 @@ export const MyTeamHubPage: React.FC = () => {
           }}
         />
 
+        {/* ── Season Create Modal (page-level, not season-scoped) ── */}
+        <PeriodCreateModal
+          opened={isCreateSeasonModalOpen}
+          onClose={() => setIsCreateSeasonModalOpen(false)}
+          title="Seizoen aanmaken"
+          organisations={d.createModalOrganisations}
+          clubs={d.createModalClubs}
+          teams={d.createModalTeams}
+          requirements={{
+            requireOrganisation: false,
+            requireClub: false,
+            requireTeam: false,
+            requireSeason: false,
+            showSportVariant: true,
+          }}
+          initialOrganisationId={String(d.org?.id || '')}
+          initialClubId={String(d.club?.id || '')}
+          initialTeamId={String(d.project?.id || '')}
+          onCreate={handleCreateSeason}
+        />
+
         {/* ── Tab Bar (RBAC) — hidden on desktop where Panel B handles nav ── */}
         <div className={s.mobileTabBarWrap}>
           <MobileTabBar
@@ -708,6 +756,7 @@ export const MyTeamHubPage: React.FC = () => {
               matchDisplayTitle={d.matchDisplayTitle}
               setIsCreateMatchModalOpen={d.setIsCreateMatchModalOpen}
               setIsCreateCompetitionModalOpen={d.setIsCreateCompetitionModalOpen}
+              setIsCreateSeasonModalOpen={isAdmin ? setIsCreateSeasonModalOpen : undefined}
               onMatchTap={setSelectedMatch}
               seasonName={(d.season?.name || seasonCtx.season?.name) as string | undefined}
               competitions={seasonCtx.competitions}

@@ -2,12 +2,13 @@
  * HubWedstrijdenTab — Accordion-style match list grouped by competition.
  *
  * Structure:
- *   Header — Season name + add menu (wedstrijd / competitie)
+ *   Header — Season name
  *   "Komend" — max 3 upcoming matches across all competitions
- *   Per competition — collapsible accordion sections (like Assets tab)
+ *   Per competition — collapsible accordion sections with inline + Wedstrijd
+ *   + Competitie — inline add button after all competition accordions
  *   "Overig" — matches without a competition
  */
-import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Plus, Trophy, Swords, ChevronDown } from 'lucide-react';
 import { AppIcon } from '../../components/AppIcon';
@@ -29,6 +30,7 @@ interface HubWedstrijdenTabProps {
   matchDisplayTitle: (m: MatchRecord) => string;
   setIsCreateMatchModalOpen: (v: boolean) => void;
   setIsCreateCompetitionModalOpen?: (v: boolean) => void;
+  setIsCreateSeasonModalOpen?: (v: boolean) => void;
   onMatchTap?: (m: MatchRecord) => void;
   seasonName?: string;
   competitions?: Period[];
@@ -181,10 +183,12 @@ interface CompetitionSectionProps {
   defaultOpen: boolean;
   matchDisplayTitle: (m: MatchRecord) => string;
   onMatchTap: (m: MatchRecord) => void;
+  canManageContent: boolean;
+  onAddMatch: () => void;
 }
 
 const CompetitionSection: React.FC<CompetitionSectionProps> = ({
-  group, defaultOpen, matchDisplayTitle, onMatchTap,
+  group, defaultOpen, matchDisplayTitle, onMatchTap, canManageContent, onAddMatch,
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   const total = group.matches.length;
@@ -250,6 +254,12 @@ const CompetitionSection: React.FC<CompetitionSectionProps> = ({
               </button>
             );
           })}
+          {canManageContent && (
+            <button type="button" className={s.inlineAddBtn} onClick={onAddMatch}>
+              <AppIcon icon={Plus} size={14} />
+              <span>Wedstrijd toevoegen</span>
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -268,24 +278,12 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
   matchDisplayTitle,
   setIsCreateMatchModalOpen,
   setIsCreateCompetitionModalOpen,
+  setIsCreateSeasonModalOpen,
   onMatchTap,
   seasonName,
   competitions = [],
 }) => {
   const navigate = useNavigate();
-  const [addMenuOpen, setAddMenuOpen] = useState(false);
-  const addMenuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!addMenuOpen) return;
-    const close = (e: MouseEvent) => {
-      if (addMenuRef.current && !addMenuRef.current.contains(e.target as Node)) {
-        setAddMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', close);
-    return () => document.removeEventListener('mousedown', close);
-  }, [addMenuOpen]);
 
   const data = useMemo(
     () => groupByCompetition(matches, competitions),
@@ -328,40 +326,20 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
 
   return (
     <div className={s.container}>
-      {/* Header: season name + add menu */}
+      {/* Header: season name */}
       <div className={s.headerBar}>
         <div className={s.headerLeft}>
           {seasonName && <span className={s.seasonBarLabel}>{seasonName}</span>}
         </div>
-        {canManageContent && (
-          <div className={s.addMenuWrap} ref={addMenuRef}>
-            <button
-              type="button"
-              className={s.addBtn}
-              onClick={() => setAddMenuOpen((v) => !v)}
-              aria-label="Toevoegen"
-              aria-expanded={addMenuOpen}
-              aria-haspopup="menu"
-            >
-              <AppIcon icon={Plus} size={16} />
-            </button>
-            {addMenuOpen && (
-              <div className={s.addMenu} role="menu">
-                <button type="button" className={s.addMenuItem} role="menuitem"
-                  onClick={() => { setIsCreateMatchModalOpen(true); setAddMenuOpen(false); }}
-                >
-                  <AppIcon icon={Swords} size={16} /><span>Wedstrijd</span>
-                </button>
-                {setIsCreateCompetitionModalOpen && (
-                  <button type="button" className={s.addMenuItem} role="menuitem"
-                    onClick={() => { setIsCreateCompetitionModalOpen(true); setAddMenuOpen(false); }}
-                  >
-                    <AppIcon icon={Trophy} size={16} /><span>Competitie</span>
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+        {canManageContent && setIsCreateSeasonModalOpen && (
+          <button
+            type="button"
+            className={s.seasonAddBtn}
+            onClick={() => setIsCreateSeasonModalOpen(true)}
+          >
+            <AppIcon icon={Plus} size={12} />
+            <span>Seizoen</span>
+          </button>
         )}
       </div>
 
@@ -398,8 +376,22 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
           defaultOpen={i === 0}
           matchDisplayTitle={matchDisplayTitle}
           onMatchTap={goToMatch}
+          canManageContent={canManageContent}
+          onAddMatch={() => setIsCreateMatchModalOpen(true)}
         />
       ))}
+
+      {/* Inline add competition button */}
+      {canManageContent && setIsCreateCompetitionModalOpen && (
+        <button
+          type="button"
+          className={s.inlineAddBtn}
+          onClick={() => setIsCreateCompetitionModalOpen(true)}
+        >
+          <AppIcon icon={Plus} size={14} />
+          <span>Competitie toevoegen</span>
+        </button>
+      )}
 
       {/* Ungrouped matches */}
       {data.ungrouped.length > 0 && (
@@ -422,6 +414,18 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
             );
           })}
         </ListSection>
+      )}
+
+      {/* General add match button (when no competitions yet, or for ungrouped) */}
+      {canManageContent && data.groups.length === 0 && (
+        <button
+          type="button"
+          className={s.inlineAddBtn}
+          onClick={() => setIsCreateMatchModalOpen(true)}
+        >
+          <AppIcon icon={Plus} size={14} />
+          <span>Wedstrijd toevoegen</span>
+        </button>
       )}
     </div>
   );
