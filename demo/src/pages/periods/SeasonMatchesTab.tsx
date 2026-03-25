@@ -49,6 +49,8 @@ export interface MatchRecord {
   date?: string;
   period_id?: string;
   period?: { id?: string; name?: string } | null;
+  project?: { id?: string; name?: string; slug?: string; club_name?: string } | null;
+  opponent_project?: { id?: string; name?: string; slug?: string; club_name?: string } | null;
   metadata?: MatchMetadata;
   [key: string]: unknown;
 }

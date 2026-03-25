@@ -1,15 +1,15 @@
 /**
- * HubWedstrijdenTab — iOS-style grouped match list.
+ * HubWedstrijdenTab — Accordion-style match list grouped by competition.
  *
- * Sections:
- *   "Komend"  — max 3 upcoming matches (Calendar icon, no score)
- *   Per month — played matches grouped by month, newest first (score badge)
- *
- * Tap navigates to MatchDetailPage. Admin FAB for creating matches.
+ * Structure:
+ *   Header — Season name + add menu (wedstrijd / competitie)
+ *   "Komend" — max 3 upcoming matches across all competitions
+ *   Per competition — collapsible accordion sections (like Assets tab)
+ *   "Overig" — matches without a competition
  */
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Plus, Trophy, Swords } from 'lucide-react';
+import { Calendar, Plus, Trophy, Swords, ChevronDown } from 'lucide-react';
 import { AppIcon } from '../../components/AppIcon';
 import { ListSection } from '../../components/ListSection';
 import { periodPathKey } from '../../utils/periodPath';
@@ -29,17 +29,13 @@ interface HubWedstrijdenTabProps {
   matchDisplayTitle: (m: MatchRecord) => string;
   setIsCreateMatchModalOpen: (v: boolean) => void;
   setIsCreateCompetitionModalOpen?: (v: boolean) => void;
-  /** If provided, tapping a match calls this instead of navigating away */
   onMatchTap?: (m: MatchRecord) => void;
-  /** Current season name shown as context bar at the top */
   seasonName?: string;
-  /** Competitions in the active season — shown as filter pills */
   competitions?: Period[];
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Parse match date from available fields. */
 function parseMatchDate(m: MatchRecord): Date | null {
   const raw = m.start_time || m.date || m.metadata?.date;
   if (!raw) return null;
@@ -47,7 +43,6 @@ function parseMatchDate(m: MatchRecord): Date | null {
   return isNaN(d.getTime()) ? null : d;
 }
 
-/** Build match detail path (same logic as SeasonMatchesTab). */
 function getMatchPath(
   match: MatchRecord,
   isTeamRoute: boolean,
@@ -62,7 +57,6 @@ function getMatchPath(
     : `/matches/${String(matchKey)}`;
 }
 
-/** Get score string or null. */
 function getScore(m: MatchRecord): string | null {
   const meta = m.metadata;
   if (!meta) return null;
@@ -73,25 +67,16 @@ function getScore(m: MatchRecord): string | null {
   return null;
 }
 
-/** Format date for row subtitle. */
 function fmtDate(d: Date): string {
   return d.toLocaleDateString('nl-NL', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
+    weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
   });
 }
 
-/** Month label in Dutch, uppercase. */
-function monthLabel(d: Date): string {
-  return d
-    .toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })
-    .toUpperCase();
+function fmtDateShort(d: Date): string {
+  return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
-/** Get venue indicator: 'home' | 'away' | null. */
 function getVenue(m: MatchRecord): 'home' | 'away' | null {
   const meta = m.metadata;
   if (!meta) return null;
@@ -100,71 +85,156 @@ function getVenue(m: MatchRecord): 'home' | 'away' | null {
   return null;
 }
 
-interface MonthGroup {
-  label: string;
-  /** Sort key — descending (newest first). */
-  sortKey: number;
+function isUpcoming(m: MatchRecord): boolean {
+  const d = parseMatchDate(m);
+  const score = getScore(m);
+  const status = String(m.metadata?.status || 'scheduled').toLowerCase();
+  return !score && status !== 'finished' && status !== 'completed' && !!d && d.getTime() > Date.now();
+}
+
+// ── Grouping ─────────────────────────────────────────────────────────────────
+
+interface CompetitionGroup {
+  competition: Period;
   matches: MatchRecord[];
+  played: number;
 }
 
-interface GroupedMatches {
+interface GroupedData {
   upcoming: MatchRecord[];
-  months: MonthGroup[];
+  groups: CompetitionGroup[];
+  ungrouped: MatchRecord[];
 }
 
-/** Split matches into upcoming (max 3) and per-month played groups. */
-function groupMatches(matches: MatchRecord[]): GroupedMatches {
-  const now = Date.now();
-  const upcoming: { m: MatchRecord; ts: number }[] = [];
-  const played: { m: MatchRecord; d: Date }[] = [];
+function groupByCompetition(
+  matches: MatchRecord[],
+  competitions: Period[],
+): GroupedData {
+  const upcoming: MatchRecord[] = [];
+  const compMap = new Map<string, MatchRecord[]>();
+  const ungrouped: MatchRecord[] = [];
 
   for (const m of matches) {
-    const d = parseMatchDate(m);
-    const score = getScore(m);
-    const status = String(m.metadata?.status || 'scheduled').toLowerCase();
-    const isFinished = status === 'finished' || status === 'completed';
+    if (isUpcoming(m)) upcoming.push(m);
 
-    if (!isFinished && !score && d && d.getTime() > now) {
-      upcoming.push({ m, ts: d.getTime() });
-    } else if (d) {
-      played.push({ m, d });
+    const compId = String(m.period_id || (typeof m.period === 'object' ? m.period?.id : m.period) || '').trim();
+    if (compId) {
+      if (!compMap.has(compId)) compMap.set(compId, []);
+      compMap.get(compId)!.push(m);
     } else {
-      // No date — treat as played, group under "Overig"
-      played.push({ m, d: new Date(0) });
+      ungrouped.push(m);
     }
   }
 
-  // Upcoming: sorted soonest first, max 3
-  upcoming.sort((a, b) => a.ts - b.ts);
-  const upcomingMatches = upcoming.slice(0, 3).map((u) => u.m);
+  // Sort upcoming by date (soonest first), max 3
+  upcoming.sort((a, b) => (parseMatchDate(a)?.getTime() ?? 0) - (parseMatchDate(b)?.getTime() ?? 0));
 
-  // Played: group by month, newest month first
-  const monthMap = new Map<string, MonthGroup>();
-  for (const { m, d } of played) {
-    const key = d.getTime() === 0 ? 'OVERIG' : monthLabel(d);
-    const sortKey = d.getTime() === 0 ? -1 : d.getFullYear() * 100 + d.getMonth();
-    let group = monthMap.get(key);
-    if (!group) {
-      group = { label: key, sortKey, matches: [] };
-      monthMap.set(key, group);
-    }
-    group.matches.push(m);
-  }
-
-  const months = Array.from(monthMap.values()).sort((a, b) => b.sortKey - a.sortKey);
-  // Within each month: newest first
-  for (const g of months) {
-    g.matches.sort((a, b) => {
-      const da = parseMatchDate(a)?.getTime() ?? 0;
-      const db = parseMatchDate(b)?.getTime() ?? 0;
-      return db - da;
+  // Build groups per competition, maintaining competition order
+  const groups: CompetitionGroup[] = [];
+  for (const comp of competitions) {
+    const cid = String(comp.id);
+    const compMatches = compMap.get(cid) || [];
+    if (compMatches.length === 0) continue;
+    // Sort: upcoming first (by date asc), then played (by date desc)
+    compMatches.sort((a, b) => {
+      const aUp = isUpcoming(a);
+      const bUp = isUpcoming(b);
+      if (aUp && !bUp) return -1;
+      if (!aUp && bUp) return 1;
+      const ta = parseMatchDate(a)?.getTime() ?? 0;
+      const tb = parseMatchDate(b)?.getTime() ?? 0;
+      return aUp ? ta - tb : tb - ta;
     });
+    const played = compMatches.filter((m) => !isUpcoming(m)).length;
+    groups.push({ competition: comp, matches: compMatches, played });
   }
 
-  return { upcoming: upcomingMatches, months };
+  // Check for matches in competitions not in the `competitions` array
+  const knownCompIds = new Set(competitions.map((c) => String(c.id)));
+  for (const [cid, ms] of compMap) {
+    if (!knownCompIds.has(cid)) ungrouped.push(...ms);
+  }
+
+  // Sort ungrouped by date desc
+  ungrouped.sort((a, b) => (parseMatchDate(b)?.getTime() ?? 0) - (parseMatchDate(a)?.getTime() ?? 0));
+
+  return { upcoming: upcoming.slice(0, 3), groups, ungrouped };
 }
 
-// ── Component ────────────────────────────────────────────────────────────────
+// ── CompetitionSection ───────────────────────────────────────────────────────
+
+interface CompetitionSectionProps {
+  group: CompetitionGroup;
+  defaultOpen: boolean;
+  matchDisplayTitle: (m: MatchRecord) => string;
+  onMatchTap: (m: MatchRecord) => void;
+}
+
+const CompetitionSection: React.FC<CompetitionSectionProps> = ({
+  group, defaultOpen, matchDisplayTitle, onMatchTap,
+}) => {
+  const [open, setOpen] = useState(defaultOpen);
+  const total = group.matches.length;
+
+  return (
+    <div className={s.compSection}>
+      <button
+        type="button"
+        className={s.compHeader}
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+      >
+        <span className={s.compHeaderLeft}>
+          <AppIcon icon={Trophy} size={14} />
+          <span className={s.compName}>{group.competition.name || 'Competitie'}</span>
+        </span>
+        <span className={s.compHeaderRight}>
+          <span className={s.compCount}>{group.played}/{total}</span>
+          <span className={`${s.chevron} ${open ? s.chevronOpen : ''}`}>
+            <AppIcon icon={ChevronDown} size={14} />
+          </span>
+        </span>
+      </button>
+      {open && (
+        <div className={s.compBody}>
+          {group.matches.map((m) => {
+            const d = parseMatchDate(m);
+            const score = getScore(m);
+            const venue = getVenue(m);
+            const upcoming = isUpcoming(m);
+            return (
+              <button
+                key={m.id}
+                type="button"
+                className={s.matchRow}
+                onClick={() => onMatchTap(m)}
+              >
+                <span className={s.matchMain}>
+                  {venue && (
+                    <span className={venue === 'home' ? s.venueHome : s.venueAway}>
+                      {venue === 'home' ? 'T' : 'U'}
+                    </span>
+                  )}
+                  <span className={s.matchTitle}>{matchDisplayTitle(m)}</span>
+                </span>
+                <span className={s.matchMeta}>
+                  {d && (
+                    <span className={s.matchDate}>
+                      {upcoming ? fmtDate(d) : fmtDateShort(d)}
+                    </span>
+                  )}
+                  {score && <span className={s.scoreBadge}>{score}</span>}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── Main Component ───────────────────────────────────────────────────────────
 
 export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
   matches,
@@ -181,43 +251,32 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
   competitions = [],
 }) => {
   const navigate = useNavigate();
-  const [selectedCompetitionId, setSelectedCompetitionId] = useState<string | null>(null);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const addMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close add menu on outside click
-  const handleCloseAddMenu = useCallback((e: MouseEvent) => {
-    if (addMenuRef.current && !addMenuRef.current.contains(e.target as Node)) {
-      setAddMenuOpen(false);
-    }
-  }, []);
-
   useEffect(() => {
-    if (addMenuOpen) {
-      document.addEventListener('mousedown', handleCloseAddMenu);
-      return () => document.removeEventListener('mousedown', handleCloseAddMenu);
-    }
-  }, [addMenuOpen, handleCloseAddMenu]);
+    if (!addMenuOpen) return;
+    const close = (e: MouseEvent) => {
+      if (addMenuRef.current && !addMenuRef.current.contains(e.target as Node)) {
+        setAddMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', close);
+    return () => document.removeEventListener('mousedown', close);
+  }, [addMenuOpen]);
 
-  // Filter matches by selected competition
-  const filteredMatches = useMemo(() => {
-    if (!selectedCompetitionId) return matches;
-    return matches.filter((m) => {
-      const pid = String(m.period_id || (typeof m.period === 'object' ? m.period?.id : m.period) || '');
-      return pid === selectedCompetitionId;
-    });
-  }, [matches, selectedCompetitionId]);
+  const data = useMemo(
+    () => groupByCompetition(matches, competitions),
+    [matches, competitions],
+  );
 
-  const grouped = useMemo(() => groupMatches(filteredMatches), [filteredMatches]);
-
-  const goToMatch = (m: MatchRecord) => {
+  const goToMatch = useCallback((m: MatchRecord) => {
     if (onMatchTap) {
       onMatchTap(m);
     } else {
-      const path = getMatchPath(m, isTeamRoute, seasonsBasePath, seasonPathKey);
-      navigate(path);
+      navigate(getMatchPath(m, isTeamRoute, seasonsBasePath, seasonPathKey));
     }
-  };
+  }, [onMatchTap, navigate, isTeamRoute, seasonsBasePath, seasonPathKey]);
 
   if (matchesLoading) {
     return <div className={s.empty}>Wedstrijden laden…</div>;
@@ -229,20 +288,12 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
         <div className={s.empty}>Nog geen wedstrijden in dit seizoen.</div>
         {userCanEditProject && (
           <div className={s.emptyActions}>
-            <button
-              type="button"
-              className={s.emptyAction}
-              onClick={() => setIsCreateMatchModalOpen(true)}
-            >
+            <button type="button" className={s.emptyAction} onClick={() => setIsCreateMatchModalOpen(true)}>
               <AppIcon icon={Swords} size={16} />
               <span>Wedstrijd toevoegen</span>
             </button>
             {setIsCreateCompetitionModalOpen && (
-              <button
-                type="button"
-                className={s.emptyAction}
-                onClick={() => setIsCreateCompetitionModalOpen(true)}
-              >
+              <button type="button" className={s.emptyAction} onClick={() => setIsCreateCompetitionModalOpen(true)}>
                 <AppIcon icon={Trophy} size={16} />
                 <span>Competitie toevoegen</span>
               </button>
@@ -255,19 +306,17 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
 
   return (
     <div className={s.container}>
-      {/* Header bar: season + filter pills + add button */}
+      {/* Header: season name + add menu */}
       <div className={s.headerBar}>
         <div className={s.headerLeft}>
-          {seasonName && (
-            <span className={s.seasonBarLabel}>{seasonName}</span>
-          )}
+          {seasonName && <span className={s.seasonBarLabel}>{seasonName}</span>}
         </div>
         {userCanEditProject && (
           <div className={s.addMenuWrap} ref={addMenuRef}>
             <button
               type="button"
               className={s.addBtn}
-              onClick={() => setAddMenuOpen(v => !v)}
+              onClick={() => setAddMenuOpen((v) => !v)}
               aria-label="Toevoegen"
               aria-expanded={addMenuOpen}
               aria-haspopup="menu"
@@ -276,24 +325,16 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
             </button>
             {addMenuOpen && (
               <div className={s.addMenu} role="menu">
-                <button
-                  type="button"
-                  className={s.addMenuItem}
-                  role="menuitem"
+                <button type="button" className={s.addMenuItem} role="menuitem"
                   onClick={() => { setIsCreateMatchModalOpen(true); setAddMenuOpen(false); }}
                 >
-                  <AppIcon icon={Swords} size={16} />
-                  <span>Wedstrijd</span>
+                  <AppIcon icon={Swords} size={16} /><span>Wedstrijd</span>
                 </button>
                 {setIsCreateCompetitionModalOpen && (
-                  <button
-                    type="button"
-                    className={s.addMenuItem}
-                    role="menuitem"
+                  <button type="button" className={s.addMenuItem} role="menuitem"
                     onClick={() => { setIsCreateCompetitionModalOpen(true); setAddMenuOpen(false); }}
                   >
-                    <AppIcon icon={Trophy} size={16} />
-                    <span>Competitie</span>
+                    <AppIcon icon={Trophy} size={16} /><span>Competitie</span>
                   </button>
                 )}
               </div>
@@ -302,43 +343,10 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
         )}
       </div>
 
-      {/* Competition filter pills */}
-      {competitions.length > 0 && (
-        <div className={s.filterBar} role="toolbar" aria-label="Filter op competitie">
-          <button
-            type="button"
-            className={s.filterPill}
-            data-active={selectedCompetitionId === null ? 'true' : undefined}
-            onClick={() => setSelectedCompetitionId(null)}
-          >
-            Alle
-          </button>
-          {competitions.map((comp) => {
-            const cid = String(comp.id);
-            return (
-              <button
-                key={cid}
-                type="button"
-                className={s.filterPill}
-                data-active={selectedCompetitionId === cid ? 'true' : undefined}
-                onClick={() => setSelectedCompetitionId(selectedCompetitionId === cid ? null : cid)}
-              >
-                {String(comp.name || 'Competitie')}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Empty state when filter yields no results */}
-      {filteredMatches.length === 0 && (
-        <div className={s.empty}>Geen wedstrijden voor deze competitie.</div>
-      )}
-
-      {/* Upcoming matches */}
-      {grouped.upcoming.length > 0 && (
+      {/* Upcoming matches — always visible, cross-competition */}
+      {data.upcoming.length > 0 && (
         <ListSection title="Komend">
-          {grouped.upcoming.map((m) => {
+          {data.upcoming.map((m) => {
             const d = parseMatchDate(m);
             const venue = getVenue(m);
             return (
@@ -359,10 +367,21 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
         </ListSection>
       )}
 
-      {/* Per-month played matches */}
-      {grouped.months.map((group) => (
-        <ListSection key={group.label} title={group.label}>
-          {group.matches.map((m) => {
+      {/* Per-competition accordion sections */}
+      {data.groups.map((group, i) => (
+        <CompetitionSection
+          key={String(group.competition.id)}
+          group={group}
+          defaultOpen={i === 0}
+          matchDisplayTitle={matchDisplayTitle}
+          onMatchTap={goToMatch}
+        />
+      ))}
+
+      {/* Ungrouped matches */}
+      {data.ungrouped.length > 0 && (
+        <ListSection title="Overig">
+          {data.ungrouped.map((m) => {
             const d = parseMatchDate(m);
             const score = getScore(m);
             const venue = getVenue(m);
@@ -373,7 +392,7 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
                 value={
                   <span className={s.rowMeta}>
                     {venue && <span className={venue === 'home' ? s.venueHome : s.venueAway}>{venue === 'home' ? 'T' : 'U'}</span>}
-                    {d && <span className={s.matchDate}>{fmtDate(d)}</span>}
+                    {d && <span className={s.matchDate}>{fmtDateShort(d)}</span>}
                   </span>
                 }
                 trailing={score ? <span className={s.scoreBadge}>{score}</span> : undefined}
@@ -382,9 +401,7 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
             );
           })}
         </ListSection>
-      ))}
-
-      {/* No more FAB — add menu is in header */}
+      )}
     </div>
   );
 };
