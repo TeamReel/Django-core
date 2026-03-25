@@ -825,6 +825,39 @@
   outline-offset: 2px;
 }
 
+/* ── Team info rows ── */
+.infoRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--app-border);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal, 1.5);
+}
+
+.infoRow:last-of-type {
+  border-bottom: none;
+}
+
+.infoLabel {
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+  margin-right: var(--space-3);
+}
+
+.infoValue {
+  color: var(--app-text);
+  font-weight: var(--font-medium);
+  text-align: right;
+}
+
+.infoSub {
+  color: var(--app-muted-text);
+  font-weight: var(--font-normal, 400);
+  font-size: var(--text-xs);
+}
+
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
   .parentLink,

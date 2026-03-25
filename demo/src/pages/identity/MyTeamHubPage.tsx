@@ -16,7 +16,7 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import { Alert } from '@django-core/design-system';
 import {
   Pencil, MoreHorizontal, Eye, Trash2, Plus,
-  Calendar, Trophy, Wallet,
+  Calendar, Trophy, Wallet, Users,
   Building2, Shirt, Camera, Palette, Upload, Settings,
   ChevronRight, ChevronDown,
 } from 'lucide-react';
@@ -625,6 +625,80 @@ export const MyTeamHubPage: React.FC = () => {
                   </div>
                 </button>
               )}
+
+              {/* Team info — accordion */}
+              <div className={s.accordionSection}>
+                <button
+                  type="button"
+                  className={s.accordionHeader}
+                  onClick={() => toggleSection('team-info')}
+                  aria-expanded={expandedSections.has('team-info')}
+                  aria-label="Team info"
+                >
+                  <AppIcon icon={Settings} size={18} className={s.accordionIcon} />
+                  <span className={s.accordionLabel}>Team info</span>
+                  <AppIcon
+                    icon={ChevronDown}
+                    size={16}
+                    className={`${s.accordionChevron} ${expandedSections.has('team-info') ? s.accordionChevronOpen : ''}`}
+                  />
+                </button>
+                <div className={`${s.accordionBody} ${expandedSections.has('team-info') ? s.accordionBodyOpen : ''}`}>
+                  {d.org?.sport?.name && (
+                    <div className={s.infoRow}>
+                      <span className={s.infoLabel}>Sport</span>
+                      <span className={s.infoValue}>{d.org.sport.name}</span>
+                    </div>
+                  )}
+                  {d.org?.name && (
+                    <div className={s.infoRow}>
+                      <span className={s.infoLabel}>Bond</span>
+                      <span className={s.infoValue}>{d.org.name}</span>
+                    </div>
+                  )}
+                  {d.club?.name && (
+                    <div className={s.infoRow}>
+                      <span className={s.infoLabel}>Club</span>
+                      <span className={s.infoValue}>{d.club.name}</span>
+                    </div>
+                  )}
+                  {seasonCtx.season && (
+                    <div className={s.infoRow}>
+                      <span className={s.infoLabel}>Seizoen</span>
+                      <span className={s.infoValue}>
+                        {String(seasonCtx.season.name || '')}
+                        {seasonCtx.season.start_date && seasonCtx.season.end_date && (
+                          <span className={s.infoSub}>
+                            {' '}({new Date(seasonCtx.season.start_date).toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' })}
+                            {' '}&ndash; {new Date(seasonCtx.season.end_date).toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' })})
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  <div className={s.infoRow}>
+                    <span className={s.infoLabel}>Selectie</span>
+                    <span className={s.infoValue}>{d.members.length} leden</span>
+                  </div>
+                  <div className={s.infoRow}>
+                    <span className={s.infoLabel}>Competities</span>
+                    <span className={s.infoValue}>{seasonCtx.competitions.length}</span>
+                  </div>
+                  <div className={s.infoRow}>
+                    <span className={s.infoLabel}>Wedstrijden</span>
+                    <span className={s.infoValue}>{d.matches.length}</span>
+                  </div>
+                  {isAdmin && d.userCanEditProject && (
+                    <button
+                      type="button"
+                      className={s.accordionViewAll}
+                      onClick={() => navigate(`/organisations/${team.orgIdForDirectoryLists}/projects/${team.teamIdForDirectoryLists}/edit`)}
+                    >
+                      Team bewerken
+                    </button>
+                  )}
+                </div>
+              </div>
 
               {/* Team assets — accordion */}
               <div className={s.accordionSection}>
