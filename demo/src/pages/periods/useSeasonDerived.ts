@@ -247,17 +247,29 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
   // ── Match display title (showing club names instead of team names) ──
 
   const matchDisplayTitle = useCallback((m: SeasonMatch) => {
-    // Prefer a clean title built from metadata club names
     const teamreel = m.metadata?.teamreel as Record<string, unknown> | undefined;
     const ctx = teamreel?.match_context as Record<string, unknown> | undefined;
     const homeClubName = String(ctx?.home_club_name || '');
     const awayClubName = String(ctx?.away_club_name || '');
+
+    // Best case: match_context has explicit home/away club names
+    if (homeClubName && awayClubName && homeClubName !== awayClubName) {
+      return `${homeClubName} vs ${awayClubName}`;
+    }
+
+    // Resolve own club vs opponent club, then assign to home/away by venue
     const oppClubId = String(ctx?.opponent_club_id || '').trim();
-    const resolvedAwayClub = oppClubId ? opponentClubNames[oppClubId] : '';
-    const homeName = homeClubName || m.project?.club_name || club?.name || project?.name || '';
-    const awayName = resolvedAwayClub || awayClubName || m.opponent_project?.club_name || m.opponent_project?.name || '';
+    const resolvedOpponent = oppClubId ? opponentClubNames[oppClubId] : '';
+    const ownClub = m.project?.club_name || club?.name || '';
+    const oppClub = resolvedOpponent || m.opponent_project?.club_name || '';
+    const isHome = ctx?.is_home === true || ctx?.venue === 'Home';
+
+    const homeName = isHome ? ownClub : oppClub;
+    const awayName = isHome ? oppClub : ownClub;
+
     if (homeName && awayName && homeName !== awayName) return `${homeName} vs ${awayName}`;
-    // Same club name on both sides → use team/project names instead
+
+    // Same club name on both sides (intra-club derby) → use team names
     if (homeName && awayName && homeName === awayName) {
       const homeTeam = String(ctx?.home_team_name || project?.name || homeName);
       const awayTeam = String(ctx?.away_team_name || m.opponent_project?.name || awayName);
@@ -269,7 +281,7 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
     if (project?.name && club?.name && project.name !== club.name) {
       raw = raw.replace(project.name, club.name);
     }
-    const oppTeamName = m.opponent_project?.name || String(ctx?.away_team_name || '');
+    const oppTeamName = m.opponent_project?.name || '';
     const oppClubName = oppClubId ? opponentClubNames[oppClubId] : '';
     if (oppTeamName && oppClubName && oppTeamName !== oppClubName) {
       raw = raw.replace(oppTeamName, oppClubName);
