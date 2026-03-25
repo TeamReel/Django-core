@@ -252,7 +252,7 @@ button.roleBadges:focus-visible {
   display: inline-flex;
   align-items: center;
   padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   background: var(--app-surface-2);
   color: var(--app-muted-text);
   font-size: var(--text-xs);

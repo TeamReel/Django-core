@@ -89,9 +89,9 @@
 /* ── Section label ───────────────────────────────────────────────────── */
 .sectionLabel {
   font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-normal);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.02em;
   color: var(--app-muted-text);
   padding: 0 var(--space-1);
   margin: var(--space-5) 0 var(--space-2);
@@ -101,7 +101,6 @@
 .section {
   background: var(--app-surface);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--app-border);
   overflow: hidden;
   margin-bottom: var(--space-1);
 }
@@ -120,10 +119,21 @@
   cursor: pointer;
   text-align: left;
   transition: background var(--duration-fast) var(--ease-default);
+  position: relative;
 }
 
-.row:not(:last-child) {
-  border-bottom: 1px solid var(--app-border);
+.row::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: var(--space-4);
+  right: 0;
+  height: 1px;
+  background: var(--app-border);
+}
+
+.row:last-child::after {
+  display: none;
 }
 
 @media (hover: hover) {
@@ -139,6 +149,7 @@ button.row:focus-visible {
 
 button.row:active {
   background: var(--app-active-bg, rgba(0, 0, 0, 0.06));
+  transform: scale(0.98);
 }
 
 .rowLabel {
@@ -272,10 +283,21 @@ button.row:active {
   flex-direction: column;
   gap: var(--space-1);
   padding: var(--space-2) 0;
+  position: relative;
 }
 
-.cascadeRow:not(:last-child) {
-  border-bottom: 1px solid var(--app-border);
+.cascadeRow::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--app-border);
+}
+
+.cascadeRow:last-child::after {
+  display: none;
 }
 
 .cascadeLabel {
@@ -342,5 +364,17 @@ button.row:active {
 
   .avatarInitials {
     font-size: var(--text-xl);
+  }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  button.row:active {
+    transform: none;
+  }
+
+  .toggle,
+  .toggle::after {
+    transition: none;
   }
 }

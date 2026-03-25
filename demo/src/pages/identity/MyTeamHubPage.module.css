@@ -324,6 +324,23 @@
   flex-shrink: 0;
 }
 
+/* Venue dot (green = home, orange = away) — replaces Calendar icon when venue is known */
+.venueDotHome,
+.venueDotAway {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.venueDotHome {
+  background: var(--app-success);
+}
+
+.venueDotAway {
+  background: var(--app-warning, #f59e0b);
+}
+
 .nextMatchInfo {
   flex: 1;
   min-width: 0;

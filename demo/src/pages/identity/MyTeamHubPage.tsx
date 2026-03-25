@@ -361,6 +361,15 @@ export const MyTeamHubPage: React.FC = () => {
     return dt.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
   }, [nextMatch]);
 
+  const nextMatchVenue = useMemo<'home' | 'away' | null>(() => {
+    if (!nextMatch) return null;
+    const meta = nextMatch.metadata as Record<string, unknown> | undefined;
+    if (!meta) return null;
+    if (meta.venue === 'home' || meta.venue === 'Home' || meta.is_home === true) return 'home';
+    if (meta.venue === 'away' || meta.venue === 'Away' || meta.is_home === false) return 'away';
+    return null;
+  }, [nextMatch]);
+
   // ── Overview: asset status ──
   const teamAssetStatus = useMemo(
     () => getTeamAssetStatus(d.batchBrandKits),
@@ -595,7 +604,11 @@ export const MyTeamHubPage: React.FC = () => {
                   className={s.nextMatchRow}
                   onClick={() => setSelectedMatch(nextMatch)}
                 >
-                  <AppIcon icon={Calendar} size={14} className={s.nextMatchIcon} />
+                  {nextMatchVenue ? (
+                    <span className={nextMatchVenue === 'home' ? s.venueDotHome : s.venueDotAway} />
+                  ) : (
+                    <AppIcon icon={Calendar} size={14} className={s.nextMatchIcon} />
+                  )}
                   <div className={s.nextMatchInfo}>
                     <span className={s.nextMatchTitle}>{d.matchDisplayTitle(nextMatch)}</span>
                     <span className={s.nextMatchDate}>{fmtNextMatchDate}</span>

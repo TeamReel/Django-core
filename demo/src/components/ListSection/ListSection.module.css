@@ -10,10 +10,10 @@
 /* ── Section title (uppercase label above card) ── */
 .sectionTitle {
   font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-normal);
   color: var(--app-muted-text);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
   padding: 0 var(--space-4);
   margin-bottom: var(--space-2);
 }
@@ -22,7 +22,6 @@
 .sectionBody {
   background: var(--app-surface);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--app-border);
   overflow: hidden;
 }
 
@@ -43,6 +42,7 @@
   text-align: left;
   cursor: default;
   -webkit-tap-highlight-color: transparent;
+  position: relative;
 }
 
 button.row {
@@ -57,6 +57,7 @@ button.row {
 
 button.row:active {
   background: var(--app-active-bg, rgba(0, 0, 0, 0.08));
+  transform: scale(0.98);
 }
 
 .row:focus-visible {
@@ -64,9 +65,19 @@ button.row:active {
   outline-offset: -2px;
 }
 
-/* Divider between rows */
-.row + .row {
-  border-top: 1px solid var(--app-border);
+/* Inset separator (iOS-style — starts after left padding) */
+.row::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: var(--space-4);
+  right: 0;
+  height: 1px;
+  background: var(--app-border);
+}
+
+.row:last-child::after {
+  display: none;
 }
 
 /* ── Row parts ── */
@@ -108,5 +119,9 @@ button.row:active {
 @media (prefers-reduced-motion: reduce) {
   button.row {
     transition: none;
+  }
+
+  button.row:active {
+    transform: none;
   }
 }
