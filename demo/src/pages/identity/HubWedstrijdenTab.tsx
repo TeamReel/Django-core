@@ -7,9 +7,9 @@
  *
  * Tap navigates to MatchDetailPage. Admin FAB for creating matches.
  */
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Plus } from 'lucide-react';
+import { Calendar, Plus, Trophy, Swords } from 'lucide-react';
 import { AppIcon } from '../../components/AppIcon';
 import { ListSection } from '../../components/ListSection';
 import { periodPathKey } from '../../utils/periodPath';
@@ -28,6 +28,7 @@ interface HubWedstrijdenTabProps {
   userCanEditProject: boolean;
   matchDisplayTitle: (m: MatchRecord) => string;
   setIsCreateMatchModalOpen: (v: boolean) => void;
+  setIsCreateCompetitionModalOpen?: (v: boolean) => void;
   /** If provided, tapping a match calls this instead of navigating away */
   onMatchTap?: (m: MatchRecord) => void;
   /** Current season name shown as context bar at the top */
@@ -88,6 +89,15 @@ function monthLabel(d: Date): string {
   return d
     .toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })
     .toUpperCase();
+}
+
+/** Get venue indicator: 'home' | 'away' | null. */
+function getVenue(m: MatchRecord): 'home' | 'away' | null {
+  const meta = m.metadata;
+  if (!meta) return null;
+  if (meta.venue === 'home' || meta.is_home === true) return 'home';
+  if (meta.venue === 'away' || meta.is_home === false) return 'away';
+  return null;
 }
 
 interface MonthGroup {
@@ -165,12 +175,29 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
   userCanEditProject,
   matchDisplayTitle,
   setIsCreateMatchModalOpen,
+  setIsCreateCompetitionModalOpen,
   onMatchTap,
   seasonName,
   competitions = [],
 }) => {
   const navigate = useNavigate();
   const [selectedCompetitionId, setSelectedCompetitionId] = useState<string | null>(null);
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const addMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close add menu on outside click
+  const handleCloseAddMenu = useCallback((e: MouseEvent) => {
+    if (addMenuRef.current && !addMenuRef.current.contains(e.target as Node)) {
+      setAddMenuOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (addMenuOpen) {
+      document.addEventListener('mousedown', handleCloseAddMenu);
+      return () => document.removeEventListener('mousedown', handleCloseAddMenu);
+    }
+  }, [addMenuOpen, handleCloseAddMenu]);
 
   // Filter matches by selected competition
   const filteredMatches = useMemo(() => {
@@ -201,14 +228,26 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
       <div className={s.container}>
         <div className={s.empty}>Nog geen wedstrijden in dit seizoen.</div>
         {userCanEditProject && (
-          <button
-            className={s.fab}
-            onClick={() => setIsCreateMatchModalOpen(true)}
-            aria-label="Wedstrijd toevoegen"
-            type="button"
-          >
-            <AppIcon icon={Plus} size={24} />
-          </button>
+          <div className={s.emptyActions}>
+            <button
+              type="button"
+              className={s.emptyAction}
+              onClick={() => setIsCreateMatchModalOpen(true)}
+            >
+              <AppIcon icon={Swords} size={16} />
+              <span>Wedstrijd toevoegen</span>
+            </button>
+            {setIsCreateCompetitionModalOpen && (
+              <button
+                type="button"
+                className={s.emptyAction}
+                onClick={() => setIsCreateCompetitionModalOpen(true)}
+              >
+                <AppIcon icon={Trophy} size={16} />
+                <span>Competitie toevoegen</span>
+              </button>
+            )}
+          </div>
         )}
       </div>
     );
@@ -216,12 +255,52 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
 
   return (
     <div className={s.container}>
-      {/* Season context bar */}
-      {seasonName && (
-        <div className={s.seasonBar}>
-          <span className={s.seasonBarLabel}>{seasonName}</span>
+      {/* Header bar: season + filter pills + add button */}
+      <div className={s.headerBar}>
+        <div className={s.headerLeft}>
+          {seasonName && (
+            <span className={s.seasonBarLabel}>{seasonName}</span>
+          )}
         </div>
-      )}
+        {userCanEditProject && (
+          <div className={s.addMenuWrap} ref={addMenuRef}>
+            <button
+              type="button"
+              className={s.addBtn}
+              onClick={() => setAddMenuOpen(v => !v)}
+              aria-label="Toevoegen"
+              aria-expanded={addMenuOpen}
+              aria-haspopup="menu"
+            >
+              <AppIcon icon={Plus} size={16} />
+            </button>
+            {addMenuOpen && (
+              <div className={s.addMenu} role="menu">
+                <button
+                  type="button"
+                  className={s.addMenuItem}
+                  role="menuitem"
+                  onClick={() => { setIsCreateMatchModalOpen(true); setAddMenuOpen(false); }}
+                >
+                  <AppIcon icon={Swords} size={16} />
+                  <span>Wedstrijd</span>
+                </button>
+                {setIsCreateCompetitionModalOpen && (
+                  <button
+                    type="button"
+                    className={s.addMenuItem}
+                    role="menuitem"
+                    onClick={() => { setIsCreateCompetitionModalOpen(true); setAddMenuOpen(false); }}
+                  >
+                    <AppIcon icon={Trophy} size={16} />
+                    <span>Competitie</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Competition filter pills */}
       {competitions.length > 0 && (
@@ -261,12 +340,18 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
         <ListSection title="Komend">
           {grouped.upcoming.map((m) => {
             const d = parseMatchDate(m);
+            const venue = getVenue(m);
             return (
               <ListSection.Row
                 key={m.id}
                 icon={Calendar}
                 label={matchDisplayTitle(m)}
-                value={d ? <span className={s.matchDate}>{fmtDate(d)}</span> : undefined}
+                value={
+                  <span className={s.rowMeta}>
+                    {venue && <span className={venue === 'home' ? s.venueHome : s.venueAway}>{venue === 'home' ? 'T' : 'U'}</span>}
+                    {d && <span className={s.matchDate}>{fmtDate(d)}</span>}
+                  </span>
+                }
                 onTap={() => goToMatch(m)}
               />
             );
@@ -280,11 +365,17 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
           {group.matches.map((m) => {
             const d = parseMatchDate(m);
             const score = getScore(m);
+            const venue = getVenue(m);
             return (
               <ListSection.Row
                 key={m.id}
                 label={matchDisplayTitle(m)}
-                value={d ? <span className={s.matchDate}>{fmtDate(d)}</span> : undefined}
+                value={
+                  <span className={s.rowMeta}>
+                    {venue && <span className={venue === 'home' ? s.venueHome : s.venueAway}>{venue === 'home' ? 'T' : 'U'}</span>}
+                    {d && <span className={s.matchDate}>{fmtDate(d)}</span>}
+                  </span>
+                }
                 trailing={score ? <span className={s.scoreBadge}>{score}</span> : undefined}
                 onTap={() => goToMatch(m)}
               />
@@ -293,17 +384,7 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
         </ListSection>
       ))}
 
-      {/* Admin FAB */}
-      {userCanEditProject && (
-        <button
-          className={s.fab}
-          onClick={() => setIsCreateMatchModalOpen(true)}
-          aria-label="Wedstrijd toevoegen"
-          type="button"
-        >
-          <AppIcon icon={Plus} size={24} />
-        </button>
-      )}
+      {/* No more FAB — add menu is in header */}
     </div>
   );
 };

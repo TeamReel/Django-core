@@ -707,6 +707,7 @@ export const MyTeamHubPage: React.FC = () => {
               userCanEditProject={d.userCanEditProject}
               matchDisplayTitle={d.matchDisplayTitle}
               setIsCreateMatchModalOpen={d.setIsCreateMatchModalOpen}
+              setIsCreateCompetitionModalOpen={d.setIsCreateCompetitionModalOpen}
               onMatchTap={setSelectedMatch}
               seasonName={d.season?.name as string | undefined}
               competitions={seasonCtx.competitions}

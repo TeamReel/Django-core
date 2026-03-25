@@ -32,7 +32,8 @@ interface SeasonMatch {
   name?: string;
   period_id?: string;
   period?: string | { id?: string } | null;
-  opponent_project?: { name?: string } | null;
+  opponent_project?: { name?: string; club_name?: string } | null;
+  project?: { name?: string; club_name?: string } | null;
   /** Dynamic metadata — deeply nested match data. */
   metadata?: Record<string, unknown>;
 }
@@ -253,8 +254,8 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
     const awayClubName = String(ctx?.away_club_name || '');
     const oppClubId = String(ctx?.opponent_club_id || '').trim();
     const resolvedAwayClub = oppClubId ? opponentClubNames[oppClubId] : '';
-    const homeName = homeClubName || club?.name || project?.name || '';
-    const awayName = resolvedAwayClub || awayClubName || m.opponent_project?.name || '';
+    const homeName = homeClubName || m.project?.club_name || club?.name || project?.name || '';
+    const awayName = resolvedAwayClub || awayClubName || m.opponent_project?.club_name || m.opponent_project?.name || '';
     if (homeName && awayName && homeName !== awayName) return `${homeName} vs ${awayName}`;
     // Same club name on both sides → use team/project names instead
     if (homeName && awayName && homeName === awayName) {
