@@ -16,7 +16,7 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import { Alert } from '@django-core/design-system';
 import {
   Pencil, MoreHorizontal, Eye, Trash2, Plus,
-  Calendar, Trophy, Wallet, Users,
+  Calendar, Trophy, Wallet,
   Building2, Shirt, Camera, Palette, Upload, Settings,
   ChevronRight, ChevronDown,
 } from 'lucide-react';
@@ -613,8 +613,8 @@ export const MyTeamHubPage: React.FC = () => {
                   aria-label={`Seizoen ${String(seasonCtx.season.name || 'Seizoen')} bekijken`}
                 >
                   <div className={s.seasonCompactRow}>
+                    <span className={s.seasonCompactDot} />
                     <span className={s.seasonCompactName}>{String(seasonCtx.season.name || 'Seizoen')}</span>
-                    <span className={s.seasonCompactBadge}>Actief</span>
                   </div>
                   <div className={s.seasonCompactStats}>
                     <span>{d.matches.length} wedstrijden</span>
@@ -626,24 +626,9 @@ export const MyTeamHubPage: React.FC = () => {
                 </button>
               )}
 
-              {/* Team info — accordion */}
+              {/* Team info — open section with floating label */}
+              <div className={s.sectionLabel}>Team info</div>
               <div className={s.accordionSection}>
-                <button
-                  type="button"
-                  className={s.accordionHeader}
-                  onClick={() => toggleSection('team-info')}
-                  aria-expanded={expandedSections.has('team-info')}
-                  aria-label="Team info"
-                >
-                  <AppIcon icon={Settings} size={18} className={s.accordionIcon} />
-                  <span className={s.accordionLabel}>Team info</span>
-                  <AppIcon
-                    icon={ChevronDown}
-                    size={16}
-                    className={`${s.accordionChevron} ${expandedSections.has('team-info') ? s.accordionChevronOpen : ''}`}
-                  />
-                </button>
-                <div className={`${s.accordionBody} ${expandedSections.has('team-info') ? s.accordionBodyOpen : ''}`}>
                   {d.org?.sport?.name && (
                     <div className={s.infoRow}>
                       <span className={s.infoLabel}>Sport</span>
@@ -697,10 +682,10 @@ export const MyTeamHubPage: React.FC = () => {
                       Team bewerken
                     </button>
                   )}
-                </div>
               </div>
 
               {/* Team assets — accordion */}
+              <div className={s.sectionLabel}>Assets</div>
               <div className={s.accordionSection}>
                 <button
                   type="button"
@@ -718,6 +703,7 @@ export const MyTeamHubPage: React.FC = () => {
                   />
                 </button>
                 <div className={`${s.accordionBody} ${expandedSections.has('team-assets') ? s.accordionBodyOpen : ''}`}>
+                  <div className={s.accordionBodyInner}>
                   <button type="button" className={s.accordionItem} onClick={() => setActiveAssetSheet('tenue')}>
                     <span className={s.accordionItemLabel}>Tenue</span>
                     <span className={s.accordionItemStatus}>{teamAssetStatus === 'complete' ? '\u2713' : '\u2013'}</span>
@@ -733,6 +719,7 @@ export const MyTeamHubPage: React.FC = () => {
                     <span className={s.accordionItemStatus}>{memberAssetSummary.complete}/{memberAssetSummary.total}</span>
                     <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
                   </button>
+                  </div>
                 </div>
               </div>
 
@@ -755,6 +742,7 @@ export const MyTeamHubPage: React.FC = () => {
                     />
                   </button>
                   <div className={`${s.accordionBody} ${expandedSections.has('club-assets') ? s.accordionBodyOpen : ''}`}>
+                    <div className={s.accordionBodyInner}>
                     <button type="button" className={s.accordionItem} onClick={() => setActiveAssetSheet('logo')}>
                       <span className={s.accordionItemLabel}>Logo</span>
                       <span className={s.accordionItemStatus}>{Boolean((team.club as Record<string, unknown> | null)?.logo_url || (team.club as Record<string, unknown> | null)?.crest_url) ? '\u2713' : '\u2013'}</span>
@@ -770,12 +758,15 @@ export const MyTeamHubPage: React.FC = () => {
                       <span className={s.accordionItemStatus}>{hasAnyKit ? '\u2713' : '\u2013'}</span>
                       <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
                     </button>
+                    </div>
                   </div>
                 </div>
               )}
 
               {/* Beheer — admin only, quick links */}
               {isAdmin && (
+                <>
+                <div className={s.sectionLabel}>Beheer</div>
                 <div className={s.accordionSection}>
                   <button
                     type="button"
@@ -792,6 +783,7 @@ export const MyTeamHubPage: React.FC = () => {
                     />
                   </button>
                   <div className={`${s.accordionBody} ${expandedSections.has('beheer') ? s.accordionBodyOpen : ''}`}>
+                    <div className={s.accordionBodyInner}>
                     <button type="button" className={s.accordionItem} onClick={() => setCreditsSheetOpen(true)}>
                       <AppIcon icon={Wallet} size={14} className={s.accordionItemIcon} />
                       <span className={s.accordionItemLabel}>Credits & saldo</span>
@@ -814,8 +806,10 @@ export const MyTeamHubPage: React.FC = () => {
                       <span className={s.accordionItemStatus}>{memberAssetSummary.complete}/{memberAssetSummary.total}</span>
                       <AppIcon icon={ChevronRight} size={14} className={s.accordionItemChevron} />
                     </button>
+                    </div>
                   </div>
                 </div>
+                </>
               )}
             </>
           )}
