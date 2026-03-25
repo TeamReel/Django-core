@@ -259,42 +259,98 @@
   border: 0;
 }
 
-/* ── Asset action list (inside NavigationSheet) ── */
-.sheetActions {
-  padding: var(--space-2) 0;
+/* ── Row expand chevron ── */
+.rowChevron {
+  color: var(--app-muted-text);
+  transition: transform 0.2s ease;
 }
 
-.sheetAction {
+.rowChevronOpen {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rowChevron {
+    transition: none;
+  }
+}
+
+.actionBtnActive {
+  background: var(--app-hover-bg, rgba(0, 0, 0, 0.04));
+  color: var(--app-primary);
+}
+
+/* ── Inline action panel (below expanded row) ── */
+.actionPanel {
+  padding: var(--space-3) var(--space-4);
+  background: var(--app-surface-2);
+  border-top: 1px solid var(--app-border);
+}
+
+.actionPanelGrid {
   display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.actionChip {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
-  width: 100%;
-  padding: var(--space-3) var(--space-5);
-  border: none;
-  background: none;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
   color: var(--app-text);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--font-medium);
-  cursor: pointer;
-  min-height: 44px;
-  text-align: left;
   font-family: inherit;
+  cursor: pointer;
+  min-height: 36px;
+  white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
 }
 
 @media (hover: hover) {
-  .sheetAction:hover {
-    background: var(--app-hover-bg, rgba(0, 0, 0, 0.04));
+  .actionChip:hover {
+    background: var(--app-hover-bg, rgba(0, 0, 0, 0.06));
+    border-color: var(--app-text);
   }
 }
 
-.sheetAction:focus-visible {
+.actionChip:active {
+  background: var(--app-active-bg, rgba(0, 0, 0, 0.1));
+}
+
+.actionChip:focus-visible {
   outline: 2px solid var(--app-focus-ring);
   outline-offset: -2px;
 }
 
-.sheetActionDanger {
-  color: var(--app-danger, var(--color-red-500));
+.actionChipAi {
+  background: color-mix(in srgb, var(--color-violet-500) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-violet-500) 35%, transparent);
+  color: var(--color-violet-500);
+}
+
+@media (hover: hover) {
+  .actionChipAi:hover {
+    background: color-mix(in srgb, var(--color-violet-500) 20%, transparent);
+    border-color: var(--color-violet-500);
+  }
+}
+
+.actionChipDanger {
+  background: color-mix(in srgb, var(--color-red-500) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-red-500) 25%, transparent);
+  color: var(--color-red-500);
+}
+
+@media (hover: hover) {
+  .actionChipDanger:hover {
+    background: color-mix(in srgb, var(--color-red-500) 16%, transparent);
+    border-color: var(--color-red-500);
+  }
 }
 
 /* ── Warning box ── */

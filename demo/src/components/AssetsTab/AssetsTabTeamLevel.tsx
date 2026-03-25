@@ -7,8 +7,7 @@
  */
 
 import React, { useRef, useState, useCallback } from 'react';
-import { Sparkles, Upload, Trash2, Clock, Wand2, ChevronDown, MoreVertical } from 'lucide-react';
-import { NavigationSheet } from '../ui/NavigationSheet';
+import { Sparkles, Upload, Trash2, Clock, Wand2, ChevronDown } from 'lucide-react';
 import { KIT_ROLES, getAssetUrl } from '../../hooks/useBrandProfile';
 
 /** Team-level kit order: important roles first (Thuis, Keeper, Legacy) */
@@ -54,6 +53,7 @@ interface AssetRowProps {
   isProcessing?: boolean;
   d: AssetsTabData;
   readOnly: boolean;
+  isExpanded?: boolean;
   onShowActions?: () => void;
 }
 
@@ -66,6 +66,7 @@ function AssetRow({
   isProcessing = false,
   d,
   readOnly,
+  isExpanded = false,
   onShowActions,
 }: AssetRowProps) {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -123,12 +124,13 @@ function AssetRow({
           ) : (
             <button
               type="button"
-              className={s.actionBtn}
+              className={`${s.actionBtn} ${isExpanded ? s.actionBtnActive : ''}`}
               onClick={onShowActions}
+              aria-expanded={isExpanded}
               aria-label={`Acties voor ${label}`}
               title="Acties"
             >
-              <AppIcon icon={MoreVertical} size={16} />
+              <AppIcon icon={ChevronDown} size={16} className={`${s.rowChevron} ${isExpanded ? s.rowChevronOpen : ''}`} />
             </button>
           )}
         </div>
@@ -148,54 +150,15 @@ interface ActionSheetState {
   inherited: boolean;
 }
 
-function AssetActionSheet({ state, d, onClose }: {
+function InlineActions({ state, d, onClose }: {
   state: ActionSheetState;
   d: AssetsTabData;
   onClose: () => void;
 }) {
   const uploadRef = useRef<HTMLInputElement>(null);
 
-  const actions: Array<{ label: string; icon: typeof Sparkles; onClick: () => void; danger?: boolean }> = [];
-
-  actions.push({
-    label: 'Genereer met AI',
-    icon: Sparkles,
-    onClick: () => { d.handleReplaceAi(state.processedType); onClose(); },
-  });
-
-  if (state.hasUploadSource) {
-    actions.push({
-      label: 'Bewerk vanuit upload',
-      icon: Wand2,
-      onClick: () => { d.handlePostProcess(state.processedType); onClose(); },
-    });
-  }
-
-  if (state.uploadType) {
-    actions.push({
-      label: state.hasUploadSource ? 'Nieuwe bronafbeelding' : 'Bronafbeelding uploaden',
-      icon: Upload,
-      onClick: () => uploadRef.current?.click(),
-    });
-  }
-
-  actions.push({
-    label: 'Geschiedenis bekijken',
-    icon: Clock,
-    onClick: () => { d.handleShowHistory(state.processedType); onClose(); },
-  });
-
-  if (state.hasAsset && !state.inherited) {
-    actions.push({
-      label: 'Verwijderen',
-      icon: Trash2,
-      onClick: () => { d.handleDelete(state.processedType); onClose(); },
-      danger: true,
-    });
-  }
-
   return (
-    <NavigationSheet isOpen onClose={onClose} title={state.label} desktopWidth="360px">
+    <div className={s.actionPanel}>
       {state.uploadType && (
         <input ref={uploadRef} type="file" accept="image/*" className={s.hiddenInput}
           onChange={(e) => {
@@ -205,20 +168,40 @@ function AssetActionSheet({ state, d, onClose }: {
             onClose();
           }} />
       )}
-      <div className={s.sheetActions}>
-        {actions.map((a) => (
-          <button
-            key={a.label}
-            type="button"
-            className={`${s.sheetAction} ${a.danger ? s.sheetActionDanger : ''}`}
-            onClick={a.onClick}
-          >
-            <AppIcon icon={a.icon} size={18} />
-            <span>{a.label}</span>
+      <div className={s.actionPanelGrid}>
+        <button type="button" className={`${s.actionChip} ${s.actionChipAi}`}
+          onClick={() => { d.handleReplaceAi(state.processedType); onClose(); }}>
+          <AppIcon icon={Sparkles} size={14} />
+          <span>AI genereren</span>
+        </button>
+        {state.hasUploadSource && (
+          <button type="button" className={s.actionChip}
+            onClick={() => { d.handlePostProcess(state.processedType); onClose(); }}>
+            <AppIcon icon={Wand2} size={14} />
+            <span>Bewerken</span>
           </button>
-        ))}
+        )}
+        {state.uploadType && (
+          <button type="button" className={s.actionChip}
+            onClick={() => uploadRef.current?.click()}>
+            <AppIcon icon={Upload} size={14} />
+            <span>{state.hasUploadSource ? 'Nieuwe bron' : 'Bron uploaden'}</span>
+          </button>
+        )}
+        <button type="button" className={s.actionChip}
+          onClick={() => { d.handleShowHistory(state.processedType); onClose(); }}>
+          <AppIcon icon={Clock} size={14} />
+          <span>Geschiedenis</span>
+        </button>
+        {state.hasAsset && !state.inherited && (
+          <button type="button" className={`${s.actionChip} ${s.actionChipDanger}`}
+            onClick={() => { d.handleDelete(state.processedType); onClose(); }}>
+            <AppIcon icon={Trash2} size={14} />
+            <span>Verwijderen</span>
+          </button>
+        )}
       </div>
-    </NavigationSheet>
+    </div>
   );
 }
 
@@ -281,11 +264,13 @@ function CategorySection({ title, filled, total, defaultOpen = true, children }:
 
 /* ── Helper: render kit rows for a role list ──────────────────────────── */
 
-function KitRows({ roles, d, readOnly, onAction }: {
+function KitRows({ roles, d, readOnly, actionSheet, onAction, onClose }: {
   roles: typeof MAIN_KIT_ROLES;
   d: AssetsTabData;
   readOnly: boolean;
+  actionSheet: ActionSheetState | null;
   onAction: (state: ActionSheetState) => void;
+  onClose: () => void;
 }) {
   return (
     <>
@@ -296,12 +281,14 @@ function KitRows({ roles, d, readOnly, onAction }: {
         const upload = isAiOnly ? { asset: undefined, inherited: false } : d.getEffectiveAsset(uploadType);
         const eff = d.getEffectiveAsset(processedType);
         const processing = d.postProcessingAsset === processedType || d.uploadProcessingAsset === processedType;
+        const expanded = actionSheet?.processedType === processedType;
         return (
           <React.Fragment key={role.id}>
             {!isAiOnly && (
               <AssetRow label={`${role.label} (upload)`} assetType={uploadType} asset={upload.asset} inherited={upload.inherited} isUpload d={d} readOnly={readOnly} />
             )}
             <AssetRow label={`${role.label} (bewerkt)`} assetType={processedType} asset={eff.asset} inherited={eff.inherited} isProcessing={processing} d={d} readOnly={readOnly}
+              isExpanded={expanded}
               onShowActions={() => onAction({
                 label: role.label,
                 processedType,
@@ -310,6 +297,7 @@ function KitRows({ roles, d, readOnly, onAction }: {
                 hasUploadSource: !isAiOnly && !!upload.asset,
                 inherited: eff.inherited,
               })} />
+            {expanded && <InlineActions state={actionSheet} d={d} onClose={onClose} />}
           </React.Fragment>
         );
       })}
@@ -322,6 +310,9 @@ function KitRows({ roles, d, readOnly, onAction }: {
 export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, organisationId }) => {
   const [actionSheet, setActionSheet] = useState<ActionSheetState | null>(null);
   const closeSheet = useCallback(() => setActionSheet(null), []);
+  const toggleAction = useCallback((state: ActionSheetState) => {
+    setActionSheet(prev => prev?.processedType === state.processedType ? null : state);
+  }, []);
 
   const logoTypes = ['logo_upload', 'logo', 'sponsor_logo_upload', 'sponsor_logo'];
   const mainTenueTypes = MAIN_KIT_ROLES.flatMap(r =>
@@ -346,27 +337,31 @@ export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, or
         {(() => { const e = d.getEffectiveAsset('logo_upload'); return (
           <AssetRow label="Logo (upload)" assetType="logo_upload" asset={e.asset} inherited={e.inherited} isUpload d={d} readOnly={readOnly} />
         ); })()}
-        {(() => { const e = d.getEffectiveAsset('logo'); const u = d.getEffectiveAsset('logo_upload'); return (
-          <AssetRow label="Logo (bewerkt)" assetType="logo" asset={e.asset} inherited={e.inherited} isProcessing={d.postProcessingAsset === 'logo' || d.uploadProcessingAsset === 'logo'} d={d} readOnly={readOnly}
-            onShowActions={() => setActionSheet({ label: 'Logo', processedType: 'logo', uploadType: 'logo_upload', hasAsset: !!e.asset, hasUploadSource: !!u.asset, inherited: e.inherited })} />
-        ); })()}
+        {(() => { const e = d.getEffectiveAsset('logo'); const u = d.getEffectiveAsset('logo_upload'); const pt = 'logo'; return (<>
+          <AssetRow label="Logo (bewerkt)" assetType={pt} asset={e.asset} inherited={e.inherited} isProcessing={d.postProcessingAsset === pt || d.uploadProcessingAsset === pt} d={d} readOnly={readOnly}
+            isExpanded={actionSheet?.processedType === pt}
+            onShowActions={() => toggleAction({ label: 'Logo', processedType: pt, uploadType: 'logo_upload', hasAsset: !!e.asset, hasUploadSource: !!u.asset, inherited: e.inherited })} />
+          {actionSheet?.processedType === pt && <InlineActions state={actionSheet} d={d} onClose={closeSheet} />}
+        </>); })()}
         {(() => { const e = d.getEffectiveAsset('sponsor_logo_upload'); return (
           <AssetRow label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={e.asset} inherited={e.inherited} isUpload d={d} readOnly={readOnly} />
         ); })()}
-        {(() => { const e = d.getEffectiveAsset('sponsor_logo'); const u = d.getEffectiveAsset('sponsor_logo_upload'); return (
-          <AssetRow label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={e.asset} inherited={e.inherited} isProcessing={d.postProcessingAsset === 'sponsor_logo' || d.uploadProcessingAsset === 'sponsor_logo'} d={d} readOnly={readOnly}
-            onShowActions={() => setActionSheet({ label: 'Sponsor', processedType: 'sponsor_logo', uploadType: 'sponsor_logo_upload', hasAsset: !!e.asset, hasUploadSource: !!u.asset, inherited: e.inherited })} />
-        ); })()}
+        {(() => { const e = d.getEffectiveAsset('sponsor_logo'); const u = d.getEffectiveAsset('sponsor_logo_upload'); const pt = 'sponsor_logo'; return (<>
+          <AssetRow label="Sponsor (bewerkt)" assetType={pt} asset={e.asset} inherited={e.inherited} isProcessing={d.postProcessingAsset === pt || d.uploadProcessingAsset === pt} d={d} readOnly={readOnly}
+            isExpanded={actionSheet?.processedType === pt}
+            onShowActions={() => toggleAction({ label: 'Sponsor', processedType: pt, uploadType: 'sponsor_logo_upload', hasAsset: !!e.asset, hasUploadSource: !!u.asset, inherited: e.inherited })} />
+          {actionSheet?.processedType === pt && <InlineActions state={actionSheet} d={d} onClose={closeSheet} />}
+        </>); })()}
       </CategorySection>
 
       {/* Hoofd tenues */}
       <CategorySection title="Hoofd tenues" filled={mainTenueProgress.filled} total={mainTenueProgress.total}>
-        <KitRows roles={MAIN_KIT_ROLES} d={d} readOnly={readOnly} onAction={setActionSheet} />
+        <KitRows roles={MAIN_KIT_ROLES} d={d} readOnly={readOnly} actionSheet={actionSheet} onAction={toggleAction} onClose={closeSheet} />
       </CategorySection>
 
       {/* Overige tenues */}
       <CategorySection title="Overige tenues" filled={otherTenueProgress.filled} total={otherTenueProgress.total} defaultOpen={false}>
-        <KitRows roles={OTHER_KIT_ROLES} d={d} readOnly={readOnly} onAction={setActionSheet} />
+        <KitRows roles={OTHER_KIT_ROLES} d={d} readOnly={readOnly} actionSheet={actionSheet} onAction={toggleAction} onClose={closeSheet} />
       </CategorySection>
 
       {/* Locatie */}
@@ -374,10 +369,12 @@ export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, or
         {(() => { const e = d.getEffectiveAsset('location_photo'); return (
           <AssetRow label="Veld foto (upload)" assetType="location_photo" asset={e.asset} inherited={e.inherited} isUpload d={d} readOnly={readOnly} />
         ); })()}
-        {(() => { const e = d.getEffectiveAsset('stadium_background'); const u = d.getEffectiveAsset('location_photo'); return (
-          <AssetRow label="Achtergrond (bewerkt)" assetType="stadium_background" asset={e.asset} inherited={e.inherited} isProcessing={d.postProcessingAsset === 'stadium_background'} d={d} readOnly={readOnly}
-            onShowActions={() => setActionSheet({ label: 'Achtergrond', processedType: 'stadium_background', uploadType: 'location_photo', hasAsset: !!e.asset, hasUploadSource: !!u.asset, inherited: e.inherited })} />
-        ); })()}
+        {(() => { const e = d.getEffectiveAsset('stadium_background'); const u = d.getEffectiveAsset('location_photo'); const pt = 'stadium_background'; return (<>
+          <AssetRow label="Achtergrond (bewerkt)" assetType={pt} asset={e.asset} inherited={e.inherited} isProcessing={d.postProcessingAsset === pt} d={d} readOnly={readOnly}
+            isExpanded={actionSheet?.processedType === pt}
+            onShowActions={() => toggleAction({ label: 'Achtergrond', processedType: pt, uploadType: 'location_photo', hasAsset: !!e.asset, hasUploadSource: !!u.asset, inherited: e.inherited })} />
+          {actionSheet?.processedType === pt && <InlineActions state={actionSheet} d={d} onClose={closeSheet} />}
+        </>); })()}
       </CategorySection>
 
       {!d.profile && (
@@ -386,7 +383,7 @@ export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, or
         </div>
       )}
 
-      {actionSheet && <AssetActionSheet state={actionSheet} d={d} onClose={closeSheet} />}
+
     </div>
   );
 };
