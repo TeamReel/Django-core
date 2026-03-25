@@ -23,7 +23,7 @@ import styles from './CreditsPage.module.css';
 
 export const CreditsPage: React.FC = () => {
   const data = useCreditsData();
-  useSetBackNavigation({ label: 'Profile', path: '/profile' });
+  useSetBackNavigation({ label: 'Profiel', path: '/profile' });
 
   return (
     <div className={styles.creditsWrapper}>

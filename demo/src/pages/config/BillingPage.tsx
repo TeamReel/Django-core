@@ -4,7 +4,7 @@ import { PageHeader, PageContent } from '@django-core/page-templates';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 
 export const BillingPage: React.FC = () => {
-  useSetBackNavigation({ label: 'Profile', path: '/profile' });
+  useSetBackNavigation({ label: 'Profiel', path: '/profile' });
 
   return (
     <>

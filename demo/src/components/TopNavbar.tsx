@@ -9,7 +9,7 @@
 import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Menu, ChevronDown, ChevronUp, Sun, Moon,
+  ChevronDown, ChevronUp, Sun, Moon,
   Globe, Bell, Coins, PanelLeftOpen, PanelLeftClose, Command, Plus, ListChecks,
   ChevronLeft, Search, X
 } from 'lucide-react';
@@ -40,16 +40,7 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
       <CommandPalette isOpen={d.commandOpen} onClose={() => d.setCommandOpen(false)} />
       <nav className={s.nav} data-app-top-navbar="true">
         <div className={s.navContainer} data-mobile={isMobile}>
-          {/* Mobile: hamburger OR back button */}
-          {isMobile && !backTarget && (
-            <button
-              className={`${s.mobileMenuBtn} mobile-menu-button`}
-              onClick={onToggleSidebar}
-              aria-label="Toggle menu"
-            >
-              <AppIcon icon={Menu} size={22} strokeWidth={2.5} />
-            </button>
-          )}
+          {/* Mobile: back button (no hamburger — bottom tab bar handles navigation) */}
           {isMobile && backTarget && (
             <button
               className={s.backBtn}

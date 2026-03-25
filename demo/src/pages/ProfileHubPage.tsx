@@ -17,7 +17,6 @@ import { useSignOut } from '@django-core/auth-ui';
 import { usePreferencesData } from './config/usePreferencesData';
 import { PreferencesModals } from './config/PreferencesModals';
 import { ProfileSheet } from '../components/ProfileSheet';
-import { useBackNavigation } from '../providers/BackNavigationProvider';
 import s from './ProfileHubPage.module.css';
 
 /* Lazy-loaded sheet content — only fetched when opened */
@@ -50,7 +49,6 @@ export default function ProfileHubPage() {
   const d = usePreferencesData();
   const { signOut, loading: signingOut } = useSignOut();
   const navigate = useNavigate();
-  const { setBackTarget } = useBackNavigation();
   const [contextOpen, setContextOpen] = useState(false);
 
   /* ── Sheet states for sub-pages (inline instead of navigate) ────── */
@@ -61,20 +59,10 @@ export default function ProfileHubPage() {
 
   const { user, preferences, setPreferences, handleSavePreferences } = d;
 
-  /* ── Show "← Profile" back button in TopNavbar when any modal is open ── */
-  const anyModalOpen = d.isProfileModalOpen || d.isPasswordModalOpen || d.isAvatarModalOpen;
-  useEffect(() => {
-    if (anyModalOpen) {
-      const closeAll = () => {
-        d.setIsProfileModalOpen(false);
-        d.setIsPasswordModalOpen(false);
-        d.setIsAvatarModalOpen(false);
-      };
-      setBackTarget({ label: 'Profile', path: '/profile', onBack: closeAll });
-    } else {
-      setBackTarget(null);
-    }
-  }, [anyModalOpen, setBackTarget]);
+  /* ── Sheets already have × close — no back button needed in navbar ── */
+  // Profile modals (edit, password, avatar) are sheets that close via ×.
+  // We intentionally do NOT set a backTarget for these modals to avoid
+  // showing both ← back AND × close simultaneously.
 
   /* ── Derived user info ─────────────────────────────────────────────── */
   const fullName = user

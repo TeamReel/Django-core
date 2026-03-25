@@ -21,7 +21,7 @@ export default function SettingsPage() {
     trashContentTypes,
     handleTrashRestore, handleTrashPermanentDelete, handleEmptyTrash,
   } = useSettingsPage();
-  useSetBackNavigation({ label: 'Profile', path: '/profile' });
+  useSetBackNavigation({ label: 'Profiel', path: '/profile' });
 
   return (
     <div className={styles.settingsContainer}>

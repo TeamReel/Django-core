@@ -367,6 +367,10 @@ export const MyTeamHubPage: React.FC = () => {
     if (!meta) return null;
     if (meta.venue === 'home' || meta.venue === 'Home' || meta.is_home === true) return 'home';
     if (meta.venue === 'away' || meta.venue === 'Away' || meta.is_home === false) return 'away';
+    // Check nested match_context (same logic as HubWedstrijdenTab.getVenue)
+    const ctx = (meta.teamreel as Record<string, Record<string, unknown>> | undefined)?.match_context;
+    if (ctx?.venue === 'Home' || ctx?.is_home === true) return 'home';
+    if (ctx?.venue === 'Away' || ctx?.is_home === false) return 'away';
     return null;
   }, [nextMatch]);
 

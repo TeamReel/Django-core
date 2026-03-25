@@ -58,7 +58,7 @@ export default function NotificationsPage() {
     },
     [],
   );
-  useSetBackNavigation({ label: 'Profile', path: '/profile' });
+  useSetBackNavigation({ label: 'Profiel', path: '/profile' });
 
   useEffect(() => {
     const params = safeSearchParams(location.search);

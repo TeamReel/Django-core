@@ -30,7 +30,7 @@ export const PermissionsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'hierarchy' | 'permissions'>('hierarchy');
-  useSetBackNavigation({ label: 'Profile', path: '/profile' });
+  useSetBackNavigation({ label: 'Profiel', path: '/profile' });
 
   useEffect(() => {
     const fetchPermissionsData = async () => {

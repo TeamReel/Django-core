@@ -21,7 +21,7 @@ import { PersonalisationTab, AuditTab, NotificationsTab } from './PreferencesSet
 export const PreferencesPage: React.FC = () => {
   const data = usePreferencesData();
   const { loading, success, activeTab } = data;
-  useSetBackNavigation({ label: 'Profile', path: '/profile' });
+  useSetBackNavigation({ label: 'Profiel', path: '/profile' });
 
   if (loading) {
     return (
