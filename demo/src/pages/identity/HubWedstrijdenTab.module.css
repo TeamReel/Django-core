@@ -170,6 +170,10 @@
   text-align: right;
 }
 
+.compCountDone {
+  color: var(--app-success);
+}
+
 .chevron {
   display: flex;
   align-items: center;
@@ -336,13 +340,35 @@
   color: var(--app-primary);
 }
 
-/* ── Content indicator dot ── */
+/* ── Content indicator badge ── */
+.contentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 .contentDot {
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: var(--radius-full);
   background: var(--app-success);
+  flex-shrink: 0;
+}
+
+.contentLabel {
+  font-size: 11px;
+  font-weight: var(--font-medium);
+  color: var(--app-success);
+  line-height: 1;
+}
+
+.noContentBadge {
+  font-size: 11px;
+  font-weight: var(--font-medium);
+  color: var(--app-primary);
+  white-space: nowrap;
   flex-shrink: 0;
 }
 

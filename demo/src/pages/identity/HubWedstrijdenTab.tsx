@@ -77,6 +77,16 @@ function fmtDateShort(d: Date): string {
   return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
+function fmtRelative(d: Date): string {
+  const now = new Date();
+  const diffMs = d.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return 'Vandaag';
+  if (diffDays === 1) return 'Morgen';
+  if (diffDays > 1 && diffDays <= 7) return `Over ${diffDays} dagen`;
+  return fmtDate(d);
+}
+
 function getVenue(m: MatchRecord): 'home' | 'away' | null {
   const meta = m.metadata;
   if (!meta) return null;
@@ -179,6 +189,7 @@ const CompetitionSection: React.FC<CompetitionSectionProps> = ({
   const [open, setOpen] = useState(defaultOpen);
   const total = group.matches.length;
   const contentReady = group.matches.filter((m) => hasContent(m)).length;
+  const allContent = contentReady === total;
 
   return (
     <div className={s.compSection}>
@@ -193,7 +204,7 @@ const CompetitionSection: React.FC<CompetitionSectionProps> = ({
           <span className={s.compName}>{group.competition.name || 'Competitie'}</span>
         </span>
         <span className={s.compHeaderRight}>
-          <span className={s.compCount}>{group.played}/{total}</span>
+          <span className={`${s.compCount} ${allContent ? s.compCountDone : ''}`}>{contentReady}/{total}</span>
           <span className={`${s.chevron} ${open ? s.chevronOpen : ''}`}>
             <AppIcon icon={ChevronDown} size={14} />
           </span>
@@ -224,10 +235,17 @@ const CompetitionSection: React.FC<CompetitionSectionProps> = ({
                 <span className={s.matchMeta}>
                   {d && (
                     <span className={s.matchDate}>
-                      {upcoming ? fmtDate(d) : fmtDateShort(d)}
+                      {upcoming ? fmtRelative(d) : fmtDateShort(d)}
                     </span>
                   )}
-                  {content && <span className={s.contentDot} title="Content aanwezig" />}
+                  {content ? (
+                    <span className={s.contentBadge} title="Content aanwezig">
+                      <span className={s.contentDot} />
+                      <span className={s.contentLabel}>Content</span>
+                    </span>
+                  ) : upcoming ? (
+                    <span className={s.noContentBadge}>Maak content</span>
+                  ) : null}
                 </span>
               </button>
             );
@@ -361,7 +379,8 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
                 value={
                   <span className={s.rowMeta}>
                     {venue && <span className={venue === 'home' ? s.venueHome : s.venueAway}>{venue === 'home' ? 'T' : 'U'}</span>}
-                    {d && <span className={s.matchDate}>{fmtDate(d)}</span>}
+                    {d && <span className={s.matchDate}>{fmtRelative(d)}</span>}
+                    {!hasContent(m) && <span className={s.noContentBadge}>Maak content</span>}
                   </span>
                 }
                 onTap={() => goToMatch(m)}
