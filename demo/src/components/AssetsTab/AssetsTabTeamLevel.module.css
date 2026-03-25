@@ -237,17 +237,6 @@
   outline-offset: -2px;
 }
 
-.actionBtnAi {
-  color: var(--color-violet-500);
-}
-
-@media (hover: hover) {
-  .actionBtnAi:hover {
-    background: color-mix(in srgb, var(--color-violet-500) 10%, transparent);
-    color: var(--color-violet-600);
-  }
-}
-
 .actionBtnDanger {
   color: var(--color-red-400);
 }
@@ -270,47 +259,8 @@
   border: 0;
 }
 
-/* ── Asset action sheet (bottom overlay) ── */
-.sheetBackdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 100;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.sheet {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 101;
-  background: var(--app-surface);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  padding-bottom: env(safe-area-inset-bottom, 0);
-  animation: sheetSlideUp 0.2s ease;
-}
-
-@keyframes sheetSlideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sheet {
-    animation: none;
-  }
-}
-
-.sheetHeader {
-  padding: var(--space-4) var(--space-5);
-  font-size: var(--text-sm);
-  font-weight: var(--font-bold);
-  color: var(--app-text);
-  border-bottom: 1px solid var(--app-border);
-}
-
-.sheetBody {
+/* ── Asset action list (inside NavigationSheet) ── */
+.sheetActions {
   padding: var(--space-2) 0;
 }
 

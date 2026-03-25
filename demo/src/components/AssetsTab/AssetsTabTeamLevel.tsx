@@ -6,8 +6,9 @@
  * status badge, and action buttons.
  */
 
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { Sparkles, Upload, Trash2, Clock, Wand2, ChevronDown, MoreVertical } from 'lucide-react';
+import { NavigationSheet } from '../ui/NavigationSheet';
 import { KIT_ROLES, getAssetUrl } from '../../hooks/useBrandProfile';
 
 /** Team-level kit order: important roles first (Thuis, Keeper, Legacy) */
@@ -154,12 +155,6 @@ function AssetActionSheet({ state, d, onClose }: {
 }) {
   const uploadRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [onClose]);
-
   const actions: Array<{ label: string; icon: typeof Sparkles; onClick: () => void; danger?: boolean }> = [];
 
   actions.push({
@@ -200,34 +195,30 @@ function AssetActionSheet({ state, d, onClose }: {
   }
 
   return (
-    <>
-      <div className={s.sheetBackdrop} onClick={onClose} aria-hidden />
-      <div className={s.sheet} role="dialog" aria-modal="true" aria-label={`Acties voor ${state.label}`}>
-        <div className={s.sheetHeader}>{state.label}</div>
-        {state.uploadType && (
-          <input ref={uploadRef} type="file" accept="image/*" className={s.hiddenInput}
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f && state.uploadType) d.handleUpload(f, state.uploadType);
-              e.target.value = '';
-              onClose();
-            }} />
-        )}
-        <div className={s.sheetBody}>
-          {actions.map((a) => (
-            <button
-              key={a.label}
-              type="button"
-              className={`${s.sheetAction} ${a.danger ? s.sheetActionDanger : ''}`}
-              onClick={a.onClick}
-            >
-              <AppIcon icon={a.icon} size={18} />
-              <span>{a.label}</span>
-            </button>
-          ))}
-        </div>
+    <NavigationSheet isOpen onClose={onClose} title={state.label} desktopWidth="360px">
+      {state.uploadType && (
+        <input ref={uploadRef} type="file" accept="image/*" className={s.hiddenInput}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f && state.uploadType) d.handleUpload(f, state.uploadType);
+            e.target.value = '';
+            onClose();
+          }} />
+      )}
+      <div className={s.sheetActions}>
+        {actions.map((a) => (
+          <button
+            key={a.label}
+            type="button"
+            className={`${s.sheetAction} ${a.danger ? s.sheetActionDanger : ''}`}
+            onClick={a.onClick}
+          >
+            <AppIcon icon={a.icon} size={18} />
+            <span>{a.label}</span>
+          </button>
+        ))}
       </div>
-    </>
+    </NavigationSheet>
   );
 }
 
