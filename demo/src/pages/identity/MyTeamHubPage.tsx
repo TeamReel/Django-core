@@ -16,7 +16,7 @@ import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-
 import { Alert } from '@django-core/design-system';
 import {
   Pencil, MoreHorizontal, Eye, Trash2, Plus,
-  Calendar, MapPin, Trophy, Wallet,
+  Calendar, Trophy, Wallet,
   Building2, Shirt, Camera, Palette, Upload, Settings,
   ChevronRight, ChevronDown,
 } from 'lucide-react';
@@ -425,11 +425,23 @@ export const MyTeamHubPage: React.FC = () => {
           <div className={s.titleBlock}>
             <div className={s.titleRow}>
               <h1>{team.team?.name || 'Team'}</h1>
-              <SeasonSwitcher
-                seasons={seasonOptions}
-                currentSeasonId={String(d.resolvedSeasonId || d.effectiveSeasonId || '')}
-                onSelect={handleSeasonSwitch}
-              />
+              <div className={s.seasonSwitcherRow}>
+                <SeasonSwitcher
+                  seasons={seasonOptions}
+                  currentSeasonId={String(d.resolvedSeasonId || d.effectiveSeasonId || '')}
+                  onSelect={handleSeasonSwitch}
+                />
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className={s.seasonAddBtn}
+                    onClick={() => setIsCreateSeasonModalOpen(true)}
+                    aria-label="Seizoen aanmaken"
+                  >
+                    <Plus size={12} />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -576,30 +588,20 @@ export const MyTeamHubPage: React.FC = () => {
           {/* Overview — iOS-style grouped sections */}
           {activeTab === 'overview' && (
             <>
-              {/* Next match hero */}
+              {/* Next match — compact row */}
               {nextMatch && (
-                <div className={s.nextMatchHero}>
-                  <div className={s.nextMatchLabel}>Volgende wedstrijd</div>
-                  <div className={s.nextMatchTitle}>{d.matchDisplayTitle(nextMatch)}</div>
-                  <div className={s.nextMatchMeta}>
-                    <AppIcon icon={Calendar} size={14} />
-                    <span>{fmtNextMatchDate}</span>
+                <button
+                  type="button"
+                  className={s.nextMatchRow}
+                  onClick={() => setSelectedMatch(nextMatch)}
+                >
+                  <AppIcon icon={Calendar} size={14} className={s.nextMatchIcon} />
+                  <div className={s.nextMatchInfo}>
+                    <span className={s.nextMatchTitle}>{d.matchDisplayTitle(nextMatch)}</span>
+                    <span className={s.nextMatchDate}>{fmtNextMatchDate}</span>
                   </div>
-                  {nextMatch.metadata?.venue && (
-                    <div className={s.nextMatchMeta}>
-                      <AppIcon icon={MapPin} size={14} />
-                      <span>{nextMatch.metadata.venue}</span>
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    className={s.nextMatchAction}
-                    onClick={() => setSelectedMatch(nextMatch)}
-                  >
-                    <span>Bekijk wedstrijd</span>
-                    <AppIcon icon={ChevronRight} size={16} />
-                  </button>
-                </div>
+                  <AppIcon icon={ChevronRight} size={14} className={s.nextMatchChevron} />
+                </button>
               )}
 
               {/* Compact season info card */}
@@ -756,7 +758,6 @@ export const MyTeamHubPage: React.FC = () => {
               matchDisplayTitle={d.matchDisplayTitle}
               setIsCreateMatchModalOpen={d.setIsCreateMatchModalOpen}
               setIsCreateCompetitionModalOpen={d.setIsCreateCompetitionModalOpen}
-              setIsCreateSeasonModalOpen={isAdmin ? setIsCreateSeasonModalOpen : undefined}
               onMatchTap={setSelectedMatch}
               seasonName={(d.season?.name || seasonCtx.season?.name) as string | undefined}
               competitions={seasonCtx.competitions}

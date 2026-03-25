@@ -30,7 +30,6 @@ interface HubWedstrijdenTabProps {
   matchDisplayTitle: (m: MatchRecord) => string;
   setIsCreateMatchModalOpen: (v: boolean) => void;
   setIsCreateCompetitionModalOpen?: (v: boolean) => void;
-  setIsCreateSeasonModalOpen?: (v: boolean) => void;
   onMatchTap?: (m: MatchRecord) => void;
   seasonName?: string;
   competitions?: Period[];
@@ -278,7 +277,6 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
   matchDisplayTitle,
   setIsCreateMatchModalOpen,
   setIsCreateCompetitionModalOpen,
-  setIsCreateSeasonModalOpen,
   onMatchTap,
   seasonName,
   competitions = [],
@@ -326,23 +324,6 @@ export const HubWedstrijdenTab: React.FC<HubWedstrijdenTabProps> = ({
 
   return (
     <div className={s.container}>
-      {/* Header: season name */}
-      <div className={s.headerBar}>
-        <div className={s.headerLeft}>
-          {seasonName && <span className={s.seasonBarLabel}>{seasonName}</span>}
-        </div>
-        {canManageContent && setIsCreateSeasonModalOpen && (
-          <button
-            type="button"
-            className={s.seasonAddBtn}
-            onClick={() => setIsCreateSeasonModalOpen(true)}
-          >
-            <AppIcon icon={Plus} size={12} />
-            <span>Seizoen</span>
-          </button>
-        )}
-      </div>
-
       {/* Upcoming matches — always visible, cross-competition */}
       {data.upcoming.length > 0 && (
         <ListSection title="Komend">

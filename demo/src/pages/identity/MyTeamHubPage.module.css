@@ -59,6 +59,41 @@
   flex-wrap: wrap;
 }
 
+/* Season switcher + add button group */
+.seasonSwitcherRow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.seasonAddBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--app-border);
+  background: transparent;
+  color: var(--app-muted-text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.seasonAddBtn:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .seasonAddBtn:hover {
+    background: var(--app-surface-2);
+    color: var(--app-text);
+    border-color: var(--app-primary);
+  }
+}
+
 
 .actions {
   display: flex;
@@ -256,63 +291,64 @@
   color: var(--app-text);
 }
 
-/* ── Next match hero card ── */
-.nextMatchHero {
+/* ── Next match compact row ── */
+.nextMatchRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
   background: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  margin-bottom: var(--space-4);
-}
-
-.nextMatchLabel {
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--app-muted-text);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--space-2);
-}
-
-.nextMatchTitle {
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  color: var(--app-text);
-  line-height: var(--leading-tight);
-  margin-bottom: var(--space-2);
-}
-
-.nextMatchMeta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--app-muted-text);
-  margin-bottom: var(--space-1);
-}
-
-.nextMatchAction {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-top: var(--space-3);
-  padding: var(--space-3) 0;
-  min-height: 44px;
-  border: none;
-  border-top: 1px solid var(--app-border);
-  background: none;
-  color: var(--app-link);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  font-family: inherit;
+  margin-bottom: var(--space-3);
   cursor: pointer;
+  font-family: inherit;
+  min-height: 44px;
   -webkit-tap-highlight-color: transparent;
 }
 
-.nextMatchAction:focus-visible {
+.nextMatchRow:focus-visible {
   outline: 2px solid var(--app-focus-ring);
   outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .nextMatchRow:hover {
+    background: var(--app-hover-bg, rgba(0, 0, 0, 0.02));
+  }
+}
+
+.nextMatchIcon {
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+.nextMatchInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nextMatchTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nextMatchDate {
+  font-size: var(--text-xs);
+  color: var(--app-muted-text);
+}
+
+.nextMatchChevron {
+  color: var(--app-muted-text);
+  flex-shrink: 0;
 }
 
 /* ── Compact season info card (H9) ── */
