@@ -112,6 +112,8 @@ export interface WizardProviderProps {
   initialStepId?: string;
   /** Initial shared data */
   initialData?: Record<string, unknown>;
+  /** Initial navigation history (e.g., ['choose'] when starting mid-flow) */
+  initialHistory?: string[];
   /** Called when wizard is closed */
   onClose: () => void;
   /** Called when wizard completes (last step completed) */
@@ -123,6 +125,7 @@ export function WizardProvider({
   steps,
   initialStepId,
   initialData = {},
+  initialHistory = [],
   onClose,
   onComplete,
   children,
@@ -133,7 +136,7 @@ export function WizardProvider({
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [direction, setDirection] = useState<WizardDirection>('initial');
-  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
+  const [navigationHistory, setNavigationHistory] = useState<string[]>(initialHistory);
 
   // Derived state
   const currentStepIndex = steps.findIndex(s => s.id === currentStepId);

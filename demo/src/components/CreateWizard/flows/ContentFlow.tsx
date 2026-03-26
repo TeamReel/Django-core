@@ -110,6 +110,7 @@ export function ContentFlow({ isOpen, onClose, initialMatchId, initialSubtype }:
       <WizardProvider
         steps={steps}
         initialStepId={startStep}
+        initialHistory={startStep !== 'choose' ? ['choose'] : []}
         onClose={handleClose}
       >
         <WizardShell isOpen={isOpen} showProgress>

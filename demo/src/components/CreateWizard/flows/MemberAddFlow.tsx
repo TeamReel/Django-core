@@ -299,6 +299,7 @@ export function MemberAddFlow({ isOpen, onClose }: MemberAddFlowProps) {
     <WizardProvider
       steps={MEMBER_ADD_STEPS}
       initialStepId={selectedFlow ? 'memberSearch' : 'choose'}
+      initialHistory={selectedFlow ? ['choose'] : []}
       onClose={handleClose}
     >
       <WizardShell isOpen={isOpen} showProgress>

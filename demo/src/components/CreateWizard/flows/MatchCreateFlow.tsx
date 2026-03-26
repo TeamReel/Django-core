@@ -165,6 +165,7 @@ export function MatchCreateFlow({ isOpen, onClose }: MatchCreateFlowProps) {
     <WizardProvider
       steps={MATCH_CREATE_STEPS}
       initialStepId={selectedFlow ? 'matchDetails' : 'choose'}
+      initialHistory={selectedFlow ? ['choose'] : []}
       onClose={handleClose}
     >
       <WizardShell isOpen={isOpen} showProgress>

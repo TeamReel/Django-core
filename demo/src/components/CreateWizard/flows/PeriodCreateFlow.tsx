@@ -242,6 +242,7 @@ export function PeriodCreateFlow({ isOpen, onClose }: PeriodCreateFlowProps) {
     <WizardProvider
       steps={PERIOD_CREATE_STEPS}
       initialStepId={selectedFlow ? 'periodType' : 'choose'}
+      initialHistory={selectedFlow ? ['choose'] : []}
       onClose={handleClose}
     >
       <WizardShell isOpen={isOpen} showProgress>

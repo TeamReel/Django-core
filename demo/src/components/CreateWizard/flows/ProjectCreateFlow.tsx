@@ -183,6 +183,7 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
     <WizardProvider
       steps={PROJECT_CREATE_STEPS}
       initialStepId={selectedFlow ? 'projectContext' : 'choose'}
+      initialHistory={selectedFlow ? ['choose'] : []}
       onClose={handleClose}
     >
       <WizardShell isOpen={isOpen} showProgress>

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | ✅ DONE |
 | Bron | UI/UX Review (Playwright) |
 | Impact | 🟡 important |
 | Effort | ~2 uur |
@@ -14,8 +14,8 @@ Als je per ongeluk doorklikt naar "Kies wedstrijd", moet je de hele wizard opnie
 **Gewenst**: ← terug-knop naar vorige stap, naast de × close.
 
 ## Checklist
-- [ ] Voeg `onBack` prop toe aan CreateWizard stap-componenten
-- [ ] Render ← Vorige knop in wizard header wanneer stap > 1
-- [ ] Gebruik NavigationSheet's bestaande `onBack` pattern
+- [x] Voeg `onBack` prop toe aan CreateWizard stap-componenten
+- [x] Render ← Vorige knop in wizard header wanneer stap > 1
+- [x] Gebruik NavigationSheet's bestaande `onBack` pattern
 - [ ] Tests
 - [ ] Verify via Playwright
