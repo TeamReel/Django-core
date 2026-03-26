@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import { UserPlus, X } from "lucide-react";
 import { FORMATION_LAYOUTS } from "../../identity/content-generation";
-import {
-  iterVariants,
-  type TeamreelAssets,
-} from "../../../utils/assetMetadata";
+import { type TeamreelAssets } from "../../../utils/assetMetadata";
 import styles from "./MatchLineupField.module.css";
 
 // Debug flag type declaration
@@ -121,24 +118,19 @@ export function FieldVisualization({
     getSquadMemberName(a).localeCompare(getSquadMemberName(b), "nl");
 
   // ── Asset availability helpers ──
-  // Check if role has ANY fullbody assets (uses iterVariants which handles legacy formats)
-  const hasFullbodyForRole = (
+  // Check if role has ANY image assets (halfbody, closeup, or fullbody)
+  const hasImagesForRole = (
     assets: TeamreelAssets | undefined,
     role: string,
   ): boolean => {
-    const variants = iterVariants(assets, role, "images", "fullbody");
-    return variants.some((v) => {
-      if (!v.value) return false;
-      if (typeof v.value === "string") return true;
-      return !!(v.value.raw || v.value.processed);
-    });
-  };
-
-  // Check if member has fullbody assets for ANY role
-  const hasAnyFullbody = (assets: TeamreelAssets | undefined): boolean => {
-    if (!assets?.roles) return false;
-    for (const role of Object.keys(assets.roles)) {
-      if (hasFullbodyForRole(assets, role)) return true;
+    const roleData = assets?.roles?.[role];
+    if (!roleData?.images) return false;
+    // Check if any asset type (halfbody, closeup, fullbody) has data
+    for (const assetType of Object.keys(roleData.images)) {
+      const assetData = roleData.images[assetType];
+      if (assetData && Object.keys(assetData).length > 0) {
+        return true;
+      }
     }
     return false;
   };
@@ -148,11 +140,8 @@ export function FieldVisualization({
     const assets = (p.metadata as Record<string, unknown>)?.teamreel_assets as
       | TeamreelAssets
       | undefined;
-    // Check 'keeper' and 'goalkeeper' role names, plus fallback to any fullbody
-    return (
-      hasFullbodyForRole(assets, "keeper") ||
-      hasFullbodyForRole(assets, "goalkeeper")
-    );
+    // Check 'keeper' role for keeper kit images
+    return hasImagesForRole(assets, "keeper");
   };
 
   const hasPlayerAsset = (p: SquadMember): boolean => {
@@ -160,7 +149,7 @@ export function FieldVisualization({
     const assets = (p.metadata as Record<string, unknown>)?.teamreel_assets as
       | TeamreelAssets
       | undefined;
-    return hasFullbodyForRole(assets, "player");
+    return hasImagesForRole(assets, "player");
   };
 
   // All members pool (no filtering - everyone shown)
