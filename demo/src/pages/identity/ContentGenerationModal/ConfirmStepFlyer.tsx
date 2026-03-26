@@ -217,7 +217,17 @@ function SingleMemberSelector({
       <label className="form-label-upper">Speler</label>
       <select
         value={flyerMemberId || ''}
-        onChange={(e) => { setFlyerMemberId(e.target.value || null); setFlyerActionStyle('dribbling'); }}
+        onChange={(e) => {
+          const memberId = e.target.value || null;
+          setFlyerMemberId(memberId);
+          if (memberId) {
+            const member = membersWithActionPhotos.find(m => m.id === memberId);
+            const styles = member ? extractMemberStyles(member) : [];
+            setFlyerActionStyle(styles.length > 0 ? styles[0] : 'dribbling');
+          } else {
+            setFlyerActionStyle('dribbling');
+          }
+        }}
         className={`w-full fs-13 rounded-6 bg-surface-2 text-primary cursor-pointer mb-12 ${css.selectInput}`}
       >
         <option value="">-- Automatisch (eerste beschikbare) --</option>
@@ -287,8 +297,15 @@ function MultiSlotSelector({
             <select
               value={slot.member_id || ''}
               onChange={(e) => {
+                const memberId = e.target.value || null;
                 const newSlots = [...flyerPhotoSlots];
-                newSlots[slotIdx] = { ...newSlots[slotIdx], member_id: e.target.value || null, style_variant: 'dribbling' };
+                let styleVariant = 'dribbling';
+                if (memberId) {
+                  const member = allMembers.find(m => m.id === memberId);
+                  const styles = member ? extractMemberStyles(member) : [];
+                  if (styles.length > 0) styleVariant = styles[0];
+                }
+                newSlots[slotIdx] = { ...newSlots[slotIdx], member_id: memberId, style_variant: styleVariant };
                 setFlyerPhotoSlots(newSlots);
               }}
               className={`w-full fs-12 bg-surface-2 text-primary cursor-pointer ${css.slotSelectMember}`}
