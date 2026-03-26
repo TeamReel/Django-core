@@ -66,10 +66,7 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
                 )}
               </div>
 
-              {/* Center: page title (only when no back button) */}
-              {!backTarget && navTitle && (
-                <span className={s.mobileTitle}>{navTitle}</span>
-              )}
+
             </>
           )}
 
@@ -217,35 +214,58 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
                 </div>
               )}
 
-              {/* Approvals Icon */}
-              <button
-                onClick={d.openQuickReview}
-                className={`nav-right-fixed nav-icon-button ${s.navIconBtn}`}
-                aria-label="Approvals" title="Approvals"
-              >
-                <AppIcon icon={ListChecks} size={20} />
-                {d.queueBadgeCount > 0 && (
-                  <span className={s.badge} style={{ backgroundColor: d.queueBadgeColor }}>{d.queueBadgeCount}</span>
-                )}
-                {d.queueBadgeCount === 0 && d.hasFailedJobs && (
-                  <span className={`${s.badge} ${s.badgeError}`} style={{ width: 8, height: 8, padding: 0 }} />
-                )}
-              </button>
+              {/* Mobile: combined Notifications + Approvals — one bell icon */}
+              {isMobile ? (
+                <button
+                  onClick={() => d.queueBadgeCount > 0 ? d.openQuickReview() : d.setNotificationsModalOpen(true)}
+                  className={`nav-right-fixed nav-icon-button ${s.navIconBtn}`}
+                  aria-label={d.queueBadgeCount > 0 ? 'Wachtrij' : 'Meldingen'}
+                  title={d.queueBadgeCount > 0 ? 'Wachtrij' : 'Meldingen'}
+                >
+                  <AppIcon icon={Bell} size={20} />
+                  {d.queueBadgeCount > 0 && (
+                    <span className={s.badge} style={{ backgroundColor: d.queueBadgeColor }}>{d.queueBadgeCount}</span>
+                  )}
+                  {d.queueBadgeCount === 0 && d.unreadCount > 0 && (
+                    <span className={`${s.badge} ${s.badgeError}`}>{d.unreadCount}</span>
+                  )}
+                  {d.queueBadgeCount === 0 && d.unreadCount === 0 && d.hasFailedJobs && (
+                    <span className={`${s.badge} ${s.badgeError}`} style={{ width: 8, height: 8, padding: 0 }} />
+                  )}
+                </button>
+              ) : (
+                <>
+                  {/* Desktop: Approvals Icon */}
+                  <button
+                    onClick={d.openQuickReview}
+                    className={`nav-right-fixed nav-icon-button ${s.navIconBtn}`}
+                    aria-label="Approvals" title="Approvals"
+                  >
+                    <AppIcon icon={ListChecks} size={20} />
+                    {d.queueBadgeCount > 0 && (
+                      <span className={s.badge} style={{ backgroundColor: d.queueBadgeColor }}>{d.queueBadgeCount}</span>
+                    )}
+                    {d.queueBadgeCount === 0 && d.hasFailedJobs && (
+                      <span className={`${s.badge} ${s.badgeError}`} style={{ width: 8, height: 8, padding: 0 }} />
+                    )}
+                  </button>
 
-              {/* Notification Icon */}
-              <button
-                onClick={() => d.setNotificationsModalOpen(true)}
-                className={`nav-right-fixed nav-icon-button ${s.navIconBtn}`}
-                aria-label="Notifications" title="Notifications"
-              >
-                <AppIcon icon={Bell} size={20} />
-                {d.unreadCount > 0 && (
-                  <span className={`${s.badge} ${s.badgeError}`}>{d.unreadCount}</span>
-                )}
-              </button>
+                  {/* Desktop: Notification Icon */}
+                  <button
+                    onClick={() => d.setNotificationsModalOpen(true)}
+                    className={`nav-right-fixed nav-icon-button ${s.navIconBtn}`}
+                    aria-label="Notifications" title="Notifications"
+                  >
+                    <AppIcon icon={Bell} size={20} />
+                    {d.unreadCount > 0 && (
+                      <span className={`${s.badge} ${s.badgeError}`}>{d.unreadCount}</span>
+                    )}
+                  </button>
+                </>
+              )}
 
-              {/* Credits Icon */}
-              {d.user ? (
+              {/* Credits Icon — desktop only */}
+              {!isMobile && d.user ? (
                 <button
                   className={`nav-credits-button nav-icon-button ${s.creditsBtn}`}
                   onClick={() => d.setCreditsModalOpen(true)}
