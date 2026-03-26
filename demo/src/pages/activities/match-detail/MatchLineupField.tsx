@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserPlus, X } from 'lucide-react';
 import { FORMATION_LAYOUTS } from '../../identity/content-generation';
-import type { TeamreelAssets } from '../../../utils/assetMetadata';
+import { iterVariants, type TeamreelAssets } from '../../../utils/assetMetadata';
 import styles from './MatchLineupField.module.css';
 
 /** Squad member / participation record */
@@ -101,26 +101,21 @@ export function FieldVisualization({
     getSquadMemberName(a).localeCompare(getSquadMemberName(b), 'nl');
 
   // ── Asset availability helpers ──
-  // Check if role has ANY fullbody assets (any kit, any variant)
+  // Check if role has ANY fullbody assets (uses iterVariants which handles legacy formats)
   const hasFullbodyForRole = (assets: TeamreelAssets | undefined, role: string): boolean => {
-    const fullbody = assets?.roles?.[role]?.images?.fullbody;
-    if (!fullbody) return false;
-    // Check any kit under this role
-    for (const kit of Object.values(fullbody)) {
-      if (!kit || typeof kit !== 'object') continue;
-      for (const variant of Object.values(kit)) {
-        if (!variant) continue;
-        const v = variant as Record<string, unknown>;
-        if (v.processed || v.raw || v.url) return true;
-      }
-    }
-    return false;
+    const variants = iterVariants(assets, role, 'images', 'fullbody');
+    return variants.some((v) => {
+      if (!v.value) return false;
+      if (typeof v.value === 'string') return true;
+      return !!(v.value.raw || v.value.processed);
+    });
   };
 
   const hasKeeperAsset = (p: SquadMember): boolean => {
     if (p.isGuest) return true;
     const assets = (p.metadata as Record<string, unknown>)?.teamreel_assets as TeamreelAssets | undefined;
-    return hasFullbodyForRole(assets, 'keeper');
+    // Try both 'keeper' and 'goalkeeper' role names
+    return hasFullbodyForRole(assets, 'keeper') || hasFullbodyForRole(assets, 'goalkeeper');
   };
 
   const hasPlayerAsset = (p: SquadMember): boolean => {
