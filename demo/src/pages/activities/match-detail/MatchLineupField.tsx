@@ -99,7 +99,13 @@ export function FieldVisualization({
   const sortByName = (a: SquadMember, b: SquadMember) =>
     getSquadMemberName(a).localeCompare(getSquadMemberName(b), 'nl');
 
-  const gkPool = (lineupSquad.goalkeeper || [])
+  // GK pool: explicit goalkeepers first, then all other players as fallback
+  const explicitGks = (lineupSquad.goalkeeper || []);
+  const allPlayers = [
+    ...explicitGks,
+    ...(lineupSquad.player || []),
+  ];
+  const gkPoolResolved = allPlayers
     .filter(
       (p, idx, arr) =>
         arr.findIndex((x) => getUserKey(x) === getUserKey(p)) === idx
@@ -107,12 +113,9 @@ export function FieldVisualization({
     .concat(guestPlayers)
     .sort(sortByName);
 
-  const playersOnly = [
-    ...(lineupSquad.goalkeeper || []),
-    ...(lineupSquad.player || []),
-  ];
+  const playersOnly = allPlayers;
   const gkUserKeys = new Set(
-    (lineupSquad.goalkeeper || []).map((p) => getUserKey(p))
+    explicitGks.map((p) => getUserKey(p))
   );
   const playerPool = playersOnly
     .filter((p) => !gkUserKeys.has(getUserKey(p)))
@@ -145,7 +148,7 @@ export function FieldVisualization({
           const idx = isGk ? 0 : pos.slot - 2;
           const selected = isGk ? gkSelected : playerSelected;
           const currentId = selected[idx] || '';
-          const pool = isGk ? gkPool : playerPool;
+          const pool = isGk ? gkPoolResolved : playerPool;
           const currentMember = currentId
             ? pool.find((p) => p.id === currentId)
             : null;
@@ -307,7 +310,8 @@ export function FieldVisualization({
 
       {/* Bench: squad members not in lineup */}
       {(() => {
-        const allPool = [...gkPool, ...playerPool];
+        const allPool = [...gkPoolResolved, ...playerPool]
+          .filter((p, idx, arr) => arr.findIndex((x) => getUserKey(x) === getUserKey(p)) === idx);
         const usedIds = new Set(
           [...gkSelected, ...playerSelected].filter(Boolean)
         );
