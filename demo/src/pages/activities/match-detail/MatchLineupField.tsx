@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { UserPlus, X } from 'lucide-react';
 import { FORMATION_LAYOUTS } from '../../identity/content-generation';
+import { hasAnyVariant } from '../../identity/memberAssetHelpers';
+import type { TeamreelAssets } from '../../../utils/assetMetadata';
 import styles from './MatchLineupField.module.css';
 
 /** Squad member / participation record */
@@ -99,13 +101,25 @@ export function FieldVisualization({
   const sortByName = (a: SquadMember, b: SquadMember) =>
     getSquadMemberName(a).localeCompare(getSquadMemberName(b), 'nl');
 
-  // GK pool: explicit goalkeepers first, then all other players as fallback
-  const explicitGks = (lineupSquad.goalkeeper || []);
-  const allPlayers = [
-    ...explicitGks,
+  // ── Asset availability helpers ──
+  const hasKeeperAsset = (p: SquadMember): boolean => {
+    if (p.isGuest) return true; // Guests always allowed
+    const assets = (p.metadata as Record<string, unknown>)?.teamreel_assets as TeamreelAssets | undefined;
+    return hasAnyVariant(assets, 'keeper', 'images', 'fullbody');
+  };
+  const hasPlayerAsset = (p: SquadMember): boolean => {
+    if (p.isGuest) return true;
+    const assets = (p.metadata as Record<string, unknown>)?.teamreel_assets as TeamreelAssets | undefined;
+    return hasAnyVariant(assets, 'player', 'images', 'fullbody');
+  };
+
+  // GK pool: only members with keeper-tenue assets
+  const allMembers = [
+    ...(lineupSquad.goalkeeper || []),
     ...(lineupSquad.player || []),
   ];
-  const gkPoolResolved = allPlayers
+  const gkPoolResolved = allMembers
+    .filter(hasKeeperAsset)
     .filter(
       (p, idx, arr) =>
         arr.findIndex((x) => getUserKey(x) === getUserKey(p)) === idx
@@ -113,12 +127,9 @@ export function FieldVisualization({
     .concat(guestPlayers)
     .sort(sortByName);
 
-  const playersOnly = allPlayers;
-  const gkUserKeys = new Set(
-    explicitGks.map((p) => getUserKey(p))
-  );
-  const playerPool = playersOnly
-    .filter((p) => !gkUserKeys.has(getUserKey(p)))
+  // Player pool: only members with home-tenue assets
+  const playerPool = allMembers
+    .filter(hasPlayerAsset)
     .filter(
       (p, idx, arr) =>
         arr.findIndex((x) => getUserKey(x) === getUserKey(p)) === idx
