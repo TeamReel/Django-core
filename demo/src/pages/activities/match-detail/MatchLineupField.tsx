@@ -111,10 +111,19 @@ export function FieldVisualization({
     });
   };
 
+  // Check if member has fullbody assets for ANY role
+  const hasAnyFullbody = (assets: TeamreelAssets | undefined): boolean => {
+    if (!assets?.roles) return false;
+    for (const role of Object.keys(assets.roles)) {
+      if (hasFullbodyForRole(assets, role)) return true;
+    }
+    return false;
+  };
+
   const hasKeeperAsset = (p: SquadMember): boolean => {
     if (p.isGuest) return true;
     const assets = (p.metadata as Record<string, unknown>)?.teamreel_assets as TeamreelAssets | undefined;
-    // Try both 'keeper' and 'goalkeeper' role names
+    // Check 'keeper' and 'goalkeeper' role names, plus fallback to any fullbody
     return hasFullbodyForRole(assets, 'keeper') || hasFullbodyForRole(assets, 'goalkeeper');
   };
 
@@ -129,6 +138,19 @@ export function FieldVisualization({
     ...(lineupSquad.goalkeeper || []),
     ...(lineupSquad.player || []),
   ];
+
+  // DEBUG: log asset structures for first few members
+  if (allMembers.length > 0) {
+    console.group('[Lineup Debug] Member asset roles');
+    allMembers.slice(0, 5).forEach((m) => {
+      const name = getSquadMemberName(m);
+      const assets = (m.metadata as Record<string, unknown>)?.teamreel_assets as TeamreelAssets | undefined;
+      const roles = assets?.roles ? Object.keys(assets.roles) : [];
+      console.log(`${name}: roles=[${roles.join(', ')}], hasKeeper=${hasKeeperAsset(m)}, hasPlayer=${hasPlayerAsset(m)}`);
+    });
+    console.groupEnd();
+  }
+
   const gkPoolResolved = allMembers
     .filter(hasKeeperAsset)
     .filter(
