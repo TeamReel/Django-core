@@ -181,16 +181,14 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
               )}
 
               {/* Theme Toggle */}
-              {!isMobile && (
-                <button
-                  onClick={d.toggleTheme}
-                  className={`nav-icon-button ${s.themeBtn}`}
-                  title={`Wissel naar ${d.currentThemeMode === 'light' ? 'donker' : 'licht'} thema`}
-                  aria-label={`Wissel naar ${d.currentThemeMode === 'light' ? 'donker' : 'licht'} thema`}
-                >
-                  <AppIcon icon={d.currentThemeMode === 'light' ? Moon : Sun} size={20} />
-                </button>
-              )}
+              <button
+                onClick={d.toggleTheme}
+                className={`nav-icon-button ${s.themeBtn}`}
+                title={`Wissel naar ${d.currentThemeMode === 'light' ? 'donker' : 'licht'} thema`}
+                aria-label={`Wissel naar ${d.currentThemeMode === 'light' ? 'donker' : 'licht'} thema`}
+              >
+                <AppIcon icon={d.currentThemeMode === 'light' ? Moon : Sun} size={20} />
+              </button>
 
               {/* Language Switcher */}
               {!isMobile && (
