@@ -133,36 +133,12 @@ export function FieldVisualization({
     return hasFullbodyForRole(assets, 'player');
   };
 
-  // GK pool: only members with keeper-tenue assets
+  // All members pool (no filtering - everyone shown)
   const allMembers = [
     ...(lineupSquad.goalkeeper || []),
     ...(lineupSquad.player || []),
   ];
-
-  // DEBUG: log asset structures for first few members
-  if (allMembers.length > 0) {
-    console.group('[Lineup Debug] Member asset roles');
-    allMembers.slice(0, 5).forEach((m) => {
-      const name = getSquadMemberName(m);
-      const assets = (m.metadata as Record<string, unknown>)?.teamreel_assets as TeamreelAssets | undefined;
-      const roles = assets?.roles ? Object.keys(assets.roles) : [];
-      console.log(`${name}: roles=[${roles.join(', ')}], hasKeeper=${hasKeeperAsset(m)}, hasPlayer=${hasPlayerAsset(m)}`);
-    });
-    console.groupEnd();
-  }
-
-  const gkPoolResolved = allMembers
-    .filter(hasKeeperAsset)
-    .filter(
-      (p, idx, arr) =>
-        arr.findIndex((x) => getUserKey(x) === getUserKey(p)) === idx
-    )
-    .concat(guestPlayers)
-    .sort(sortByName);
-
-  // Player pool: only members with home-tenue assets
-  const playerPool = allMembers
-    .filter(hasPlayerAsset)
+  const allMembersDeduped = allMembers
     .filter(
       (p, idx, arr) =>
         arr.findIndex((x) => getUserKey(x) === getUserKey(p)) === idx
@@ -192,7 +168,10 @@ export function FieldVisualization({
           const idx = isGk ? 0 : pos.slot - 2;
           const selected = isGk ? gkSelected : playerSelected;
           const currentId = selected[idx] || '';
-          const pool = isGk ? gkPoolResolved : playerPool;
+          // All positions use same pool - everyone visible
+          const pool = allMembersDeduped;
+          // Check asset availability for this position type
+          const hasAssetForPosition = isGk ? hasKeeperAsset : hasPlayerAsset;
           const currentMember = currentId
             ? pool.find((p) => p.id === currentId)
             : null;
@@ -234,6 +213,7 @@ export function FieldVisualization({
                   );
                   const isAlreadyUsed =
                     !p.isGuest && allUsedIds.includes(p.id) && p.id !== currentId;
+                  const hasAsset = hasAssetForPosition(p);
                   return (
                     <option
                       key={p.id}
@@ -241,6 +221,7 @@ export function FieldVisualization({
                       disabled={isAlreadyUsed}
                       className={isAlreadyUsed ? styles.selectOptionDisabled : styles.selectOption}
                     >
+                      {hasAsset ? '✓ ' : '⚠ '}
                       {jersey ? `#${jersey} ` : ''}
                       {name}
                       {p.isGuest ? ' (gast)' : ''}
@@ -354,12 +335,10 @@ export function FieldVisualization({
 
       {/* Bench: squad members not in lineup */}
       {(() => {
-        const allPool = [...gkPoolResolved, ...playerPool]
-          .filter((p, idx, arr) => arr.findIndex((x) => getUserKey(x) === getUserKey(p)) === idx);
         const usedIds = new Set(
           [...gkSelected, ...playerSelected].filter(Boolean)
         );
-        const benchMembers = allPool.filter(
+        const benchMembers = allMembersDeduped.filter(
           (p) => !usedIds.has(p.id)
         );
 
