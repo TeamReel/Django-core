@@ -7,6 +7,13 @@ import {
 } from "../../../utils/assetMetadata";
 import styles from "./MatchLineupField.module.css";
 
+// Debug flag type declaration
+declare global {
+  interface Window {
+    __debuggedAssets?: boolean;
+  }
+}
+
 /** Squad member / participation record */
 interface SquadMemberUser {
   id?: string;
