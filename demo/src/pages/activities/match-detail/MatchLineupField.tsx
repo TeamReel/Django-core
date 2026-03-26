@@ -4,13 +4,6 @@ import { FORMATION_LAYOUTS } from "../../identity/content-generation";
 import { type TeamreelAssets } from "../../../utils/assetMetadata";
 import styles from "./MatchLineupField.module.css";
 
-// Debug flag type declaration
-declare global {
-  interface Window {
-    __debuggedAssets?: boolean;
-  }
-}
-
 /** Squad member / participation record */
 interface SquadMemberUser {
   id?: string;
@@ -118,20 +111,35 @@ export function FieldVisualization({
     getSquadMemberName(a).localeCompare(getSquadMemberName(b), "nl");
 
   // ── Asset availability helpers ──
-  // Check if role has ANY image assets (halfbody, closeup, or fullbody)
-  const hasImagesForRole = (
+  // Mirrors resolve_lineup_member_assets() from backend:
+  // 1. Check roles.{role}.images.fullbody.{kit}  (new nested format)
+  // 2. Check images.fullbody.{kit}                (legacy flat format)
+  // 3. Check media.kit                            (media alias fallback)
+  const hasLineupAsset = (
     assets: TeamreelAssets | undefined,
     role: string,
+    kit: string,
   ): boolean => {
-    const roleData = assets?.roles?.[role];
-    if (!roleData?.images) return false;
-    // Check if any asset type (halfbody, closeup, fullbody) has data
-    for (const assetType of Object.keys(roleData.images)) {
-      const assetData = roleData.images[assetType];
-      if (assetData && Object.keys(assetData).length > 0) {
-        return true;
-      }
+    if (!assets) return false;
+    const raw = assets as Record<string, unknown>;
+
+    // 1. New nested: roles.{role}.images.fullbody.{kit}
+    const roleImages = assets.roles?.[role]?.images;
+    if (roleImages) {
+      const fb = roleImages.fullbody as Record<string, unknown> | undefined;
+      if (fb && (fb[kit] || fb.home)) return true;
     }
+
+    // 2. Legacy flat: images.fullbody.{kit}
+    const legacyImages = raw.images as Record<string, Record<string, unknown>> | undefined;
+    if (legacyImages?.fullbody) {
+      if (legacyImages.fullbody[kit] || legacyImages.fullbody.home) return true;
+    }
+
+    // 3. Media alias: media.kit
+    const media = raw.media as Record<string, { url?: string }> | undefined;
+    if (media?.kit?.url) return true;
+
     return false;
   };
 
@@ -140,8 +148,7 @@ export function FieldVisualization({
     const assets = (p.metadata as Record<string, unknown>)?.teamreel_assets as
       | TeamreelAssets
       | undefined;
-    // Check 'keeper' role for keeper kit images
-    return hasImagesForRole(assets, "keeper");
+    return hasLineupAsset(assets, "keeper", "goalkeeper");
   };
 
   const hasPlayerAsset = (p: SquadMember): boolean => {
@@ -149,7 +156,7 @@ export function FieldVisualization({
     const assets = (p.metadata as Record<string, unknown>)?.teamreel_assets as
       | TeamreelAssets
       | undefined;
-    return hasImagesForRole(assets, "player");
+    return hasLineupAsset(assets, "player", "home");
   };
 
   // All members pool (no filtering - everyone shown)
@@ -157,36 +164,6 @@ export function FieldVisualization({
     ...(lineupSquad.goalkeeper || []),
     ...(lineupSquad.player || []),
   ];
-
-  // DEBUG: Log asset structure for first few members (remove after debugging)
-  if (allMembers.length > 0 && !window.__debuggedAssets) {
-    window.__debuggedAssets = true;
-    console.group("🔍 ASSET DEBUG - MatchLineupField");
-    allMembers.slice(0, 5).forEach((p) => {
-      const name = getSquadMemberName(p);
-      const meta = p.metadata as Record<string, unknown>;
-      const assets = meta?.teamreel_assets as TeamreelAssets | undefined;
-      console.log(`\n👤 ${name}:`);
-      console.log("  - metadata keys:", meta ? Object.keys(meta) : "N/A");
-      console.log("  - teamreel_assets:", assets);
-      console.log("  - assets.roles:", assets?.roles);
-      if (assets?.roles) {
-        console.log("  - role keys:", Object.keys(assets.roles));
-        for (const [role, roleData] of Object.entries(assets.roles)) {
-          console.log(`    - ${role}.images:`, roleData?.images);
-          if (roleData?.images?.fullbody) {
-            console.log(
-              `      - fullbody kits:`,
-              Object.keys(roleData.images.fullbody),
-            );
-          }
-        }
-      }
-      console.log("  - hasKeeperAsset:", hasKeeperAsset(p));
-      console.log("  - hasPlayerAsset:", hasPlayerAsset(p));
-    });
-    console.groupEnd();
-  }
   const allMembersDeduped = allMembers
     .filter(
       (p, idx, arr) =>
