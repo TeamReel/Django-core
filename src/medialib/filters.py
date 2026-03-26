@@ -2,6 +2,10 @@ import django_filters
 from .models import MediaItem, MediaItemState
 
 
+class UUIDInFilter(django_filters.BaseInFilter, django_filters.UUIDFilter):
+    """Comma-separated UUID filter: ?activity__in=uuid1,uuid2,uuid3"""
+
+
 class MediaItemFilterSet(django_filters.FilterSet):
     # Text search (uses Postgres SearchVector via Service)
     q = django_filters.CharFilter(method="filter_search")
@@ -15,8 +19,11 @@ class MediaItemFilterSet(django_filters.FilterSet):
     # Tags filter (comma-separated slugs)
     tags = django_filters.CharFilter(method="filter_tags")
 
-    # Activity filter
+    # Activity filter (single)
     activity = django_filters.UUIDFilter(field_name="activity_id")
+
+    # Activity batch filter (comma-separated UUIDs)
+    activity__in = UUIDInFilter(field_name="activity_id", lookup_expr="in")
 
     # MIME type filter
     mime_type = django_filters.CharFilter(lookup_expr="istartswith")

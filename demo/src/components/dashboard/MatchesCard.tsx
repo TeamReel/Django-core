@@ -20,6 +20,7 @@ import { MatchSheetFlow } from './MatchSheetFlow';
 import { ReadinessRing } from './ReadinessRing';
 import { buildMatchVanityUrl, buildMatchVanityUrlWithTab } from './ActiveMatchCard';
 import type { Match } from './ActiveMatchCard';
+import { useMatchListReadiness, type ReadinessMap } from '../../hooks/useMatchListReadiness';
 import styles from './MatchesCard.module.css';
 
 type Tab = 'upcoming' | 'past';
@@ -37,6 +38,8 @@ export const MatchesCard = memo(function MatchesCard() {
 
   const upcomingMatches = upcoming.data?.matches ?? [];
   const pastMatches = past.data?.matches ?? [];
+  const allMatches = [...upcomingMatches, ...pastMatches];
+  const { data: readinessMap } = useMatchListReadiness(allMatches);
   const isLoading = activeTab === 'upcoming' ? upcoming.isLoading : past.isLoading;
   const matches = activeTab === 'upcoming' ? upcomingMatches : pastMatches;
   const total = activeTab === 'upcoming'
@@ -129,9 +132,9 @@ export const MatchesCard = memo(function MatchesCard() {
             <div className={styles.matchList}>
               {matches.map(match => (
                 activeTab === 'upcoming' ? (
-                  <UpcomingMatchRow key={match.id} match={match} onSelect={handleSelectMatch} />
+                  <UpcomingMatchRow key={match.id} match={match} onSelect={handleSelectMatch} readinessMap={readinessMap} />
                 ) : (
-                  <PastMatchRow key={match.id} match={match} onSelect={handleSelectMatch} />
+                  <PastMatchRow key={match.id} match={match} onSelect={handleSelectMatch} readinessMap={readinessMap} />
                 )
               ))}
             </div>
@@ -158,22 +161,17 @@ export const MatchesCard = memo(function MatchesCard() {
 interface MatchRowProps {
   match: Match;
   onSelect: (match: Match) => void;
+  readinessMap?: ReadinessMap;
 }
 
-const UpcomingMatchRow: React.FC<MatchRowProps> = memo(function UpcomingMatchRow({ match, onSelect }) {
+const UpcomingMatchRow: React.FC<MatchRowProps> = memo(function UpcomingMatchRow({ match, onSelect, readinessMap }) {
   const date = new Date(match.start_time);
   const relTime = formatRelativeTime(date, 'nl');
   const teamName = match.project?.club_name || match.project?.name || 'Team';
   const opponent = match.opponent_project?.club_name || match.opponent_project?.name || match.title?.split(' vs ')?.[1] || 'Tegenstander';
   const isHome = match.metadata?.is_home !== false;
 
-  const lineupData = match.metadata?.lineup as Record<string, unknown> | undefined;
-  const hasLineup = lineupData && (
-    (Array.isArray(lineupData.goalkeeper) && lineupData.goalkeeper.length > 0) ||
-    (Array.isArray(lineupData.player) && lineupData.player.length > 0) ||
-    (Array.isArray(lineupData.positions) && lineupData.positions.length > 0)
-  );
-  const readiness: number = hasLineup ? 20 : 0;
+  const readiness = readinessMap?.get(match.id)?.percent ?? 0;
 
   return (
     <div
@@ -215,7 +213,7 @@ const UpcomingMatchRow: React.FC<MatchRowProps> = memo(function UpcomingMatchRow
 
 /* ── Past Match Row (with score) ───────────────────────────────────── */
 
-const PastMatchRow: React.FC<MatchRowProps> = memo(function PastMatchRow({ match, onSelect }) {
+const PastMatchRow: React.FC<MatchRowProps> = memo(function PastMatchRow({ match, onSelect, readinessMap }) {
   const date = new Date(match.start_time);
   const teamName = match.project?.club_name || match.project?.name || 'Team';
   const opponent = match.opponent_project?.club_name || match.opponent_project?.name || match.title?.split(' vs ')?.[1] || 'Tegenstander';
@@ -251,16 +249,15 @@ const PastMatchRow: React.FC<MatchRowProps> = memo(function PastMatchRow({ match
         )}
       </div>
 
-      <div className={styles.matchScore}>
-        {hasScore ? (
-          <>
+      <div className={styles.matchMeta}>
+        {hasScore && (
+          <div className={styles.matchScore}>
             <span>{homeScore}</span>
             <span className={styles.scoreDash}>–</span>
             <span>{awayScore}</span>
-          </>
-        ) : (
-          <span className={styles.noScore}>Gespeeld</span>
+          </div>
         )}
+        <ReadinessRing percent={readinessMap?.get(match.id)?.percent ?? 0} size={32} showLabel={false} />
       </div>
 
       <ChevronRight size={16} className={styles.chevron} />

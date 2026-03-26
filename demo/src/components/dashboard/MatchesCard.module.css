@@ -216,6 +216,13 @@
 }
 
 /* ── Score (past tab) ──────────────────────────────────── */
+.matchMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
 .matchScore {
   display: flex;
   align-items: center;

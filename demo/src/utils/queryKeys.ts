@@ -42,6 +42,9 @@ export const queryKeys = {
       ['media', 'items', filters] as const,
     byActivity: (activityId: string) =>
       ['media', 'activity', activityId] as const,
+    /** Batch readiness for multiple match IDs */
+    batchReadiness: (matchIds: string[]) =>
+      ['media', 'batchReadiness', ...matchIds.slice().sort()] as const,
   },
 
   // Credits
