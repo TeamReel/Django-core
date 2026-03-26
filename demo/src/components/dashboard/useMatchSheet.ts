@@ -8,6 +8,7 @@
  * count tracking, readiness calculation, CreateWizard dispatch.
  */
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { api } from '@/api';
 import type { Match } from './ActiveMatchCard';
 import type { ClosestMatchData } from '../../hooks/useClosestMatch';
 
@@ -115,6 +116,37 @@ export function useMatchSheet(
     }
   }, [match?.id, matchData]);
 
+  // Refetch media items to update contentDoneSubtypes and count
+  const refreshMediaSubtypes = useCallback(async () => {
+    if (!match?.id) return;
+    try {
+      const mediaData = await api.list<{ id: string; extraction_metadata?: { asset_type?: string } }>(
+        '/media/items/',
+        { params: { activity: match.id }, pageSize: 50 },
+      );
+      const subtypeSet = new Set<string>();
+      for (const item of mediaData.results) {
+        const raw = item.extraction_metadata?.asset_type;
+        if (raw) {
+          let normalized = String(raw).replace(/_[a-f0-9]{8}$/i, '');
+          if (normalized === 'goal_celebration') normalized = 'goal';
+          if (normalized === 'match_flyer') normalized = 'flyer';
+          subtypeSet.add(normalized);
+        }
+      }
+      setContentCount(mediaData.results.length);
+      setContentDoneSubtypes([...subtypeSet]);
+    } catch {
+      // ignore
+    }
+  }, [match?.id]);
+
+  // Fetch content subtypes from media items when matchData not provided (e.g. UpcomingMatchesCard)
+  useEffect(() => {
+    if (matchData || !match?.id) return;
+    void refreshMediaSubtypes();
+  }, [match?.id, matchData, refreshMediaSubtypes]);
+
   const togglePhase = useCallback((key: string) => {
     setExpandedPhases(prev => {
       const next = new Set(prev);
@@ -144,7 +176,9 @@ export function useMatchSheet(
     setContentCount(newCount);
     setBadgeBump('content');
     setTimeout(() => setBadgeBump(null), 400);
-  }, []);
+    // Re-fetch to get updated contentDoneSubtypes
+    void refreshMediaSubtypes();
+  }, [refreshMediaSubtypes]);
 
   // Derived state
   const matchState = useMemo(() => {
