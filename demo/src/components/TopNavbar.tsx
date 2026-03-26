@@ -32,7 +32,7 @@ import { MobileSearchOverlay, NAV_INLINE_STYLES } from './TopNavbarMobile';
 
 const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, onOpenSearchRef }: TopNavbarProps) {
   const d = useTopNavbarData(onOpenSearchRef);
-  const { backTarget, goBack } = useBackNavigation();
+  const { backTarget, goBack, navTitle } = useBackNavigation();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   return (
@@ -40,19 +40,40 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
       <CommandPalette isOpen={d.commandOpen} onClose={() => d.setCommandOpen(false)} />
       <nav className={s.nav} data-app-top-navbar="true">
         <div className={s.navContainer} data-mobile={isMobile}>
-          {/* Mobile: back button (no hamburger — bottom tab bar handles navigation) */}
-          {isMobile && backTarget && (
-            <button
-              className={s.backBtn}
-              onClick={goBack}
-              aria-label={`Back to ${backTarget.label}`}
-            >
-              <ChevronLeft size={20} strokeWidth={2.5} className={s.backBtnIcon} />
-              <span className={s.backBtnLabel}>{backTarget.label}</span>
-            </button>
+          {/* ── Mobile layout ── */}
+          {isMobile && (
+            <>
+              {/* Left: back button OR logo */}
+              <div className={s.mobileLeft}>
+                {backTarget ? (
+                  <button
+                    className={s.backBtn}
+                    onClick={goBack}
+                    aria-label={`Terug naar ${backTarget.label}`}
+                  >
+                    <ChevronLeft size={20} strokeWidth={2.5} className={s.backBtnIcon} />
+                    <span className={s.backBtnLabel}>{backTarget.label}</span>
+                  </button>
+                ) : (
+                  <Link
+                    to={d.dashboardItem.path}
+                    title={d.dashboardItem.label}
+                    aria-label={d.dashboardItem.label}
+                    className={s.mobileLogoLink}
+                  >
+                    <img src="/teamreel-icon.svg" alt="TeamReel" className={s.logoImg} />
+                  </Link>
+                )}
+              </div>
+
+              {/* Center: page title (only when no back button) */}
+              {!backTarget && navTitle && (
+                <span className={s.mobileTitle}>{navTitle}</span>
+              )}
+            </>
           )}
 
-          {/* Left: Navigation items */}
+          {/* ── Desktop layout: left nav ── */}
           <div className={`desktop-nav flex-row gap-4 flex-1 h-full ${s.desktopNavWrap}`}>
             {/* Desktop: back button when navigating a sub-page */}
             {!isMobile && backTarget && (
@@ -101,18 +122,6 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
                   aria-label="Zoeken" title="Zoeken"
                 >
                   <AppIcon icon={Search} size={20} />
-                </button>
-              )}
-
-              {/* Mobile: Theme Toggle */}
-              {isMobile && (
-                <button
-                  onClick={d.toggleTheme}
-                  className={`nav-icon-button ${s.navIconBtn}`}
-                  title={`Wissel naar ${d.currentThemeMode === 'light' ? 'donker' : 'licht'} thema`}
-                  aria-label={`Wissel naar ${d.currentThemeMode === 'light' ? 'donker' : 'licht'} thema`}
-                >
-                  <AppIcon icon={d.currentThemeMode === 'light' ? Moon : Sun} size={20} />
                 </button>
               )}
 

@@ -27,6 +27,10 @@ interface BackNavigationContextValue {
   setBackTarget: (target: BackTarget | null) => void;
   /** Navigate back — uses onBack callback, history.back(), or fallback path */
   goBack: () => void;
+  /** Page title shown in the mobile navbar (e.g. "Dashboard", "Studio") */
+  navTitle: string | null;
+  /** Set the page title for the navbar */
+  setNavTitle: (title: string | null) => void;
 }
 
 /* ── Context ───────────────────────────────────────────────────────── */
@@ -34,11 +38,14 @@ const BackNavigationContext = createContext<BackNavigationContextValue>({
   backTarget: null,
   setBackTarget: () => {},
   goBack: () => {},
+  navTitle: null,
+  setNavTitle: () => {},
 });
 
 /* ── Provider ──────────────────────────────────────────────────────── */
 export function BackNavigationProvider({ children }: { children: React.ReactNode }) {
   const [backTarget, setBackTarget] = useState<BackTarget | null>(null);
+  const [navTitle, setNavTitle] = useState<string | null>(null);
   const navigate = useNavigate();
   const targetRef = useRef<BackTarget | null>(null);
 
@@ -67,7 +74,7 @@ export function BackNavigationProvider({ children }: { children: React.ReactNode
   }, [navigate]);
 
   return (
-    <BackNavigationContext.Provider value={{ backTarget, setBackTarget, goBack }}>
+    <BackNavigationContext.Provider value={{ backTarget, setBackTarget, goBack, navTitle, setNavTitle }}>
       {children}
     </BackNavigationContext.Provider>
   );
@@ -93,4 +100,20 @@ export function useSetBackNavigation(target: BackTarget) {
     setBackTarget(target);
     return () => setBackTarget(null);
   }, [target.label, target.path, setBackTarget]);
+}
+
+/**
+ * Declarative hook for pages to set the navbar title.
+ * Shows in the mobile navbar when there is no back button.
+ * Automatically clears on unmount.
+ *
+ * @example useSetNavTitle('Dashboard');
+ */
+export function useSetNavTitle(title: string) {
+  const { setNavTitle } = useContext(BackNavigationContext);
+
+  useEffect(() => {
+    setNavTitle(title);
+    return () => setNavTitle(null);
+  }, [title, setNavTitle]);
 }

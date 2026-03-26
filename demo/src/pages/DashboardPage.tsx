@@ -26,9 +26,11 @@ import { useClosestMatch } from '../hooks/useClosestMatch';
 import { useContentStreak } from '../hooks/useContentStreak';
 import { useMatchDayMode } from '../hooks/useMatchDayMode';
 import { CONTENT_TYPES } from './identity/ContentGenerationModal';
+import { useSetNavTitle } from '../providers/BackNavigationProvider';
 import styles from './DashboardPage.module.css';
 
 export default function DashboardPage() {
+  useSetNavTitle('Home');
   const { user } = useAuth();
   const { context } = useContextSwitcher();
   const navigate = useNavigate();

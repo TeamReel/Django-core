@@ -25,6 +25,7 @@ import MobileTabBar from '../../components/MobileTabBar';
 import { SeasonSwitcher, type SeasonOption } from '../../components/SeasonSwitcher';
 import { isSeasonPeriod, useSeasonContext } from '../../providers/SeasonProvider';
 
+import { useSetNavTitle } from '../../providers/BackNavigationProvider';
 import { periodPathKey } from '../../utils/periodPath';
 import { iterVariants, ROLE_KIT_MAP, type TeamreelAssets } from '../../utils/assetMetadata';
 import { setActiveContext } from '../../utils/activeContext';
@@ -73,6 +74,7 @@ import s from './MyTeamHubPage.module.css';
 export const MyTeamHubPage: React.FC = () => {
   const navigate = useNavigate();
   const { clubId: clubSlugOrId } = useParams<{ clubId: string }>();
+  useSetNavTitle('Mijn Team');
 
   // ── Team-level data ──
   const team = useTeamDetailData();

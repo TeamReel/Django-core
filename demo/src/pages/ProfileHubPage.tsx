@@ -17,6 +17,7 @@ import { useSignOut } from '@django-core/auth-ui';
 import { usePreferencesData } from './config/usePreferencesData';
 import { PreferencesModals } from './config/PreferencesModals';
 import { ProfileSheet } from '../components/ProfileSheet';
+import { useSetNavTitle } from '../providers/BackNavigationProvider';
 import s from './ProfileHubPage.module.css';
 
 /* Lazy-loaded sheet content — only fetched when opened */
@@ -46,6 +47,7 @@ const TIMEZONES = [
 ];
 
 export default function ProfileHubPage() {
+  useSetNavTitle('Profiel');
   const d = usePreferencesData();
   const { signOut, loading: signingOut } = useSignOut();
   const navigate = useNavigate();

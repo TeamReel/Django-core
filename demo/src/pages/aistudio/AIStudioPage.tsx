@@ -21,6 +21,7 @@ import { StudioContentCard, StudioPreviewModal, ViewAllSheet, type ViewAllData, 
 import { StudioSection } from './StudioSection';
 import { VideoJobCard, ActiveJobsStrip } from './StudioJobComponents';
 import { ContentShareSheet } from '../../components/ContentShareSheet';
+import { useSetNavTitle } from '../../providers/BackNavigationProvider';
 import styles from './AIStudioPage.module.css';
 
 // ============================================================================
@@ -37,6 +38,7 @@ const PHASE_META: Record<string, { label: string; accent: string; icon: string }
 };
 
 export default function AIStudioPage() {
+  useSetNavTitle('Studio');
   const data = useStudioData();
 
   const [viewMode, setViewMode] = useState<ViewMode>('type');
