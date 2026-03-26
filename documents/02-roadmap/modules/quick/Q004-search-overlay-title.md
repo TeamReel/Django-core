@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | ✅ DONE |
 | Bron | UI/UX Review (Playwright) |
 | Impact | 🟢 nice-to-have |
 | Effort | ~30 min |
@@ -14,6 +14,6 @@ Alle andere sheets hebben een duidelijke titel ("Profiel bewerken", "Queue", "Pr
 **Gewenst**: Voeg "Zoeken" als titel toe aan de search overlay header, consistent met alle andere sheets.
 
 ## Checklist
-- [ ] Voeg titel "Zoeken" toe aan MobileSearchOverlay header
-- [ ] Consistent styling met andere sheet headers
+- [x] Voeg titel "Zoeken" toe aan MobileSearchOverlay header
+- [x] Consistent styling met andere sheet headers
 - [ ] Verify via Playwright

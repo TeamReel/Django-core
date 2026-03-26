@@ -31,8 +31,9 @@ export function MobileSearchOverlay({ onClose, onQueryChange }: MobileSearchOver
         aria-hidden="true"
       />
       <div className={s.mobileSearchOverlay} role="dialog" aria-label="Zoeken">
-        {/* Input row: search + close */}
+        {/* Header row: title + close */}
         <div className={s.mobileSearchInputRow}>
+          <span className={s.mobileSearchTitle}>Zoeken</span>
           <button
             type="button"
             onClick={onClose}
