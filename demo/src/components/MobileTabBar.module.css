@@ -68,6 +68,16 @@
 /* Hide desktop-only pills on mobile */
 @media (max-width: 767px) {
   .desktopOnly { display: none; }
+
+  /* Tighter spacing on narrow viewports so 4 tabs fit without overflow */
+  .inlineBar {
+    gap: var(--space-1);
+    padding-inline: var(--space-3);
+  }
+
+  .inlinePill {
+    padding: var(--space-2);
+  }
 }
 
 /* Reduced motion */
