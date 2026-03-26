@@ -111,11 +111,11 @@ export function FieldVisualization({
     getSquadMemberName(a).localeCompare(getSquadMemberName(b), "nl");
 
   // ── Asset availability helpers ──
-  // Mirrors resolve_lineup_member_assets() from backend:
-  // 1. roles.{role}.images.fullbody.{kit}  (new nested format)
-  // 2. images.fullbody.{kit}               (legacy flat format — kit-based, not role-based)
-  // 3. media.kit                           (media alias fallback)
+  // Check if a member has any image asset (fullbody, halfbody, or closeup) for a given role+kit.
+  // Mirrors backend ASSET_TYPES_BY_ROLE which defines fullbody/halfbody/closeup per role.
   // For keeper: kit = "goalkeeper". For player: kit = "home".
+  const IMAGE_TYPES = ["fullbody", "halfbody", "closeup"] as const;
+
   const hasLineupAsset = (
     assets: TeamreelAssets | undefined,
     role: string,
@@ -124,18 +124,24 @@ export function FieldVisualization({
     if (!assets) return false;
     const raw = assets as Record<string, unknown>;
 
-    // 1. New nested: roles.{role}.images.fullbody.{kit}
+    // 1. New nested: roles.{role}.images.{type}.{kit}
     const roleImages = assets.roles?.[role]?.images;
     if (roleImages) {
-      const fb = roleImages.fullbody as Record<string, unknown> | undefined;
-      if (fb && fb[kit]) return true;
+      for (const type of IMAGE_TYPES) {
+        const img = roleImages[type] as Record<string, unknown> | undefined;
+        if (img && img[kit]) return true;
+      }
     }
 
-    // 2. Legacy flat: images.fullbody.{kit} — strict kit match only
+    // 2. Legacy flat: images.{type}.{kit}
     const legacyImages = raw.images as
       | Record<string, Record<string, unknown>>
       | undefined;
-    if (legacyImages?.fullbody?.[kit]) return true;
+    if (legacyImages) {
+      for (const type of IMAGE_TYPES) {
+        if (legacyImages[type]?.[kit]) return true;
+      }
+    }
 
     // 3. Media alias: media.kit (only for player/home — it's always home kit)
     if (kit === "home") {
