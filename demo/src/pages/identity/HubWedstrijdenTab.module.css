@@ -98,7 +98,7 @@
 /* ── Competition body (match rows) ── */
 .compBody {
   background: var(--app-surface);
-  border: none;
+  border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }

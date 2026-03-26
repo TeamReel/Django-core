@@ -6,6 +6,7 @@
 /* ── Hero Scoreboard ─────────────────────────────────────────── */
 .heroCard {
   background: linear-gradient(135deg, var(--app-surface-2, var(--color-neutral-900)) 0%, var(--app-surface, var(--color-neutral-900)) 100%);
+  border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   padding: var(--space-5) var(--space-3) var(--space-4);
   text-align: center;

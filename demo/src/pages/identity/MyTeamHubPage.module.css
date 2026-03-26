@@ -299,7 +299,7 @@
   width: 100%;
   padding: var(--space-3) var(--space-4);
   background: var(--app-surface);
-  border: none;
+  border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   margin-bottom: var(--space-3);
   cursor: pointer;
@@ -374,7 +374,7 @@
   width: 100%;
   text-align: left;
   background: var(--app-surface);
-  border: none;
+  border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   margin-bottom: var(--space-3);
@@ -673,7 +673,7 @@
 /* ── Accordion sections (Overview tab) ── */
 .accordionSection {
   background: var(--app-surface);
-  border: none;
+  border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   margin-bottom: var(--space-3);
