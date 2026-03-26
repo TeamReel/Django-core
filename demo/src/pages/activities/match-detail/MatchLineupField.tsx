@@ -112,9 +112,10 @@ export function FieldVisualization({
 
   // ── Asset availability helpers ──
   // Mirrors resolve_lineup_member_assets() from backend:
-  // 1. Check roles.{role}.images.fullbody.{kit}  (new nested format)
-  // 2. Check images.fullbody.{kit}                (legacy flat format)
-  // 3. Check media.kit                            (media alias fallback)
+  // 1. roles.{role}.images.fullbody.{kit}  (new nested format)
+  // 2. images.fullbody.{kit}               (legacy flat format — kit-based, not role-based)
+  // 3. media.kit                           (media alias fallback)
+  // For keeper: kit = "goalkeeper". For player: kit = "home".
   const hasLineupAsset = (
     assets: TeamreelAssets | undefined,
     role: string,
@@ -127,18 +128,22 @@ export function FieldVisualization({
     const roleImages = assets.roles?.[role]?.images;
     if (roleImages) {
       const fb = roleImages.fullbody as Record<string, unknown> | undefined;
-      if (fb && (fb[kit] || fb.home)) return true;
+      if (fb && fb[kit]) return true;
     }
 
-    // 2. Legacy flat: images.fullbody.{kit}
-    const legacyImages = raw.images as Record<string, Record<string, unknown>> | undefined;
-    if (legacyImages?.fullbody) {
-      if (legacyImages.fullbody[kit] || legacyImages.fullbody.home) return true;
-    }
+    // 2. Legacy flat: images.fullbody.{kit} — strict kit match only
+    const legacyImages = raw.images as
+      | Record<string, Record<string, unknown>>
+      | undefined;
+    if (legacyImages?.fullbody?.[kit]) return true;
 
-    // 3. Media alias: media.kit
-    const media = raw.media as Record<string, { url?: string }> | undefined;
-    if (media?.kit?.url) return true;
+    // 3. Media alias: media.kit (only for player/home — it's always home kit)
+    if (kit === "home") {
+      const media = raw.media as
+        | Record<string, { url?: string }>
+        | undefined;
+      if (media?.kit?.url) return true;
+    }
 
     return false;
   };
