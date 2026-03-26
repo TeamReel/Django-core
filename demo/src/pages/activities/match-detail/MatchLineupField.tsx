@@ -164,7 +164,7 @@ export function FieldVisualization({
     return hasLineupAsset(assets, "player", "home");
   };
 
-  // All members pool (no filtering - everyone shown)
+  // All members pool (deduplicated across role groups)
   const allMembers = [
     ...(lineupSquad.goalkeeper || []),
     ...(lineupSquad.player || []),
@@ -176,6 +176,10 @@ export function FieldVisualization({
     )
     .concat(guestPlayers)
     .sort(sortByName);
+
+  // Filter pools by asset availability — only show members with the right kit
+  const keeperPool = allMembersDeduped.filter(hasKeeperAsset);
+  const playerPool = allMembersDeduped.filter(hasPlayerAsset);
 
   const gkSelected = lineupSlots.goalkeeper || [];
   const playerSelected = lineupSlots.player || [];
@@ -203,10 +207,8 @@ export function FieldVisualization({
           const idx = isGk ? 0 : pos.slot - 2;
           const selected = isGk ? gkSelected : playerSelected;
           const currentId = selected[idx] || "";
-          // All positions use same pool - everyone visible
-          const pool = allMembersDeduped;
-          // Check asset availability for this position type
-          const hasAssetForPosition = isGk ? hasKeeperAsset : hasPlayerAsset;
+          // Use asset-filtered pool: keeper pool for GK, player pool for field
+          const pool = isGk ? keeperPool : playerPool;
           const currentMember = currentId
             ? pool.find((p) => p.id === currentId)
             : null;
@@ -255,7 +257,6 @@ export function FieldVisualization({
                     !p.isGuest &&
                     allUsedIds.includes(p.id) &&
                     p.id !== currentId;
-                  const hasAsset = hasAssetForPosition(p);
                   return (
                     <option
                       key={p.id}
@@ -267,7 +268,6 @@ export function FieldVisualization({
                           : styles.selectOption
                       }
                     >
-                      {hasAsset ? "✓ " : "⚠ "}
                       {jersey ? `#${jersey} ` : ""}
                       {name}
                       {p.isGuest ? " (gast)" : ""}
