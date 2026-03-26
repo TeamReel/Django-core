@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | ✅ DONE |
 | Bron | UI/UX Review (Playwright console) |
 | Impact | 🔴 critical |
 | Effort | ~1 uur |
@@ -16,7 +16,7 @@ kunnen functionaliteit breken en vervuilen de console.
 maar de user heeft mogelijk geen permissions voor alle orgs/projects.
 
 ## Checklist
-- [ ] Reproduceer de 403 errors lokaal
-- [ ] Identificeer welke API call het veroorzaakt
-- [ ] Fix: permission check voor aanroep, of graceful fallback bij 403
+- [x] Reproduceer de 403 errors lokaal
+- [x] Identificeer welke API call het veroorzaakt
+- [x] Fix: permission check voor aanroep, of graceful fallback bij 403
 - [ ] Verify dat console schoon is op Profiel pagina

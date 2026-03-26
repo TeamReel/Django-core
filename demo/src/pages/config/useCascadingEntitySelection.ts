@@ -5,6 +5,7 @@
  * Consolidated to useReducer during S3 refactor.
  */
 import { useReducer, useMemo, useEffect } from 'react';
+import { useAuth } from '@django-core/auth-ui';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
 import { formReducer, makeSetter } from '@/utils/formReducer';
@@ -71,6 +72,8 @@ export interface CascadingEntitySelectionReturn {
 /* ================================================================== */
 
 export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
+  const { user } = useAuth();
+
   /* -------- reducer state ---------------------------------------- */
   interface CascadingState {
     activeContext: Record<string, unknown> | null;
@@ -259,6 +262,12 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     return () => { cancelled = true; };
   }, []);
 
+  // Stable set of org slugs the user has membership for (avoids 403 on /projects/)
+  const userOrgSlugs = useMemo(
+    () => new Set((user?.organisations || []).map(o => o.slug)),
+    [user?.organisations],
+  );
+
   // Load clubs when org selected
   useEffect(() => {
     if (!s.selectedOrgId) { setClubs([]); return; }
@@ -268,6 +277,11 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
         setLoadingClubs(true);
         const org = s.organisations.find(o => String(o.id) === s.selectedOrgId || String(o.slug) === s.selectedOrgId);
         const orgSlug = org?.slug || s.selectedOrgId;
+        // Skip API call if user has no membership for this org (would 403)
+        if (!userOrgSlugs.has(orgSlug)) {
+          if (!cancelled) setClubs([]);
+          return;
+        }
         const collected = await api.listAll<Project>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, {
           params: { is_club: true },
           pageSize: 250,
@@ -286,7 +300,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     };
     void loadClubs();
     return () => { cancelled = true; };
-  }, [s.selectedOrgId, s.organisations]);
+  }, [s.selectedOrgId, s.organisations, userOrgSlugs]);
 
   // Load teams when club selected
   useEffect(() => {
@@ -297,6 +311,11 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
         setLoadingTeams(true);
         const org = s.organisations.find(o => String(o.id) === s.selectedOrgId || String(o.slug) === s.selectedOrgId);
         const orgSlug = org?.slug || s.selectedOrgId;
+        // Skip API call if user has no membership for this org (would 403)
+        if (!userOrgSlugs.has(orgSlug)) {
+          if (!cancelled) setTeams([]);
+          return;
+        }
         const collected = await api.listAll<Project>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, {
           params: { parent_project__isnull: false },
           pageSize: 250,
@@ -312,7 +331,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     };
     void loadTeams();
     return () => { cancelled = true; };
-  }, [s.organisations, s.selectedClubId, s.selectedOrgId]);
+  }, [s.organisations, s.selectedClubId, s.selectedOrgId, userOrgSlugs]);
 
   // Load seasons when team selected
   useEffect(() => {
