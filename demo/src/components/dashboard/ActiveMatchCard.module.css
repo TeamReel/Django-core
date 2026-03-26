@@ -600,30 +600,63 @@
 .phaseItem {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  background: none;
-  border: none;
   border-top: 1px solid var(--app-border, rgba(255,255,255,0.06));
-  cursor: pointer;
-  color: var(--app-text-primary);
-  text-align: left;
   width: 100%;
   min-height: 40px;
-  transition: background var(--duration-fast);
-  -webkit-tap-highlight-color: transparent;
 }
 
 .phaseItem:first-child {
   margin-top: var(--space-1);
 }
 
-.phaseItem:active {
+/* Main clickable area inside phaseItem */
+.phaseItemBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--app-text-primary);
+  text-align: left;
+  min-height: 40px;
+  transition: background var(--duration-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.phaseItemBtn:active {
+  background: var(--app-active-bg, rgba(0, 0, 0, 0.06));
+}
+
+/* Preview eye button for existing content */
+.phaseItemPreviewBtn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  min-height: 40px;
+  background: none;
+  border: none;
+  border-left: 1px solid var(--app-border, rgba(255,255,255,0.06));
+  cursor: pointer;
+  color: var(--color-success, var(--app-success));
+  transition: background var(--duration-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.phaseItemPreviewBtn:active {
   background: var(--app-active-bg, rgba(0, 0, 0, 0.06));
 }
 
 @media (hover: hover) {
-  .phaseItem:hover {
+  .phaseItemBtn:hover {
+    background: var(--app-hover);
+  }
+  .phaseItemPreviewBtn:hover {
     background: var(--app-hover);
   }
 }

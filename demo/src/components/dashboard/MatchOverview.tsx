@@ -11,7 +11,7 @@ import {
   ChevronRight, ChevronDown, MapPin, Calendar,
   CheckCircle2, ExternalLink, Users, FileImage,
   Image, Video, Play, Camera, Music, Target, Hash,
-  Flag, BarChart3, Film, Star,
+  Flag, BarChart3, Film, Star, Eye,
 } from 'lucide-react';
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
@@ -264,38 +264,44 @@ export const MatchOverview: React.FC<MatchOverviewProps> = ({
                   const isDone = !isDisabled && sheet.contentDoneSubtypes.includes(item.subtype);
                   const ItemIcon = SUBTYPE_ICONS[item.subtype] ?? FileImage;
                   return (
-                    <button
-                      key={item.id}
-                      className={`${styles.phaseItem} ${isDisabled ? styles.phaseItemDisabled : ''}`}
-                      onClick={() => {
-                        if (isDisabled) return;
-                        if (isDone) {
-                          handlePreview(item.subtype, item.label);
-                        } else {
-                          onStartContent(item.subtype, contentPhase);
-                        }
-                      }}
-                      disabled={isDisabled}
-                      aria-label={`${item.label}: ${isDisabled ? 'binnenkort beschikbaar' : isDone ? 'bekijk' : 'maak aan'}`}
-                    >
-                      <span className={`${styles.phaseItemIcon} ${isDone ? styles.phaseItemIconDone : ''}`}>
-                        {isDone ? (
-                          <CheckCircle2 size={16} className={styles.iconDone} />
+                    <div key={item.id} className={`${styles.phaseItem} ${isDisabled ? styles.phaseItemDisabled : ''}`}>
+                      <button
+                        className={styles.phaseItemBtn}
+                        onClick={() => {
+                          if (!isDisabled) onStartContent(item.subtype, contentPhase);
+                        }}
+                        disabled={isDisabled}
+                        aria-label={`${item.label}: ${isDisabled ? 'binnenkort beschikbaar' : isDone ? 'opnieuw aanmaken' : 'maak aan'}`}
+                      >
+                        <span className={`${styles.phaseItemIcon} ${isDone ? styles.phaseItemIconDone : ''}`}>
+                          {isDone ? (
+                            <CheckCircle2 size={16} className={styles.iconDone} />
+                          ) : (
+                            <ItemIcon size={16} />
+                          )}
+                        </span>
+                        <span className={`${styles.phaseItemLabel} ${isDone ? styles.phaseItemDone : ''}`}>
+                          {item.label}
+                        </span>
+                        {isDisabled ? (
+                          <span className={styles.phaseItemAction} data-variant="disabled">Binnenkort</span>
+                        ) : isDone ? (
+                          <span className={styles.phaseItemAction} data-variant="create">Opnieuw →</span>
                         ) : (
-                          <ItemIcon size={16} />
+                          <span className={styles.phaseItemAction} data-variant="create">Maak →</span>
                         )}
-                      </span>
-                      <span className={`${styles.phaseItemLabel} ${isDone ? styles.phaseItemDone : ''}`}>
-                        {item.label}
-                      </span>
-                      {isDisabled ? (
-                        <span className={styles.phaseItemAction} data-variant="disabled">Binnenkort</span>
-                      ) : isDone ? (
-                        <span className={styles.phaseItemAction} data-variant="done">Bekijk</span>
-                      ) : (
-                        <span className={styles.phaseItemAction} data-variant="create">Maak →</span>
+                      </button>
+                      {isDone && (
+                        <button
+                          className={styles.phaseItemPreviewBtn}
+                          onClick={() => handlePreview(item.subtype, item.label)}
+                          aria-label={`${item.label} bekijken`}
+                          title="Bekijk"
+                        >
+                          <Eye size={14} />
+                        </button>
                       )}
-                    </button>
+                    </div>
                   );
                 })}
               </div>
