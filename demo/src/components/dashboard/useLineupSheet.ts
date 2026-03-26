@@ -81,7 +81,9 @@ export function useLineupSheet(
           }
           roles.forEach(role => {
             const nr = role.toLowerCase();
-            if (groups[nr]) groups[nr].push(p);
+            if (nr === 'keeper' || nr === 'gk') groups.goalkeeper.push(p);
+            else if (groups[nr]) groups[nr].push(p);
+            else groups.player.push(p);
           });
         });
 

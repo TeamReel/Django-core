@@ -326,7 +326,12 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
           else if (p.data?.functional_role) roles = [p.data.functional_role];
           else if (p.metadata?.team_role) roles = [p.metadata.team_role];
           else roles = ['player'];
-          roles.forEach(role => { const nr = role.toLowerCase(); if (groups[nr]) groups[nr].push(p); });
+          roles.forEach(role => {
+            const nr = role.toLowerCase();
+            if (nr === 'keeper' || nr === 'gk') groups.goalkeeper.push(p);
+            else if (groups[nr]) groups[nr].push(p);
+            else groups.player.push(p);
+          });
         });
         setLineupSquad(groups);
       } catch { /* ignore */ } finally { setLineupSquadLoading(false); }
