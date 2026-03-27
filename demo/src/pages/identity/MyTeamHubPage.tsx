@@ -240,7 +240,7 @@ export const MyTeamHubPage: React.FC = () => {
   const matchSheet = useMatchSheet(matchForSheet);
 
   // Club logo for MatchSheetFlow
-  const myClub = user?.projects?.find((p: { parent: unknown }) => p.parent == null);
+  const myClub = user?.projects?.find((p) => p.parent == null);
   const { getAssetUrl: getClubAssetUrl } = useBrandProfile({
     organisationId: d.org?.id ? String(d.org.id) : undefined,
     projectId: myClub?.id || (d.project?.id ? String(d.project.id) : undefined),
