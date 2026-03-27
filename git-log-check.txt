@@ -1,5 +1,0 @@
-1c2164e6 feat(workflows): add club/team hierarchy to workflow permission checks
-177f0e78 fix(workflows): align all workflow permissions with ProjectMembership roles
-17f1ba18 fix(workflows): replace invalid can_approve permission with admin/editor roles
-1bc67f64 fix(approvals): await review call, refresh jobs after review, pass variant selections
-4380e587 fix: add railway-frontend.json for frontend Dockerfile.frontend build

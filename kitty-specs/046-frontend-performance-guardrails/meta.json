@@ -1,7 +1,0 @@
-﻿{
-    "feature_number":  "046",
-    "slug":  "046-frontend-performance-guardrails",
-    "friendly_name":  "Frontend Performance Guardrails",
-    "source_description":  "Add default-on performance guardrails and consistent optimistic UX patterns for create/update flows. Configurable pagination limits (default ON, per-endpoint opt-out), cache invalidation signals, optimistic create support, feature flags, and observability logging.",
-    "created_at":  "2026-02-03T19:11:13Z"
-}

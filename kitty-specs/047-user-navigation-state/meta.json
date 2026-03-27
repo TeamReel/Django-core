@@ -1,7 +1,0 @@
-﻿{
-    "feature_number":  "047",
-    "slug":  "047-user-navigation-state",
-    "friendly_name":  "User Navigation State",
-    "source_description":  "/spec-kitty.specify feature=B41-user-navigation-state\n\n[feature summary]\nServer-backed recents \u0026 favorites (user navigation state) with safe defaults, limits, and frontend sync.\n\n[goals]\n- DRF API for recents/favorites (CRUD + clear)\n- Upsert + dedupe for recents\n- Tenant-safe: strictly per-user\n- Privacy-safe: internal routes only, limited labels\n- Guardrails: max items + optional retention TTL\n- Frontend sync strategy: optimistic local cache + backend source-of-truth\n\n[scope]\nBackend only - Django app, REST API, pytest tests, README\nNo frontend/demo pages (downstream product responsibility)",
-    "created_at":  "2026-02-04T17:24:02Z"
-}

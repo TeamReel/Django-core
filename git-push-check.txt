@@ -1,9 +1,0 @@
-git : To https://github.com/TeamReel/Django-core.git
-At line:1 char:1
-+ git push origin main 2>&1 | Out-File -FilePath git-push-check.txt -En ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (To https://gith...Django-core.git
-   :String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
-
-   1c2164e6..f468284d  main -> main

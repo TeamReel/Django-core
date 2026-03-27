@@ -1,7 +1,0 @@
-﻿{
-    "feature_number":  "043",
-    "slug":  "043-ai-generation-pipeline",
-    "friendly_name":  "AI Generation Pipeline Factory with Intelligent Retry",
-    "source_description":  "{\"feature_id\":\"B34\",\"module_id\":\"043\",\"category\":\"Backend\",\"phase\":\"10\",\"description\":\"AI content generation factory - manages generation requests (jobs), routes naar appropriate pipelines (LangGraph/n8n/OpenAI), handles async execution with intelligent retry logic\",\"goals\":[\"GenerationTemplate model (defines content types, input schemas, pipeline config)\",\"GenerationRequest model (job lifecycle: pending  processing  completed/failed with retry tracking)\",\"GenerationOutput model (store results: files, text, metadata)\",\"Pipeline routing (hardcoded in template: LangGraph/n8n/OpenAI)\",\"Intelligent retry (error classification: transient vs permanent)\",\"Async execution (B15 Celery integration)\",\"Credit deduction (B11: reserve on submit, settle on completion)\",\"Integration (B33 brand tokens, B35 file storage)\"],\"scope\":\"Backend only - Django app, REST API, pytest tests, README. No frontend/demo pages.\",\"integrations\":[\"B15 Celery (async tasks)\",\"B11 Credits (reserve/settle transactions)\",\"B33 Brand Identity (tokens for generation context)\",\"B35 File Storage (output files)\",\"B22 Files (fallback storage)\",\"B23 WebSocket (real-time status updates)\"]}",
-    "created_at":  "2026-02-01T18:32:03Z"
-}

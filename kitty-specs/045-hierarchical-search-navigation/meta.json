@@ -1,7 +1,0 @@
-﻿{
-    "feature_number":  "045",
-    "slug":  "045-hierarchical-search-navigation",
-    "friendly_name":  "Hierarchical Search Navigation",
-    "source_description":  "feature=B39-hierarchical-search-navigation\n[feature summary]\nExtend global search with an optional, product-agnostic hierarchy/related-results tree under an anchor entity.\n\n[goals]\n- Additive API: keep existing search response stable\n- Anchor selection with deterministic tie-breakers\n- Pluggable resolver registry for child expansion (Settings Dict pattern)\n- Permission-safe: never leak cross-tenant data\n- Guardrails: configurable max depth/nodes and per-level limits\n\n[scope]\nBackend only - Django app, REST API, pytest tests, README\nNo frontend/demo pages",
-    "created_at":  "2026-02-03T17:50:38Z"
-}

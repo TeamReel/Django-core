@@ -86,13 +86,42 @@ backup_*
 *.sqlite
 *.pdf
 
-# Temporary Inspection Scripts
+# Temporary / debug scripts (root level)
 check_*.py
+diagnose_*.py
+debug_*.py
+find_*.py
+fix_*.py
+verify_*.py
+list_*.py
+cleanup_*.py
+
+# Screenshots & visual review output (root level)
+*.png
+*.jpeg
+review-*
+deploy-*
+e2e-*
+after-*
+f29-*
+mobile-*-[0-9]*
+desktop-*-[0-9]*
+lineup-*
+gk-*
+wedstrijden-*
+profile-page-*
+prullenbak-*
 
 # Debug output files
 debug_*.png
 *_dump.txt
 tsc_output.txt
+*.log
+brand_results.txt
+test-*.txt
+tmp_*.txt
+git-*.txt
+celery_logs.txt
 
 # Temporary demo audit outputs
 documents/05-demo/*-temp.md
@@ -103,6 +132,9 @@ demo/test-results/
 
 # Playwright MCP screenshots & recordings
 .playwright-mcp/
+
+# Legacy specs
+kitty-specs/
 
 # Archive data (local reference only)
 documents/05-demo/archive/csv-files/
