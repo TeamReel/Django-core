@@ -98,13 +98,13 @@
 }
 
 .modelDesc {
-  font-size: 9px;
+  font-size: var(--text-2xs);
   color: var(--vscode-descriptionForeground, var(--app-muted-text));
   margin-top: 1px;
 }
 
 .modelCostLabel {
-  font-size: 9px;
+  font-size: var(--text-2xs);
   color: var(--vscode-charts-green, var(--color-green-300));
   margin-top: 1px;
 }

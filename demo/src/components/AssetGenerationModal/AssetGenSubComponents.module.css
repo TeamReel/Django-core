@@ -25,7 +25,7 @@
 }
 
 .templateIcon {
-  font-size: 28px;
+  font-size: var(--text-2xl);
 }
 
 .templateCredits {

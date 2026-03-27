@@ -171,7 +171,7 @@
 }
 
 .memberName {
-  font-size: 10px;
+  font-size: var(--text-2xs);
   color: var(--app-muted-text);
   text-align: center;
   overflow: hidden;
@@ -245,7 +245,7 @@
   border: none;
   border-radius: var(--radius-md);
   background: var(--app-accent);
-  color: white;
+  color: var(--color-white);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   font-family: inherit;
@@ -274,7 +274,7 @@
   border: none;
   border-radius: var(--radius-md);
   background: var(--app-primary);
-  color: white;
+  color: var(--color-white);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   font-family: inherit;

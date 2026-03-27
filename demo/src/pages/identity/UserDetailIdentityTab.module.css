@@ -21,7 +21,7 @@
 }
 
 .avatarInitial {
-  font-size: 48px;
+  font-size: var(--text-6xl);
   color: var(--app-muted-text);
 }
 

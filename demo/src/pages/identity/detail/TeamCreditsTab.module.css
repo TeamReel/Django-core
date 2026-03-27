@@ -15,7 +15,7 @@
 }
 
 .balanceAmount {
-  font-size: 36px;
+  font-size: var(--text-4xl);
   margin: var(--space-2) 0;
 }
 
@@ -113,7 +113,7 @@
 /* ─── Mobile responsive ─── */
 @media (max-width: 639px) {
   .balanceAmount {
-    font-size: 28px;
+    font-size: var(--text-2xl);
   }
 
   .summaryValue,
@@ -132,11 +132,11 @@
 
 @media (min-width: 768px) {
   .balanceAmount {
-    font-size: 48px;
+    font-size: var(--text-6xl);
   }
 
   .summaryValue,
   .netValue {
-    font-size: 28px;
+    font-size: var(--text-2xl);
   }
 }

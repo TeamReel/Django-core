@@ -75,17 +75,17 @@
 
 .typeCompetition {
   background: var(--app-primary);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .typeCup {
   background: var(--app-warning);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .typeFriendly {
   background: var(--app-muted-text);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .cardMeta {

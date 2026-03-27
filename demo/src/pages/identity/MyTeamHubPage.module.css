@@ -486,11 +486,11 @@
   inset: 0;
   background: var(--app-overlay);
   z-index: var(--z-overlay);
-  animation: memberFadeIn 0.25s ease-out;
+  animation: memberFadeIn var(--duration-normal) ease-out;
 }
 
 .memberPanelBackdropClosing {
-  animation: memberFadeOut 0.2s ease-in forwards;
+  animation: memberFadeOut var(--duration-normal) ease-in forwards;
 }
 
 @keyframes memberFadeIn {
@@ -513,11 +513,11 @@
   z-index: calc(var(--z-overlay) + 1);
   background: var(--app-bg);
   overflow-y: auto;
-  animation: memberSlideUp 0.25s ease-out;
+  animation: memberSlideUp var(--duration-normal) ease-out;
 }
 
 .memberPanelOverlayClosing {
-  animation: memberSlideDown 0.2s ease-in forwards;
+  animation: memberSlideDown var(--duration-normal) ease-in forwards;
 }
 
 @keyframes memberSlideUp {
@@ -537,11 +537,11 @@
     width: min(640px, 100vw - 60px);
     border-left: 1px solid var(--app-border);
     box-shadow: -4px 0 24px var(--alpha-black-15);
-    animation: memberSlideInRight 0.25s ease-out;
+    animation: memberSlideInRight var(--duration-normal) ease-out;
   }
 
   .memberPanelOverlayClosing {
-    animation: memberSlideOutRight 0.2s ease-in forwards;
+    animation: memberSlideOutRight var(--duration-normal) ease-in forwards;
   }
 
   @keyframes memberSlideInRight {
@@ -583,7 +583,7 @@
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  color: white;
+  color: var(--color-white);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   pointer-events: auto;

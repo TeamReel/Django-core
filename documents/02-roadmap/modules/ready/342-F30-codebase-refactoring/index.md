@@ -73,7 +73,7 @@ De volledige codebase opschonen, herstructureren en documentatie actualiseren zo
 | H3 | Frontend refactoring (orphans + any elimination) | ~6 uur | ✅ Done |
 | H4 | Backend optimalisatie | ~4 uur | 📋 Todo |
 | H5 | Documentatie actualiseren | ~4 uur | 📋 Todo |
-| H6 | CSS Design Token Migration | ~10 uur | 📋 Todo |
+| H6 | CSS Design Token Migration | ~10 uur | ✅ Done |
 | H7 | Type Consolidatie (User + Project) | ~5 uur | 📋 Todo |
 | H8 | API Response Typing | ~4 uur | 📋 Todo |
 | H9 | Accessibility & Conventions Cleanup | ~3 uur | 📋 Todo |

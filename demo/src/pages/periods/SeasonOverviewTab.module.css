@@ -47,7 +47,7 @@
 }
 
 .heroStatValue {
-  font-size: 28px;
+  font-size: var(--text-2xl);
   font-weight: var(--font-extrabold);
   color: var(--app-text);
   line-height: var(--leading-tight);

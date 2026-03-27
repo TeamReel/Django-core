@@ -4,7 +4,7 @@
 }
 
 .pageTitle {
-  font-size: 28px;
+  font-size: var(--text-2xl);
 }
 
 .lightCard {

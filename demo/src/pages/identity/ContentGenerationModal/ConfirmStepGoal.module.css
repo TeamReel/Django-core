@@ -90,7 +90,7 @@
 .stepperRow {
   display: flex;
   align-items: center;
-  gap: 0px;
+  gap: 0;
   justify-content: center;
 }
 
@@ -121,7 +121,7 @@
 .scoreDisplay {
   width: 48px;
   height: 56px;
-  font-size: 28px;
+  font-size: var(--text-2xl);
   font-weight: var(--font-bold);
   display: flex;
   align-items: center;

@@ -47,7 +47,7 @@
 /* Admin warning box */
 .warningBox {
   background-color: var(--color-warning-bg, var(--color-amber-50));
-  font-size: 0.9em;
+  font-size: var(--text-sm);
   color: var(--color-warning-text, var(--color-orange-500));
 }
 

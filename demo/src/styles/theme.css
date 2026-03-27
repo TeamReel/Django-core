@@ -70,6 +70,7 @@
   --color-error: var(--app-error);               /* Alias for error color */
   --color-success: var(--app-success);           /* Alias for success color */
   --color-white: #ffffff;                        /* Pure white */
+  --color-black: #000000;                        /* Pure black */
 
   /* Mapping for SearchBar and other components using design system tokens */
   --color-text-primary: var(--app-text);
@@ -144,6 +145,7 @@
   --color-error: var(--app-error);               /* Alias for error color */
   --color-success: var(--app-success);           /* Alias for success color */
   --color-white: #ffffff;                        /* Pure white (invariant) */
+  --color-black: #000000;                        /* Pure black (invariant) */
 
   /* Reset border for dark mode to be less aggressive than Teal if needed */
   --app-border: #2e4a6d;

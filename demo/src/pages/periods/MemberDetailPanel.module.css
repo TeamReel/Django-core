@@ -7,7 +7,7 @@
   height: 100%;
   min-height: 0;
   background: var(--app-bg, var(--color-neutral-900));
-  animation: slideInRight 0.2s ease;
+  animation: slideInRight var(--duration-normal) ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -98,7 +98,7 @@
 
 .memberBadge {
   flex-shrink: 0;
-  font-size: 9px;
+  font-size: var(--text-2xs);
 }
 
 .headerActions {

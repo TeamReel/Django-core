@@ -21,7 +21,7 @@
   font-size: var(--font-size-14, 14px);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) ease;
 }
 
 .shareButton:hover,
@@ -97,7 +97,7 @@
   justify-content: center;
   border: none;
   background: transparent;
-  font-size: 24px;
+  font-size: var(--text-xl);
   color: var(--color-text-secondary, var(--color-neutral-400));
   cursor: pointer;
   border-radius: var(--radius-6, 6px);

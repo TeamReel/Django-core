@@ -70,14 +70,14 @@
 
 .subTabActive {
   background: var(--app-primary);
-  color: white;
+  color: var(--color-white);
   border-color: var(--app-primary);
   box-shadow: var(--shadow-sm);
 }
 
 .subTabActive:hover {
   background: var(--app-primary);
-  color: white;
+  color: var(--color-white);
   border-color: var(--app-primary);
 }
 

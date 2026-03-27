@@ -47,7 +47,7 @@
   width: 48px;
   height: 48px;
   border-radius: var(--radius-full);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .whatsapp {
@@ -69,7 +69,7 @@
 /* ── Label ──────────────────────────────────────────── */
 
 .optionLabel {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--app-text);
   text-align: center;

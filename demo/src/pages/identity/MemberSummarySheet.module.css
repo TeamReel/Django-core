@@ -66,7 +66,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  transition: opacity 150ms ease;
+  transition: opacity var(--duration-fast) ease;
 }
 
 .memberContent[data-switching='true'] {
@@ -154,7 +154,7 @@
   min-height: 48px;
   padding: var(--space-3) var(--space-4);
   background: var(--app-primary);
-  color: white;
+  color: var(--color-white);
   border: none;
   border-radius: var(--radius-lg);
   cursor: pointer;
@@ -374,7 +374,7 @@
   min-height: 52px;
   padding: 0 var(--space-4);
   background: var(--app-primary);
-  color: white;
+  color: var(--color-white);
   border: none;
   border-radius: var(--radius-lg);
   font-size: var(--text-base);

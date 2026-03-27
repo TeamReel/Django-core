@@ -96,7 +96,7 @@
   --color-toast-warning: var(--color-amber-700);
   --color-toast-info: var(--color-blue-800);
 
-  animation: slideInRight 0.3s ease-out;
+  animation: slideInRight var(--duration-slow) ease-out;
 }
 
 .toastItem[data-toast-type='success'] {

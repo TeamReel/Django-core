@@ -126,11 +126,17 @@
   --text-lg:   clamp(1.125rem, 1rem + 0.63vw, 1.25rem);       /* 18px → 20px */
   --text-xl:   clamp(1.25rem, 1.06rem + 0.94vw, 1.5rem);      /* 20px → 24px */
 
-  /* Deprecated aliases — point to fluid tokens */
-  --text-2xs:  var(--text-xs);   /* → use --text-xs */
-  --text-md:   var(--text-sm);   /* → use --text-sm */
-  --text-2xl:  var(--text-lg);   /* → use --text-lg */
-  --text-3xl:  var(--text-xl);   /* → use --text-xl */
+  /* Micro size — compact labels, badges */
+  --text-2xs:  0.5625rem;  /* 9px */
+
+  /* Display sizes — headings, icons, decorative elements */
+  --text-2xl:  1.75rem;    /* 28px */
+  --text-3xl:  2rem;       /* 32px */
+  --text-4xl:  2.25rem;    /* 36px */
+  --text-5xl:  2.5rem;     /* 40px */
+  --text-6xl:  3rem;       /* 48px */
+  --text-7xl:  4rem;       /* 64px */
+  --text-8xl:  4.5rem;     /* 72px */
 
   /* Compound type tokens: font-size / line-height */
   --type-xs:   var(--text-xs) / 1.5;     /* 12px / 18px */
@@ -152,6 +158,7 @@
   --leading-relaxed: 1.75;
 
   /* Border radius */
+  --radius-xs:   2px;
   --radius-sm:   4px;
   --radius-md:   8px;
   --radius-lg:  12px;

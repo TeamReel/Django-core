@@ -21,7 +21,7 @@
 .modalOverlay > .modalPanel,
 .modalOverlay > .modalPanelCentered,
 .modalOverlay > .modalPanelCenteredLarge {
-  animation: panelSlideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: panelSlideUp var(--duration-normal) cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 
@@ -477,7 +477,7 @@
 
 
 /* ── Skeleton loading ── */
-.skeleton { padding: 16px; }
+.skeleton { padding: var(--space-4); }
 
 
 .skeletonCard {

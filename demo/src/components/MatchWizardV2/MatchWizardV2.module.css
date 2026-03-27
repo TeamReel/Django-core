@@ -95,7 +95,7 @@
 }
 
 .phaseTabCount {
-  font-size: 10px;
+  font-size: var(--text-2xs);
   font-weight: var(--font-bold);
   color: var(--app-muted-text);
   background: var(--app-border);
@@ -139,7 +139,7 @@
   color: var(--app-muted-text);
   text-align: center;
   padding: 0 var(--space-2);
-  margin-top: -8px;
+  margin-top: calc(-1 * var(--space-2));
 }
 
 /* ── Content group (output type grouping) ───────────── */
@@ -173,7 +173,7 @@
 }
 
 .contentGroupCount {
-  font-size: 10px;
+  font-size: var(--text-2xs);
   font-weight: var(--font-bold);
   color: var(--app-muted-text);
   background: var(--app-surface-2);
@@ -490,9 +490,9 @@
   border: 1px solid var(--app-border);
 }
 
-.guestTagJersey { font-weight: 600; color: var(--app-text-muted); font-size: 11px; }
-.guestTagRemove { padding: 4px; cursor: pointer; border: none; background: none; color: var(--app-text-muted); }
-.guestBadge { font-size: 10px; color: var(--app-text-muted); padding: 1px 8px; border-radius: var(--radius-sm); background: var(--app-surface-2); }
+.guestTagJersey { font-weight: 600; color: var(--app-text-muted); font-size: var(--text-xs); }
+.guestTagRemove { padding: var(--space-1); cursor: pointer; border: none; background: none; color: var(--app-text-muted); }
+.guestBadge { font-size: var(--text-2xs); color: var(--app-text-muted); padding: 1px 8px; border-radius: var(--radius-sm); background: var(--app-surface-2); }
 
 .guestForm {
   padding: var(--space-3);
@@ -624,7 +624,7 @@
   .matchCard,
   .contentCard { min-height: 48px; }
   .phaseTab { min-height: 44px; }
-  .reviewCard { padding: 16px; }
+  .reviewCard { padding: var(--space-4); }
   .reviewRow { min-height: 32px; }
   .thumbArea { width: 44px; height: 44px; }
   .thumbIcon { width: 20px; height: 20px; }

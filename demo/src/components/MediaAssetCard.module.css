@@ -73,7 +73,7 @@
 
 .playOverlay {
   color: var(--alpha-white-90);
-  font-size: 28px;
+  font-size: var(--text-2xl);
   text-shadow: 0 2px 12px var(--alpha-black-70);
 }
 

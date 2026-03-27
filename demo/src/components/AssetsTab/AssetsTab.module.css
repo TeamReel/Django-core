@@ -115,7 +115,7 @@
   font-weight: var(--font-semibold);
   cursor: pointer;
   background: var(--app-primary);
-  color: white;
+  color: var(--color-white);
   border: none;
   border-radius: var(--radius-md);
   transition: opacity var(--duration-fast) var(--ease-default);
@@ -290,7 +290,7 @@
   padding: var(--space-2) var(--space-4);
   min-height: 36px;
   background: var(--app-primary);
-  color: white;
+  color: var(--color-white);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--text-xs);  font-weight: var(--font-medium);

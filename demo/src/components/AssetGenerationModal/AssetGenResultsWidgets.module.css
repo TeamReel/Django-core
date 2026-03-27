@@ -5,11 +5,11 @@
 }
 
 .emojiIcon {
-  font-size: 48px;
+  font-size: var(--text-6xl);
 }
 
 .emojiIconLarge {
-  font-size: 64px;
+  font-size: var(--text-7xl);
 }
 
 .constrainedText {
@@ -70,7 +70,7 @@
 }
 
 .retryEmoji {
-  font-size: 40px;
+  font-size: var(--text-5xl);
 }
 
 .retryWarning {

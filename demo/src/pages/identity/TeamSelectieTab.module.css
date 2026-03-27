@@ -429,7 +429,7 @@
   border-bottom-left-radius: var(--radius-lg);
   border-bottom-right-radius: var(--radius-lg);
   padding: var(--space-3) var(--space-4) var(--space-4);
-  animation: expandIn 0.2s ease-out;
+  animation: expandIn var(--duration-normal) ease-out;
 }
 
 @keyframes expandIn {

@@ -216,7 +216,7 @@
 
 .tab {
   padding: var(--space-2) var(--space-3);
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--font-medium, 500);
   color: var(--app-muted-text);
   background: none;
@@ -247,9 +247,9 @@
 }
 
 .tabCount {
-  font-size: 11px;
+  font-size: var(--text-xs);
   background: var(--app-primary);
-  color: white;
+  color: var(--color-white);
   border-radius: var(--radius-xl);
   padding: 1px 6px;
   min-width: 18px;
@@ -279,7 +279,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: var(--text-sm);
   border-radius: var(--radius-sm);
   background: var(--app-surface-2, var(--color-neutral-100));
 }
@@ -290,7 +290,7 @@
 }
 
 .activityText {
-  font-size: 13px;
+  font-size: var(--text-sm);
   line-height: 1.4;
   color: var(--app-text);
 }

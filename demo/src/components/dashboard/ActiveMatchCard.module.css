@@ -301,7 +301,7 @@
 
 /* ── Badge bump animation (after save/generate) ───── */
 .badgeBump {
-  animation: badge-bump 350ms var(--ease-default, cubic-bezier(0.4, 0, 0.2, 1));
+  animation: badge-bump var(--duration-slow) var(--ease-default, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 @keyframes badge-bump {
@@ -392,7 +392,7 @@
 }
 
 .sheetScore {
-  font-size: var(--text-2xl);
+  font-size: var(--text-lg);
   font-weight: var(--font-black);
   color: var(--app-text-primary);
   min-width: 60px;
@@ -573,7 +573,7 @@
   height: 3px;
   background: var(--app-border, var(--app-text));
   margin: 0 var(--space-4);
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   overflow: hidden;
   pointer-events: none;
 }
@@ -581,7 +581,7 @@
 .phaseProgressFill {
   height: 100%;
   background: var(--app-primary, var(--color-indigo-500));
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   transition: width var(--duration-slow, 300ms) var(--ease-default);
 }
 

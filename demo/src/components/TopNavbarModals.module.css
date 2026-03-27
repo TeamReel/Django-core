@@ -19,11 +19,11 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-6);
-  animation: navOverlayFadeIn 0.2s ease-out;
+  animation: navOverlayFadeIn var(--duration-normal) ease-out;
 }
 
 .modalOverlay > * {
-  animation: navPanelSlideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: navPanelSlideUp var(--duration-normal) cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .modalOverlayHigh {
@@ -35,11 +35,11 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-6);
-  animation: navOverlayFadeIn 0.2s ease-out;
+  animation: navOverlayFadeIn var(--duration-normal) ease-out;
 }
 
 .modalOverlayHigh > * {
-  animation: navPanelSlideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: navPanelSlideUp var(--duration-normal) cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .modalPanel {
@@ -131,11 +131,11 @@
 }
 
 .emptyIcon {
-  font-size: 48px;
+  font-size: var(--text-6xl);
 }
 
 .emptyIcon32 {
-  font-size: 32px;
+  font-size: var(--text-3xl);
 }
 
 /* ─── Buttons ─────────────────────────────────────────────────────────────── */
@@ -334,7 +334,7 @@
 /* ─── Credits Modal ───────────────────────────────────────────────────────── */
 
 .creditsBalance {
-  font-size: 48px;
+  font-size: var(--text-6xl);
   font-weight: var(--font-bold);
   color: var(--app-primary);
 }

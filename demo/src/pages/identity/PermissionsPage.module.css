@@ -69,7 +69,7 @@
 }
 
 .categoryLabel {
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -95,13 +95,13 @@
 }
 
 .permissionDesc {
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   opacity: 0.75;
   margin-top: var(--space-1);
 }
 
 .permissionKey {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   opacity: 0.55;
   font-family: var(--font-mono);
 }

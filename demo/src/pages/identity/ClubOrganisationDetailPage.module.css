@@ -159,7 +159,7 @@
 .tabContent { padding: 0 16px 120px; }
 
 /* ── Loading skeleton ── */
-.skeleton { padding: 16px; }
+.skeleton { padding: var(--space-4); }
 
 .skeletonBar {
   height: 16px;
@@ -169,18 +169,18 @@
   animation: shimmer 1.4s infinite;
 }
 
-.skeletonBarShort { composes: skeletonBar; width: 35%; margin-top: 8px; }
-.skeletonBarFull { composes: skeletonBar; width: 100%; height: 44px; margin-top: 20px; }
-.skeletonCard { height: 140px; width: 100%; background: var(--app-surface-2); border-radius: var(--radius-lg); margin-top: 16px; animation: shimmer 1.4s infinite; }
+.skeletonBarShort { composes: skeletonBar; width: 35%; margin-top: var(--space-2); }
+.skeletonBarFull { composes: skeletonBar; width: 100%; height: 44px; margin-top: var(--space-5); }
+.skeletonCard { height: 140px; width: 100%; background: var(--app-surface-2); border-radius: var(--radius-lg); margin-top: var(--space-4); animation: shimmer 1.4s infinite; }
 
 @keyframes shimmer { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
 /* ── Error state ── */
-.errorBox { padding: 24px 16px; text-align: center; }
-.errorMsg { font-size: 15px; color: var(--color-red-500, var(--app-error)); margin-bottom: 16px; }
+.errorBox { padding: var(--space-6) var(--space-4); text-align: center; }
+.errorMsg { font-size: var(--text-base); color: var(--color-red-500, var(--app-error)); margin-bottom: var(--space-4); }
 .backBtn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 12px 20px; font-size: 16px; font-weight: var(--font-semibold);
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-3) var(--space-5); font-size: var(--text-base); font-weight: var(--font-semibold);
   border-radius: var(--radius-md); border: 1px solid var(--app-border);
   background: var(--app-surface); color: var(--app-text); cursor: pointer;
 }

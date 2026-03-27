@@ -33,11 +33,11 @@
 }
 
 .statValue {
-  font-size: 30px;
+  font-size: var(--text-2xl);
 }
 
 .unresolvedValue {
-  font-size: 30px;
+  font-size: var(--text-2xl);
   color: var(--color-warning);
 }
 

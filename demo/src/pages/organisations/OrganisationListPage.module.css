@@ -20,7 +20,7 @@
 
 .statsGrid {
   grid-template-columns: 1fr 1fr 1fr;
-  margin: 16px 0;
+  margin: var(--space-4) 0;
   background-color: var(--app-bg-subtle, rgba(0, 0, 0, 0.03));
 }
 

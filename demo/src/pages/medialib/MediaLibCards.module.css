@@ -42,7 +42,7 @@
 }
 
 .emptyIcon {
-  font-size: 40px;
+  font-size: var(--text-5xl);
   opacity: 0.3;
 }
 
@@ -78,7 +78,7 @@
 }
 
 .fileIcon {
-  font-size: 40px;
+  font-size: var(--text-5xl);
 }
 
 .downloadButton {
@@ -127,6 +127,6 @@
 }
 
 .emptyStateIcon {
-  font-size: 32px;
+  font-size: var(--text-3xl);
   opacity: 0.4;
 }

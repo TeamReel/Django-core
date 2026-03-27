@@ -51,7 +51,7 @@
 }
 
 .typographyLargePreview {
-  font-size: 28px;
+  font-size: var(--text-2xl);
   font-weight: var(--font-weight, 400);
 }
 

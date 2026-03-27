@@ -69,7 +69,7 @@
 /* Chevron toggle */
 .chevron {
   color: var(--app-muted-text);
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-normal) ease;
   flex-shrink: 0;
 }
 
@@ -154,7 +154,7 @@
   height: 22px;
   border-radius: var(--radius-full);
   background: var(--app-success);
-  color: white;
+  color: var(--color-white);
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
 }
@@ -166,7 +166,7 @@
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   background: var(--color-blue-700);
-  color: white;
+  color: var(--color-white);
 }
 
 .badgeEmpty {
@@ -190,7 +190,7 @@
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   background: var(--color-violet-500);
-  color: white;
+  color: var(--color-white);
   animation: pulse 1.5s ease-in-out infinite;
 }
 
@@ -262,7 +262,7 @@
 /* ── Row expand chevron ── */
 .rowChevron {
   color: var(--app-muted-text);
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-normal) ease;
 }
 
 .rowChevronOpen {

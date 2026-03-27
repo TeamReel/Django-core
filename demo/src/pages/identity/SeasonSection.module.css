@@ -46,7 +46,7 @@
 
 .badgeActive {
   background: var(--app-success);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .heroStats {
@@ -106,7 +106,7 @@
 
 .pillSelected {
   background: var(--app-primary);
-  color: #fff;
+  color: var(--color-white);
 }
 
 @media (prefers-reduced-motion: reduce) {

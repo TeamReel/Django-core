@@ -28,7 +28,7 @@
 .tabButtonActive {
   composes: tabButton;
   background: var(--app-primary);
-  color: white;
+  color: var(--color-white);
   font-weight: var(--font-semibold);
 }
 
@@ -42,7 +42,7 @@
 }
 
 .walletEmoji {
-  font-size: 2rem;
+  font-size: var(--text-3xl);
   margin-bottom: var(--space-2);
 }
 

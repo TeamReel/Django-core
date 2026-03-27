@@ -53,7 +53,7 @@
 }
 
 .heroScoreValue {
-  font-size: 36px;
+  font-size: var(--text-4xl);
   font-weight: var(--font-extrabold);
   line-height: var(--leading-tight);
   color: var(--app-text);

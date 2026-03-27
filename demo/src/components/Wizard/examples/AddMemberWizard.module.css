@@ -34,5 +34,5 @@
 .positionButtonSelected {
   border-color: var(--app-primary);
   background-color: var(--app-primary);
-  color: white;
+  color: var(--color-white);
 }

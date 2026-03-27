@@ -32,7 +32,7 @@
   background-color: var(--app-surface-2);
   cursor: pointer;
   text-align: left;
-  transition: all 0.2s;
+  transition: all var(--duration-normal);
   color: var(--app-text);
 }
 

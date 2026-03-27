@@ -184,7 +184,7 @@
   box-shadow: var(--shadow-lg);
   padding: var(--space-1);
   min-width: 140px;
-  animation: rolePickerFadeIn 0.15s ease-out;
+  animation: rolePickerFadeIn var(--duration-fast) ease-out;
 }
 
 @keyframes rolePickerFadeIn {

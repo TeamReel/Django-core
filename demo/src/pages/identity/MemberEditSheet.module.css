@@ -10,7 +10,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  animation: fadeIn 0.15s ease-out;
+  animation: fadeIn var(--duration-fast) ease-out;
 }
 
 @keyframes fadeIn {
@@ -28,7 +28,7 @@
   max-height: 85vh;
   overflow-y: auto;
   padding: 0 var(--space-4) var(--space-5);
-  animation: slideUp 0.25s ease-out;
+  animation: slideUp var(--duration-normal) ease-out;
 }
 
 @keyframes slideUp {

@@ -1,7 +1,7 @@
 /* SuccessStep — CSS Module */
 
 .checkIcon {
-  font-size: 36px;
+  font-size: var(--text-4xl);
 }
 
 .description {

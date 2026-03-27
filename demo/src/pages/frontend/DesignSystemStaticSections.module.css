@@ -41,7 +41,7 @@
 }
 
 .heading1 {
-  font-size: 32px;
+  font-size: var(--text-3xl);
 }
 
 /* ── Interactive Components ──────────────────────────────────── */

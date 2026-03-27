@@ -2,7 +2,7 @@
 
 .activityItem {
   transition: background-color var(--duration-fast) var(--ease-default);
-  margin: 0 -8px;
+  margin: 0 calc(-1 * var(--space-2));
 }
 
 .activityItem[data-past="true"] {

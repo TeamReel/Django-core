@@ -11,11 +11,11 @@
   inset: 0;
   background: var(--app-overlay);
   z-index: var(--z-sheet);
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn var(--duration-normal) ease-out;
 }
 
 .overlayClosing {
-  animation: fadeOut 0.2s ease-in forwards;
+  animation: fadeOut var(--duration-normal) ease-in forwards;
 }
 
 @keyframes fadeIn {
@@ -36,12 +36,12 @@
   color: var(--app-text);
   display: flex;
   flex-direction: column;
-  animation: slideUp 0.25s ease-out;
+  animation: slideUp var(--duration-normal) ease-out;
   outline: none;
 }
 
 .sheetClosing {
-  animation: slideDown 0.2s ease-in forwards;
+  animation: slideDown var(--duration-normal) ease-in forwards;
 }
 
 /* Mobile: slide up / down */
@@ -63,11 +63,11 @@
     width: var(--sheet-desktop-width, min(560px, 100vw - 60px));
     border-left: 1px solid var(--app-border);
     box-shadow: -4px 0 24px var(--alpha-black-15);
-    animation: slideInRight 0.25s ease-out;
+    animation: slideInRight var(--duration-normal) ease-out;
   }
 
   .sheetClosing {
-    animation: slideOutRight 0.2s ease-in forwards;
+    animation: slideOutRight var(--duration-normal) ease-in forwards;
   }
 
   @keyframes slideInRight {

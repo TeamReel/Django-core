@@ -57,7 +57,7 @@
   width: 16px;
   height: 16px;
   background: var(--color-green-400);
-  font-size: 9px;
+  font-size: var(--text-2xs);
   color: var(--color-white, var(--app-surface));
 }
 

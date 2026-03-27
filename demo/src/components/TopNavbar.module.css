@@ -598,7 +598,7 @@
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
-  animation: mobileSearchSlideDown 150ms ease-out;
+  animation: mobileSearchSlideDown var(--duration-fast) ease-out;
 }
 
 .mobileSearchBackdrop {

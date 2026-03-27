@@ -106,7 +106,7 @@
 }
 
 .noPreviewIcon {
-  font-size: 28px;
+  font-size: var(--text-2xl);
 }
 
 /* ─── Variant Approve / Reject Buttons ───────────────────────── */

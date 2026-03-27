@@ -148,7 +148,7 @@
   width: 100%;
   padding: var(--space-4);
   background: var(--app-primary);
-  color: white;
+  color: var(--color-white);
   border: none;
   border-radius: var(--radius-lg);
   font-size: var(--text-base);

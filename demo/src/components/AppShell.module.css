@@ -20,13 +20,13 @@
   top: -100%;
   left: 0;
   z-index: 9999;
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   background: var(--app-bg);
   color: var(--app-text);
   font-weight: 600;
-  font-size: 14px;
+  font-size: var(--text-sm);
   border: 2px solid var(--app-focus-ring, var(--color-primary-400));
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   text-decoration: none;
   white-space: nowrap;
 }

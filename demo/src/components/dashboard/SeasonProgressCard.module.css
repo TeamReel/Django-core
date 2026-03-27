@@ -37,14 +37,14 @@
 .progressBar {
   flex: 1;
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--app-bg);
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--app-primary);
   transition: width var(--duration-normal) var(--ease-default);
   min-width: 0;

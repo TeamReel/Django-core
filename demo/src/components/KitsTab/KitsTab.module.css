@@ -10,7 +10,7 @@
 }
 
 .kitImagePlaceholder {
-  font-size: 48px;
+  font-size: var(--text-6xl);
   opacity: 0.3;
 }
 

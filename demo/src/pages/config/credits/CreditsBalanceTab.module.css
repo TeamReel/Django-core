@@ -20,7 +20,7 @@
 }
 
 .balanceNumber {
-  font-size: 64px;
+  font-size: var(--text-7xl);
   margin: var(--space-2) 0;
   color: var(--app-success);
 }
@@ -34,11 +34,11 @@
 }
 
 .statValue {
-  font-size: 32px;
+  font-size: var(--text-3xl);
 }
 
 .netTotalValue {
-  font-size: 32px;
+  font-size: var(--text-3xl);
   color: var(--app-success);
 }
 

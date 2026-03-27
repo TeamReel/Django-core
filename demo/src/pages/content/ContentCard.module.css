@@ -14,7 +14,7 @@
 }
 
 .fallbackIcon {
-  font-size: 40px;
+  font-size: var(--text-5xl);
   opacity: 0.3;
 }
 
@@ -104,7 +104,7 @@
 }
 
 .emptyIcon {
-  font-size: 32px;
+  font-size: var(--text-3xl);
   opacity: 0.4;
 }
 
@@ -136,7 +136,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  animation: detailFadeIn 0.2s ease-out;
+  animation: detailFadeIn var(--duration-normal) ease-out;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -161,7 +161,7 @@
   border-top-left-radius: var(--radius-lg);
   border-top-right-radius: var(--radius-lg);
   overflow: hidden;
-  animation: detailSlideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  animation: detailSlideUp var(--duration-slow) cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 @media (min-width: 640px) {

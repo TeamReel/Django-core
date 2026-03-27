@@ -6,12 +6,12 @@
 }
 
 .emoji {
-  font-size: 72px;
+  font-size: var(--text-8xl);
   margin-bottom: var(--space-6);
 }
 
 .errorCode {
-  font-size: 48px;
+  font-size: var(--text-6xl);
   margin-bottom: var(--space-4);
   color: var(--error-code-color, var(--color-neutral-400));
 }

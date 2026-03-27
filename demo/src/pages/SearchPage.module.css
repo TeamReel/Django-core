@@ -1,5 +1,5 @@
 .pageTitle {
-  font-size: 28px;
+  font-size: var(--text-2xl);
 }
 
 .filterBadge {
@@ -25,7 +25,7 @@
 }
 
 .emptyIcon {
-  font-size: 48px;
+  font-size: var(--text-6xl);
 }
 
 .categoryCount {

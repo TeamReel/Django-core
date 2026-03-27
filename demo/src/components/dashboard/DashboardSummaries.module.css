@@ -360,7 +360,7 @@
 }
 
 .queueStatValue {
-  font-size: var(--text-2xl);
+  font-size: var(--text-lg);
   font-weight: var(--font-bold);
   color: var(--app-muted-text);
 }

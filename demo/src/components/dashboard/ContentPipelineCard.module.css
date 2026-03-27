@@ -67,7 +67,7 @@
   width: 16px;
   height: 2px;
   background: var(--app-border);
-  margin-top: 20px;
+  margin-top: var(--space-5);
   align-self: flex-start;
 }
 

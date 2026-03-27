@@ -33,7 +33,7 @@
 }
 
 .templateIcon {
-  font-size: 32px;
+  font-size: var(--text-3xl);
 }
 
 .variantLabel {

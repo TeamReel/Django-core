@@ -45,7 +45,7 @@
   justify-content: center;
   background: var(--app-surface-2);
   color: var(--app-muted-text);
-  font-size: 12px;
+  font-size: var(--text-xs);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 

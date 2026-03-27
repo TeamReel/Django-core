@@ -12,11 +12,11 @@
 }
 
 .icon {
-  font-size: 72px;
+  font-size: var(--text-8xl);
 }
 
 .statusCode {
-  font-size: 48px;
+  font-size: var(--text-6xl);
 }
 
 .tryAgainButton {

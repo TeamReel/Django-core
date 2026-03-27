@@ -18,7 +18,7 @@
 .scoreInput {
   width: 60px;
   padding: var(--space-3);
-  font-size: 28px;
+  font-size: var(--text-2xl);
   font-weight: var(--font-bold);
   text-align: center;
   border-radius: var(--radius-md);
