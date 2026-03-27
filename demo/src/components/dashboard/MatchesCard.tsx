@@ -42,7 +42,7 @@ export const MatchesCard = memo(function MatchesCard() {
   // Club logo fallback for match rows where metadata logos are missing
   const { getAssetUrl: getClubAssetUrl } = useBrandProfile({
     organisationId: org?.id?.toString(),
-    projectId: project?.id,
+    projectId: hierarchy.clubIdForApi || project?.id,
   });
   const clubLogoUrl = getClubAssetUrl('club_logo') ?? undefined;
 

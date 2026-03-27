@@ -30,6 +30,7 @@ import { useMatchDayMode } from '../hooks/useMatchDayMode';
 import { CONTENT_TYPES } from './identity/ContentGenerationModal';
 import { useSetNavTitle } from '../providers/BackNavigationProvider';
 import { useBrandProfile } from '../hooks/useBrandProfile';
+import { useAppSelection } from '../hooks/useAppSelection';
 import { Avatar } from '../components/ui/Avatar';
 import styles from './DashboardPage.module.css';
 
@@ -78,10 +79,11 @@ export default function DashboardPage() {
   // ── Role tiers ──
   const { isSystemAdmin, isLandAdmin, isOrgAdmin, isCoach, isPlayer, isSupporter } = useUserRole();
 
-  // ── Club branding ──
+  // ── Club branding (use resolved club ID from useAppSelection) ──
+  const appSelection = useAppSelection();
   const { getAssetUrl: getClubAssetUrl } = useBrandProfile({
     organisationId: org?.id?.toString(),
-    projectId: project?.id,
+    projectId: appSelection.clubIdForApi || project?.id,
   });
   const clubLogoUrl = getClubAssetUrl('club_logo');
   const isOrgLevel = isSystemAdmin || isLandAdmin || isOrgAdmin;
@@ -123,9 +125,9 @@ export default function DashboardPage() {
             <div className={styles.headerBranding}>
               <Avatar
                 src={clubLogoUrl}
-                name={project?.name || org?.name}
+                name={appSelection.clubName || project?.name || org?.name}
                 size="md"
-                alt={`${project?.name || org?.name || 'Club'} logo`}
+                alt={`${appSelection.clubName || project?.name || org?.name || 'Club'} logo`}
               />
               <div>
                 <h1 className={styles.greeting}>
