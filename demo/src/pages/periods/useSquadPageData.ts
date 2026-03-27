@@ -272,7 +272,7 @@ export function useSquadPageData(): UseSquadPageDataReturn {
         // Squad members
         const membersUrl = `${apiBaseUrl}/projects/${encodeURIComponent(projectJson.id)}/members/?period=${encodeURIComponent(seasonUuid)}&page_size=200`;
         const membersList = await fetchAllPages<ProjectMembership>(membersUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
-        if (!isCancelled) setMembers(Array.isArray(membersList) ? membersList as any : []);
+        if (!isCancelled) setMembers(Array.isArray(membersList) ? membersList as unknown as Membership[] : []);
       } catch (e) {
         logger.error('Failed to load squad', e);
         if (!isCancelled) setError(e instanceof Error ? e.message : 'Failed to load squad');

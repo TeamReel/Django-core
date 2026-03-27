@@ -47,6 +47,7 @@ export const resolveProjectId = (
 };
 
 export const postJson = async (path: string, body: Record<string, unknown>, extra?: Record<string, string>) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return api.post<any>(path, body, extra ? { headers: extra } as Record<string, unknown> : undefined);
 };
 

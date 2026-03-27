@@ -133,7 +133,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
         // Check for existing unprocessed video variant
         let existingVideoVariant: string | null = null;
         if (selectedTemplate && (selectedTemplate.category === 'intro' || selectedTemplate.category === 'celebration')) {
-          const tr = (member.metadata?.teamreel_assets || {}) as any;
+          const tr = (member.metadata?.teamreel_assets || {}) as import('./teamreelAssetTypes').TeamreelAssets;
           const videoCategory = (tr.videos || {})[selectedTemplate.category] || {};
           for (const [key, val] of Object.entries(videoCategory)) {
             if (!val || typeof val !== 'object') continue;

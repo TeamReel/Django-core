@@ -72,10 +72,29 @@ export function useSeasonMediaTabData({
   const [croppingGuestCloseup, setCroppingGuestCloseup] = useState(false);
 
   // ── Guest player data from project metadata ──
+  interface GuestPlayerMediaVariant {
+    raw?: string;
+    processed?: string;
+    url?: string;
+    [key: string]: unknown;
+  }
+  interface GuestPlayerData {
+    images?: {
+      fullbody?: Record<string, GuestPlayerMediaVariant>;
+      closeup?: Record<string, GuestPlayerMediaVariant>;
+      [key: string]: unknown;
+    };
+    videos?: {
+      intro?: Record<string, GuestPlayerMediaVariant>;
+      celebration?: Record<string, GuestPlayerMediaVariant>;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  }
   useEffect(() => {
     const guestPlayerData = project?.metadata?.guest_player;
     if (guestPlayerData) {
-      const guestData = guestPlayerData as any;
+      const guestData = guestPlayerData as GuestPlayerData;
       const fullbodyHome = guestData?.images?.fullbody?.home;
       const closeupHome = guestData?.images?.closeup?.home;
       const introHome = guestData?.videos?.intro?.home;

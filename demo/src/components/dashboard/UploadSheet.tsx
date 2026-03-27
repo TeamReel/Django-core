@@ -81,10 +81,10 @@ export const UploadSheet: React.FC<UploadSheetProps> = ({ isOpen, onClose }) => 
           ? { ...i, status: 'success' as const, progress: 100, thumbnailUrl: thumbUrl }
           : i,
       ));
-    } catch (err: any) {
+    } catch (err: unknown) {
       setItems(prev => prev.map(i =>
         i.id === item.id
-          ? { ...i, status: 'error' as const, error: err?.message || 'Upload mislukt' }
+          ? { ...i, status: 'error' as const, error: err instanceof Error ? err.message : 'Upload mislukt' }
           : i,
       ));
     }

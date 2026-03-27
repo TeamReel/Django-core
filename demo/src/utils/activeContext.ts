@@ -32,7 +32,7 @@ export interface ActiveContext {
   club?: { id: string; slug: string; name: string } | null;
   team?: { id: string; slug: string; name: string } | null;
   season?: { id: string; key?: string; name?: string; slug?: string } | null;
-  competition?: { id: string; key?: string; name?: string } | null;
+  competition?: { id: string; key?: string; slug?: string; name?: string } | null;
   match?: { id: string; key?: string; slug?: string; title?: string } | null;
   membership?: Record<string, unknown> | null;
   org?: { id: string } | null;
@@ -42,5 +42,6 @@ export interface ActiveContext {
 
 export async function getActiveContext(): Promise<ActiveContext> {
   const raw = await api.get<ActiveContext>('/auth/active-context/');
-  return (raw as any)?.data ?? raw;
+  const envelope = raw as ActiveContext & { data?: ActiveContext };
+  return envelope.data ?? raw;
 }

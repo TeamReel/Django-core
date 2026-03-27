@@ -40,7 +40,7 @@ export function useWorkflowTemplates(): UseWorkflowTemplatesReturn {
     async function fetchTemplates() {
       try {
         setLoading(true);
-        const data = await api.get<any>('/workflows/templates/?is_active=true');
+        const data = await api.get<unknown>('/workflows/templates/?is_active=true');
         setTemplates(unwrapResults<WorkflowTemplate>(data));
         setError(null);
       } catch (err: unknown) {
@@ -97,7 +97,7 @@ export function useWorkflowInstances(options: UseWorkflowInstancesOptions = {}):
         if (options.current_state) params.append('current_state', options.current_state);
         if (options.page_size) params.append('page_size', String(options.page_size));
 
-        const data = await api.get<any>(`/workflows/instances/?${params.toString()}`);
+        const data = await api.get<unknown>(`/workflows/instances/?${params.toString()}`);
         let results = unwrapResults<WorkflowInstance>(data);
 
         // Client-side filter by content_type_name and object_id if provided
@@ -181,7 +181,7 @@ export function useTransitionHistory(instanceId: number | string | null): UseTra
     async function fetchHistory() {
       try {
         setLoading(true);
-        const data = await api.get<any>(`/workflows/history/?instance=${instanceId}&ordering=-created_at`);
+        const data = await api.get<unknown>(`/workflows/history/?instance=${instanceId}&ordering=-created_at`);
         setHistory(unwrapResults<TransitionHistoryEntry>(data));
         setError(null);
       } catch (err: unknown) {

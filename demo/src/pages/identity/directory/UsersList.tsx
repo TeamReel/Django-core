@@ -14,6 +14,8 @@ import UserDetailModal from '../UserDetailModal';
 import UserEditModal from '../UserEditModal';
 import AddMemberModal from '../AddMemberModal';
 import { MemberBatchActionModal } from '../MemberBatchActionModal';
+import type { BatchMemberEntry } from '../memberBatchAction.types';
+import type { UserEditModalProps } from '../userEditTypes';
 import type { UsersListProps } from './usersListTypes';
 import { useUsersListData } from './useUsersListData';
 import { UsersListFilters } from './UsersListFilters';
@@ -82,7 +84,7 @@ export const UsersList: React.FC<UsersListProps> = (props) => {
       <MemberBatchActionModal
         isOpen={isBatchModalOpen}
         onClose={() => setIsBatchModalOpen(false)}
-        members={getSelectedUsers() as any}
+        members={getSelectedUsers() as unknown as BatchMemberEntry[]}
         contextLevel={teamLocked ? 'team' : clubLocked ? 'club' : 'organisation'}
         clubProjectId={preselectedClubId}
         teamProjectId={preselectedTeamId}
@@ -97,7 +99,7 @@ export const UsersList: React.FC<UsersListProps> = (props) => {
       {!isLoading && !error && hasUsers && <UsersListTable data={data} />}
 
       <UserDetailModal
-        user={detailUser as any}
+        user={detailUser as unknown as import('@/types/api/user').User | null}
         opened={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
       />
@@ -105,8 +107,8 @@ export const UsersList: React.FC<UsersListProps> = (props) => {
       <UserEditModal
         opened={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        user={editUser as any}
-        onSave={handleSaveUser as any}
+        user={editUser as unknown as UserEditModalProps['user']}
+        onSave={handleSaveUser as unknown as UserEditModalProps['onSave']}
         onSaved={refreshData}
         organisationSlug={String(getSelectedOrgSlug() || '')}
         scopeProjectKey={preselectedTeamId || preselectedClubId || ''}

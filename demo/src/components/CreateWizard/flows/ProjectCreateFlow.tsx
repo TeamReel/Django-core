@@ -61,18 +61,18 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
     if (!isOpen) return;
 
     // Load orgs
-    api.list<any>('/organisations/', { pageSize: 250 })
+    api.list<{ id: string; name: string; slug: string }>('/organisations/', { pageSize: 250 })
       .then(({ results }) => {
         setOrganisations(
           (Array.isArray(results) ? results : [])
-            .map((o: Record<string, unknown>) => ({ id: String(o.id), name: String(o.name || ''), slug: String(o.slug || '') }))
+            .map((o) => ({ id: String(o.id), name: String(o.name || ''), slug: String(o.slug || '') }))
             .sort((a: OrgOption, b: OrgOption) => a.name.localeCompare(b.name)),
         );
       })
       .catch(() => setOrganisations([]));
 
     // Load clubs (projects without parent)
-    api.list<any>('/projects/', { params: { parent_project_id: 'null' }, pageSize: 500 })
+    api.list<Record<string, unknown>>('/projects/', { params: { parent_project_id: 'null' }, pageSize: 500 })
       .then(({ results }) => {
         setAllClubs(Array.isArray(results) ? results : []);
       })

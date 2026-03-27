@@ -20,6 +20,13 @@ import type { Match } from '../components/dashboard/ActiveMatchCard';
 import { getActiveContext } from '../utils/activeContext';
 import { queryKeys } from '../utils/queryKeys';
 
+interface LineupMetadata {
+  formation?: string;
+  goalkeeper?: unknown[];
+  player?: unknown[];
+  positions?: unknown[];
+}
+
 export interface ClosestMatchData {
   match: Match | null;
   contentCount: number;
@@ -84,7 +91,7 @@ async function fetchClosestMatch(projectId?: string): Promise<ClosestMatchData> 
   let contentDoneSubtypes: string[] = [];
 
   // Lineup from metadata (saved as { formation, goalkeeper: [], player: [] })
-  const lineupData = (closest.metadata?.lineup as any);
+  const lineupData = (closest.metadata?.lineup as LineupMetadata | undefined);
   const gkCount = Array.isArray(lineupData?.goalkeeper) ? lineupData.goalkeeper.length : 0;
   const plCount = Array.isArray(lineupData?.player) ? lineupData.player.length : 0;
   const metaLineupCount = gkCount + plCount;
@@ -99,7 +106,7 @@ async function fetchClosestMatch(projectId?: string): Promise<ClosestMatchData> 
   } else {
     // Fallback: fetch participations count
     try {
-      const partData = await api.list<any>('/participations/', {
+      const partData = await api.list<{ id: string }>('/participations/', {
         params: { activity_id: closest.id },
         pageSize: 1,
       });

@@ -29,7 +29,7 @@ export const PageContent = ({ children, className, style }: PageContentProps) =>
   </div>
 );
 
-export type FileUploadFile = any;
+export type FileUploadFile = unknown;
 
 export type TableColumn = {
   key: string;

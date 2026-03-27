@@ -88,7 +88,7 @@ const FilesPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await api.get<{ results?: FileAsset[] }>('/files/');
-      setFiles((data.results || data) as any);
+      setFiles(data.results || []);
     } catch (err) {
       logger.debug('Loading demo mode files due to API unavailability', err);
       // Demo mode: Load files from localStorage

@@ -171,7 +171,7 @@ export default function NotificationsPage() {
         />
 
         <PullToRefresh
-          onRefresh={reload as any}
+          onRefresh={async () => { reload(); }}
           pullText="Trek om te vernieuwen"
           releaseText="Laat los om te vernieuwen"
           refreshingText="Vernieuwen..."

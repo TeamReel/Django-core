@@ -29,6 +29,41 @@ import {
 export type { GenerationVariant, GenerationStep, SaveResult, UseAssetGenerationReturn, SubmitParams } from './assetGenerationTypes';
 export { VIDEO_POLL_INTERVAL_MS, VIDEO_MAX_POLLS } from './assetGenerationTypes';
 
+interface GenerationStatusResponse {
+  status: string;
+  progress?: number;
+  message?: string;
+  error?: string;
+  data?: {
+    variants?: GenerationVariant[];
+    [key: string]: unknown;
+  };
+}
+
+interface GenerationSubmitResponse {
+  task_id?: string;
+  variants?: GenerationVariant[];
+  [key: string]: unknown;
+}
+
+interface SaveResponse {
+  data?: SaveResponseData;
+  file_asset_id?: string;
+  brand_asset_id?: string;
+  storage_path?: string;
+  presigned_url?: string;
+  asset_type?: string;
+  [key: string]: unknown;
+}
+
+interface SaveResponseData {
+  file_asset_id?: string;
+  brand_asset_id?: string;
+  storage_path?: string;
+  presigned_url?: string;
+  asset_type?: string;
+}
+
 // ============================================================================
 // Hook
 // ============================================================================
@@ -78,7 +113,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
         if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
 
-        const res = await api.get<any>(
+        const res = await api.get<GenerationStatusResponse>(
           `/generative/assets/generate/${taskId}/status/`,
           signal,
         );
@@ -179,7 +214,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           controller.abort();
         }, 120_000);
 
-        const res = await api.post<any>('/generative/assets/generate/', {
+        const res = await api.post<GenerationSubmitResponse>('/generative/assets/generate/', {
             template_id: params.templateId,
             params: finalParams,
             variant_count: params.variantCount,
@@ -319,7 +354,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         const isVideo = selectedVariant.mime_type?.startsWith('video/') ||
             !!selectedVariant.video_url || !!selectedVariant.video_base64;
 
-        const response = await api.post<any>('/generative/assets/save/', {
+        const response = await api.post<SaveResponse>('/generative/assets/save/', {
             storage_path: selectedVariant.storage_path || selectedVariant.storage_info?.storage_path,
             presigned_url: selectedVariant.presigned_url,
             video_url: selectedVariant.video_url,

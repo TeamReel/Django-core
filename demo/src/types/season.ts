@@ -82,12 +82,12 @@ export type ListResponse<T> = {
 export { unwrapEnvelope } from '../utils/apiEnvelope';
 
 /** Unwrap a list response from an API envelope. */
-export function unwrapListResults<T = any>(raw: any): T[] {
-  const envelope = raw?.data ?? raw;
+export function unwrapListResults<T = unknown>(raw: unknown): T[] {
+  const envelope = (raw as Record<string, unknown>)?.data ?? raw;
   const results =
-    envelope?.results ??
-    envelope?.data?.results ??
-    envelope?.data ??
+    (envelope as Record<string, unknown>)?.results ??
+    ((envelope as Record<string, unknown>)?.data as Record<string, unknown>)?.results ??
+    (envelope as Record<string, unknown>)?.data ??
     envelope;
   return Array.isArray(results) ? (results as T[]) : [];
 }

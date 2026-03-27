@@ -14,7 +14,7 @@ const safeUuid = (): string => {
 
 async function postJson(path: string, body: Record<string, unknown>): Promise<{ ok: boolean; status: number; data: Record<string, unknown> }> {
   try {
-    const data = await api.post<any>(path, body);
+    const data = await api.post<Record<string, unknown>>(path, body);
     return { ok: true, status: 200, data: data as Record<string, unknown> };
   } catch (err) {
     if (err instanceof ApiError) {

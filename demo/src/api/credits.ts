@@ -17,6 +17,30 @@ import type {
   UsageEvent,
 } from '../types/api';
 
+export interface BalancePolicy {
+  id: string;
+  organisation: string;
+  policy_type: string;
+  initial_balance?: number;
+  credit_limit?: number;
+  auto_topup_enabled?: boolean;
+  auto_topup_amount?: number;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  [key: string]: unknown;
+}
+
+export interface EffectivePolicy {
+  policy_type: string;
+  initial_balance: number;
+  credit_limit: number;
+  auto_topup_enabled: boolean;
+  auto_topup_amount: number;
+  source: string;
+  [key: string]: unknown;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Credits balance                                                    */
 /* ------------------------------------------------------------------ */
@@ -101,7 +125,7 @@ export const transactionsApi = {
 
   /** Get balance policies for an organisation. */
   listBalancePolicies(params?: { organisation?: string }, opts?: ListOptions) {
-    return api.list<any>('/transactions/balance-policies/', {
+    return api.list<BalancePolicy>('/transactions/balance-policies/', {
       ...opts,
       params: { organisation: params?.organisation, ...opts?.params },
     });
@@ -109,12 +133,12 @@ export const transactionsApi = {
 
   /** Get balance policy for a specific organisation. */
   getBalancePolicy(orgId: string, signal?: AbortSignal) {
-    return api.get<any>(`/transactions/balance-policies/organization/${orgId}/`, signal);
+    return api.get<BalancePolicy>(`/transactions/balance-policies/organization/${orgId}/`, signal);
   },
 
   /** Update balance policy. */
   updateBalancePolicy(orgId: string, data: Record<string, unknown>, opts?: MutateOptions) {
-    return api.patch<any>(`/transactions/balance-policies/organization/${orgId}/`, data, opts);
+    return api.patch<BalancePolicy>(`/transactions/balance-policies/organization/${orgId}/`, data, opts);
   },
 
   /** Get effective balance policy. */
@@ -126,6 +150,6 @@ export const transactionsApi = {
             .map(([k, v]) => [k, String(v)])
         ).toString()
       : '';
-    return api.get<any>(`/transactions/balance-policies/effective/${qs}`, signal);
+    return api.get<EffectivePolicy>(`/transactions/balance-policies/effective/${qs}`, signal);
   },
 };

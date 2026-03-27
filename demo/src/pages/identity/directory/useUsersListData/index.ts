@@ -19,6 +19,7 @@ import {
   getClubAndTeamLinksForRow as _getCTLinks,
   getClubAndTeamForRow as _getCTForRow,
   type UsersRowContext,
+  type UserRecord,
 } from '../usersListRowHelpers';
 
 export type { UserRow } from './handlers';
@@ -76,7 +77,7 @@ export function useUsersListData(props: UsersListProps) {
     setSearchParams: (params: URLSearchParams | Record<string, string>) => state.setSearchParams(params),
     setEditUser: state.setEditUser,
     setIsEditModalOpen: state.setIsEditModalOpen,
-    setUsers: setUsers as any,
+    setUsers: setUsers as unknown as (fn: (prev: UserRow[]) => UserRow[]) => void,
   });
 
   // Filter setup effects
@@ -172,13 +173,13 @@ export function useUsersListData(props: UsersListProps) {
     handleDeleteTeamMember: handlers.handleDeleteTeamMember,
     navigate: state.navigate,
     getSelectedOrgSlug: handlers.getSelectedOrgSlug,
-    getUserSeasonCompetitionMatchCounts: (u: UserRow) => _getUserSCMC(u as any, rowCtx),
-    buildOrgScopedDirectoryHref: (section: 'seasons' | 'competitions' | 'matches', u: UserRow) => _buildHref(section, u as any, rowCtx),
-    getFederationNameForRow: (u: UserRow) => _getFedName(u as any, rowCtx),
-    getOrganisationLinkForRow: (u: UserRow) => _getOrgLink(u as any, rowCtx),
+    getUserSeasonCompetitionMatchCounts: (u: UserRow) => _getUserSCMC(u as unknown as UserRecord, rowCtx),
+    buildOrgScopedDirectoryHref: (section: 'seasons' | 'competitions' | 'matches', u: UserRow) => _buildHref(section, u as unknown as UserRecord, rowCtx),
+    getFederationNameForRow: (u: UserRow) => _getFedName(u as unknown as UserRecord, rowCtx),
+    getOrganisationLinkForRow: (u: UserRow) => _getOrgLink(u as unknown as UserRecord, rowCtx),
     getUserDetailHrefForRow,
-    getClubAndTeamLinksForRow: (u: UserRow) => _getCTLinks(u as any, rowCtx),
-    getClubAndTeamForRow: (u: UserRow) => _getCTForRow(u as any, rowCtx),
+    getClubAndTeamLinksForRow: (u: UserRow) => _getCTLinks(u as unknown as UserRecord, rowCtx),
+    getClubAndTeamForRow: (u: UserRow) => _getCTForRow(u as unknown as UserRecord, rowCtx),
     preselectedClubId,
     preselectedTeamId,
   };

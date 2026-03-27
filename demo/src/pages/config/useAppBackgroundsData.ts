@@ -49,7 +49,7 @@ export function useAppBackgroundsData() {
 
   const fetchBackgrounds = useCallback(async () => {
     try {
-      const data = await api.get<any>('/branding/app-backgrounds/');
+      const data = await api.get<AppBackgroundItem[] | { results: AppBackgroundItem[] }>('/branding/app-backgrounds/');
       const items = Array.isArray(data) ? data : (data?.results || []);
       setBackgrounds(items);
     } catch (err) {
@@ -60,8 +60,8 @@ export function useAppBackgroundsData() {
 
   const fetchSports = useCallback(async () => {
     try {
-      const { results } = await api.list<any>('/sports/', { pageSize: 1000 });
-      const options: SportOption[] = results.map((s: any) => ({
+      const { results } = await api.list<{ id: string; name: string; parent_sport_name?: string }>('/sports/', { pageSize: 1000 });
+      const options: SportOption[] = results.map((s) => ({
         id: s.id,
         name: s.name,
         parent_name: s.parent_sport_name || undefined,

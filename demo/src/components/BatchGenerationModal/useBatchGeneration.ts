@@ -15,6 +15,7 @@ import { getApiBaseUrl } from '../../utils/apiBase';
 
 import type { BatchMember, MemberParams, MemberJobStatus, BatchGenerationModalProps } from './batchTypes';
 import { executeBatch } from './batchExecution';
+import type { TeamreelAssets } from './teamreelAssetTypes';
 
 // ============================================================================
 // Return type
@@ -144,7 +145,7 @@ export function useBatchGeneration(
       if (needsFullbodyAsInput) {
         personUrl = member.fullbodyUrls[kitType] || member.fullbodyUrls['home'] || member.profilePhotoUrl;
       } else if (kitType === 'legacy') {
-        const tr = member.metadata?.teamreel_assets as any;
+        const tr = member.metadata?.teamreel_assets as TeamreelAssets | undefined;
         const legacyUrl = tr?.media?.legacy_photo?.url || tr?.old?.profile_photo_url;
         personUrl = legacyUrl || member.profilePhotoUrl;
       } else {

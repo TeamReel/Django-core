@@ -78,12 +78,12 @@ export const SquadReadinessCard: React.FC = () => {
         <div className={styles.squadBadge}>{memberCount} spelers</div>
 
         <div className={styles.squadList}>
-          {members.map((m: any) => {
+          {members.map((m) => {
             const name = m.user?.first_name
               ? `${m.user.first_name} ${m.user.last_name || ''}`.trim()
-              : m.user_name || m.name || 'Onbekend';
-            const role = m.role || m.membership_role || 'speler';
-            const avatarUrl = m.user?.avatar_url || m.avatar_url;
+              : 'Onbekend';
+            const role = m.role || 'speler';
+            const avatarUrl = m.user?.avatar_url;
             return (
               <div key={m.id} className={styles.squadRow}>
                 <div className={styles.squadAvatar}>

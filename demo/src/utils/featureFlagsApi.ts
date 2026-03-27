@@ -35,7 +35,7 @@ export async function fetchFlags(orgId: string | null, projectId?: string | null
 
   const data = await api.get<ApiFeatureFlag[] | { results: ApiFeatureFlag[] }>(`${API_BASE}/resolve-all/`, { params });
   // Handle various response shapes
-  return (data as any)?.results || (Array.isArray(data) ? data : []);
+  return ('results' in data && Array.isArray((data as { results?: ApiFeatureFlag[] }).results)) ? (data as { results: ApiFeatureFlag[] }).results : (Array.isArray(data) ? data : []);
 }
 
 export async function fetchFlagsForScope(scopeType: ScopeType, scopeId?: string): Promise<ApiFeatureFlag[]> {

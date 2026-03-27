@@ -51,7 +51,7 @@ export const OrganisationAuditPage: React.FC = () => {
         // Backend expects this key (used by AuditLogPage as well)
         params.set('organization', organisationId);
 
-        const raw = await api.get<any>(`/activity/?${params.toString()}`);
+        const raw = await api.get<Record<string, unknown>>(`/activity/?${params.toString()}`);
         const data = unwrap<Record<string, unknown>>(raw);
         const list = extractList(data);
         const next = (list as AuditEvent[]).sort((a, b) => String(b?.timestamp || '').localeCompare(String(a?.timestamp || '')));

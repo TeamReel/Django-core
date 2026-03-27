@@ -313,10 +313,10 @@ export function useClubsData(preselectedOrgId?: string): UseClubsDataReturn {
     const projectSlugOrId = s.editProject.slug || s.editProject.id;
     const updated = await api.patch<ProjectOption>(`/projects/${projectSlugOrId}/?include_archived=true`, projectData);
 
-    setClubs((prev: any) =>
-      prev.map((p: any) => {
+    setClubs((prev) =>
+      prev.map((p) => {
         const match = String(p?.slug || p?.id) === String(projectSlugOrId);
-        return match ? { ...p, ...(updated || projectData) } : p;
+        return match ? { ...p, ...(updated || projectData) } as ClubProject : p;
       })
     );
     setEditProject((prev: ProjectOption | null) => (prev ? { ...prev, ...(updated || projectData) } : prev));

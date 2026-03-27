@@ -46,7 +46,7 @@ interface UseSportsReturn {
   variants: Sport[];
   loading: boolean;
   error: string | null;
-  refetch: () => Promise<void>;
+  refetch: () => void;
   getVariantsForCategory: (categoryId: string) => Sport[];
   getSportById: (sportId: string) => Sport | undefined;
 }
@@ -108,7 +108,7 @@ export function useSports(): UseSportsReturn {
     variants,
     loading,
     error,
-    refetch: reload as any,
+    refetch: reload,
     getVariantsForCategory,
     getSportById,
   };

@@ -69,14 +69,14 @@ export async function apiFetch(
 /* ------------------------------------------------------------------ */
 
 /** GET + parse JSON. */
-export async function apiGet<T = any>(url: string): Promise<T> {
+export async function apiGet<T = unknown>(url: string): Promise<T> {
   const res = await apiFetch(url, { method: 'GET' });
   if (!res.ok) throw new Error(`GET ${url} failed (${res.status})`);
   return res.json() as Promise<T>;
 }
 
 /** POST + parse JSON. */
-export async function apiPost<T = any>(
+export async function apiPost<T = unknown>(
   url: string,
   body?: unknown,
 ): Promise<T> {
@@ -89,7 +89,7 @@ export async function apiPost<T = any>(
 }
 
 /** PATCH + parse JSON. */
-export async function apiPatch<T = any>(
+export async function apiPatch<T = unknown>(
   url: string,
   body?: unknown,
 ): Promise<T> {
@@ -102,7 +102,7 @@ export async function apiPatch<T = any>(
 }
 
 /** PUT + parse JSON. */
-export async function apiPut<T = any>(
+export async function apiPut<T = unknown>(
   url: string,
   body?: unknown,
 ): Promise<T> {

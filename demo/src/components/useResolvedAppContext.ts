@@ -8,6 +8,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { api } from '@/api';
 import { ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
+import type { ActiveContext } from '../utils/activeContext';
 import type { User } from '@django-core/auth-ui';
 
 /* ------------------------------------------------------------------ */
@@ -49,7 +50,7 @@ export function useResolvedAppContext(
 
         const load = async () => {
             try {
-                const payload = await api.get<any>('/auth/active-context/');
+                const payload = await api.get<ActiveContext>('/auth/active-context/');
 
                 if (!cancelled) {
                     setResolvedAppContext({

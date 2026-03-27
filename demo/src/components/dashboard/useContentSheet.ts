@@ -9,6 +9,7 @@
  */
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { mediaApi, contentApi } from '@/api';
+import type { MediaItem } from '@/types/api/media';
 import { logger } from '@/utils/logger';
 import type { MatchMediaItem } from '@/components/MediaAssetCard';
 import type { ContentTemplate } from '../../pages/identity/ContentGenerationModal';
@@ -242,7 +243,7 @@ export function useContentSheet(
 
   const handleRestoreMediaItem = useCallback(async (item: MatchMediaItem) => {
     try {
-      await mediaApi.updateItem(item.id, { is_deleted: false } as any);
+      await mediaApi.updateItem(item.id, { is_deleted: false } as unknown as Partial<MediaItem>);
       // Re-fetch to get latest state
       await fetchMatchMedia();
     } catch (err) {
