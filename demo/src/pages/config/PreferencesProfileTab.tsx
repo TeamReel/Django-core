@@ -160,12 +160,12 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
           />
           <CascadeSelect label="Club" value={selectedClubId} disabled={!selectedOrgId || loadingClubs || savingContext || clubs.length === 0}
             placeholder={selectedOrgId ? '— Select Club —' : '— Select Federation first —'} loading={!!selectedOrgId && loadingClubs}
-            options={clubs.map((c) => ({ id: c.id, name: c.name }))}
+            options={clubs.map((c) => ({ id: String(c.id), name: c.name }))}
             onChange={(v) => { setHasEditedContext(true); setSelectedClubId(v); setSelectedTeamId(''); setSelectedSeasonId(''); setSelectedCompetitionId(''); setSelectedMatchId(''); applyContext({ clubId: v, teamId: '', seasonId: '', competitionId: '', matchId: '' }); }}
           />
           <CascadeSelect label="Team" value={selectedTeamId} disabled={!selectedClubId || loadingTeams || savingContext || teams.length === 0}
             placeholder={selectedClubId ? '— Select Team —' : '— Select Club first —'} loading={!!selectedClubId && loadingTeams}
-            options={selectedClubId ? teams.map((t) => ({ id: t.id, name: t.name })) : []}
+            options={selectedClubId ? teams.map((t) => ({ id: String(t.id), name: t.name })) : []}
             onChange={(v) => { setHasEditedContext(true); setSelectedTeamId(v); setSelectedSeasonId(''); setSelectedCompetitionId(''); setSelectedMatchId(''); applyContext({ teamId: v, seasonId: '', competitionId: '', matchId: '' }); }}
           />
           <CascadeSelect label="Season" value={selectedSeasonId} disabled={!selectedTeamId || loadingSeasons || savingContext || seasons.length === 0}

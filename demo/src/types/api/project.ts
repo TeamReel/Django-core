@@ -9,35 +9,48 @@ import type { UserRef, OrgRef } from './common';
 /*  Project                                                            */
 /* ------------------------------------------------------------------ */
 
-/** Project list shape (ProjectListSerializer). */
+/**
+ * Canonical Project interface — single source of truth.
+ *
+ * Covers both list and detail API shapes plus the flexible entity
+ * shape used throughout identity/org pages.
+ */
 export interface Project {
-  id: number;
-  organisation: OrgRef;
-  organisation_id?: number | string;
+  id: number | string;
   name: string;
-  slug: string;
-  description: string;
+  slug?: string;
+  description?: string;
+  organisation?: OrgRef | { id: string; name?: string; slug?: string; user_role?: string };
+  organisation_id?: number | string;
   is_active: boolean;
-  is_private: boolean;
-  team_type: string;
-  created_at: string;
-  updated_at: string;
-  archived_at: string | null;
-  member_count: number;
-  seasons_count: number;
-  competitions_count: number;
-  matches_count: number;
-  sport_variants_count: number;
-  parent_id: number | null;
-  parent_name: string | null;
-  // Alternate parent reference fields that may appear in API responses
-  parent?: number | string | { id: number | string; name?: string } | null;
-  parent_project?: number | string | { id: number | string; name?: string } | null;
+  is_private?: boolean;
+  team_type?: string;
+  created_at?: string;
+  updated_at?: string;
+  archived_at?: string | null;
+  member_count?: number;
+  seasons_count?: number;
+  competitions_count?: number;
+  matches_count?: number;
+  sport_variants_count?: number;
+  parent_id?: number | string | null;
+  parent_name?: string | null;
+  parent?: number | string | { id: number | string; name?: string; slug?: string } | null;
+  parent_project?: number | string | { id: number | string; name?: string; slug?: string } | null;
   parent_project_id?: number | string | null;
   parent_project_name?: string | null;
+  status?: string;
+  current_user_access?: {
+    effective_role: string;
+    source: string;
+    permissions: string[];
+  };
+  membership_id?: string;
+  metadata?: Record<string, unknown>;
+  period_type?: string;
 }
 
-/** Project detail shape (ProjectDetailSerializer). */
+/** Project detail shape (ProjectDetailSerializer) — stricter fields. */
 export interface ProjectDetail extends Project {
   creator: UserRef;
   metadata: Record<string, unknown>;

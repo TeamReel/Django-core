@@ -106,10 +106,10 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
               <td className={styles.cell}>
                 <div className="flex-row gap-8">
                   <div className={`flex-center rounded-full fs-12 ${styles.avatar}`}>
-                    {member.user.name.charAt(0)}
+                    {member.user.name?.charAt(0)}
                   </div>
                   <div className="min-w-0">
-                    <div className="fw-700 fs-13 truncate">{member.user.name}</div>
+                    <div className="fw-700 fs-13 truncate">{member.user.name ?? ''}</div>
                     <div className="hide-mobile fs-11 text-muted">{member.user.email}</div>
                   </div>
                 </div>

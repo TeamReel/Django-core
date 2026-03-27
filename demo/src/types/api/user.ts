@@ -33,21 +33,30 @@ export interface UserProjectEntry {
 /*  User                                                               */
 /* ------------------------------------------------------------------ */
 
-/** User list shape (UserListSerializer). */
+/**
+ * Canonical User interface — single source of truth.
+ *
+ * Covers both list/detail API shapes and the flexible entity
+ * shape used throughout identity/org pages.
+ */
 export interface User {
-  id: number;
+  id: number | string;
   email: string;
-  first_name: string;
-  last_name: string;
-  role: 'superadmin' | 'admin' | 'user';
-  avatar_url: string | null;
-  two_factor_enabled: boolean;
-  is_active: boolean;
-  email_verified: boolean;
-  date_joined: string;
-  last_login: string | null;
-  organisations: UserOrgEntry[];
-  projects: UserProjectEntry[];
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  role?: string;
+  avatar_url?: string | null;
+  two_factor_enabled?: boolean;
+  is_active?: boolean;
+  is_superuser?: boolean;
+  email_verified?: boolean;
+  date_joined?: string;
+  created_at?: string;
+  updated_at?: string;
+  last_login?: string | null;
+  organisations?: UserOrgEntry[];
+  projects?: UserProjectEntry[];
 }
 
 /** User detail shape (UserDetailSerializer) — extends list. */

@@ -129,7 +129,7 @@ export default function UsersPage() {
       <UserEditModal
         opened={d.isModalOpen}
         onClose={() => d.setIsModalOpen(false)}
-        user={d.editingUser}
+        user={d.editingUser as any}
         onSave={d.handleSaveUser as any}
         onSaved={d.fetchUsers}
         organisationSlug={String(d.orgIdParam || d.context.organisation?.slug || '')}
@@ -156,7 +156,7 @@ export default function UsersPage() {
       <AssignUserToOrgModal
         opened={d.isAssignModalOpen}
         onClose={() => d.setIsAssignModalOpen(false)}
-        user={d.assignUser}
+        user={d.assignUser as any}
         organisations={d.isSuperAdmin ? d.organisations : d.myOrganisations}
         onSuccess={() => { d.fetchUsers(); d.setIsAssignModalOpen(false); }}
       />
@@ -164,7 +164,7 @@ export default function UsersPage() {
       <LinkUserModal
         opened={d.isLinkModalOpen}
         onClose={() => d.setIsLinkModalOpen(false)}
-        user={d.linkUser}
+        user={d.linkUser as any}
         organisations={d.isSuperAdmin ? d.organisations : d.myOrganisations}
         clubs={d.clubs}
         teams={d.teams}
@@ -175,7 +175,7 @@ export default function UsersPage() {
       <UserDetailModal
         opened={d.isDetailModalOpen}
         onClose={() => d.setIsDetailModalOpen(false)}
-        user={d.detailUser}
+        user={d.detailUser as any}
       />
     </>
   );

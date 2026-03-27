@@ -76,7 +76,7 @@ export function useUsersListData(props: UsersListProps) {
     setSearchParams: (params: URLSearchParams | Record<string, string>) => state.setSearchParams(params),
     setEditUser: state.setEditUser,
     setIsEditModalOpen: state.setIsEditModalOpen,
-    setUsers,
+    setUsers: setUsers as any,
   });
 
   // Filter setup effects
@@ -172,13 +172,13 @@ export function useUsersListData(props: UsersListProps) {
     handleDeleteTeamMember: handlers.handleDeleteTeamMember,
     navigate: state.navigate,
     getSelectedOrgSlug: handlers.getSelectedOrgSlug,
-    getUserSeasonCompetitionMatchCounts: (u: UserRow) => _getUserSCMC(u, rowCtx),
-    buildOrgScopedDirectoryHref: (section: 'seasons' | 'competitions' | 'matches', u: UserRow) => _buildHref(section, u, rowCtx),
-    getFederationNameForRow: (u: UserRow) => _getFedName(u, rowCtx),
-    getOrganisationLinkForRow: (u: UserRow) => _getOrgLink(u, rowCtx),
+    getUserSeasonCompetitionMatchCounts: (u: UserRow) => _getUserSCMC(u as any, rowCtx),
+    buildOrgScopedDirectoryHref: (section: 'seasons' | 'competitions' | 'matches', u: UserRow) => _buildHref(section, u as any, rowCtx),
+    getFederationNameForRow: (u: UserRow) => _getFedName(u as any, rowCtx),
+    getOrganisationLinkForRow: (u: UserRow) => _getOrgLink(u as any, rowCtx),
     getUserDetailHrefForRow,
-    getClubAndTeamLinksForRow: (u: UserRow) => _getCTLinks(u, rowCtx),
-    getClubAndTeamForRow: (u: UserRow) => _getCTForRow(u, rowCtx),
+    getClubAndTeamLinksForRow: (u: UserRow) => _getCTLinks(u as any, rowCtx),
+    getClubAndTeamForRow: (u: UserRow) => _getCTForRow(u as any, rowCtx),
     preselectedClubId,
     preselectedTeamId,
   };

@@ -120,7 +120,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                       <button
                         className={styles.cardNameLink}
                         onClick={() => {
-                          const href = getUserDetailHrefForRow({ id: u.id });
+                          const href = getUserDetailHrefForRow({ id: String(u.id) });
                           if (href) navigate(href);
                         }}
                         title="Open user"
@@ -343,7 +343,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                       <button
                         className={styles.linkButton}
                         onClick={() => {
-                          const href = getUserDetailHrefForRow({ id: u.id });
+                          const href = getUserDetailHrefForRow({ id: String(u.id) });
                           if (href) navigate(href);
                         }}
                         title="Open user"

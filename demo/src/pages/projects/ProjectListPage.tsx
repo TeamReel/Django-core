@@ -3,21 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import SmartEmptyState from '../../components/SmartEmptyState';
 import { organisationsApi } from '@/api';
 import { useAsync } from '@/hooks/useAsync';
+import type { Project } from '@/types/api/project';
 import styles from './ProjectListPage.module.css';
-
-interface Project {
-  id: string;
-  slug: string;
-  name: string;
-  description?: string;
-  status?: string;
-  // New API fields
-  member_count?: number;
-  seasons_count?: number;
-  matches_count?: number;
-  parent_id?: string | null;
-  parent_name?: string | null;
-}
 
 export default function ProjectListPage() {
   const { orgId } = useParams<{ orgId: string }>();
@@ -49,6 +36,7 @@ export default function ProjectListPage() {
         name: String(p.name || ''),
         description: p.description as string | undefined,
         status: p.status as string | undefined,
+        is_active: p.is_active !== false,
         member_count: p.member_count as number | undefined,
         seasons_count: p.seasons_count as number | undefined,
         matches_count: p.matches_count as number | undefined,

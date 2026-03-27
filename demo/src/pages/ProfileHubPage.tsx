@@ -289,11 +289,11 @@ export default function ProfileHubPage() {
               onChange={(v) => { d.setHasEditedContext(true); d.setSelectedOrgId(v); d.setSelectedClubId(''); d.setSelectedTeamId(''); d.setSelectedSeasonId(''); d.setSelectedCompetitionId(''); d.setSelectedMatchId(''); applyContext({ orgId: v, clubId: '', teamId: '', seasonId: '', competitionId: '', matchId: '' }); }}
             />
             <CascadeRow label="Club" value={d.selectedClubId} disabled={!d.selectedOrgId || d.loadingClubs || d.savingContext}
-              options={d.clubs.map((c) => ({ id: c.id, name: c.name }))} loading={d.loadingClubs}
+              options={d.clubs.map((c) => ({ id: String(c.id), name: c.name }))} loading={d.loadingClubs}
               onChange={(v) => { d.setHasEditedContext(true); d.setSelectedClubId(v); d.setSelectedTeamId(''); d.setSelectedSeasonId(''); d.setSelectedCompetitionId(''); d.setSelectedMatchId(''); applyContext({ clubId: v, teamId: '', seasonId: '', competitionId: '', matchId: '' }); }}
             />
             <CascadeRow label="Team" value={d.selectedTeamId} disabled={!d.selectedClubId || d.loadingTeams || d.savingContext}
-              options={d.teams.map((t) => ({ id: t.id, name: t.name }))} loading={d.loadingTeams}
+              options={d.teams.map((t) => ({ id: String(t.id), name: t.name }))} loading={d.loadingTeams}
               onChange={(v) => { d.setHasEditedContext(true); d.setSelectedTeamId(v); d.setSelectedSeasonId(''); d.setSelectedCompetitionId(''); d.setSelectedMatchId(''); applyContext({ teamId: v, seasonId: '', competitionId: '', matchId: '' }); }}
             />
             <CascadeRow label="Season" value={d.selectedSeasonId} disabled={!d.selectedTeamId || d.loadingSeasons || d.savingContext}

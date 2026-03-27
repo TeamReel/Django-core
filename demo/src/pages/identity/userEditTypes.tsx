@@ -1,14 +1,9 @@
 /**
  * userEditTypes.ts — Shared types, constants, and RBAC utilities for UserEditModal.
  */
+import type { User as BaseUser } from '@/types/api/user';
 
-export interface User {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  is_active: boolean;
-  role?: string;
+export interface User extends Omit<BaseUser, 'organisations' | 'projects'> {
   avatar_url?: string;
   organisations?: Array<{ id: string | number; slug?: string; name?: string; membership_id?: string | number; role?: string }>;
   projects?: Array<{ id?: string | number; slug?: string | null; name?: string; membership_id?: string | number | null }>;

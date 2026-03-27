@@ -15,7 +15,7 @@ import {
   ChevronRight,
   ArrowUpRight,
 } from 'lucide-react';
-import type { Project, Organisation } from '../../types/entities';
+import type { Project, Organisation } from '../../types';
 import { PageHeader } from '../../components/ui';
 import SmartEmptyState from '../../components/SmartEmptyState';
 import styles from './MultiTeamDashboard.module.css';

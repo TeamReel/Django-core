@@ -1,26 +1,14 @@
 /**
  * Core entity type definitions.
  *
- * Business domain models aligned with B05-B15 backend contracts.
+ * User and Project are canonical in types/api/ — re-exported here
+ * so existing imports from '@/types' keep working.
  */
 
-/**
- * User entity
- */
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  first_name?: string;
-  last_name?: string;
-  role: 'admin' | 'member' | 'viewer';
-  is_active: boolean;
-  is_superuser?: boolean;
-  created_at?: string;
-  updated_at?: string;
-  last_login?: string;
-  avatar_url?: string;
-}
+// Canonical types — single source of truth
+export type { User } from './api/user';
+export type { Project, ProjectDetail } from './api/project';
+import type { User } from './api/user';
 
 /**
  * Organisation entity
@@ -58,45 +46,6 @@ export interface Organisation {
   };
   sport_variants_count?: number;
   competitions_count?: number;
-}
-
-/**
- * Project entity
- */
-export interface Project {
-  id: string;
-  name: string;
-  slug?: string;
-  description?: string;
-  organisation_id: string;
-  organisation?: { id: string; name?: string; slug?: string; user_role?: string };
-  member_count?: number;
-  is_active: boolean;
-  is_private?: boolean;
-  created_at?: string;
-  updated_at?: string;
-  status?: 'active' | 'archived' | 'completed';
-  current_user_access?: {
-    effective_role: string;
-    source: string;
-    permissions: string[];
-  };
-  // Parent project references (may vary by API endpoint)
-  parent_id?: string | number | null;
-  parent?: { id: string; name?: string; slug?: string } | string | number | null;
-  parent_project?: { id: string; name?: string; slug?: string } | string | number | null;
-  parent_project_id?: string | number | null;
-  parent_name?: string | null;
-  parent_project_name?: string | null;
-  membership_id?: string;
-  // Extended fields from API responses
-  team_type?: string;
-  metadata?: Record<string, unknown>;
-  period_type?: string;
-  sport_variants_count?: number;
-  seasons_count?: number;
-  competitions_count?: number;
-  matches_count?: number;
 }
 
 /**
@@ -162,38 +111,4 @@ export interface Activity {
   metadata?: Record<string, unknown>;
   created_at?: string;
   [key: string]: unknown;
-}
-
-/**
- * Permission entity
- */
-export interface Permission {
-  id: string;
-  name: string;
-  description?: string;
-  resource_type?: string;
-  action?: string;
-}
-
-/**
- * Role entity
- */
-export interface Role {
-  id: string;
-  name: 'admin' | 'member' | 'viewer';
-  description?: string;
-  permissions?: Permission[];
-}
-
-/**
- * RoleAssignment tracking
- */
-export interface RoleAssignment {
-  id: string;
-  user_id: string;
-  organisation_id?: string;
-  project_id?: string;
-  role_id: string;
-  assigned_at: string;
-  assigned_by?: string;
 }

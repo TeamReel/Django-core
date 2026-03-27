@@ -201,7 +201,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
           const firstClub = availableProjects.find(p => !p.isTeam);
           if (firstClub) setSelectedClubKey(firstClub.key);
         }
-        prevUserIdRef.current = user.id;
+        prevUserIdRef.current = String(user.id);
       }
       setFormData({ first_name: user.first_name, last_name: user.last_name, email: user.email, is_active: user.is_active, role: user.role });
       const orgSlug = String(organisationSlug || '').trim().toLowerCase();

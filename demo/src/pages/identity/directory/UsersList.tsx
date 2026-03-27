@@ -82,7 +82,7 @@ export const UsersList: React.FC<UsersListProps> = (props) => {
       <MemberBatchActionModal
         isOpen={isBatchModalOpen}
         onClose={() => setIsBatchModalOpen(false)}
-        members={getSelectedUsers()}
+        members={getSelectedUsers() as any}
         contextLevel={teamLocked ? 'team' : clubLocked ? 'club' : 'organisation'}
         clubProjectId={preselectedClubId}
         teamProjectId={preselectedTeamId}
@@ -97,7 +97,7 @@ export const UsersList: React.FC<UsersListProps> = (props) => {
       {!isLoading && !error && hasUsers && <UsersListTable data={data} />}
 
       <UserDetailModal
-        user={detailUser}
+        user={detailUser as any}
         opened={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
       />
@@ -105,7 +105,7 @@ export const UsersList: React.FC<UsersListProps> = (props) => {
       <UserEditModal
         opened={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        user={editUser}
+        user={editUser as any}
         onSave={handleSaveUser as any}
         onSaved={refreshData}
         organisationSlug={String(getSelectedOrgSlug() || '')}

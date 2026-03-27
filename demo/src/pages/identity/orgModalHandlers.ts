@@ -10,7 +10,7 @@ import type { OrgModalsProps } from './OrgModals';
 import { invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import { api } from '@/api';
 import type { Period } from './clubOrgDetailHelpers';
-import type { Project } from '../../types/entities';
+import type { Project } from '../../types';
 
 /** Payload for project creation (club or team). */
 interface CreateProjectPayload {

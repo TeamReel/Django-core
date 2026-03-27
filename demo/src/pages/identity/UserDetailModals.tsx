@@ -9,11 +9,11 @@ import CreateTransactionModal from '../../components/transactions/CreateTransact
 import MatchEditModal from './MatchEditModal';
 import type { UserDetailDataReturn } from './useUserDetailData';
 import type { User as EditUser } from './userEditTypes';
+import type { User } from '@/types/api/user';
 
-// Each modal component defines its own User interface. The `user` from data is
-// `Record<string, unknown> | null`. We cast through `unknown` to bridge the gap.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ModalUser = any;
+// User from data is `Record<string, unknown> | null`.
+// We bridge to the canonical User type via unknown.
+type ModalUser = User;
 
 /* ------------------------------------------------------------------ */
 /*  ProjectMembershipEditModal (was inline in UserDetailPage)          */
@@ -201,12 +201,12 @@ export const UserDetailModals: React.FC<UserDetailModalsProps> = ({ data }) => {
         walletOptions={userWalletOptions}
       />
 
-      <UserDetailModal opened={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} user={user as ModalUser} />
+      <UserDetailModal opened={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} user={user as unknown as ModalUser} />
 
       <UserEditModal
         opened={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        user={user as ModalUser}
+        user={user as unknown as EditUser}
         onSave={handleSaveUser}
         onSaved={fetchUser}
         organisationSlug={String(primaryOrgSlug || getPreferredOrganisationId() || '')}
@@ -215,7 +215,7 @@ export const UserDetailModals: React.FC<UserDetailModalsProps> = ({ data }) => {
       <LinkUserModal
         opened={isLinkModalOpen}
         onClose={() => setIsLinkModalOpen(false)}
-        user={user as ModalUser}
+        user={user as unknown as ModalUser}
         organisations={linkOrgs.length ? linkOrgs : userOrgs}
         clubs={linkClubs}
         teams={linkTeams}

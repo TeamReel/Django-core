@@ -1,19 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Badge } from '@django-core/design-system';
+import type { Project } from '@/types/api/project';
 import styles from './ProjectDetailModal.module.css';
-
-interface Project {
-  id: string | number;
-  name: string;
-  description?: string;
-  is_active?: boolean;
-  organisation?: string | {
-    id?: string;
-    name?: string;
-    slug?: string;
-  };
-  member_count?: number;
-}
 
 interface ProjectDetailModalProps {
   opened: boolean;

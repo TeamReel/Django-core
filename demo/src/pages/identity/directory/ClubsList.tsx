@@ -120,7 +120,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
       <ProjectDetailModal
         opened={d.isDetailModalOpen}
         onClose={() => d.setIsDetailModalOpen(false)}
-        project={d.detailProject}
+        project={d.detailProject as unknown as import('@/types/api/project').Project}
       />
 
       <ProjectEditModal

@@ -5,20 +5,14 @@
  */
 import type React from 'react';
 import type { Organisation as SharedOrganisation } from '@/types';
+import type { User as BaseUser } from '@/types/api/user';
 
 // ────────────────────────────────────────────────────────────
 //  Types
 // ────────────────────────────────────────────────────────────
 
-export interface User {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  role: string;
-  is_active: boolean;
+export interface User extends Omit<BaseUser, 'organisations' | 'projects'> {
   organisations?: { id: string; name: string; slug: string; role: string }[];
-  // Extended properties that may appear on enriched user records
   username?: string;
   project_membership_id?: string;
   membership_id?: string;

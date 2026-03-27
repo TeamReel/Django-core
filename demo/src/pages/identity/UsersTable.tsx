@@ -127,7 +127,7 @@ const UserRow: React.FC<UserRowProps & { item: UserRowItem }> = ({
       <td>
         <div
           className={`fw-500 fs-sm cursor-pointer ${styles.userNameLink}`}
-          onClick={() => navigate(routes.userDetail({ userId: user.id }))}
+          onClick={() => navigate(routes.userDetail({ userId: String(user.id) }))}
         >
           {user.first_name} {user.last_name}
         </div>

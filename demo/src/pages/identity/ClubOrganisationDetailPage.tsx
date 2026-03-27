@@ -285,7 +285,7 @@ export default function ClubOrganisationDetailPage() {
       <ProjectDetailModal
         opened={isProjectDetailModalOpen}
         onClose={() => setIsProjectDetailModalOpen(false)}
-        project={club}
+        project={club as unknown as import('@/types/api/project').Project}
       />
 
       <EntityEditModal

@@ -3,16 +3,10 @@ import { organisationsApi, ApiError } from '@/api';
 import { logger } from '@/utils/logger';
 import { getErrorMessage } from '@/utils/errorHelpers';
 import type { Organisation as SharedOrganisation } from '../../types';
+import type { User } from '@/types/api/user';
 import styles from './AssignUserToOrgModal.module.css';
 
 type OrganisationOption = Pick<SharedOrganisation, 'id' | 'name' | 'slug'>;
-
-interface User {
-    id: string;
-    email: string;
-    first_name: string;
-    last_name: string;
-}
 
 interface AssignUserToOrgModalProps {
   opened: boolean;

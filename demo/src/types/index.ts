@@ -10,12 +10,10 @@ export type {
   User,
   Organisation,
   Project,
+  ProjectDetail,
   AuditEvent,
   Period,
   Activity,
-  Permission,
-  Role,
-  RoleAssignment,
 } from './entities';
 
 // Platform, observability, and generic API helpers

@@ -143,7 +143,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   });
 
                   if (typeof setUser === 'function') {
-                    setUser(updatedUser);
+                    setUser(updatedUser as unknown as Parameters<typeof setUser>[0]);
                   }
                   setIsProfileModalOpen(false);
                 } catch (e) {
@@ -337,7 +337,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   const updatedUser = await api.upload<ApiUser>('/auth/avatar/', avatarFile);
 
                   if (typeof setUser === 'function') {
-                    setUser(updatedUser);
+                    setUser(updatedUser as unknown as Parameters<typeof setUser>[0]);
                   }
 
                   setIsAvatarModalOpen(false);

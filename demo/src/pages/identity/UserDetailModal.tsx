@@ -1,14 +1,6 @@
 import { Badge } from '@django-core/design-system';
+import type { User } from '@/types/api/user';
 import styles from './UserDetailModal.module.css';
-
-interface User {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  is_active: boolean;
-  role?: string;
-}
 
 interface UserDetailModalProps {
   opened: boolean;

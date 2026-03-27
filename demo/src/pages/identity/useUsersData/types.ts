@@ -6,14 +6,9 @@ import type { NavigateFunction } from 'react-router-dom';
 import type { useAuth } from '@django-core/auth-ui';
 import type { BreadcrumbSwitcherOption } from '@django-core/page-templates';
 import type { Organisation as SharedOrganisation } from '@/types';
+import type { User as BaseUser } from '@/types/api/user';
 
-export interface User {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  role: string;
-  is_active: boolean;
+export interface User extends Omit<BaseUser, 'organisations' | 'projects'> {
   organisations?: { id: string; name: string; slug: string; role: string }[];
   projects?: UserProjectRef[];
   [key: string]: unknown;

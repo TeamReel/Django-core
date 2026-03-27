@@ -38,7 +38,7 @@ export const PermissionsPage: React.FC = () => {
         setLoading(true);
         setError(null);
         const userData = await api.get<User>('/auth/me/');
-        setCurrentUserRole(userData.role);
+        setCurrentUserRole(userData.role ?? null);
 
         const tree = await api.get<any>('/permissions/current/');
         setPermissionsTree(tree);

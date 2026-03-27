@@ -80,9 +80,9 @@ export function ProjectsTable({ d }: { d: Data }) {
           {filtered.map((project) => {
             const projectOrgSlug = project.organisation?.slug || resolvedOrg?.slug || currentOrgId;
             const projectOrg = project.organisation;
-            const pCtx = {
+            const pCtx: import('@/utils/permissions').PermissionContext = {
               currentOrganisation: projectOrg
-                ? { ...projectOrg, name: projectOrg.name || '', user_role: projectOrg.user_role as 'admin' | 'member' | undefined }
+                ? { ...projectOrg, name: projectOrg.name || '', user_role: projectOrg.user_role as 'admin' | 'member' | undefined } as any
                 : resolvedOrg,
               isSuperAdmin,
             };
@@ -125,7 +125,7 @@ export function ProjectsTable({ d }: { d: Data }) {
                       </button>
                     )}
                     {canDel && (
-                      <button onClick={() => handleDelete(project.id)}
+                      <button onClick={() => handleDelete(String(project.id))}
                         className={`p-4 px-8 rounded-4 cursor-pointer fs-12 ${styles.deleteButton}`}>
                         Delete
                       </button>
