@@ -276,7 +276,7 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 
 | Agent | Role | Tools | Hands off to |
 |-------|------|-------|-------------|
-| **Developer** | Orchestrator + full-stack implementation, modules, docs | All | → Reviewer, Planner, Tester, DBA, Ops, Domain |
+| **Developer** | Full-stack implementation, features, bugs, refactoring, tests | All | → Reviewer, Tester, DBA, Ops |
 | **Reviewer** | Code review, a11y audit, conventions, creates roadmap items | All | → Developer (fix), Planner (refactor), Tester (verify) |
 | **Planner** | Architecture, roadmap specs, implementation plans | All | → Developer (build), Domain (context), DBA (impact) |
 | **Domain Expert** | Product & domain knowledge, data model, architecture | All | → Planner (spec), Developer (build), Reviewer (audit) |
