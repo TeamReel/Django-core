@@ -163,6 +163,7 @@ export const MatchesCard = memo(function MatchesCard() {
           match={selectedMatch}
           sheet={sheet}
           onNavigateToMatch={handleNavigateToMatch}
+          clubLogoUrl={clubLogoUrl}
         />
       )}
     </>

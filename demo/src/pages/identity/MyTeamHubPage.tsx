@@ -59,13 +59,52 @@ import type { PeriodCreatePayload } from './PeriodCreateModal/types';
 import type { Period } from '../../types/season';
 import type { ProjectCreditsBalance } from '../../types/api/credits';
 
+import { MatchSheetFlow } from '../../components/dashboard/MatchSheetFlow';
+import { useMatchSheet } from '../../components/dashboard/useMatchSheet';
+import { buildMatchVanityUrl, buildMatchVanityUrlWithTab } from '../../components/dashboard/ActiveMatchCard';
+import type { Match } from '../../components/dashboard/ActiveMatchCard';
+import { useAppSelection } from '../../hooks/useAppSelection';
+import { useBrandProfile } from '../../hooks/useBrandProfile';
+import { useAuth } from '@django-core/auth-ui';
 
-const MatchSummarySheet = React.lazy(() =>
-  import('./MatchSummarySheet').then((m) => ({ default: m.MatchSummarySheet })),
-);
 const MemberSummarySheet = React.lazy(() =>
   import('./MemberSummarySheet').then((m) => ({ default: m.MemberSummarySheet })),
 );
+
+/** Convert MatchRecord (nullable fields) → Match (required fields) for MatchSheetFlow. */
+function matchRecordToMatch(r: MatchRecord, org?: { id: string; name: string; slug: string }): Match {
+  return {
+    id: r.id,
+    title: r.title || '',
+    slug: r.slug,
+    start_time: r.start_time || r.date || '',
+    end_time: r.end_time,
+    location: (r.metadata?.venue as string) || undefined,
+    organisation: org,
+    project: {
+      id: r.project?.id || '',
+      name: r.project?.name || '',
+      slug: r.project?.slug,
+      club_name: r.project?.club_name,
+      // Preserve logo_url from API response
+      ...((r.project as Record<string, unknown> | undefined)?.logo_url
+        ? { logo_url: (r.project as Record<string, unknown>).logo_url }
+        : {}),
+    },
+    opponent_project: r.opponent_project
+      ? {
+          name: r.opponent_project.name || '',
+          slug: r.opponent_project.slug,
+          club_name: r.opponent_project.club_name,
+          ...((r.opponent_project as Record<string, unknown>)?.logo_url
+            ? { logo_url: (r.opponent_project as Record<string, unknown>).logo_url }
+            : {}),
+        }
+      : undefined,
+    metadata: (r.metadata || {}) as Record<string, unknown>,
+    period: r.period ? { id: String(r.period.id || ''), name: r.period.name || '' } : undefined,
+  };
+}
 
 import s from './MyTeamHubPage.module.css';
 
@@ -188,6 +227,40 @@ export const MyTeamHubPage: React.FC = () => {
   const [panelClosing, setPanelClosing] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const [activeAssetSheet, setActiveAssetSheet] = useState<AssetSheetType | null>(null);
+
+  // ── MatchSheetFlow state (same wizard as dashboard) ──
+  const { user } = useAuth();
+  const hierarchy = useAppSelection();
+  const matchForSheet: Match | null = useMemo(
+    () => selectedMatch
+      ? matchRecordToMatch(selectedMatch, d.org ? { id: String(d.org.id), name: d.org.name || '', slug: d.org.slug || '' } : undefined)
+      : null,
+    [selectedMatch, d.org],
+  );
+  const matchSheet = useMatchSheet(matchForSheet);
+
+  // Club logo for MatchSheetFlow
+  const myClub = user?.projects?.find((p: { parent: unknown }) => p.parent == null);
+  const { getAssetUrl: getClubAssetUrl } = useBrandProfile({
+    organisationId: d.org?.id ? String(d.org.id) : undefined,
+    projectId: myClub?.id || (d.project?.id ? String(d.project.id) : undefined),
+  });
+  const clubLogoUrl = getClubAssetUrl('logo') ?? undefined;
+
+  const handleSelectMatch = useCallback((m: MatchRecord) => {
+    setSelectedMatch(m);
+    // Open sheet on next tick (match state must settle first)
+    setTimeout(() => matchSheet.openSheet(), 0);
+  }, [matchSheet.openSheet]);
+
+  const handleNavigateToMatch = useCallback((tab?: string) => {
+    if (!matchForSheet) return;
+    matchSheet.closeSheet();
+    const url = tab
+      ? buildMatchVanityUrlWithTab(matchForSheet, hierarchy, tab)
+      : buildMatchVanityUrl(matchForSheet, hierarchy);
+    navigate(url, { state: { from: 'hub' } });
+  }, [matchForSheet, hierarchy, navigate, matchSheet.closeSheet]);
 
   // ── Season Create ──
   const [isCreateSeasonModalOpen, setIsCreateSeasonModalOpen] = useState(false);
@@ -327,17 +400,6 @@ export const MyTeamHubPage: React.FC = () => {
     document.addEventListener('keydown', trap);
     return () => document.removeEventListener('keydown', trap);
   }, [detailMemberId]);
-
-  // Compute match detail path for selected match
-  const selectedMatchDetailPath = useMemo(() => {
-    if (!selectedMatch) return '';
-    const compId = String(selectedMatch.period_id || selectedMatch.period?.id || selectedMatch.period || '').trim();
-    const compKey = periodPathKey(selectedMatch.period || null) || compId;
-    const matchKey = selectedMatch.slug || selectedMatch.id;
-    return d.isTeamRoute
-      ? `${d.seasonsBasePath}/${d.seasonPathKey}/${compKey}/${String(matchKey)}`
-      : `/matches/${String(matchKey)}`;
-  }, [selectedMatch, d.isTeamRoute, d.seasonsBasePath, d.seasonPathKey]);
 
   // ── Overview: next match ──
   const nextMatch = useMemo<MatchRecord | null>(() => {
@@ -608,7 +670,7 @@ export const MyTeamHubPage: React.FC = () => {
                 <button
                   type="button"
                   className={s.nextMatchRow}
-                  onClick={() => setSelectedMatch(nextMatch)}
+                  onClick={() => handleSelectMatch(nextMatch)}
                 >
                   {nextMatchVenue ? (
                     <span className={nextMatchVenue === 'home' ? s.venueDotHome : s.venueDotAway} />
@@ -845,7 +907,7 @@ export const MyTeamHubPage: React.FC = () => {
               matchDisplayTitle={d.matchDisplayTitle}
               setIsCreateMatchModalOpen={d.setIsCreateMatchModalOpen}
               setIsCreateCompetitionModalOpen={d.setIsCreateCompetitionModalOpen}
-              onMatchTap={setSelectedMatch}
+              onMatchTap={handleSelectMatch}
               seasonName={(d.season?.name || seasonCtx.season?.name) as string | undefined}
               competitions={seasonCtx.competitions}
             />
@@ -998,19 +1060,17 @@ export const MyTeamHubPage: React.FC = () => {
       </div>
 
       {/* ── Sheets ── */}
-      <React.Suspense fallback={null}>
-        <MatchSummarySheet
-          match={selectedMatch}
-          isOpen={!!selectedMatch}
-          onClose={() => setSelectedMatch(null)}
-          matchDisplayTitle={d.matchDisplayTitle}
-          matchDetailPath={selectedMatchDetailPath}
-          onEdit={isAdmin ? (m) => {
-            setSelectedMatch(null);
-            d.setSelectedEditMatch(m);
-            d.setIsMatchEditModalOpen(true);
-          } : undefined}
+      {matchForSheet && (
+        <MatchSheetFlow
+          isOpen={matchSheet.sheetOpen}
+          onClose={() => { matchSheet.closeSheet(); setSelectedMatch(null); }}
+          match={matchForSheet}
+          sheet={matchSheet}
+          onNavigateToMatch={handleNavigateToMatch}
+          clubLogoUrl={clubLogoUrl}
         />
+      )}
+      <React.Suspense fallback={null}>
         <MemberSummarySheet
           member={selectedMember}
           isOpen={!!selectedMember}

@@ -16,6 +16,7 @@ import {
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
 import { useContentSheet } from './useContentSheet';
+import { Avatar } from '../ui/Avatar';
 import type { Match } from './ActiveMatchCard';
 import type { UseMatchSheetReturn } from './useMatchSheet';
 import type { ContentPhase } from '../MatchWizardV2/types';
@@ -54,6 +55,8 @@ interface MatchOverviewProps {
   onBrowseContent: (phase?: ContentPhase) => void;
   onEditLineup: () => void;
   onPreviewContent: (url: string, isVideo: boolean, title?: string) => void;
+  /** Own club logo URL (from useBrandProfile). */
+  clubLogoUrl?: string;
 }
 
 export const MatchOverview: React.FC<MatchOverviewProps> = ({
@@ -66,11 +69,22 @@ export const MatchOverview: React.FC<MatchOverviewProps> = ({
   onBrowseContent,
   onEditLineup,
   onPreviewContent,
+  clubLogoUrl,
 }) => {
   const date = new Date(match.start_time);
   const relTime = formatRelativeTime(date, 'nl');
   const urgency = getDateUrgency(date);
   const hasLineup = sheet.lineupCount > 0;
+
+  // Logo resolution — same approach as MatchesCard
+  const opponentLogoUrl = (match.opponent_project as Record<string, unknown> | undefined)?.logo_url as string | undefined;
+  const ownLogoUrl = (match.project as Record<string, unknown>)?.logo_url as string | undefined || clubLogoUrl;
+  const homeLogo = (match.metadata?.identity?.home_team_logo_url as string | undefined)
+    || (sheet.isHome ? ownLogoUrl : opponentLogoUrl);
+  const awayLogo = (match.metadata?.identity?.away_team_logo_url as string | undefined)
+    || (!sheet.isHome ? ownLogoUrl : opponentLogoUrl);
+  const homeName = sheet.isHome ? sheet.teamName : sheet.opponent;
+  const awayName = sheet.isHome ? sheet.opponent : sheet.teamName;
 
   // Fetch media for "Bekijk" preview URLs
   const content = useContentSheet(match);
@@ -141,13 +155,15 @@ export const MatchOverview: React.FC<MatchOverviewProps> = ({
 
       <div className={styles.sheetTeams}>
         <div className={styles.sheetTeam}>
-          <span className={styles.sheetTeamName}>{sheet.isHome ? sheet.teamName : sheet.opponent}</span>
+          <Avatar src={homeLogo} name={homeName} size="sm" alt={`${homeName} logo`} />
+          <span className={styles.sheetTeamName}>{homeName}</span>
         </div>
         <div className={styles.sheetScore}>
           {sheet.score ? <span>{sheet.score}</span> : <span className={styles.vsLabel}>vs</span>}
         </div>
         <div className={styles.sheetTeam}>
-          <span className={styles.sheetTeamName}>{sheet.isHome ? sheet.opponent : sheet.teamName}</span>
+          <Avatar src={awayLogo} name={awayName} size="sm" alt={`${awayName} logo`} />
+          <span className={styles.sheetTeamName}>{awayName}</span>
         </div>
       </div>
 

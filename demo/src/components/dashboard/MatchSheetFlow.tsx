@@ -108,11 +108,13 @@ interface MatchSheetFlowProps {
   match: Match;
   sheet: UseMatchSheetReturn;
   onNavigateToMatch: (tab?: string) => void;
+  /** Own club logo URL (from useBrandProfile). */
+  clubLogoUrl?: string;
 }
 
 // ─── Outer wrapper (providers) ────────────────────────────
 
-export function MatchSheetFlow({ isOpen, onClose, match, sheet, onNavigateToMatch }: MatchSheetFlowProps) {
+export function MatchSheetFlow({ isOpen, onClose, match, sheet, onNavigateToMatch, clubLogoUrl }: MatchSheetFlowProps) {
   return (
     <MatchWizardProvider>
       <WizardProvider steps={SHEET_STEPS} initialStepId="overview" onClose={onClose}>
@@ -122,6 +124,7 @@ export function MatchSheetFlow({ isOpen, onClose, match, sheet, onNavigateToMatc
           match={match}
           sheet={sheet}
           onNavigateToMatch={onNavigateToMatch}
+          clubLogoUrl={clubLogoUrl}
         />
       </WizardProvider>
     </MatchWizardProvider>
@@ -130,7 +133,7 @@ export function MatchSheetFlow({ isOpen, onClose, match, sheet, onNavigateToMatc
 
 // ─── Shell (reads both contexts) ──────────────────────────
 
-function MatchSheetShell({ isOpen, onClose, match, sheet, onNavigateToMatch }: MatchSheetFlowProps) {
+function MatchSheetShell({ isOpen, onClose, match, sheet, onNavigateToMatch, clubLogoUrl }: MatchSheetFlowProps) {
   const { currentStepId, back, goTo, reset } = useWizard();
   const mw = useMatchWizard();
   const gen = useMatchWizardGeneration(isOpen && currentStepId !== 'overview' && currentStepId !== 'matchLineup');
@@ -328,6 +331,7 @@ function MatchSheetShell({ isOpen, onClose, match, sheet, onNavigateToMatch }: M
             onBrowseContent={handleBrowseContent}
             onEditLineup={handleEditLineup}
             onPreviewContent={handlePreviewContent}
+            clubLogoUrl={clubLogoUrl}
           />
         </WizardStep>
 
