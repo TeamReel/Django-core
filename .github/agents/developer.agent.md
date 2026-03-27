@@ -103,6 +103,30 @@ You are a senior full-stack developer for TeamReel. You build features, fix bugs
 - `:focus-visible` on interactive elements, touch targets ≥ 44×44px
 - `React.lazy` + `Suspense` for heavy components
 
+## Roadmap Workflow
+
+All specs and tasks live in `documents/02-roadmap/modules/`:
+
+```
+modules/
+├── backlog/    ← ruwe ideeën (Planner werkt ze uit)
+├── ready/      ← uitgewerkt met fases, klaar om te bouwen ← JIJ PAKT HIER OP
+├── active/     ← waar je nu aan bouwt (max 1-2)
+├── quick/      ← kleine fixes zonder fases (Q-items) ← OOK OPPAKKEN
+├── done/       ← afgerond
+└── later/      ← uitgesteld
+```
+
+### Hoe je een module bouwt
+
+1. **Oppakken** — kies een module uit `ready/` of item uit `quick/`
+2. **Start** — verplaats de map van `ready/` → `active/`, zet Status op `🚧 IN UITVOERING`
+3. **Bouw fase voor fase** — werk elke `phases/todo/H{n}_*.md` af
+4. **Fase klaar** — verplaats van `phases/todo/` → `phases/done/`
+5. **Module klaar** — alle fases done → verplaats map naar `done/`, Status `✅ DONE`
+
+Voor Q-items: bouw het, zet Status op `✅ DONE`, verplaats naar `done/`.
+
 ## After Implementation
 
 When your work is done, recommend the right follow-up:

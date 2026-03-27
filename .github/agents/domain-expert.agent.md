@@ -135,10 +135,28 @@ Upload → FileAsset (S3) → MediaItem (metadata) → BrandAsset/Relation (sema
 - **FileAsset**: S3-stored file with metadata. All uploads go through this.
 - **MediaItem**: Semantic wrapper around FileAsset (photo, video, document).
 
+## Roadmap Structuur
+
+Alle specs en taken staan in `documents/02-roadmap/modules/`:
+
+```
+modules/
+├── backlog/    ← ruwe ideeën, nog niet uitgewerkt
+├── ready/      ← uitgewerkt met fases, klaar om te bouwen
+├── active/     ← wordt nu aan gebouwd (max 1-2)
+├── quick/      ← kleine fixes zonder fases (Q-items)
+├── done/       ← afgerond
+└── later/      ← uitgesteld
+```
+
+Bij vragen over "wat staat er op de planning?" → check `ready/` + `active/` + `quick/`.
+Bij vragen over "wat is er al gedaan?" → check `done/`.
+
 ## How to Answer Questions
 
 1. **Read `ai-context-index.md`** to find the right doc
 2. **Read the specific doc** to get accurate details
 3. **Cross-reference with code** if the docs might be outdated (`src/` for backend, `demo/src/` for frontend)
 4. **Answer in product terms** — what it does for the user, not how it's coded
-5. If something doesn't exist yet, check `documents/02-roadmap/modules/backlog/` and `ready/` for planned work
+5. If something doesn't exist yet, check `modules/backlog/` and `ready/` for planned work
+6. For roadmap status questions, check all 6 folders in `modules/`

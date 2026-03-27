@@ -156,23 +156,39 @@ Write Playwright tests in `demo/tests/`, TypeScript, prefer `data-testid` or rol
 - Test incrementally: simple interactions before complex flows
 - Clean up test state between tests
 
+## Roadmap Structuur
+
+Alle specs en taken staan in `documents/02-roadmap/modules/`:
+
+```
+modules/
+├── backlog/    ← ruwe ideeën, nog niet uitgewerkt
+├── ready/      ← uitgewerkt met fases, klaar om te bouwen
+├── active/     ← wordt nu aan gebouwd
+├── quick/      ← kleine fixes (Q-items) ← JIJ MAAKT DEZE AAN
+├── done/       ← afgerond
+└── later/      ← uitgesteld
+```
+
 ## Findings → Roadmap
 
 After every test session, **document actionable findings** in the roadmap:
 
 ### Classification (you decide)
 
-| Signal | Type | Action |
-|--------|------|--------|
-| ≤4 uur effort, 1-3 bestanden, CSS/layout/kleine fix | **Quick** | Create `modules/quick/Q{NNN}-{name}.md` |
-| >4 uur, nieuwe feature/component/pagina nodig | **Feature** | Create/update in `modules/backlog/` (Planner specs it → `ready/`) |
-| Working as expected | **None** | No roadmap item needed |
+| Signal | Type | Waar |
+|--------|------|------|
+| ≤4 uur, 1-3 bestanden, CSS/layout/kleine fix | **Quick** | `modules/quick/Q{NNN}-{name}.md` |
+| >4 uur, nieuwe feature/component/pagina nodig | **Feature** | `modules/backlog/` (Planner werkt het uit → `ready/`) |
+| Werkt zoals verwacht | **Geen** | Geen roadmap item nodig |
 
 ### Workflow
 
 1. Complete the test session using the standard output format above
 2. For each issue found, classify as Quick or Feature
-3. **Create the roadmap item(s)** — quick items in `modules/quick/`, features in `modules/backlog/`
+3. **Create the roadmap item(s)**:
+   - Quick items → `modules/quick/Q{NNN}-{name}.md`
+   - Feature items → `modules/backlog/{number}-{code}-{name}/index.md`
 4. Present a summary to the user:
    - Wat er goed werkt
    - Wat er niet werkt of beter kan (met screenshots)
