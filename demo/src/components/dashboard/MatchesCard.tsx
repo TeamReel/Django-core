@@ -184,9 +184,10 @@ const UpcomingMatchRow: React.FC<MatchRowProps> = memo(function UpcomingMatchRow
   const teamName = match.project?.club_name || match.project?.name || 'Team';
   const opponent = match.opponent_project?.club_name || match.opponent_project?.name || match.title?.split(' vs ')?.[1] || 'Tegenstander';
   const isHome = match.metadata?.is_home !== false;
+  const opponentLogoUrl = (match.opponent_project as Record<string, unknown> | undefined)?.logo_url as string | undefined;
 
-  const homeLogo = (match.metadata?.identity?.home_team_logo_url as string | undefined) || (isHome ? clubLogoUrl : undefined);
-  const awayLogo = (match.metadata?.identity?.away_team_logo_url as string | undefined) || (!isHome ? clubLogoUrl : undefined);
+  const homeLogo = (match.metadata?.identity?.home_team_logo_url as string | undefined) || (isHome ? clubLogoUrl : opponentLogoUrl);
+  const awayLogo = (match.metadata?.identity?.away_team_logo_url as string | undefined) || (!isHome ? clubLogoUrl : opponentLogoUrl);
   const homeName = isHome ? teamName : opponent;
   const awayName = isHome ? opponent : teamName;
 
@@ -241,9 +242,10 @@ const PastMatchRow: React.FC<MatchRowProps> = memo(function PastMatchRow({ match
   const teamName = match.project?.club_name || match.project?.name || 'Team';
   const opponent = match.opponent_project?.club_name || match.opponent_project?.name || match.title?.split(' vs ')?.[1] || 'Tegenstander';
   const isHome = match.metadata?.is_home !== false;
+  const opponentLogoUrl = (match.opponent_project as Record<string, unknown> | undefined)?.logo_url as string | undefined;
 
-  const homeLogo = (match.metadata?.identity?.home_team_logo_url as string | undefined) || (isHome ? clubLogoUrl : undefined);
-  const awayLogo = (match.metadata?.identity?.away_team_logo_url as string | undefined) || (!isHome ? clubLogoUrl : undefined);
+  const homeLogo = (match.metadata?.identity?.home_team_logo_url as string | undefined) || (isHome ? clubLogoUrl : opponentLogoUrl);
+  const awayLogo = (match.metadata?.identity?.away_team_logo_url as string | undefined) || (!isHome ? clubLogoUrl : opponentLogoUrl);
   const homeName = isHome ? teamName : opponent;
   const awayName = isHome ? opponent : teamName;
 

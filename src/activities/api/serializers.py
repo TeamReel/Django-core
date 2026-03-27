@@ -316,16 +316,24 @@ class ActivitySerializer(serializers.ModelSerializer):
         return None
 
     def get_project(self, obj):
-        """Return nested project representation with optional club_name."""
+        """Return nested project representation with optional club_name and logo_url."""
         if obj.project:
             data = {"id": str(obj.project.id), "name": obj.project.name, "slug": obj.project.slug}
             if obj.project.parent_project:
                 data["club_name"] = obj.project.parent_project.name
+            # Include logo_url from project metadata (team → club fallback).
+            logo_url = (obj.project.metadata or {}).get("identity", {}).get("logo_url") or (
+                (obj.project.parent_project.metadata or {}).get("identity", {}).get("logo_url")
+                if obj.project.parent_project
+                else None
+            )
+            if logo_url:
+                data["logo_url"] = logo_url
             return data
         return None
 
     def get_opponent_project(self, obj):
-        """Return nested opponent project name/id with optional club_name."""
+        """Return nested opponent project name/id with optional club_name and logo_url."""
         if obj.opponent_project:
             data = {
                 "id": str(obj.opponent_project.id),
@@ -334,6 +342,19 @@ class ActivitySerializer(serializers.ModelSerializer):
             }
             if obj.opponent_project.parent_project:
                 data["club_name"] = obj.opponent_project.parent_project.name
+            # Include logo_url from project metadata (team → club fallback).
+            # Both are already select_related — no extra queries.
+            logo_url = (obj.opponent_project.metadata or {}).get("identity", {}).get(
+                "logo_url"
+            ) or (
+                (obj.opponent_project.parent_project.metadata or {})
+                .get("identity", {})
+                .get("logo_url")
+                if obj.opponent_project.parent_project
+                else None
+            )
+            if logo_url:
+                data["logo_url"] = logo_url
             return data
         return None
 
