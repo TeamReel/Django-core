@@ -24,6 +24,9 @@ tools:
     playwright/browser_run_code, playwright/browser_select_option, playwright/browser_snapshot,
     playwright/browser_tabs, playwright/browser_take_screenshot, playwright/browser_type,
     playwright/browser_wait_for,
+    railway/check-railway-status, railway/get-logs, railway/list-services,
+    railway/list-deployments, railway/list-variables, railway/set-variables,
+    railway/link-service, railway/link-environment, railway/deploy,
     todo
   ]
 agents:
@@ -68,34 +71,119 @@ You are the operations specialist for TeamReel. You manage Railway deployments, 
 | Service | Platform | URL |
 |---------|----------|-----|
 | Backend API | Railway | `https://api.teamreel.app` |
-| Frontend | Vercel | `https://demo.teamreel.app` |
+| Frontend | Railway | `https://demo.teamreel.app` |
 | Database | Railway PostgreSQL | internal connection |
 | Storage | AWS S3 | `src/files/` → FileAsset |
 | Video processing | Railway workers | `src/video/` |
 
-## Railway CLI Commands
+## Railway Project
 
-> **IMPORTANT**: Railway CLI on Windows/PowerShell does NOT support `--tail` or `--num` flags.
-> Use PowerShell piping (`Select-Object`, `Select-String`) to filter output.
+| Key | Value |
+|-----|-------|
+| Project name | `eloquent-mindfulness` |
+| Project ID | `8e8c99c9-0824-4d56-84c0-9d0a388a6217` |
+| Environment | `production` (+ `staging`) |
+| Auth | `hello@teamreel.app` |
 
-### Service Linking
-```bash
-# Link to a specific service (interactive)
-railway link
-# → Select project: teamreel-backend
-# → Select service: backend / frontend / celery-worker / etc.
+### Services
 
-# Check which service you're linked to
-railway status
+| Service name | Purpose |
+|-------------|---------|
+| `backend` | Django API server |
+| `frontend` | React/Vite static site |
+| `celery-worker` | Async task processing |
+| `celery-beat` | Scheduled tasks |
+| `worker-ai` | AI processing worker |
+| `video-worker` | Video rendering |
+| `Postgres` | PostgreSQL database |
+| `Redis` | Cache + Celery broker |
+
+### Config files
+
+| File | Service | Purpose |
+|------|---------|---------|
+| `railway.json` | backend | Build + deploy config |
+| `railway-frontend.json` | frontend | Build config (Dockerfile.frontend) |
+
+> **⚠️ Never delete `railway.json` or `railway-frontend.json`** — Railway will fail to deploy.
+
+## Railway CLI — How to Use
+
+> **The Railway CLI is the primary tool.** MCP tools (`railway/*`) exist but require a linked project and the MCP server runs in a separate process that doesn't always see the link state. Use CLI via `cmd /c` wrapper for reliable output.
+
+### Step 0: Link to the correct service (ALWAYS DO THIS FIRST)
+
+```powershell
+# Non-interactive linking (use project ID + flags):
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd link -p 8e8c99c9-0824-4d56-84c0-9d0a388a6217 -e production -s SERVICE_NAME 2>&1"
+```
+
+Replace `SERVICE_NAME` with: `backend`, `frontend`, `celery-worker`, `celery-beat`, `worker-ai`, `video-worker`
+
+```powershell
+# Verify link:
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd status 2>&1"
+```
+
+### Step 1: Get logs
+
+```powershell
+# Get deploy logs (build + startup):
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd logs -d 2>&1"
+
+# Get runtime logs:
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd logs 2>&1"
+```
+
+> **IMPORTANT**: Use `cmd /c "..." 2>&1` wrapper — raw PowerShell garbles Railway CLI output.
+> Railway CLI does NOT support `--tail` or `--num` flags. Use PowerShell piping to filter.
+
+### Step 2: Check status
+
+```powershell
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd status 2>&1"
+```
+
+### MCP Tools — Limited Use
+
+MCP tools (`railway/check-railway-status`, `railway/list-projects`) work for:
+- Checking auth status
+- Listing projects and their services/environments
+
+MCP tools **do NOT reliably work** for service-specific operations (logs, deployments, variables) because they require `railway link` and the MCP server process doesn't share the CLI's link state.
+
+### Quick Diagnosis Playbook
+
+**Frontend down?**
+```powershell
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd link -p 8e8c99c9-0824-4d56-84c0-9d0a388a6217 -e production -s frontend 2>&1"
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd logs -d 2>&1"
+# Check: railway-frontend.json exists? Dockerfile.frontend builds?
+```
+
+**Backend down?**
+```powershell
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd link -p 8e8c99c9-0824-4d56-84c0-9d0a388a6217 -e production -s backend 2>&1"
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd logs -d 2>&1"
+# Check: railway.json exists? Migrations passed? Health endpoint?
+```
+
+**Worker issues?**
+```powershell
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd link -p 8e8c99c9-0824-4d56-84c0-9d0a388a6217 -e production -s celery-worker 2>&1"
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd logs 2>&1"
 ```
 
 ### Deployment Status
-```bash
+```powershell
 # Recent logs (link to correct service first!)
-railway logs 2>&1 | Select-Object -First 50
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd logs 2>&1" | Select-Object -First 50
+
+# Deploy logs:
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd logs -d 2>&1" | Select-Object -First 50
 
 # Environment variables (names only, not values)
-railway variables
+cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd variables 2>&1"
 ```
 
 ### Log Analysis (PowerShell)
@@ -203,6 +291,8 @@ psql "postgresql://postgres:<password>@switchback.proxy.rlwy.net:17304/railway"
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
+| `service config at 'railway-frontend.json' not found` | Config file deleted | Restore `railway-frontend.json` (see root) |
+| `service config at 'railway.json' not found` | Config file deleted | Restore `railway.json` (see root) |
 | `ModuleNotFoundError` | Missing dependency | Check `requirements/` files, `pip install` |
 | `OperationalError: connection` | DB connection pool exhausted | Check `CONN_MAX_AGE`, connection limits |
 | `DisallowedHost` | Missing host in `ALLOWED_HOSTS` | Add domain to settings |
