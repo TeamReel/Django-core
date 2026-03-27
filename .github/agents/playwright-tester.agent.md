@@ -1,6 +1,6 @@
 ---
-name: "Playwright Tester"
-description: "Browser testing agent — E2E flows, accessibility audits, visual review, responsive testing via Playwright MCP"
+name: "Site Tester"
+description: "Live site testing — E2E flows, visual review, responsive, accessibility via browser"
 tools:
   [
     vscode/extensions, vscode/askQuestions, vscode/getProjectSetupInfo, vscode/installExtension,

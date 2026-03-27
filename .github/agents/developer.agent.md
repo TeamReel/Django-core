@@ -1,6 +1,6 @@
 ---
-name: "developer"
-description: "Full-stack developer — implements features, fixes bugs, refactors code, builds modules, writes tests and docs"
+name: "Bouwer"
+description: "Full-stack builder — features, bugfixes, refactoring, tests, docs"
 tools:
   [
     vscode/extensions, vscode/askQuestions, vscode/getProjectSetupInfo, vscode/installExtension,

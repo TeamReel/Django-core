@@ -1,6 +1,6 @@
 ---
-name: "Domain Expert"
-description: "TeamReel product & domain knowledge — data model, features, architecture, UX flows, content pipeline"
+name: "Product Expert"
+description: "Product knowledge — data model, features, UX flows, architecture"
 tools:
   [
     vscode/extensions, vscode/askQuestions, vscode/getProjectSetupInfo, vscode/installExtension,

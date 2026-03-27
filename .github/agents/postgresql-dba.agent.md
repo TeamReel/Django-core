@@ -1,6 +1,6 @@
 ---
-name: "PostgreSQL DBA"
-description: "Database specialist — query optimization, EXPLAIN ANALYZE, indexing, schema review, performance monitoring"
+name: "Database"
+description: "PostgreSQL specialist — query optimization, indexing, schema review, performance"
 tools:
   [
     vscode/extensions, vscode/askQuestions, vscode/getProjectSetupInfo, vscode/installExtension,

@@ -276,13 +276,13 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 
 | Agent | Role | Tools | Hands off to |
 |-------|------|-------|-------------|
-| **Developer** | Full-stack implementation, features, bugs, refactoring, tests | All | → Reviewer, Tester, DBA, Ops |
-| **Reviewer** | Code review, a11y audit, conventions, creates roadmap items | All | → Developer (fix), Planner (refactor), Tester (verify) |
-| **Planner** | Architecture, roadmap specs, implementation plans | All | → Developer (build), Domain (context), DBA (impact) |
-| **Domain Expert** | Product & domain knowledge, data model, architecture | All | → Planner (spec), Developer (build), Reviewer (audit) |
-| **Playwright Tester** | E2E flows, live a11y, visual review via Playwright MCP | All | → Developer (fix), Reviewer (audit), Planner (plan) |
-| **PostgreSQL DBA** | Query optimization, indexing, schema review | All | → Developer (apply), Ops (deploy) |
-| **Ops & Deploy** | Railway logs, deploys, monitoring, health checks | All | → Developer (fix), DBA (database) |
+| **Bouwer** | Full-stack builder — features, bugfixes, refactoring, tests | All | → Code Review, Site Tester, Database, Deploy & Logs |
+| **Code Review** | Code quality — security, accessibility, performance, conventions | All | → Bouwer (fix), Planner (refactor), Site Tester (verify) |
+| **Planner** | Architecture, roadmap specs, implementation plans | All | → Bouwer (build), Product Expert (context), Database (impact) |
+| **Product Expert** | Product knowledge — data model, features, architecture | All | → Planner (spec), Bouwer (build), Code Review (audit) |
+| **Site Tester** | E2E flows, live accessibility, visual review via browser | All | → Bouwer (fix), Code Review (audit), Planner (plan) |
+| **Database** | Query optimization, indexing, schema review | All | → Bouwer (apply), Deploy & Logs (deploy) |
+| **Deploy & Logs** | Railway deployments, logs, monitoring, health checks | All | → Bouwer (fix), Database (database) |
 
 ## Available Skills
 

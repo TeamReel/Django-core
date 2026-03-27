@@ -1,6 +1,6 @@
 ---
-name: "Ops & Deploy"
-description: "Operations agent — Railway deployment, logs, health checks, environment management, monitoring"
+name: "Deploy & Logs"
+description: "Railway operations — deployments, logs, monitoring, health checks"
 tools:
   [
     vscode/extensions, vscode/askQuestions, vscode/getProjectSetupInfo, vscode/installExtension,

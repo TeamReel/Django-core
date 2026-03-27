@@ -1,6 +1,6 @@
 ---
-name: "TeamReel Reviewer"
-description: "Code review agent — audits quality, accessibility, security, performance, and conventions. Creates roadmap items for findings."
+name: "Code Review"
+description: "Code quality audits — security, accessibility, performance, conventions"
 tools:
   [
     vscode/extensions, vscode/askQuestions, vscode/getProjectSetupInfo, vscode/installExtension,

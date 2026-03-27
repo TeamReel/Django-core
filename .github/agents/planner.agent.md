@@ -1,6 +1,6 @@
 ---
-name: "TeamReel Planner"
-description: "Architecture and planning agent — researches codebase, creates implementation plans and roadmap specs"
+name: "Planner"
+description: "Architecture & planning — implementation plans, roadmap specs, feature design"
 tools:
   [
     vscode/extensions, vscode/askQuestions, vscode/getProjectSetupInfo, vscode/installExtension,
