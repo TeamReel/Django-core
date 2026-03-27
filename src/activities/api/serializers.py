@@ -293,6 +293,59 @@ class ActivitySerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
+    # ── Logo URL cache ────────────────────────────────────────
+    # Populated lazily per serializer instance. Maps project_id → logo URL.
+    _logo_cache: dict[int, str | None] | None = None
+
+    def _get_logo_url_for_project(self, project) -> str | None:
+        """Return a presigned logo URL for a project (team → club fallback).
+
+        Uses BrandAsset(asset_type='logo') via BrandProfile. Results are
+        cached so repeated calls within one serializer invocation don't
+        cause extra queries.
+        """
+        if project is None:
+            return None
+
+        if self._logo_cache is None:
+            self._logo_cache = {}
+
+        pid = project.id
+        if pid in self._logo_cache:
+            return self._logo_cache[pid]
+
+        # Collect candidate project IDs: team first, then parent club
+        candidate_ids = [pid]
+        if project.parent_project_id:
+            candidate_ids.append(project.parent_project_id)
+
+        try:
+            from branding.models import BrandAsset
+
+            asset = (
+                BrandAsset.objects.filter(
+                    profile__project_id__in=candidate_ids,
+                    asset_type="logo",
+                    is_active=True,
+                    profile__is_active=True,
+                )
+                .select_related("file")
+                .order_by("profile__project_id")
+                .first()
+            )
+            if asset and asset.file and asset.file.storage_path:
+                from files.utils import get_storage_backend
+
+                backend = get_storage_backend()
+                url = backend.get_url(asset.file.storage_path, signed=True)
+                self._logo_cache[pid] = url
+                return url
+        except Exception:
+            pass
+
+        self._logo_cache[pid] = None
+        return None
+
     def get_organisation(self, obj):
         """Return nested organisation representation with sport data"""
         # Try to get org from project first, then period
@@ -321,12 +374,7 @@ class ActivitySerializer(serializers.ModelSerializer):
             data = {"id": str(obj.project.id), "name": obj.project.name, "slug": obj.project.slug}
             if obj.project.parent_project:
                 data["club_name"] = obj.project.parent_project.name
-            # Include logo_url from project metadata (team → club fallback).
-            logo_url = (obj.project.metadata or {}).get("identity", {}).get("logo_url") or (
-                (obj.project.parent_project.metadata or {}).get("identity", {}).get("logo_url")
-                if obj.project.parent_project
-                else None
-            )
+            logo_url = self._get_logo_url_for_project(obj.project)
             if logo_url:
                 data["logo_url"] = logo_url
             return data
@@ -342,17 +390,7 @@ class ActivitySerializer(serializers.ModelSerializer):
             }
             if obj.opponent_project.parent_project:
                 data["club_name"] = obj.opponent_project.parent_project.name
-            # Include logo_url from project metadata (team → club fallback).
-            # Both are already select_related — no extra queries.
-            logo_url = (obj.opponent_project.metadata or {}).get("identity", {}).get(
-                "logo_url"
-            ) or (
-                (obj.opponent_project.parent_project.metadata or {})
-                .get("identity", {})
-                .get("logo_url")
-                if obj.opponent_project.parent_project
-                else None
-            )
+            logo_url = self._get_logo_url_for_project(obj.opponent_project)
             if logo_url:
                 data["logo_url"] = logo_url
             return data
