@@ -1,10 +1,10 @@
 /**
  * HeroBanner — Full-width hero banner with team branding.
  *
- * Normal mode: club background photo + logo + team name.
+ * Normal mode: brand color gradient + logo + club name.
  * Match-day mode: Logo vs Logo with countdown/LIVE badge.
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
@@ -27,20 +27,12 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ matchDay, activeMatch })
   const project = context.project;
 
   const myClub = user?.projects?.find(p => p.parent == null);
-  const { getAssetUrl, getAssets, profile, loading } = useBrandProfile({
+  const { getAssetUrl, profile, loading } = useBrandProfile({
     organisationId: org?.id?.toString(),
     projectId: myClub?.id || project?.id,
   });
 
-  const clubLogoUrl = getAssetUrl('club_logo');
-  const backgrounds = getAssets('club_background');
-  const heroImageUrl = backgrounds.length > 0 && backgrounds[0].url
-    ? backgrounds[0].url.startsWith('http') ? backgrounds[0].url : null
-    : null;
-
-  const bgUrl = heroImageUrl || (backgrounds.length > 0 && backgrounds[0].url
-    ? getAssetUrl('club_background')
-    : null);
+  const clubLogoUrl = getAssetUrl('logo');
 
   const teamName = myClub?.name || project?.name || org?.name || '';
   const displayName = teamName;
@@ -48,10 +40,6 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ matchDay, activeMatch })
   const primaryToken = profile?.tokens?.find(t => t.key === 'primary_color');
   const primaryColor = primaryToken?.value || 'var(--app-primary)';
 
-  const [imgLoaded, setImgLoaded] = useState(false);
-  const [imgError, setImgError] = useState(false);
-
-  const hasBgImage = !!bgUrl && !imgError;
   const isMatchMode = !!matchDay?.isMatchDay && !!activeMatch;
 
   // Match-day data
@@ -144,24 +132,10 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ matchDay, activeMatch })
   return (
     <div
       className={styles.banner}
-      style={!hasBgImage ? {
+      style={{
         background: `linear-gradient(135deg, ${primaryColor} 0%, var(--app-surface) 100%)`,
-      } : undefined}
+      }}
     >
-      {hasBgImage && (
-        <>
-          <img
-            src={bgUrl}
-            alt=""
-            className={`${styles.bgImage} ${imgLoaded ? styles.bgImageLoaded : ''}`}
-            loading="lazy"
-            onLoad={() => setImgLoaded(true)}
-            onError={() => setImgError(true)}
-          />
-          <div className={styles.overlay} />
-        </>
-      )}
-
       <div className={styles.content}>
         <Avatar
           src={clubLogoUrl}

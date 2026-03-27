@@ -47,7 +47,7 @@ export const MatchesCard = memo(function MatchesCard() {
     organisationId: org?.id?.toString(),
     projectId: myClub?.id || project?.id,
   });
-  const clubLogoUrl = getClubAssetUrl('club_logo') ?? undefined;
+  const clubLogoUrl = getClubAssetUrl('logo') ?? undefined;
 
   const upcomingMatches = upcoming.data?.matches ?? [];
   const pastMatches = past.data?.matches ?? [];

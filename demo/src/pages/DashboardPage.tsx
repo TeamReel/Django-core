@@ -84,7 +84,7 @@ export default function DashboardPage() {
     organisationId: org?.id?.toString(),
     projectId: myClub?.id || project?.id,
   });
-  const clubLogoUrl = getClubAssetUrl('club_logo');
+  const clubLogoUrl = getClubAssetUrl('logo');
   const isOrgLevel = isSystemAdmin || isLandAdmin || isOrgAdmin;
   const isMemberLevel = isPlayer || isSupporter;
   const isTeamScope = hasProjectContext;
