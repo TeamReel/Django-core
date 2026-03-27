@@ -7,7 +7,6 @@ import { AlertTriangle } from 'lucide-react';
 import {
   ActiveMatchCard,
   ContentCarousel,
-  HeroBanner,
   MatchesCard,
   SquadReadinessCard,
   AIQueueCard,
@@ -109,8 +108,6 @@ export default function DashboardPage() {
     >
       <div key={refreshKey} className={styles.page}>
 
-        {/* ── Hero Banner (always shown — switches to match-day mode) ── */}
-        <HeroBanner matchDay={matchDay} activeMatch={activeMatch} />
 
         {/* ── Header ─────────────────────────────────────────────── */}
         <div className={styles.header}>
