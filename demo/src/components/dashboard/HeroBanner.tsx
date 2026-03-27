@@ -7,8 +7,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { useAuth } from '@django-core/auth-ui';
 import { useBrandProfile } from '../../hooks/useBrandProfile';
-import { useAppSelection } from '../../hooks/useAppSelection';
 import { Avatar } from '../ui/Avatar';
 import type { Match } from './ActiveMatchCard';
 import type { MatchDayMode } from '../../hooks/useMatchDayMode';
@@ -21,14 +21,15 @@ export interface HeroBannerProps {
 
 export const HeroBanner: React.FC<HeroBannerProps> = ({ matchDay, activeMatch }) => {
   const { context } = useContextSwitcher();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const org = context.organisation;
   const project = context.project;
 
-  const appSelection = useAppSelection();
+  const myClub = user?.projects?.find(p => p.parent == null);
   const { getAssetUrl, getAssets, profile, loading } = useBrandProfile({
     organisationId: org?.id?.toString(),
-    projectId: appSelection.clubIdForApi || project?.id,
+    projectId: myClub?.id || project?.id,
   });
 
   const clubLogoUrl = getAssetUrl('club_logo');
@@ -41,7 +42,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ matchDay, activeMatch })
     ? getAssetUrl('club_background')
     : null);
 
-  const teamName = appSelection.clubName || project?.name || org?.name || '';
+  const teamName = myClub?.name || project?.name || org?.name || '';
   const displayName = teamName;
 
   const primaryToken = profile?.tokens?.find(t => t.key === 'primary_color');

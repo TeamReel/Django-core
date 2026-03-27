@@ -11,6 +11,7 @@ import {
   CalendarDays, History, ChevronRight, MapPin, Calendar, Plus,
 } from 'lucide-react';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { useAuth } from '@django-core/auth-ui';
 import { formatRelativeTime } from '../../utils/relativeTime';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import { useUpcomingMatches } from '../../hooks/useUpcomingMatches';
@@ -29,6 +30,7 @@ type Tab = 'upcoming' | 'past';
 
 export const MatchesCard = memo(function MatchesCard() {
   const { context } = useContextSwitcher();
+  const { user } = useAuth();
   const hierarchy = useAppSelection();
   const navigate = useNavigate();
   const project = context.project;
@@ -40,9 +42,10 @@ export const MatchesCard = memo(function MatchesCard() {
   const past = usePastMatches(project?.id, 5);
 
   // Club logo fallback for match rows where metadata logos are missing
+  const myClub = user?.projects?.find(p => p.parent == null);
   const { getAssetUrl: getClubAssetUrl } = useBrandProfile({
     organisationId: org?.id?.toString(),
-    projectId: hierarchy.clubIdForApi || project?.id,
+    projectId: myClub?.id || project?.id,
   });
   const clubLogoUrl = getClubAssetUrl('club_logo') ?? undefined;
 

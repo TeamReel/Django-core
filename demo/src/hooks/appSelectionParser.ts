@@ -39,7 +39,6 @@ export type AppSelection = {
   orgSlug: string;
   clubSlugOrId: string | null;
   clubName: string | null;
-  clubIdForApi: string | null;
   teamSlugOrId: string | null;
   teamName: string | null;
   teamIdForApi: string | null;
