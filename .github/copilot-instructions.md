@@ -276,13 +276,13 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 
 | Agent | Role | Tools | Hands off to |
 |-------|------|-------|-------------|
-| **Developer** | Full-stack implementation, debugging, refactoring, modules, docs | All | → Reviewer |
-| **Reviewer** | Code review, a11y audit (code-level), conventions | Read-only + terminal | → Developer (fix) |
-| **Planner** | Architecture & implementation plans | Read-only + create_file | → Developer (build) |
-| **Domain Expert** | Product & domain knowledge, data model, features, architecture | Read-only | → Planner / Developer |
-| **Playwright Tester** | E2E flows, live a11y, visual review via browser | Read + Playwright MCP | → Developer (fix) |
-| **PostgreSQL DBA** | Query optimization, indexing, schema | Read + Terminal | → Developer (apply) |
-| **Ops & Deploy** | Railway logs, deploys, monitoring | Read + Terminal | → Developer / DBA |
+| **Developer** | Orchestrator + full-stack implementation, modules, docs | All | → Reviewer, Planner, Tester, DBA, Ops, Domain |
+| **Reviewer** | Code review, a11y audit, conventions, creates roadmap items | All | → Developer (fix), Planner (refactor), Tester (verify) |
+| **Planner** | Architecture, roadmap specs, implementation plans | All | → Developer (build), Domain (context), DBA (impact) |
+| **Domain Expert** | Product & domain knowledge, data model, architecture | All | → Planner (spec), Developer (build), Reviewer (audit) |
+| **Playwright Tester** | E2E flows, live a11y, visual review via Playwright MCP | All | → Developer (fix), Reviewer (audit), Planner (plan) |
+| **PostgreSQL DBA** | Query optimization, indexing, schema review | All | → Developer (apply), Ops (deploy) |
+| **Ops & Deploy** | Railway logs, deploys, monitoring, health checks | All | → Developer (fix), DBA (database) |
 
 ## Available Skills
 

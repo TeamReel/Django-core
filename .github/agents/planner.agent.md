@@ -2,11 +2,49 @@
 name: "TeamReel Planner"
 description: "Architecture and planning agent — researches codebase, creates implementation plans and roadmap specs"
 tools:
-  [read/readFile, read/problems, read/terminalSelection, read/terminalLastCommand, search/codebase, search/textSearch, search/fileSearch, search/listDirectory, search/changes, search/usages, search/searchResults, edit/createFile, edit/createDirectory, edit/editFiles, edit/rename, execute/runInTerminal, execute/getTerminalOutput, agent/runSubagent, web/fetch, todo]
+  [
+    vscode/extensions, vscode/askQuestions, vscode/getProjectSetupInfo, vscode/installExtension,
+    vscode/memory, vscode/newWorkspace, vscode/runCommand, vscode/vscodeAPI,
+    execute/getTerminalOutput, execute/awaitTerminal, execute/killTerminal, execute/createAndRunTask,
+    execute/runInTerminal, execute/runTests, execute/runNotebookCell, execute/testFailure,
+    read/terminalSelection, read/terminalLastCommand, read/getNotebookSummary,
+    read/problems, read/readFile, read/readNotebookCellOutput,
+    agent/runSubagent,
+    browser/openBrowserPage,
+    edit/createDirectory, edit/createFile, edit/createJupyterNotebook,
+    edit/editFiles, edit/editNotebook, edit/rename,
+    search/changes, search/codebase, search/fileSearch, search/listDirectory,
+    search/searchResults, search/textSearch, search/usages,
+    web/fetch, web/githubRepo,
+    playwright/browser_click, playwright/browser_close, playwright/browser_console_messages,
+    playwright/browser_drag, playwright/browser_evaluate, playwright/browser_file_upload,
+    playwright/browser_fill_form, playwright/browser_handle_dialog, playwright/browser_hover,
+    playwright/browser_install, playwright/browser_navigate, playwright/browser_navigate_back,
+    playwright/browser_network_requests, playwright/browser_press_key, playwright/browser_resize,
+    playwright/browser_run_code, playwright/browser_select_option, playwright/browser_snapshot,
+    playwright/browser_tabs, playwright/browser_take_screenshot, playwright/browser_type,
+    playwright/browser_wait_for,
+    todo
+  ]
+agents:
+  - developer
+  - reviewer
+  - playwright-tester
+  - postgresql-dba
+  - ops-deploy
+  - domain-expert
 handoffs:
   - label: "Start implementation"
     agent: developer
     prompt: "Implement the plan outlined above."
+    send: false
+  - label: "Domain context"
+    agent: domain-expert
+    prompt: "Provide domain knowledge for this planning task."
+    send: false
+  - label: "Check database impact"
+    agent: postgresql-dba
+    prompt: "Review the database impact of this plan."
     send: false
 ---
 

@@ -1,12 +1,50 @@
 ---
 name: "TeamReel Reviewer"
-description: "Code review agent — audits quality, accessibility, security, performance, and conventions without making changes"
+description: "Code review agent — audits quality, accessibility, security, performance, and conventions. Creates roadmap items for findings."
 tools:
-  [read/readFile, read/problems, read/terminalSelection, read/terminalLastCommand, search/codebase, search/textSearch, search/fileSearch, search/listDirectory, search/changes, search/usages, search/searchResults, execute/runInTerminal, execute/getTerminalOutput, agent/runSubagent, todo]
+  [
+    vscode/extensions, vscode/askQuestions, vscode/getProjectSetupInfo, vscode/installExtension,
+    vscode/memory, vscode/newWorkspace, vscode/runCommand, vscode/vscodeAPI,
+    execute/getTerminalOutput, execute/awaitTerminal, execute/killTerminal, execute/createAndRunTask,
+    execute/runInTerminal, execute/runTests, execute/runNotebookCell, execute/testFailure,
+    read/terminalSelection, read/terminalLastCommand, read/getNotebookSummary,
+    read/problems, read/readFile, read/readNotebookCellOutput,
+    agent/runSubagent,
+    browser/openBrowserPage,
+    edit/createDirectory, edit/createFile, edit/createJupyterNotebook,
+    edit/editFiles, edit/editNotebook, edit/rename,
+    search/changes, search/codebase, search/fileSearch, search/listDirectory,
+    search/searchResults, search/textSearch, search/usages,
+    web/fetch, web/githubRepo,
+    playwright/browser_click, playwright/browser_close, playwright/browser_console_messages,
+    playwright/browser_drag, playwright/browser_evaluate, playwright/browser_file_upload,
+    playwright/browser_fill_form, playwright/browser_handle_dialog, playwright/browser_hover,
+    playwright/browser_install, playwright/browser_navigate, playwright/browser_navigate_back,
+    playwright/browser_network_requests, playwright/browser_press_key, playwright/browser_resize,
+    playwright/browser_run_code, playwright/browser_select_option, playwright/browser_snapshot,
+    playwright/browser_tabs, playwright/browser_take_screenshot, playwright/browser_type,
+    playwright/browser_wait_for,
+    todo
+  ]
+agents:
+  - developer
+  - planner
+  - playwright-tester
+  - postgresql-dba
+  - ops-deploy
+  - domain-expert
 handoffs:
   - label: "Fix these issues"
     agent: developer
     prompt: "Fix the issues identified in the review above."
+    send: false
+  - label: "Plan refactoring"
+    agent: planner
+    prompt: "Create a refactoring plan for the issues found in the review."
+    send: false
+  - label: "Verify in browser"
+    agent: playwright-tester
+    prompt: "Verify the reviewed issues in the live application."
     send: false
 ---
 
