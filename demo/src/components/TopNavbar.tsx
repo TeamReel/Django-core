@@ -214,55 +214,32 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
                 </div>
               )}
 
-              {/* Mobile: combined Notifications + Approvals — one bell icon */}
-              {isMobile ? (
-                <button
-                  onClick={() => d.queueBadgeCount > 0 ? d.openQuickReview() : d.setNotificationsModalOpen(true)}
-                  className={`nav-right-fixed nav-icon-button ${s.navIconBtn}`}
-                  aria-label={d.queueBadgeCount > 0 ? 'Wachtrij' : 'Meldingen'}
-                  title={d.queueBadgeCount > 0 ? 'Wachtrij' : 'Meldingen'}
-                >
-                  <AppIcon icon={Bell} size={20} />
-                  {d.queueBadgeCount > 0 && (
-                    <span className={s.badge} style={{ backgroundColor: d.queueBadgeColor }}>{d.queueBadgeCount}</span>
-                  )}
-                  {d.queueBadgeCount === 0 && d.unreadCount > 0 && (
-                    <span className={`${s.badge} ${s.badgeError}`}>{d.unreadCount}</span>
-                  )}
-                  {d.queueBadgeCount === 0 && d.unreadCount === 0 && d.hasFailedJobs && (
-                    <span className={`${s.badge} ${s.badgeError}`} style={{ width: 8, height: 8, padding: 0 }} />
-                  )}
-                </button>
-              ) : (
-                <>
-                  {/* Desktop: Approvals Icon */}
-                  <button
-                    onClick={d.openQuickReview}
-                    className={`nav-right-fixed nav-icon-button ${s.navIconBtn}`}
-                    aria-label="Approvals" title="Approvals"
-                  >
-                    <AppIcon icon={ListChecks} size={20} />
-                    {d.queueBadgeCount > 0 && (
-                      <span className={s.badge} style={{ backgroundColor: d.queueBadgeColor }}>{d.queueBadgeCount}</span>
-                    )}
-                    {d.queueBadgeCount === 0 && d.hasFailedJobs && (
-                      <span className={`${s.badge} ${s.badgeError}`} style={{ width: 8, height: 8, padding: 0 }} />
-                    )}
-                  </button>
+              {/* Approvals Icon */}
+              <button
+                onClick={d.openQuickReview}
+                className={`nav-right-fixed nav-icon-button ${s.navIconBtn}`}
+                aria-label="Wachtrij" title="Wachtrij"
+              >
+                <AppIcon icon={ListChecks} size={20} />
+                {d.queueBadgeCount > 0 && (
+                  <span className={s.badge} style={{ backgroundColor: d.queueBadgeColor }}>{d.queueBadgeCount}</span>
+                )}
+                {d.queueBadgeCount === 0 && d.hasFailedJobs && (
+                  <span className={`${s.badge} ${s.badgeError}`} style={{ width: 8, height: 8, padding: 0 }} />
+                )}
+              </button>
 
-                  {/* Desktop: Notification Icon */}
-                  <button
-                    onClick={() => d.setNotificationsModalOpen(true)}
-                    className={`nav-right-fixed nav-icon-button ${s.navIconBtn}`}
-                    aria-label="Notifications" title="Notifications"
-                  >
-                    <AppIcon icon={Bell} size={20} />
-                    {d.unreadCount > 0 && (
-                      <span className={`${s.badge} ${s.badgeError}`}>{d.unreadCount}</span>
-                    )}
-                  </button>
-                </>
-              )}
+              {/* Notification Icon */}
+              <button
+                onClick={() => d.setNotificationsModalOpen(true)}
+                className={`nav-right-fixed nav-icon-button ${s.navIconBtn}`}
+                aria-label="Meldingen" title="Meldingen"
+              >
+                <AppIcon icon={Bell} size={20} />
+                {d.unreadCount > 0 && (
+                  <span className={`${s.badge} ${s.badgeError}`}>{d.unreadCount}</span>
+                )}
+              </button>
 
               {/* Credits Icon — desktop only */}
               {!isMobile && d.user ? (
