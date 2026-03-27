@@ -142,7 +142,7 @@ The roadmap is structured in development phases spanning **83+ modules**.
 
 **Outcome:** Production-ready demo app with complete seed data and 30+ pages showcasing all modules 001-030.
 
-**Details:** See [phases/done/fase-08-demo-foundation.md](deployment-phases/done/fase-08-demo-foundation.md)
+**Details:** See [phases/done/fase-08-demo-foundation.md](fases/done/fase-08-demo-foundation.md)
 
 ---
 
@@ -160,7 +160,7 @@ The roadmap is structured in development phases spanning **83+ modules**.
 
 **Outcome:** Core backend infrastructure voor files, real-time, search, caching en project access operational.
 
-**Details:** See [phases/done/fase-09-backend-infrastructure.md](deployment-phases/done/fase-09-backend-infrastructure.md)
+**Details:** See [phases/done/fase-09-backend-infrastructure.md](fases/done/fase-09-backend-infrastructure.md)
 
 ---
 
@@ -179,7 +179,7 @@ The roadmap is structured in development phases spanning **83+ modules**.
 
 **Outcome:** Generic event planning, **content generation with approval workflow**, **sport-specific configuration**, brand identity, AI pipelines, and smart media library operational.
 
-**Details:** See [phases/done/fase-10-content-engine.md](deployment-phases/done/fase-10-content-engine.md)
+**Details:** See [phases/done/fase-10-content-engine.md](fases/done/fase-10-content-engine.md)
 
 ---
 
@@ -211,7 +211,7 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Visual development workflow operational, data viz ready, rich text editing enabled.
 
-**Details:** See [phases/planned/fase-11-frontend-visual-dev.md](deployment-phases/planned/fase-11-frontend-visual-dev.md)
+**Details:** See [phases/planned/fase-11-frontend-visual-dev.md](fases/planned/fase-11-frontend-visual-dev.md)
 
 ---
 
@@ -227,7 +227,7 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Payment processing, workflow automation, document generation ready.
 
-**Details:** See [phases/planned/fase-12-workflows-payments.md](deployment-phases/planned/fase-12-workflows-payments.md)
+**Details:** See [phases/planned/fase-12-workflows-payments.md](fases/planned/fase-12-workflows-payments.md)
 
 ---
 
@@ -244,7 +244,7 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Admin panel, ops console, billing UI and advanced forms ready.
 
-**Details:** See [phases/planned/fase-12-advanced-ui.md](deployment-phases/planned/fase-12-advanced-ui.md)
+**Details:** See [phases/planned/fase-12-advanced-ui.md](fases/planned/fase-12-advanced-ui.md)
 
 ---
 
@@ -262,7 +262,7 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Data storage, ETL, lineage, streaming and versioning infrastructure operational.
 
-**Details:** See [phases/planned/fase-13-data-foundations-1.md](deployment-phases/planned/fase-13-data-foundations-1.md)
+**Details:** See [phases/planned/fase-13-data-foundations-1.md](fases/planned/fase-13-data-foundations-1.md)
 
 ---
 
@@ -280,7 +280,7 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Validation, tool logging, experiments, evaluations and annotation tools ready.
 
-**Details:** See [phases/planned/fase-14-data-foundations-2.md](deployment-phases/planned/fase-14-data-foundations-2.md)
+**Details:** See [phases/planned/fase-14-data-foundations-2.md](fases/planned/fase-14-data-foundations-2.md)
 
 ---
 
@@ -300,7 +300,7 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Complete ML/AI platform with features, models, prompts, agents, vector search and monitoring.
 
-**Details:** See [phases/planned/fase-15-ml-ai-platform.md](deployment-phases/planned/fase-15-ml-ai-platform.md)
+**Details:** See [phases/planned/fase-15-ml-ai-platform.md](fases/planned/fase-15-ml-ai-platform.md)
 
 ---
 
@@ -318,7 +318,7 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Lightweight quality gates operational, all results visible in F10 dashboard.
 
-**Details:** See [phases/planned/fase-16-quality-gates.md](deployment-phases/planned/fase-16-quality-gates.md)
+**Details:** See [phases/planned/fase-16-quality-gates.md](fases/planned/fase-16-quality-gates.md)
 
 ---
 
@@ -333,7 +333,7 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Connector framework and compliance export templates ready.
 
-**Details:** See [phases/planned/fase-17-integration.md](deployment-phases/planned/fase-17-integration.md)
+**Details:** See [phases/planned/fase-17-integration.md](fases/planned/fase-17-integration.md)
 
 ---
 
@@ -348,7 +348,7 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Complete platform validation, all 72 modules operational, production-ready.
 
-**Details:** See [phases/planned/fase-18-operations.md](deployment-phases/planned/fase-18-operations.md)
+**Details:** See [phases/planned/fase-18-operations.md](fases/planned/fase-18-operations.md)
 
 ---
 

@@ -97,12 +97,11 @@ After each phase, update the spec:
 1. Check off completed "To do" items (`- [x]`)
 2. Check off satisfied "Done criteria" (`- [x]`)
 
-After ALL phases of a roadmap are complete:
+After ALL phases of a module are complete:
 ```powershell
-# Update spec status
-git mv documents/02-roadmap/{number}_{name}/ documents/02-roadmap/done/
-# Update index.md: move entry from Active to Done
-git commit -m "docs: move roadmap #XX to done"
+# Move module from active to done
+git mv documents/02-roadmap/modules/active/{folder}/ documents/02-roadmap/modules/done/
+git commit -m "docs: move module to done"
 git push
 ```
 
