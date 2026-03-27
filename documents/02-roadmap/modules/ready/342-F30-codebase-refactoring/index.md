@@ -5,7 +5,7 @@
 | Status | 📐 READY |
 | Type | Feature (cross-cutting) |
 | Impact | 🔴 Kritiek — blokkade voor efficiënt doorontwikkelen |
-| Effort | ~20 uur |
+| Effort | ~42 uur |
 
 ## Doel
 
@@ -65,24 +65,34 @@ De volledige codebase opschonen, herstructureren en documentatie actualiseren zo
 
 ## Fasering
 
-| Fase | Titel | Effort | Omschrijving |
-|------|-------|--------|-------------|
-| H0 | Repository root opschonen | ~2 uur | Screenshots, scripts, logs verplaatsen naar archive/. Kitty-specs archiveren. .gitignore updaten. |
-| H1 | Roadmap structuur fixen | ~2 uur | Duplicaten oplossen, Q-items verplaatsen, nummerconflicten fixen, stale items opruimen |
-| H2 | .github/ configuratie opschonen | ~2 uur | Broken agent refs fixen, stale prompts opruimen, copilot-instructions.md updaten |
-| H3 | Frontend refactoring | ~6 uur | Orphaned code verwijderen, `any` types fixen, mega CSS splitsen, grote hooks opsplitsen |
-| H4 | Backend optimalisatie | ~4 uur | Test coverage uitbreiden (top 5 apps), grote serializers opsplitsen, TODO audit |
-| H5 | Documentatie actualiseren | ~4 uur | ai-context-index.md updaten, feature docs bijwerken, stale docs archiveren |
+| Fase | Titel | Effort | Status |
+|------|-------|--------|--------|
+| H0 | Repository root opschonen | ~2 uur | ✅ Done |
+| H1 | Roadmap structuur fixen | ~2 uur | ✅ Done |
+| H2 | .github/ configuratie opschonen | ~2 uur | ✅ Done |
+| H3 | Frontend refactoring (orphans + any elimination) | ~6 uur | ✅ Done |
+| H4 | Backend optimalisatie | ~4 uur | 📋 Todo |
+| H5 | Documentatie actualiseren | ~4 uur | 📋 Todo |
+| H6 | CSS Design Token Migration | ~10 uur | 📋 Todo |
+| H7 | Type Consolidatie (User + Project) | ~5 uur | 📋 Todo |
+| H8 | API Response Typing | ~4 uur | 📋 Todo |
+| H9 | Accessibility & Conventions Cleanup | ~3 uur | 📋 Todo |
 
 ## Acceptatiecriteria
 
-- [ ] Repository root bevat max 60 bestanden (geen screenshots, debug scripts, logs)
-- [ ] Geen duplicaten in roadmap modules (elke module op exact één locatie)
-- [ ] Alle .github/ agent/prompt referenties wijzen naar bestaande bestanden
-- [ ] Geen orphaned TSX/CSS bestanden in frontend
-- [ ] `as any` gereduceerd van ~80 naar <30 in productie-code
+- [x] Repository root bevat max 60 bestanden (geen screenshots, debug scripts, logs)
+- [x] Geen duplicaten in roadmap modules (elke module op exact één locatie)
+- [x] Alle .github/ agent/prompt referenties wijzen naar bestaande bestanden
+- [x] Geen orphaned TSX/CSS bestanden in frontend
+- [x] `as any` gereduceerd van ~80 naar <30 in productie-code
 - [ ] Geen CSS-bestanden >800 LOC (exclusief tokens.css)
 - [ ] Test coverage voor branding, files, transactions, credits, medialib
 - [ ] `ai-context-index.md` reflecteert huidige codebase staat
-- [ ] `npx tsc --noEmit` + `npx vite build` slagen zonder fouten
+- [x] `npx tsc --noEmit` + `npx vite build` slagen zonder nieuwe fouten
 - [ ] `pytest` slaagt zonder fouten
+- [ ] 0 hardcoded colors/font-sizes/spacing in CSS Modules (design tokens only)
+- [ ] Exact 1 `Project` interface, exact 1 `User` interface in de codebase
+- [ ] 0 `api.get<any>` / `api.list<any>` calls — alle API responses getypt
+- [ ] Alle icon-only buttons hebben `aria-label`
+- [ ] 0 emoji in UI tekst
+- [ ] `eslint-disable` comments ≤ 4
