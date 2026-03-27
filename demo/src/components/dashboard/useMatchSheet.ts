@@ -102,16 +102,16 @@ export function useMatchSheet(
   // Also try to extract lineup from match metadata if no matchData provided
   useEffect(() => {
     if (!matchData && match) {
-      const lineupData = (match.metadata?.lineup as any);
+      const lineupData = match.metadata?.lineup as Record<string, unknown> | undefined;
       const gkCount = Array.isArray(lineupData?.goalkeeper) ? lineupData.goalkeeper.length : 0;
       const plCount = Array.isArray(lineupData?.player) ? lineupData.player.length : 0;
       const positionsCount = Array.isArray(lineupData?.positions) ? lineupData.positions.length : 0;
       if (gkCount + plCount > 0) {
         setLineupCount(gkCount + plCount);
-        setLineupFormationState(lineupData?.formation || (match.metadata?.formation as string | undefined));
+        setLineupFormationState((lineupData?.formation as string | undefined) || (match.metadata?.formation as string | undefined));
       } else if (positionsCount > 0) {
         setLineupCount(positionsCount);
-        setLineupFormationState(lineupData?.formation);
+        setLineupFormationState(lineupData?.formation as string | undefined);
       }
     }
   }, [match?.id, matchData]);
@@ -196,7 +196,7 @@ export function useMatchSheet(
   const isHome = match?.metadata?.is_home !== false;
   const score = match?.metadata?.score || match?.metadata?.final_score;
 
-  const lineupFormation = lineupFormationState || (match?.metadata?.lineup as any)?.formation as string | undefined;
+  const lineupFormation = lineupFormationState || (match?.metadata?.lineup as Record<string, unknown> | undefined)?.formation as string | undefined;
 
   return {
     sheetOpen,

@@ -97,35 +97,36 @@ export const NotificationRoutingLogsPage: React.FC = () => {
           path += `?org_id=${currentOrgId}`;
         }
 
-        const data = await api.get<RoutingLog[] | { results: RoutingLog[] }>(path);
+        const data = await api.get<Record<string, unknown>>(path);
 
-          let rawResults: any[] = [];
-          const dataAny = data as any;
+          let rawResults: Record<string, unknown>[] = [];
+          const dataObj = data as Record<string, unknown>;
           if (Array.isArray(data)) {
             rawResults = data;
-          } else if (Array.isArray((data as any).results)) {
-            rawResults = (data as any).results;
-          } else if (dataAny.data && Array.isArray(dataAny.data.results)) {
-            rawResults = dataAny.data.results;
-          } else if (dataAny.data && Array.isArray(dataAny.data)) {
-            rawResults = dataAny.data;
-          } else if ((data as any).results) {
+          } else if (Array.isArray(dataObj.results)) {
+            rawResults = dataObj.results;
+          } else if (dataObj.data && Array.isArray((dataObj.data as Record<string, unknown>).results)) {
+            rawResults = (dataObj.data as Record<string, unknown>).results as Record<string, unknown>[];
+          } else if (dataObj.data && Array.isArray(dataObj.data)) {
+            rawResults = dataObj.data as Record<string, unknown>[];
+          } else if (dataObj.results) {
              // Handle DRF pagination where results is at top level
-             rawResults = (data as any).results;
+             rawResults = dataObj.results as Record<string, unknown>[];
           }
 
           // Map API response to RoutingLog interface
-          const mappedResults: RoutingLog[] = rawResults.map((item) => {
-            const rec = item as Record<string, any>;
+          const mappedResults = rawResults.map((item): RoutingLog => {
+            const rec = item as Record<string, unknown>;
+            const meta = (rec.metadata || {}) as Record<string, unknown>;
             return {
               id: String(rec.id),
-              timestamp: rec.created_at ?? '',
-              notification_type: rec.metadata?.notification_type || rec.event_type || '',
-              recipient_count: rec.metadata?.recipient_count || 0,
-              organisation: rec.organization_name,
-              project: rec.project_name,
-              decision: rec.metadata?.decision || 'unknown',
-              delivery_channels: rec.metadata?.delivery_channels || [],
+              timestamp: (rec.created_at as string) ?? '',
+              notification_type: (meta.notification_type as string) || (rec.event_type as string) || '',
+              recipient_count: (meta.recipient_count as number) || 0,
+              organisation: (rec.organization_name as string) || undefined,
+              project: (rec.project_name as string) || undefined,
+              decision: ((meta.decision as string) || 'unknown') as RoutingLog['decision'],
+              delivery_channels: (meta.delivery_channels as string[]) || [],
             };
           });
 

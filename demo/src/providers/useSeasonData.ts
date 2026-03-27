@@ -21,7 +21,7 @@ import { getApiBaseUrl } from '../utils/apiBase';
 import { getApiV1BaseUrl } from '../utils/apiFetch';
 import { api } from '@/api';
 import { fetchAllPages } from '../utils/fetchAllPages';
-import { canEditProject, canDeleteProject } from '../utils/permissions';
+import { canEditProject, canDeleteProject, type PermissionContext } from '../utils/permissions';
 import { looksLikeUuid, periodPathKey } from '../utils/periodPath';
 import {
   useBrandProfile,
@@ -324,10 +324,10 @@ export function useSeasonData(): SeasonContextValue {
 
     if (orgIdMatches(contextOrg) && contextOrg?.user_role) return contextOrg;
     const projectOrg = project?.organisation;
-    if ((projectOrg as any)?.user_role) return projectOrg;
+    if (projectOrg && typeof projectOrg === 'object' && 'user_role' in projectOrg && projectOrg.user_role) return projectOrg as unknown as Organisation;
     if (org?.user_role) return org;
     if (orgIdMatches(contextOrg)) return contextOrg;
-    return projectOrg || org || contextOrg || null;
+    return (projectOrg as unknown as Organisation) || org || contextOrg || null;
   }, [context?.organisation, org, orgSlugOrId, project]);
 
   const permissionContext = useMemo(
@@ -335,8 +335,8 @@ export function useSeasonData(): SeasonContextValue {
     [orgForPermissions, isSuperAdmin],
   );
 
-  const userCanEditProject = canEditProject(permissionContext as any);
-  const userCanDeleteProject = canDeleteProject(permissionContext as any);
+  const userCanEditProject = canEditProject(permissionContext as PermissionContext);
+  const userCanDeleteProject = canDeleteProject(permissionContext as PermissionContext);
 
   // ── Navigation helpers ─────────────────────────────────────────────
   const seasonsBasePath = isTeamRoute
@@ -388,8 +388,8 @@ export function useSeasonData(): SeasonContextValue {
       brandLogoUrl,
       brandSponsorUrl,
       isSuperAdmin,
-      orgForPermissions: orgForPermissions as any,
-      permissionContext: permissionContext as any,
+      orgForPermissions: orgForPermissions as Organisation | null,
+      permissionContext: permissionContext as PermissionContext,
       userCanEditProject,
       userCanDeleteProject,
       isPlayer,

@@ -15,8 +15,7 @@ import { api as apiClient } from '@/api/client';
 import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { getCsrfToken } from '../../utils/csrf';
 import { formReducer, makeSetter } from '@/utils/formReducer';
-import type { Activity, Period } from '../../types';
-import type { Project } from '@/types/api/project';
+import type { Activity, Period, Project } from '../../types';
 import type { WalletOption } from '../../components/transactions/CreateTransactionModal';
 import type { UserDetailDataReturn } from './userDetailTypes';
 import { useUserDetailApi } from './useUserDetailApi';
@@ -214,7 +213,7 @@ export function useUserDetailData(): UserDetailDataReturn {
                 name: String(apiClub?.name || t?.parent_name || '').trim(),
                 slug: String(apiClub?.slug || '').trim(),
                 role: '', membership_id: null,
-            } as any);
+            } as unknown as Project);
         }
         return Array.from(merged.values());
     }, [clubMemberships, teamMemberships, s.clubsById]);
@@ -410,10 +409,10 @@ export function useUserDetailData(): UserDetailDataReturn {
         user: api.user, setUser: api.setUser, loading: api.loading, error: api.error,
         apiBaseUrl, userDisplayName, activeTab, setTab,
         userOrgs, userProjects, primaryOrgSlug,
-        clubMemberships, directClubMembershipById: directClubMembershipById as any, teamMemberships,
-        clubsForTab: clubsForTab as any, clubSlugById, teamSeasonPairs,
+        clubMemberships, directClubMembershipById, teamMemberships,
+        clubsForTab, clubSlugById, teamSeasonPairs,
         hierarchySearch: s.hierarchySearch, setHierarchySearch, hierarchyRows,
-        clubsById: s.clubsById as any, linkedCompetitions: s.linkedCompetitions, linkedMatches: s.linkedMatches, loadingRelations: s.loadingRelations,
+        clubsById: s.clubsById, linkedCompetitions: s.linkedCompetitions, linkedMatches: s.linkedMatches, loadingRelations: s.loadingRelations,
         saveMatchEdits: api.saveMatchEdits, deleteMatch: api.deleteMatch,
         identityEditing: s.identityEditing, setIdentityEditing,
         identityFirstName: s.identityFirstName, setIdentityFirstName,

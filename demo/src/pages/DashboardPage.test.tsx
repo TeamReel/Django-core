@@ -33,10 +33,6 @@ vi.mock('../components/dashboard', () => ({
   AIQueueCard: () => <div>AIQueueCard</div>,
   CreditsTrendCard: () => <div>CreditsTrendCard</div>,
   OrgStatsCard: () => <div>OrgStatsCard</div>,
-  ContentBreakdownCard: () => <div>ContentBreakdownCard</div>,
-  MemberContentProgressCard: () => <div>MemberContentProgressCard</div>,
-  ContentOverviewCard: () => <div>ContentOverviewCard</div>,
-  AssetsOverviewCard: () => <div>AssetsOverviewCard</div>,
 }));
 
 vi.mock('../components/dashboard/SmartActionsCard', () => ({

@@ -113,12 +113,14 @@ export const SmartActionsCard: React.FC = () => {
 
       // Build map: member_id -> set of completed subtypes
       const memberContentMap = new Map<string, Set<string>>();
-      for (const req of genItems as any[]) {
-        const tplType = req.template?.template_type || '';
+      for (const req of genItems) {
+        const tpl = req.template as unknown as Record<string, string> | undefined;
+        const tplType = tpl?.template_type || '';
         if (tplType !== 'member') continue;
-        const subtype = req.template?.template_subtype || req.input_data?.template_subtype || '';
-        const memberIds: string[] = req.input_data?.member_ids || [];
-        const singleMemberId = req.input_data?.member_id;
+        const inputData = req.input_data as Record<string, unknown> | undefined;
+        const subtype = tpl?.template_subtype || (inputData?.template_subtype as string) || '';
+        const memberIds: string[] = (inputData?.member_ids as string[]) || [];
+        const singleMemberId = inputData?.member_id as string | undefined;
         const allIds = singleMemberId ? [singleMemberId, ...memberIds] : memberIds;
         for (const mid of allIds) {
           if (!memberContentMap.has(mid)) memberContentMap.set(mid, new Set());
@@ -132,8 +134,8 @@ export const SmartActionsCard: React.FC = () => {
       const missingByType: Record<string, number> = {};
       for (const type of MEMBER_CONTENT_TYPES) {
         let missing = 0;
-        for (const member of memberList as any[]) {
-          const memberUuid = member.membership_id || member.id;
+        for (const member of memberList) {
+          const memberUuid = (member as unknown as Record<string, string>).membership_id || String(member.id);
           const completed = memberContentMap.get(memberUuid);
           if (!completed || !completed.has(type)) missing++;
         }

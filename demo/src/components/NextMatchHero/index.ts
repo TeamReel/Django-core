@@ -1,1 +1,0 @@
-export { NextMatchHero } from './NextMatchHero';

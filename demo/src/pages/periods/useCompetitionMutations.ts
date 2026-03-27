@@ -91,8 +91,8 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
     const updated = await api.patch<Period>(`/periods/${encodeURIComponent(pid)}/`, patch) ?? { ...periodToEdit, ...patch };
     if (String(updated?.id) === String(competition?.id)) setCompetition((prev) => prev ? { ...prev, ...updated } : updated);
     setSelectedEditPeriod((prev: PeriodEditRef | null) => {
-      const pId = String(prev?.id || (prev as any)?.data?.id || '').trim();
-      const nId = String(updated?.id || (updated as any)?.data?.id || '').trim();
+      const pId = String(prev?.id || prev?.data?.id || '').trim();
+      const nId = String(updated?.id || (updated as unknown as PeriodEditRef)?.data?.id || '').trim();
       return pId && nId && pId === nId ? updated : prev;
     });
   };

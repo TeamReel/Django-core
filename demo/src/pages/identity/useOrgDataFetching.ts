@@ -1,4 +1,4 @@
-import type { Activity, Project, User } from '../../types';
+import type { Activity, Period, Project, User } from '../../types';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { parseListEnvelope, isSeasonPeriod, isCompetitionPeriod } from './orgDetailUtils';
 import { DEBUG_LOGS, getApiV1BaseUrl } from './orgDataHelpers';
@@ -39,7 +39,7 @@ interface UseOrgDataFetchingParams {
   org: { id?: string | number } | null;
   teams: Project[];
   teamsLoading: boolean;
-  orgPeriods: OrgPeriodRecord[];
+  orgPeriods: Period[];
   orgPeriodsLoading: boolean;
   members: User[];
   membersLoading: boolean;
@@ -60,7 +60,7 @@ interface UseOrgDataFetchingParams {
   setTeams: React.Dispatch<React.SetStateAction<Project[]>>;
   setTeamsLoading: (v: boolean) => void;
   setAllClubsForTeams: React.Dispatch<React.SetStateAction<Project[]>>;
-  setOrgPeriods: (v: OrgPeriodRecord[]) => void;
+  setOrgPeriods: (v: Period[]) => void;
   setOrgPeriodsLoading: (v: boolean) => void;
   setSeasonsCount: (v: number | null) => void;
   setCompetitionsCount: (v: number | null) => void;
@@ -161,11 +161,11 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
     try {
       const data = await api.get<any>(`/organisations/${currentOrgSlug}/projects/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`);
       const { results, count } = parseListEnvelope(data);
-      const clubsOnly = (results as any[]).filter((p: Record<string, unknown>) => {
+      const clubsOnly = (results as Record<string, unknown>[]).filter((p) => {
         const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
         return !parentId;
       });
-      setClubs(clubsOnly as any);
+      setClubs(clubsOnly as unknown as Project[]);
       setClubsCount(count);
     } catch (e) {
       logger.error('Failed to fetch clubs', e);
@@ -295,7 +295,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
         }));
       }
       const merged = Array.from(unique.values());
-      setOrgPeriods(merged);
+      setOrgPeriods(merged as unknown as Period[]);
       recomputePeriodCounts(merged);
     } catch (e) {
       logger.warn('[OrganisationDetailPage] Failed to load periods via team scope', e);
@@ -319,7 +319,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
         p.set('organisation_id', organisationId);
         const allPeriods = await fetchAllPages<Record<string, unknown>>(`${apiV1BaseUrl}/periods/?${p.toString()}`, { credentials: 'include' });
         const list = Array.isArray(allPeriods) ? allPeriods : [];
-        setOrgPeriods(list);
+        setOrgPeriods(list as unknown as Period[]);
         if (list.length > 0) recomputePeriodCounts(list);
         else void fetchTeamsForOrg({ force: true });
       }

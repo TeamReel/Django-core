@@ -202,7 +202,8 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
       const generatingSubtypes: string[] = [];
 
       {
-        const items = mediaData?.results || (mediaData as any)?.data?.results || [];
+        const mediaObj = mediaData as Record<string, unknown>;
+        const items = mediaData?.results || (mediaObj?.data as Record<string, unknown>)?.results as MediaItem[] || [];
         // Count unique subtypes that have media
         const subtypes = new Set<string>();
         for (const item of (Array.isArray(items) ? items : [])) {
@@ -217,11 +218,14 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
       }
 
       {
-        const items = (contentData as any)?.data?.results || contentData?.results || (contentData as any)?.data || [];
+        const contentObj = contentData as Record<string, unknown>;
+        const innerData = contentObj?.data as Record<string, unknown> | undefined;
+        const items = (innerData?.results as ContentItem[]) || contentData?.results || (innerData as unknown as ContentItem[]) || [];
         for (const item of (Array.isArray(items) ? items : [])) {
           if (['queued', 'generating'].includes(item.status)) {
             generatingCount++;
-            const sub = item.template_subtype || item.subtype || '';
+            const itemRec = item as unknown as Record<string, unknown>;
+            const sub = (itemRec.template_subtype as string) || (itemRec.subtype as string) || '';
             if (sub && !generatingSubtypes.includes(sub)) generatingSubtypes.push(sub);
           }
         }

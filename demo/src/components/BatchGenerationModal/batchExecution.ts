@@ -144,16 +144,16 @@ async function tryProcessExistingVariant(
   abortRef: React.MutableRefObject<boolean>,
   setJobStatuses: SetJobStatuses,
 ): Promise<boolean> {
-  const tr = (member.metadata?.teamreel_assets || {}) as any;
-  const videoCategory = (tr.videos || {})[selectedTemplate.category] || {};
+  const tr = (member.metadata?.teamreel_assets || {}) as Record<string, unknown>;
+  const videoCategory = ((tr.videos || {}) as Record<string, unknown>)[selectedTemplate.category] || {};
 
   let existingVariant: { key: string; rawUrl: string } | null = null;
-  for (const [key, val] of Object.entries(videoCategory)) {
+  for (const [key, val] of Object.entries(videoCategory as Record<string, unknown>)) {
     if (!val || typeof val !== 'object') continue;
-    const v = val as Record<string, any>;
-    const state = v.processing_state || 'raw';
+    const v = val as Record<string, unknown>;
+    const state = (v.processing_state as string) || 'raw';
     if (v.raw && state !== 'processed' && state !== 'processing') {
-      existingVariant = { key, rawUrl: v.raw };
+      existingVariant = { key, rawUrl: v.raw as string };
       break;
     }
   }
@@ -217,16 +217,16 @@ async function pollVariantProcessing(
     if (!mData) continue;
 
     const mMeta = mData?.metadata || {};
-    const trPoll = ((mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {}) as any;
-    const videoCategoryPoll = (trPoll.videos || {})[selectedTemplate.category] || {};
+    const trPoll = ((mMeta && ((mMeta as Record<string, unknown>).teamreel_assets || (mMeta as Record<string, unknown>).teamreelAssets)) || {}) as Record<string, unknown>;
+    const videoCategoryPoll = ((trPoll.videos || {}) as Record<string, unknown>)[selectedTemplate.category] || {};
 
     let stillProcessing = 0;
     let processed = 0;
     let failed = 0;
 
-    for (const [, pollVal] of Object.entries(videoCategoryPoll)) {
+    for (const [, pollVal] of Object.entries(videoCategoryPoll as Record<string, unknown>)) {
       if (!pollVal || typeof pollVal !== 'object') continue;
-      const pollState = (pollVal as Record<string, any>).processing_state || 'raw';
+      const pollState = (pollVal as Record<string, unknown>).processing_state || 'raw';
       if (pollState === 'processing' || pollState === 'cancelling') stillProcessing++;
       else if (pollState === 'processed') processed++;
       else if (pollState === 'failed') failed++;
@@ -431,21 +431,21 @@ export async function updateMembershipMetadata(
 
   try {
     const existingMeta = member.metadata || {};
-    const tr = (existingMeta.teamreel_assets || {}) as any;
-    const media = tr.media || {};
+    const tr = ((existingMeta as Record<string, unknown>).teamreel_assets || {}) as Record<string, unknown>;
+    const media = (tr.media || {}) as Record<string, Record<string, unknown>>;
 
     const updatedTr = { ...tr };
     updatedTr.media = { ...media, [mediaSlotId]: { ...(media[mediaSlotId] || {}), url: savedUrl } };
 
     if (category === 'fullbody' || category === 'closeup') {
-      const images = updatedTr.images || {};
+      const images = (updatedTr.images || {}) as Record<string, Record<string, unknown>>;
       const subcat = images[category] || {};
       updatedTr.images = {
         ...images,
         [category]: { ...subcat, [metaKey]: { raw: savedUrl, processed: null, processing_state: 'raw' } },
       };
     } else {
-      const videos = updatedTr.videos || {};
+      const videos = (updatedTr.videos || {}) as Record<string, Record<string, unknown>>;
       const subcat = videos[category] || {};
       updatedTr.videos = {
         ...videos,

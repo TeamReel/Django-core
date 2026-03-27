@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useBreadcrumbContextSwitcher } from '@django-core/page-templates';
 import { useAuth } from '@django-core/auth-ui';
-import { Activity, Organisation, User, Project } from '../../types';
+import { Activity, Organisation, Period, User, Project } from '../../types';
 import {
   canEditOrganisation,
   canDeleteOrganisation,
@@ -22,7 +22,7 @@ import { formReducer, makeSetter, type FormAction } from '../../utils/formReduce
 interface OrgFormState {
   org: Organisation | null;
   activatingContext: boolean;
-  activeContextState: unknown | null;
+  activeContextState: Record<string, unknown> | null;
   members: User[];
   membersLoading: boolean;
   clubs: Project[];
@@ -32,7 +32,7 @@ interface OrgFormState {
   teams: Project[];
   teamsLoading: boolean;
   allClubsForTeams: Project[];
-  orgPeriods: Record<string, unknown>[];
+  orgPeriods: Period[];
   orgPeriodsLoading: boolean;
   teamSeasonsCountById: Record<string, number>;
   teamCompetitionsCountById: Record<string, number>;

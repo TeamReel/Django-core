@@ -30,12 +30,14 @@ export interface SeasonOption {
   id: string;
   name: string;
   key: string;
+  slug?: string;
   project?: string;
 }
 
 export interface MatchOption {
   id: string;
   title: string;
+  name?: string;
   slug?: string;
   activity_date?: string;
 }

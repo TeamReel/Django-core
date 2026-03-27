@@ -76,11 +76,13 @@ export function useSeasonFormState(params: UseSeasonFormStateParams) {
   const setIsCreateTxnModalOpen = useMemo(() => makeSetter<SeasonFormInternal, 'isCreateTxnModalOpen'>(dispatch, 'isCreateTxnModalOpen'), [dispatch]);
   const setIsAddSquadMemberModalOpen = useMemo(() => makeSetter<SeasonFormInternal, 'isAddSquadMemberModalOpen'>(dispatch, 'isAddSquadMemberModalOpen'), [dispatch]);
   const setToasts = useMemo(() => makeSetter<SeasonFormInternal, 'toasts'>(dispatch, 'toasts'), [dispatch]);
+  const setLoading = useMemo(() => makeSetter<SeasonFormInternal, 'loading'>(dispatch, 'loading'), [dispatch]);
+  const setError = useMemo(() => makeSetter<SeasonFormInternal, 'error'>(dispatch, 'error'), [dispatch]);
 
   // ── Provider-synced state ──
   useEffect(() => { setCompetitions(providerCompetitions); }, [providerCompetitions]);
-  useEffect(() => { dispatch({ type: 'set', field: 'loading' as any, value: providerLoading }); }, [providerLoading]);
-  useEffect(() => { dispatch({ type: 'set', field: 'error' as any, value: providerError }); }, [providerError]);
+  useEffect(() => { setLoading(providerLoading); }, [providerLoading]);
+  useEffect(() => { setError(providerError); }, [providerError]);
   useEffect(() => { setCompetitionsLoading(providerCompetitionsLoading); }, [providerCompetitionsLoading]);
   useEffect(() => { setSeason(providerSeason); }, [providerSeason]);
 

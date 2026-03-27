@@ -257,15 +257,15 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
               include_archived: true,
             }, { pageSize: 500 }),
           ]);
-          setClubs((clubsData || []) as any);
-          setTeams((teamsData || []) as any);
+          setClubs((clubsData || []) as unknown as ProjectOption[]);
+          setTeams((teamsData || []) as unknown as ProjectOption[]);
         } else {
           const [clubsData, teamsData] = await Promise.all([
             projectsApi.listAll({ parentProjectIsNull: true, includeArchived: true }, { pageSize: 200 }),
             projectsApi.listAll({ parentProjectIsNull: false, includeArchived: true }, { pageSize: 200 }),
           ]);
-          setClubs((clubsData || []) as any);
-          setTeams((teamsData || []) as any);
+          setClubs((clubsData || []) as unknown as ProjectOption[]);
+          setTeams((teamsData || []) as unknown as ProjectOption[]);
         }
       } catch (e) {
         logger.error('Failed to load teams', e);
@@ -366,13 +366,13 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
     if (!s.editProject) return;
     const projectSlugOrId = s.editProject.slug || s.editProject.id;
     const updated = await api.patch<Project>(`/projects/${projectSlugOrId}/?include_archived=true`, projectData);
-    setTeams((prev: any) =>
-      prev.map((p: any) => {
+    setTeams((prev) =>
+      prev.map((p) => {
         const match = String(p?.slug || p?.id) === String(projectSlugOrId);
-        return match ? { ...p, ...(updated || projectData) } : p;
+        return match ? { ...p, ...(updated || projectData) } as ProjectOption : p;
       }),
     );
-    setEditProject((prev: any) => (prev ? { ...prev, ...(updated || projectData) } : prev));
+    setEditProject((prev) => (prev ? { ...prev, ...(updated || projectData) } as ProjectOption : prev));
     invalidateFetchAllPagesCache();
   };
 

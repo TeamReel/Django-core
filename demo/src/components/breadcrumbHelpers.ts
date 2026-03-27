@@ -3,7 +3,7 @@
  * Extracted for reuse and to keep the main component lean.
  */
 
-interface PeriodRecord {
+export interface PeriodRecord {
   type?: string;
   data?: { type?: string };
   metadata?: { type?: string };

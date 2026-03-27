@@ -40,10 +40,6 @@ vi.mock('../../components/dashboard', () => ({
   AIQueueCard: () => <div data-testid="ai-queue">AI Queue</div>,
   CreditsTrendCard: () => <div data-testid="credits">Credits</div>,
   OrgStatsCard: () => <div data-testid="org-stats">Org Stats</div>,
-  ContentBreakdownCard: () => <div data-testid="content-breakdown">Content</div>,
-  MemberContentProgressCard: () => <div data-testid="member-progress">Progress</div>,
-  ContentOverviewCard: () => <div data-testid="content-overview">Overview</div>,
-  AssetsOverviewCard: () => <div data-testid="assets-overview">Assets</div>,
 }));
 vi.mock('../../components/dashboard/SmartActionsCard', () => ({
   SmartActionsCard: () => <div data-testid="smart-actions">Smart Actions</div>,

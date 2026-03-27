@@ -6,7 +6,7 @@
 import type React from 'react';
 import type { NavigateFunction, Location } from 'react-router-dom';
 import type { WalletOption } from '../../components/transactions/CreateTransactionModal';
-import type { Organisation, Project, Period, Activity } from '../../types';
+import type { Organisation, Period, Activity, Project } from '../../types';
 
 export interface UserDetailDataReturn {
     /* route */
@@ -34,7 +34,7 @@ export interface UserDetailDataReturn {
     userProjects: Project[];
     primaryOrgSlug: string;
     clubMemberships: Record<string, unknown>[];
-    directClubMembershipById: Map<string, { role?: string; slug?: string; membership_id?: string; [key: string]: unknown }>;
+    directClubMembershipById: Map<string, Project>;
     teamMemberships: Record<string, unknown>[];
     clubsForTab: Project[];
     clubSlugById: Map<string, string>;
@@ -52,7 +52,7 @@ export interface UserDetailDataReturn {
     hierarchyRows: Array<{ clubName: string; clubSlug: string; teamId: string; teamName: string; teamPath: string; seasonId: string; seasonName: string; seasonPath: string; [key: string]: unknown }>;
 
     /* relations */
-    clubsById: Map<string, Record<string, unknown>>;
+    clubsById: Map<string, Project>;
     linkedCompetitions: Period[];
     linkedMatches: Activity[];
     loadingRelations: boolean;

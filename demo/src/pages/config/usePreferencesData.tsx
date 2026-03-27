@@ -41,7 +41,8 @@ export function usePreferencesData(): PreferencesDataReturn {
   /* --- Derived label maps (depend on entities + user) --- */
   const organisationLabelByKey = useMemo(() => {
     const map = new Map<string, string>();
-    const userOrgs: Record<string, unknown>[] = Array.isArray((user as Record<string, unknown> | null)?.organisations) ? (user as any).organisations as Record<string, unknown>[] : [];
+    const userRec = user as Record<string, unknown> | null;
+    const userOrgs: Record<string, unknown>[] = Array.isArray(userRec?.organisations) ? userRec!.organisations as Record<string, unknown>[] : [];
     for (const o of [...entities.organisations, ...userOrgs]) {
       const id = String((o as Record<string, unknown>)?.id || '').trim();
       const slug = String((o as Record<string, unknown>)?.slug || '').trim();
@@ -53,7 +54,8 @@ export function usePreferencesData(): PreferencesDataReturn {
 
   const projectLabelByKey = useMemo(() => {
     const map = new Map<string, string>();
-    const userProjects: Record<string, unknown>[] = Array.isArray((user as Record<string, unknown> | null)?.projects) ? (user as any).projects as Record<string, unknown>[] : [];
+    const userRec = user as Record<string, unknown> | null;
+    const userProjects: Record<string, unknown>[] = Array.isArray(userRec?.projects) ? userRec!.projects as Record<string, unknown>[] : [];
     for (const p of [...entities.clubs, ...entities.teams, ...userProjects]) {
       const id = String((p as Record<string, unknown>)?.id || '').trim();
       const slug = String((p as Record<string, unknown>)?.slug || '').trim();

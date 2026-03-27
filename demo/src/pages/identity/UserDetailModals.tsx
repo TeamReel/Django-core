@@ -8,6 +8,12 @@ import LinkUserModal from './LinkUserModal';
 import CreateTransactionModal from '../../components/transactions/CreateTransactionModal';
 import MatchEditModal from './MatchEditModal';
 import type { UserDetailDataReturn } from './useUserDetailData';
+import type { User as EditUser } from './userEditTypes';
+
+// Each modal component defines its own User interface. The `user` from data is
+// `Record<string, unknown> | null`. We cast through `unknown` to bridge the gap.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ModalUser = any;
 
 /* ------------------------------------------------------------------ */
 /*  ProjectMembershipEditModal (was inline in UserDetailPage)          */
@@ -195,12 +201,12 @@ export const UserDetailModals: React.FC<UserDetailModalsProps> = ({ data }) => {
         walletOptions={userWalletOptions}
       />
 
-      <UserDetailModal opened={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} user={user as any} />
+      <UserDetailModal opened={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} user={user as ModalUser} />
 
       <UserEditModal
         opened={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        user={user as any}
+        user={user as ModalUser}
         onSave={handleSaveUser}
         onSaved={fetchUser}
         organisationSlug={String(primaryOrgSlug || getPreferredOrganisationId() || '')}
@@ -209,7 +215,7 @@ export const UserDetailModals: React.FC<UserDetailModalsProps> = ({ data }) => {
       <LinkUserModal
         opened={isLinkModalOpen}
         onClose={() => setIsLinkModalOpen(false)}
-        user={user as any}
+        user={user as ModalUser}
         organisations={linkOrgs.length ? linkOrgs : userOrgs}
         clubs={linkClubs}
         teams={linkTeams}
@@ -234,7 +240,7 @@ export const UserDetailModals: React.FC<UserDetailModalsProps> = ({ data }) => {
 
           if (!membershipId) {
             const project = userProjects.find((p) => String(p?.id) === String(projectId));
-            membershipId = project?.membership_id;
+            membershipId = (project as unknown as Record<string, unknown>)?.membership_id as string | undefined;
           }
 
           await updateProjectMembershipRole(projectId, membershipId, role);

@@ -252,7 +252,7 @@ export function useLinkUserModal({
       if (!memberId) return false;
       const mu = m?.user || m;
       const mid = String(mu?.id ?? '').trim();
-      const memail = String(mu?.email ?? (m as any)?.email ?? '').trim().toLowerCase();
+      const memail = String(mu?.email ?? (m as unknown as Record<string, unknown>)?.email ?? '').trim().toLowerCase();
       return (uid && mid && uid === mid) || (email && memail && email === memail);
     });
     const membershipId = String(found?.id ?? '').trim();
@@ -287,7 +287,7 @@ export function useLinkUserModal({
       if (!memberId) return false;
       const mu = m?.user || m;
       const mid = String(mu?.id ?? '').trim();
-      const memail = String(mu?.email ?? (m as any)?.email ?? '').trim().toLowerCase();
+      const memail = String(mu?.email ?? (m as unknown as Record<string, unknown>)?.email ?? '').trim().toLowerCase();
       return (uid && mid && uid === mid) || (email && memail && email === memail);
     });
     const membershipId = String(found?.id ?? '').trim();

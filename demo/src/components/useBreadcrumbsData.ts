@@ -9,7 +9,7 @@ import { api } from '@/api';
 import { fetchAllPages } from '../utils/fetchAllPages';
 import { periodPathKey } from '../utils/periodPath';
 import { getApiV1BaseUrl } from '../utils/apiFetch';
-import { isSeasonPeriod, UUID_RE } from './breadcrumbHelpers';
+import { isSeasonPeriod, UUID_RE, type PeriodRecord } from './breadcrumbHelpers';
 import { formReducer, makeSetter } from '../utils/formReducer';
 import type {
   ApiProject,
@@ -255,8 +255,8 @@ export function useBreadcrumbsData({
         const projectId = await resolveProjectId(effectiveOrg, effectiveTeam);
         if (!projectId || cancelled) return;
         const rootPeriods = await fetchRootPeriods(projectId);
-        const seasons = (rootPeriods || []).filter(isSeasonPeriod as any);
-        const opts: BreadcrumbSwitcherOption[] = (seasons as any[]).map((p: any) => ({
+        const seasons = (rootPeriods || []).filter((p) => isSeasonPeriod(p as unknown as PeriodRecord));
+        const opts: BreadcrumbSwitcherOption[] = seasons.map((p) => ({
           id: String(p.id),
           label: String(p.name || p.slug || p.id),
           slug: periodPathKey(p) || String(p.id),

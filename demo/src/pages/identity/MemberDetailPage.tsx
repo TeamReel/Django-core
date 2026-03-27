@@ -204,7 +204,7 @@ export const MemberDetailPage: React.FC = () => {
                   onChange={(e) => handleOrganisationSwitch({ id: e.target.value, label: '', slug: e.target.value })}
                   className={styles.breadcrumbSelect}
                 >
-                  {organisationOptions.map(org => (
+                  {organisationOptions.map((org: { id: string; slug?: string; label: string }) => (
                     <option key={org.id} value={org.slug || org.id}>{org.label}</option>
                   ))}
                 </select>
@@ -220,7 +220,7 @@ export const MemberDetailPage: React.FC = () => {
                   }}
                   className={styles.breadcrumbSelect}
                 >
-                  {userOptions.map(u => (
+                  {userOptions.map((u: { id: string; slug?: string; label: string }) => (
                     <option key={u.id} value={u.slug || u.id}>{u.label}</option>
                   ))}
                 </select>

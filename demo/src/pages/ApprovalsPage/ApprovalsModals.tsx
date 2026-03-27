@@ -68,8 +68,8 @@ export function ApprovalsModals({
           onClose={onCloseVideoModal}
           onActionComplete={onVideoActionComplete}
           pushToast={pushToast}
-          approveJob={approveVideoJob as any}
-          rejectJob={rejectVideoJob as any}
+          approveJob={async (id) => { await approveVideoJob(id); }}
+          rejectJob={async (id) => { await rejectVideoJob(id); }}
         />
       )}
 

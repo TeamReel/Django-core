@@ -126,12 +126,13 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
   const setSubtypeFilter = useMemo(() => makeSetter<ContentLibState, 'subtypeFilter'>(dispatch, 'subtypeFilter'), [dispatch]);
   const setSearchQuery = useMemo(() => makeSetter<ContentLibState, 'searchQuery'>(dispatch, 'searchQuery'), [dispatch]);
   const setSortBy = useMemo(() => makeSetter<ContentLibState, 'sortBy'>(dispatch, 'sortBy'), [dispatch]);
+  const setAutoScopeApplied = useMemo(() => makeSetter<ContentLibState, 'autoScopeApplied'>(dispatch, 'autoScopeApplied'), [dispatch]);
 
   // ── Auto-scope to user's team if available ──
   useEffect(() => {
     if (autoTeamId && !s.autoScopeApplied && !s.selectedTeamId) {
       setSelectedTeamId(autoTeamId);
-      dispatch({ type: 'set', field: 'autoScopeApplied' as any, value: true });
+      setAutoScopeApplied(true);
     }
   }, [autoTeamId, s.autoScopeApplied, s.selectedTeamId]);
 
@@ -194,7 +195,7 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
           params: { project: s.selectedTeamId, period_type: 'season' },
           pageSize: 100,
         });
-        setSeasons(items.map((s) => ({ id: String(s.id), name: s.name, key: (s as any).key || (s as any).slug || '' })));
+        setSeasons(items.map((s) => ({ id: String(s.id), name: s.name, key: s.key || s.slug || '' })));
       } catch { /* ignore */ }
     };
     load();
@@ -209,7 +210,7 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
           params: { period: s.selectedSeasonId, activity_type: 'match', ordering: '-activity_date' },
           pageSize: 100,
         });
-        setMatches(items.map((m) => ({ id: String(m.id), title: (m as any).title || (m as any).name || '', slug: (m as any).slug, activity_date: (m as any).activity_date })));
+        setMatches(items.map((m) => ({ id: String(m.id), title: m.title || m.name || '', slug: m.slug, activity_date: m.activity_date })));
       } catch { /* ignore */ }
     };
     load();
