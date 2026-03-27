@@ -88,6 +88,11 @@ export default function DashboardPage() {
   const isMemberLevel = isPlayer || isSupporter;
   const isTeamScope = hasProjectContext;
 
+  // ── Subtitle: show date instead of org name ──
+  const todayStr = new Date().toLocaleDateString('nl-NL', {
+    weekday: 'long', day: 'numeric', month: 'long',
+  });
+
   // Pull-to-refresh
   const [refreshKey, setRefreshKey] = useState(0);
   const handleRefresh = useCallback(async () => {
@@ -127,7 +132,7 @@ export default function DashboardPage() {
                   Welkom, {user?.first_name || 'there'}
                 </h1>
                 <p className={styles.orgSubtitle}>
-                  {project ? project.name : org ? org.name : 'Selecteer een organisatie'}
+                  {todayStr}
                 </p>
               </div>
             </div>

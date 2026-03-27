@@ -15,6 +15,7 @@ import { formatRelativeTime } from '../../utils/relativeTime';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import { useUpcomingMatches } from '../../hooks/useUpcomingMatches';
 import { usePastMatches } from '../../hooks/usePastMatches';
+import { useBrandProfile } from '../../hooks/useBrandProfile';
 import { useMatchSheet } from './useMatchSheet';
 import { MatchSheetFlow } from './MatchSheetFlow';
 import { ReadinessRing } from './ReadinessRing';
@@ -31,11 +32,19 @@ export const MatchesCard = memo(function MatchesCard() {
   const hierarchy = useAppSelection();
   const navigate = useNavigate();
   const project = context.project;
+  const org = context.organisation;
 
   const [activeTab, setActiveTab] = useState<Tab>('upcoming');
 
   const upcoming = useUpcomingMatches(project?.id, 5);
   const past = usePastMatches(project?.id, 5);
+
+  // Club logo fallback for match rows where metadata logos are missing
+  const { getAssetUrl: getClubAssetUrl } = useBrandProfile({
+    organisationId: org?.id?.toString(),
+    projectId: project?.id,
+  });
+  const clubLogoUrl = getClubAssetUrl('club_logo') ?? undefined;
 
   const upcomingMatches = upcoming.data?.matches ?? [];
   const pastMatches = past.data?.matches ?? [];
@@ -133,9 +142,9 @@ export const MatchesCard = memo(function MatchesCard() {
             <div className={styles.matchList}>
               {matches.map(match => (
                 activeTab === 'upcoming' ? (
-                  <UpcomingMatchRow key={match.id} match={match} onSelect={handleSelectMatch} readinessMap={readinessMap} />
+                  <UpcomingMatchRow key={match.id} match={match} onSelect={handleSelectMatch} readinessMap={readinessMap} clubLogoUrl={clubLogoUrl} />
                 ) : (
-                  <PastMatchRow key={match.id} match={match} onSelect={handleSelectMatch} readinessMap={readinessMap} />
+                  <PastMatchRow key={match.id} match={match} onSelect={handleSelectMatch} readinessMap={readinessMap} clubLogoUrl={clubLogoUrl} />
                 )
               ))}
             </div>
@@ -163,17 +172,18 @@ interface MatchRowProps {
   match: Match;
   onSelect: (match: Match) => void;
   readinessMap?: ReadinessMap;
+  clubLogoUrl?: string;
 }
 
-const UpcomingMatchRow: React.FC<MatchRowProps> = memo(function UpcomingMatchRow({ match, onSelect, readinessMap }) {
+const UpcomingMatchRow: React.FC<MatchRowProps> = memo(function UpcomingMatchRow({ match, onSelect, readinessMap, clubLogoUrl }) {
   const date = new Date(match.start_time);
   const relTime = formatRelativeTime(date, 'nl');
   const teamName = match.project?.club_name || match.project?.name || 'Team';
   const opponent = match.opponent_project?.club_name || match.opponent_project?.name || match.title?.split(' vs ')?.[1] || 'Tegenstander';
   const isHome = match.metadata?.is_home !== false;
 
-  const homeLogo = match.metadata?.identity?.home_team_logo_url as string | undefined;
-  const awayLogo = match.metadata?.identity?.away_team_logo_url as string | undefined;
+  const homeLogo = (match.metadata?.identity?.home_team_logo_url as string | undefined) || (isHome ? clubLogoUrl : undefined);
+  const awayLogo = (match.metadata?.identity?.away_team_logo_url as string | undefined) || (!isHome ? clubLogoUrl : undefined);
   const homeName = isHome ? teamName : opponent;
   const awayName = isHome ? opponent : teamName;
 
@@ -223,14 +233,14 @@ const UpcomingMatchRow: React.FC<MatchRowProps> = memo(function UpcomingMatchRow
 
 /* ── Past Match Row (with score) ───────────────────────────────────── */
 
-const PastMatchRow: React.FC<MatchRowProps> = memo(function PastMatchRow({ match, onSelect, readinessMap }) {
+const PastMatchRow: React.FC<MatchRowProps> = memo(function PastMatchRow({ match, onSelect, readinessMap, clubLogoUrl }) {
   const date = new Date(match.start_time);
   const teamName = match.project?.club_name || match.project?.name || 'Team';
   const opponent = match.opponent_project?.club_name || match.opponent_project?.name || match.title?.split(' vs ')?.[1] || 'Tegenstander';
   const isHome = match.metadata?.is_home !== false;
 
-  const homeLogo = match.metadata?.identity?.home_team_logo_url as string | undefined;
-  const awayLogo = match.metadata?.identity?.away_team_logo_url as string | undefined;
+  const homeLogo = (match.metadata?.identity?.home_team_logo_url as string | undefined) || (isHome ? clubLogoUrl : undefined);
+  const awayLogo = (match.metadata?.identity?.away_team_logo_url as string | undefined) || (!isHome ? clubLogoUrl : undefined);
   const homeName = isHome ? teamName : opponent;
   const awayName = isHome ? opponent : teamName;
 

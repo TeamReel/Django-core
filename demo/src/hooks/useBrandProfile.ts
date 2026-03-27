@@ -83,13 +83,26 @@ export function useBrandProfile({
     setError(null);
 
     try {
-      // Step 1: Find brand profile
+      // Step 1: Find brand profile for the exact project
       const params: Record<string, string> = {};
       if (projectId) params['project'] = String(projectId);
       else if (organisationId) params['organisation'] = organisationId;
 
       const listData = await api.list<BrandProfile>('/branding/profiles/', { params });
-      const profiles = listData.results;
+      let profiles = listData.results;
+
+      // Step 2: Cascade — team has no profile → try all profiles in the org
+      // This finds the parent club's profile (e.g. ASC) when querying from a
+      // child team (e.g. Helden 6) that has no own brand profile.
+      if (!profiles.length && projectId && organisationId) {
+        const fallbackData = await api.list<BrandProfile>('/branding/profiles/', {
+          params: { organisation_scope: organisationId },
+        });
+        // Prefer project-level profiles (club) over org-level profiles
+        profiles = fallbackData.results.sort(
+          (a, b) => (b.project ? 1 : 0) - (a.project ? 1 : 0),
+        );
+      }
 
       if (!profiles.length) {
         setProfile(null);
