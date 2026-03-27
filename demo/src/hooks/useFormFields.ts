@@ -39,7 +39,7 @@ export function useFormFields<T extends Record<string, unknown>>(
 
   const reset = useCallback(() => {
     setFields_(initialValues);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: always resets to initial mount values
   }, []);
 
   const setFields = useCallback((values: Partial<T>) => {

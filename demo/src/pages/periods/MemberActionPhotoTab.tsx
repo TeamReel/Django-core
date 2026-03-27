@@ -114,7 +114,7 @@ export function MemberActionPhotoTab({
                           </div>
                         )}
                         {isProcessingState && (
-                          <div className={s.processingOverlay}>⏳ Bezig...</div>
+                          <div className={s.processingOverlay}>Bezig...</div>
                         )}
                       </div>
                       <div className={s.cardFooterPadding}>

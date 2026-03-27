@@ -75,7 +75,7 @@ export function useAsync<T>(
       cancelled = true;
       controller.abort();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deps spread from caller; fn accessed via fnRef
   }, [...deps, token]);
 
   const reload = useCallback(() => setToken((n) => n + 1), []);

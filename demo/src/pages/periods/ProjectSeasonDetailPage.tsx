@@ -93,7 +93,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
             {/* Overflow menu — View + Delete */}
             <div className={s.overflowWrap} ref={overflowRef}>
-              <button type="button" className={s.iconBtn} onClick={() => setOverflowOpen((v) => !v)} title="Meer">
+              <button type="button" className={s.iconBtn} onClick={() => setOverflowOpen((v) => !v)} title="Meer" aria-label="Meer">
                 <MoreHorizontal size={16} />
               </button>
               {overflowOpen && (

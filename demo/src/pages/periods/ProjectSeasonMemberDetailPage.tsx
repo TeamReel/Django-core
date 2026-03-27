@@ -106,7 +106,7 @@ export default function ProjectSeasonMemberDetailPage() {
     if (memberRoles.length > 0 && !memberRoles.includes(selectedRole)) {
       setSelectedRole(memberRoles[0]);
     }
-  }, [memberRoles]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [memberRoles]); // eslint-disable-line react-hooks/exhaustive-deps -- adding selectedRole would cause circular updates
 
   // ── Active AI jobs for this member ──
   const { activeJobs: memberActiveJobs } = useGenerationJobs({
@@ -222,7 +222,6 @@ export default function ProjectSeasonMemberDetailPage() {
 
                 {memberActiveJobs.length > 0 && (
                   <div className={s.activeJobsBanner}>
-                    <span className="fs-18">⏳</span>
                     <div className="flex-1">
                       <strong>AI generatie bezig</strong>
                       {' — '}

@@ -80,7 +80,7 @@ export function useMatchDayMode(
     return () => clearInterval(interval);
   }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: track primitive fields, not object references
   return useMemo(
     () => computeState(match, contentDoneSubtypes, totalContentItems),
     [match?.id, match?.start_time, match?.end_time, contentDoneSubtypes.length, totalContentItems, tick],

@@ -155,7 +155,7 @@ export default function HierarchyMatchDetailPage() {
 
             {/* Edit (admin) */}
             {!d.isPlayer && (
-              <button type="button" className={styles.iconBtn} onClick={() => d.setIsMatchEditModalOpen(true)} title="Bewerken">
+              <button type="button" className={styles.iconBtn} onClick={() => d.setIsMatchEditModalOpen(true)} title="Bewerken" aria-label="Bewerken">
                 <Pencil size={16} />
               </button>
             )}
@@ -165,7 +165,7 @@ export default function HierarchyMatchDetailPage() {
 
             {/* Overflow menu — View + Delete */}
             <div className={styles.overflowWrap} ref={overflowRef}>
-              <button type="button" className={styles.iconBtn} onClick={() => setOverflowOpen((v) => !v)} title="Meer">
+              <button type="button" className={styles.iconBtn} onClick={() => setOverflowOpen((v) => !v)} title="Meer" aria-label="Meer">
                 <MoreHorizontal size={16} />
               </button>
               {overflowOpen && (

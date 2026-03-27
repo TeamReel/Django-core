@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// @ts-ignore - Workspace dependencies
 import { fetchWithCSRF } from '@django-core/api-client';
 import { User } from '../../types';
 import { getApiV1BaseUrl } from '../../utils/apiFetch';

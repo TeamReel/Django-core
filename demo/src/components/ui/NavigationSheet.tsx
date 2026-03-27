@@ -100,7 +100,7 @@ export const NavigationSheet: React.FC<NavigationSheetProps> = ({
   // ------ Haptic on open ------
   useEffect(() => {
     if (isOpen) haptic.light();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- haptic object recreated each render; only fire on open
   }, [isOpen]);
 
   // ------ Browser back = sheet sluiten ------

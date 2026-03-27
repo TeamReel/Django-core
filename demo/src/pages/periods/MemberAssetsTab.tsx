@@ -168,7 +168,7 @@ export function MemberAssetsTab({
                         <ProcessingBadge value={fbVal} />
                       </div>
                     )}
-                    {fbProcessing && <div className={s.processingOverlay}>⏳ Bezig...</div>}
+                    {fbProcessing && <div className={s.processingOverlay}>Bezig...</div>}
                   </div>
                   <div className={s.cardFooterPadding}>
                     <div className={s.variantLabel}>Fullbody</div>
@@ -244,7 +244,7 @@ export function MemberAssetsTab({
                             <ProcessingBadge value={hbVal} />
                           </div>
                         )}
-                        {hbProcessing && <div className={s.processingOverlay}>⏳ Bezig...</div>}
+                        {hbProcessing && <div className={s.processingOverlay}>Bezig...</div>}
                       </div>
                       <div className={s.cardFooterPadding}>
                         <div className={s.variantLabel}>Halfbody</div>
@@ -281,7 +281,7 @@ export function MemberAssetsTab({
                             <ProcessingBadge value={cuVal} />
                           </div>
                         )}
-                        {cuProcessing && <div className={s.processingOverlay}>⏳ Bezig...</div>}
+                        {cuProcessing && <div className={s.processingOverlay}>Bezig...</div>}
                       </div>
                       <div className={s.cardFooterPadding}>
                         <div className={s.variantLabel}>Close-up</div>
@@ -352,7 +352,7 @@ export function MemberAssetsTab({
                         <ProcessingBadge value={legFbVal} />
                       </div>
                     )}
-                    {legFbProcessing && <div className={s.processingOverlay}>⏳ Bezig...</div>}
+                    {legFbProcessing && <div className={s.processingOverlay}>Bezig...</div>}
                   </div>
                   <div className={s.cardFooterPadding}>
                     <div className={s.variantLabel}>Fullbody (legacy tenue)</div>

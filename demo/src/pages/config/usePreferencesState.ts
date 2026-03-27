@@ -90,7 +90,7 @@ export function usePreferencesState(): PreferencesStateReturn {
     };
     void loadPreferences();
     return () => { isMounted = false; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on mount to load initial preferences
   }, []);
 
   /* --- Sync local state with global mode changes --- */

@@ -366,7 +366,7 @@ export const HubSelectieTab: React.FC<HubSelectieTabProps> = ({
       {/* Role picker popover */}
       {rolePicker && (
         <>
-          <div className={s.rolePickerBackdrop} onClick={() => setRolePicker(null)} />
+          <div className={s.rolePickerBackdrop} role="presentation" onClick={() => setRolePicker(null)} />
           <div
             className={s.rolePickerPopover}
             role="listbox"

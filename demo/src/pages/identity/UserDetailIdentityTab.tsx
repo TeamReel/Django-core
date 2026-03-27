@@ -3,6 +3,7 @@
  */
 import { Alert, Badge, Input } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
+import type { User } from '@/types/api/user';
 import type { UserDetailDataReturn } from './useUserDetailData';
 import styles from './UserDetailIdentityTab.module.css';
 
@@ -22,8 +23,7 @@ export function UserDetailIdentityTab({ data }: Props) {
     handleSaveUser, fetchUser,
   } = data;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const user = _user as any;
+  const user = _user as User | null;
 
   if (!user) return null;
 

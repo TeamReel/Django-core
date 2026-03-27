@@ -179,7 +179,7 @@ export function useActivityFeed(options: UseActivityFeedOptions = {}): UseActivi
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [organisationId, filtersKey, pageSize, grouped, enabled]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [organisationId, filtersKey, pageSize, grouped, enabled]); // eslint-disable-line react-hooks/exhaustive-deps -- filters tracked via serialized filtersKey
 
   // ── Fetch unread count ──────────────────────────────────────
 

@@ -124,7 +124,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
     if (memberRoles.length > 0 && !memberRoles.includes(selectedRole)) {
       setSelectedRole(memberRoles[0]);
     }
-  }, [memberRoles]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [memberRoles]); // eslint-disable-line react-hooks/exhaustive-deps -- adding selectedRole would cause circular updates
 
   // AI modal
   const aiModalRef = useRef<MemberAiModalHandle | null>(null);

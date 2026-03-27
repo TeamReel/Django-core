@@ -91,7 +91,7 @@ export function useKeyboardShortcuts(shortcuts: ShortcutDef[]): void {
       });
       notify();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- shortcuts stored in ref; register once on mount
 }
 
 /**
