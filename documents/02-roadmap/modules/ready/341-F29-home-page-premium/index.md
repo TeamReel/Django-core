@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Code | F29 |
-| Status | 📐 READY |
+| Status | ✅ DONE |
 | Prioriteit | Hoog |
 | Geschatte effort | ~14 uur |
 | Afhankelijkheden | Geen |
@@ -64,10 +64,10 @@ Een Home page die gebruikers een **WOW-gevoel** geeft:
 
 ## 4. Acceptatiecriteria
 
-- [ ] Clublogo zichtbaar in header en bij wedstrijden
-- [ ] Hero banner met teamfoto of gradient fallback
-- [ ] Matchday mode met logo vs logo + countdown
-- [ ] Content carousel met laatste gegenereerde items
-- [ ] Premium card styling met diepte en animatie
-- [ ] WCAG 2.1 AA compliant (contrast, focus, reduced-motion)
-- [ ] Mobile-first, responsive tot desktop
+- [x] Clublogo zichtbaar in header en bij wedstrijden
+- [x] Hero banner met teamfoto of gradient fallback
+- [x] Matchday mode met logo vs logo + countdown
+- [x] Content carousel met laatste gegenereerde items
+- [x] Premium card styling met diepte en animatie
+- [x] WCAG 2.1 AA compliant (contrast, focus, reduced-motion)
+- [x] Mobile-first, responsive tot desktop

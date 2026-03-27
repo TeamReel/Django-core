@@ -192,6 +192,22 @@
   text-overflow: ellipsis;
 }
 
+/* ── Team logos row ────────────────────────────────────── */
+.matchTeams {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.matchVs {
+  font-size: var(--text-xs);
+  color: var(--app-muted-text);
+  font-weight: var(--font-normal);
+  flex-shrink: 0;
+  margin: 0 2px;
+}
+
 .matchLocation {
   display: flex;
   align-items: center;

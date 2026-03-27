@@ -1,4 +1,6 @@
 export { ActiveMatchCard } from './ActiveMatchCard';
+export { ContentCarousel } from './ContentCarousel';
+export { HeroBanner } from './HeroBanner';
 export { UpcomingMatchesCard } from './UpcomingMatchesCard';
 export { PastMatchesCard } from './PastMatchesCard';
 export { MatchesCard } from './MatchesCard';

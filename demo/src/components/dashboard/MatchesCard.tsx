@@ -21,6 +21,7 @@ import { ReadinessRing } from './ReadinessRing';
 import { buildMatchVanityUrl, buildMatchVanityUrlWithTab } from './ActiveMatchCard';
 import type { Match } from './ActiveMatchCard';
 import { useMatchListReadiness, type ReadinessMap } from '../../hooks/useMatchListReadiness';
+import { Avatar } from '../ui/Avatar';
 import styles from './MatchesCard.module.css';
 
 type Tab = 'upcoming' | 'past';
@@ -171,6 +172,11 @@ const UpcomingMatchRow: React.FC<MatchRowProps> = memo(function UpcomingMatchRow
   const opponent = match.opponent_project?.club_name || match.opponent_project?.name || match.title?.split(' vs ')?.[1] || 'Tegenstander';
   const isHome = match.metadata?.is_home !== false;
 
+  const homeLogo = match.metadata?.identity?.home_team_logo_url as string | undefined;
+  const awayLogo = match.metadata?.identity?.away_team_logo_url as string | undefined;
+  const homeName = isHome ? teamName : opponent;
+  const awayName = isHome ? opponent : teamName;
+
   const readiness = readinessMap?.get(match.id)?.percent ?? 0;
 
   return (
@@ -191,8 +197,12 @@ const UpcomingMatchRow: React.FC<MatchRowProps> = memo(function UpcomingMatchRow
           </span>
           <span> · {relTime}</span>
         </div>
-        <div className={styles.matchTitle}>
-          {isHome ? teamName : opponent} vs {isHome ? opponent : teamName}
+        <div className={styles.matchTeams}>
+          <Avatar src={homeLogo} name={homeName} size="xs" alt={`${homeName} logo`} />
+          <span className={styles.matchTitle}>{homeName}</span>
+          <span className={styles.matchVs}>vs</span>
+          <Avatar src={awayLogo} name={awayName} size="xs" alt={`${awayName} logo`} />
+          <span className={styles.matchTitle}>{awayName}</span>
         </div>
         {match.location && (
           <div className={styles.matchLocation}>
@@ -219,6 +229,11 @@ const PastMatchRow: React.FC<MatchRowProps> = memo(function PastMatchRow({ match
   const opponent = match.opponent_project?.club_name || match.opponent_project?.name || match.title?.split(' vs ')?.[1] || 'Tegenstander';
   const isHome = match.metadata?.is_home !== false;
 
+  const homeLogo = match.metadata?.identity?.home_team_logo_url as string | undefined;
+  const awayLogo = match.metadata?.identity?.away_team_logo_url as string | undefined;
+  const homeName = isHome ? teamName : opponent;
+  const awayName = isHome ? opponent : teamName;
+
   const homeScore = match.metadata?.home_score as number | undefined;
   const awayScore = match.metadata?.away_score as number | undefined;
   const hasScore = homeScore != null && awayScore != null;
@@ -238,8 +253,12 @@ const PastMatchRow: React.FC<MatchRowProps> = memo(function PastMatchRow({ match
             {date.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })}
           </span>
         </div>
-        <div className={styles.matchTitle}>
-          {isHome ? teamName : opponent} vs {isHome ? opponent : teamName}
+        <div className={styles.matchTeams}>
+          <Avatar src={homeLogo} name={homeName} size="xs" alt={`${homeName} logo`} />
+          <span className={styles.matchTitle}>{homeName}</span>
+          <span className={styles.matchVs}>vs</span>
+          <Avatar src={awayLogo} name={awayName} size="xs" alt={`${awayName} logo`} />
+          <span className={styles.matchTitle}>{awayName}</span>
         </div>
         {match.location && (
           <div className={styles.matchLocation}>

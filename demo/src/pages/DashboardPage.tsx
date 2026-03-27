@@ -3,9 +3,11 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { PullToRefresh } from '@django-core/design-system';
 import { useNavigate } from 'react-router-dom';
-import { AlertTriangle, Zap } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import {
   ActiveMatchCard,
+  ContentCarousel,
+  HeroBanner,
   MatchesCard,
   SquadReadinessCard,
   AIQueueCard,
@@ -27,6 +29,8 @@ import { useContentStreak } from '../hooks/useContentStreak';
 import { useMatchDayMode } from '../hooks/useMatchDayMode';
 import { CONTENT_TYPES } from './identity/ContentGenerationModal';
 import { useSetNavTitle } from '../providers/BackNavigationProvider';
+import { useBrandProfile } from '../hooks/useBrandProfile';
+import { Avatar } from '../components/ui/Avatar';
 import styles from './DashboardPage.module.css';
 
 export default function DashboardPage() {
@@ -73,6 +77,13 @@ export default function DashboardPage() {
 
   // ── Role tiers ──
   const { isSystemAdmin, isLandAdmin, isOrgAdmin, isCoach, isPlayer, isSupporter } = useUserRole();
+
+  // ── Club branding ──
+  const { getAssetUrl: getClubAssetUrl } = useBrandProfile({
+    organisationId: org?.id?.toString(),
+    projectId: project?.id,
+  });
+  const clubLogoUrl = getClubAssetUrl('club_logo');
   const isOrgLevel = isSystemAdmin || isLandAdmin || isOrgAdmin;
   const isMemberLevel = isPlayer || isSupporter;
   const isTeamScope = hasProjectContext;
@@ -92,29 +103,33 @@ export default function DashboardPage() {
     >
       <div key={refreshKey} className={styles.page}>
 
+        {/* ── Hero Banner (always shown — switches to match-day mode) ── */}
+        <HeroBanner matchDay={matchDay} activeMatch={activeMatch} />
+
         {/* ── Header ─────────────────────────────────────────────── */}
         <div className={styles.header}>
           {matchDay.isMatchDay ? (
             <div className={styles.matchDayHeader}>
-              <div className={styles.countdownBadge} aria-live="polite" aria-label="Aftelling tot wedstrijd">
-                {matchDay.countdown === 'LIVE' ? (
-                  <><span className={styles.liveDot} /> LIVE</>
-                ) : (
-                  <><Zap size={16} /> {matchDay.countdown}</>
-                )}
-              </div>
               <p className={styles.matchDaySubtitle}>
                 {activeMatch?.title || 'Wedstrijd'}{activeMatch?.location ? ` · ${activeMatch.location}` : ''}
               </p>
             </div>
           ) : (
-            <div>
-              <h1 className={styles.greeting}>
-                Welkom, {user?.first_name || 'there'}
-              </h1>
-              <p className={styles.orgSubtitle}>
-                {project ? project.name : org ? org.name : 'Selecteer een organisatie'}
-              </p>
+            <div className={styles.headerBranding}>
+              <Avatar
+                src={clubLogoUrl}
+                name={project?.name || org?.name}
+                size="md"
+                alt={`${project?.name || org?.name || 'Club'} logo`}
+              />
+              <div>
+                <h1 className={styles.greeting}>
+                  Welkom, {user?.first_name || 'there'}
+                </h1>
+                <p className={styles.orgSubtitle}>
+                  {project ? project.name : org ? org.name : 'Selecteer een organisatie'}
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -136,11 +151,7 @@ export default function DashboardPage() {
         {/* ── Main layout ────────────────────────────────────────── */}
         <div className={styles.mainCol}>
 
-          {/* 0. Active Match — always at the top */}
-          {matchDay.isMatchDay && <div className={styles.matchDayActiveMatch}><ActiveMatchCard /></div>}
-          {!matchDay.isMatchDay && <ActiveMatchCard />}
-
-          {/* 0b. Content Streak — only when ≥2 past matches */}
+          {/* 0. Content Streak — prominent position under hero */}
           {streakData && (
             <ContentStreakWidget
               streak={streakData}
@@ -150,16 +161,23 @@ export default function DashboardPage() {
             />
           )}
 
-          {/* 1. Next step suggestion — context-aware guidance */}
+          {/* 1. Active Match */}
+          {matchDay.isMatchDay && <div className={styles.matchDayActiveMatch}><ActiveMatchCard /></div>}
+          {!matchDay.isMatchDay && <ActiveMatchCard />}
+
+          {/* 2. Next step suggestion — context-aware guidance */}
           <NextStepCard />
 
-          {/* 2. Matches — upcoming/past with tab switcher */}
+          {/* 3. Matches — upcoming/past with tab switcher */}
           <MatchesCard />
 
-          {/* 3. Content Pipeline — processing → review → approved */}
+          {/* 4. Content Pipeline — processing → review → approved */}
           <ContentPipelineCard />
 
-          {/* 2. Compact status row — only unique-value cards */}
+          {/* 5. Content Carousel — recent generated content */}
+          <ContentCarousel />
+
+          {/* 6. Compact status row — only unique-value cards */}
           <div className={styles.summaryGrid}>
             {!isMemberLevel && <SquadReadinessCard />}
             {!isMemberLevel && <AIQueueCard />}
@@ -167,16 +185,16 @@ export default function DashboardPage() {
             {isOrgLevel && !isTeamScope && <OrgStatsCard />}
           </div>
 
-          {/* 3. Content progress (merged breakdown + inventory) */}
+          {/* 7. Content progress (merged breakdown + inventory) */}
           <ContentProgressCard />
 
-          {/* 3b. Season progress — matches played, content generated */}
+          {/* 8. Season progress — matches played, content generated */}
           <SeasonProgressCard />
 
-          {/* 4. Smart contextual quick actions */}
+          {/* 9. Smart contextual quick actions */}
           <SmartActionsCard />
 
-          {/* 5. Media readiness (Club · Team · Members hierarchy) */}
+          {/* 10. Media readiness (Club · Team · Members hierarchy) */}
           {!isMemberLevel && <MediaReadinessCard />}
         </div>
       </div>
