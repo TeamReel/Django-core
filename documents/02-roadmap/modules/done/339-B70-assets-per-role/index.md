@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Code | B70 |
-| Status | � IN UITVOERING |
+| Status | ✅ DONE |
 | Prioriteit | Hoog |
 | Geschatte effort | ~31 uur |
 | Voortgang | H0–HX done (11/11 fases) |

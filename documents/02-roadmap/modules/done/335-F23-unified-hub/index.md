@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Code | F23 |
-| Status | � READY |
+| Status | ✅ DONE |
 | Prioriteit | Hoog |
 | Geschatte effort | ~40 uur |
 | Afhankelijkheden | F22 (done), F21 (done) |

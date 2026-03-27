@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | ✅ DONE |
 | Bron | UI Review + gebruiker-feedback (F29 deploy) |
 | Impact | 🔴 critical |
 | Effort | ~3 uur |
