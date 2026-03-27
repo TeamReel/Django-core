@@ -278,7 +278,9 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 |-------|------|-------|-------------|
 | **Developer** | Full-stack implementation, debugging, refactoring, modules, docs | All | → Reviewer |
 | **Reviewer** | Code review, a11y audit (code-level), conventions | Read-only + terminal | → Developer (fix) |
-| **Planner** | Architecture & implementation plans | Read-only + create_file | → Developer (build) || **Domain Expert** | Product & domain knowledge, data model, features, architecture | Read-only | → Planner / Developer || **Playwright Tester** | E2E flows, live a11y, visual review via browser | Read + Playwright MCP | → Developer (fix) |
+| **Planner** | Architecture & implementation plans | Read-only + create_file | → Developer (build) |
+| **Domain Expert** | Product & domain knowledge, data model, features, architecture | Read-only | → Planner / Developer |
+| **Playwright Tester** | E2E flows, live a11y, visual review via browser | Read + Playwright MCP | → Developer (fix) |
 | **PostgreSQL DBA** | Query optimization, indexing, schema | Read + Terminal | → Developer (apply) |
 | **Ops & Deploy** | Railway logs, deploys, monitoring | Read + Terminal | → Developer / DBA |
 
@@ -334,9 +336,9 @@ Organisation → Project → BrandProfile + Period → Activity → Participatio
 | `css.instructions.md` | `**/*.css` | Token system, focus-visible, reduced-motion |
 | `testing.instructions.md` | `tests/**` | pytest, Playwright, factories |
 
-## Spec-Kitty (separate system)
+## Spec-Kitty (archived)
 
-Worktree-based feature lifecycle in `.github/prompts/spec-kitty/`. For formal specification — not used in direct-to-main workflow.
+Formerly a worktree-based feature lifecycle in `.github/prompts/spec-kitty/`. Archived to `archive/spec-kitty/` — replaced by the single-chat workflow with roadmap modules in `documents/02-roadmap/modules/`.
 
 ## Single-Chat Workflow (preferred)
 

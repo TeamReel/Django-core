@@ -18,12 +18,15 @@ This prompt triggers the debugging workflow.
 
 ## Workflow
 
-1. Read the **canonical workflow**: `.github/agents/debugger.agent.md`
-2. Follow the agent's 4-step diagnosis framework (Classify → Gather Evidence → Fix → Verify)
+1. Read the **developer agent**: `.github/agents/developer.agent.md`
+2. Follow a 4-step diagnosis framework:
+   - **Classify**: Frontend / Backend / Full-stack / Infra
+   - **Gather Evidence**: Read errors, logs, related code
+   - **Fix**: Apply minimal targeted fix
+   - **Verify**: Run `npx tsc --noEmit` + `npx vite build` (frontend) or `pytest` (backend)
 3. Also read instructions based on the affected layer:
    - Frontend (`demo/src/**`): `.github/instructions/frontend.instructions.md`
    - Backend (`src/**`): `.github/instructions/backend.instructions.md`
-4. Apply minimal fix, verify with `npx tsc --noEmit` + `npx vite build` (frontend) or `pytest` (backend)
 
 ## Data Hierarchy Context
 ```

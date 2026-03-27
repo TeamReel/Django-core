@@ -18,10 +18,13 @@ This prompt triggers the refactoring workflow.
 
 ## Workflow
 
-1. Read the **canonical workflow**: `.github/agents/refactoring.agent.md`
+1. Read the **developer agent**: `.github/agents/developer.agent.md`
 2. Also read the relevant instructions based on file location:
    - Frontend (`demo/src/**`): `.github/instructions/frontend.instructions.md`
    - Backend (`src/**`): `.github/instructions/backend.instructions.md`
    - CSS (`**/*.css`): `.github/instructions/css.instructions.md`
-3. Follow the agent's refactoring types, safety protocol, and output format exactly
+3. Follow the refactoring safety protocol:
+   - Analyze current behavior before changing
+   - Preserve all existing functionality
+   - Run tests after each change
 4. Commit with `refactor(<scope>): <description>`
