@@ -26,13 +26,14 @@ from __future__ import annotations
 import gc
 import json
 import logging
-import shutil
 import subprocess
 import time
 from pathlib import Path
 from typing import Any
 
 import numpy as np
+
+from src.video.services._common import get_ffmpeg_path, get_ffprobe_path
 
 logger = logging.getLogger(__name__)
 
@@ -65,78 +66,13 @@ class RVMProcessingCancelled(Exception):
 
 
 def _get_ffmpeg_path() -> str:
-    """Find FFmpeg binary.
-
-    Priority order:
-    1. /usr/local/ffmpeg/bin/ffmpeg — bundled build (from Dockerfile)
-    2. /usr/local/bin/ffmpeg — legacy static location (from Dockerfile)
-    2. imageio-ffmpeg — pip-installed static binary
-    3. System ffmpeg — Debian apt (may lack VP9 alpha)
-    """
-    # 1. Bundled build installed by Dockerfile
-    bundled_path = Path("/usr/local/ffmpeg/bin/ffmpeg")
-    if bundled_path.exists():
-        logger.info("ffmpeg_path_selected source=bundled path=%s", bundled_path)
-        return str(bundled_path)
-
-    # 2. Legacy static location (older images)
-    legacy_static_path = Path("/usr/local/bin/ffmpeg")
-    if legacy_static_path.exists():
-        logger.info("ffmpeg_path_selected source=static path=%s", legacy_static_path)
-        return str(legacy_static_path)
-    # 2. imageio-ffmpeg static binary
-    try:
-        import imageio_ffmpeg
-
-        path = imageio_ffmpeg.get_ffmpeg_exe()
-        if path:
-            logger.info("ffmpeg_path_selected source=imageio-ffmpeg path=%s", path)
-            return path
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("ffmpeg_imageio_import_failed error=%s", exc)
-    # 3. System ffmpeg (may lack VP9 alpha on Debian)
-    path = shutil.which("ffmpeg")
-    if path:
-        logger.info("ffmpeg_path_selected source=system path=%s", path)
-        return path
-    logger.warning("ffmpeg_path_selected source=fallback path=ffmpeg")
-    return "ffmpeg"
+    """Find FFmpeg binary."""
+    return get_ffmpeg_path()
 
 
 def _get_ffprobe_path() -> str:
     """Find ffprobe binary."""
-    # 1. Bundled build installed by Dockerfile
-    bundled_path = Path("/usr/local/ffmpeg/bin/ffprobe")
-    if bundled_path.exists():
-        logger.info("ffprobe_path_selected source=bundled path=%s", bundled_path)
-        return str(bundled_path)
-
-    # 2. Legacy static location (older images)
-    legacy_static_path = Path("/usr/local/bin/ffprobe")
-    if legacy_static_path.exists():
-        logger.info("ffprobe_path_selected source=static path=%s", legacy_static_path)
-        return str(legacy_static_path)
-
-    # 2. Next to the selected ffmpeg (common for static bundles)
-    ffmpeg = _get_ffmpeg_path()
-    if ffmpeg and ffmpeg != "ffmpeg":
-        probe = Path(ffmpeg).parent / "ffprobe"
-        if probe.exists():
-            logger.info("ffprobe_path_selected source=adjacent path=%s", probe)
-            return str(probe)
-        probe = Path(ffmpeg).parent / "ffprobe.exe"
-        if probe.exists():
-            logger.info("ffprobe_path_selected source=adjacent path=%s", probe)
-            return str(probe)
-
-    # 3. System ffprobe
-    path = shutil.which("ffprobe")
-    if path:
-        logger.info("ffprobe_path_selected source=system path=%s", path)
-        return path
-
-    logger.warning("ffprobe_path_selected source=fallback path=ffprobe")
-    return "ffprobe"
+    return get_ffprobe_path()
 
 
 def _log_ffmpeg_version(ffmpeg: str) -> None:

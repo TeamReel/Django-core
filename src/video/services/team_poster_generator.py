@@ -17,11 +17,17 @@ import uuid as uuid_module
 import requests
 from PIL import Image
 
+from src.video.services._common import (
+    CANVAS_HEIGHT,
+    CANVAS_WIDTH,
+    download_image_bytes,
+)
+
 logger = logging.getLogger(__name__)
 
-# ── Output dimensions (portrait 9:16) ─────────────────────────────────────
-WIDTH = 1080
-HEIGHT = 1920
+# ── Output dimensions (portrait 9:16) ─────────────────────────────────────────
+WIDTH = CANVAS_WIDTH
+HEIGHT = CANVAS_HEIGHT
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -29,15 +35,7 @@ HEIGHT = 1920
 # ──────────────────────────────────────────────────────────────────────────
 
 
-def _download_image_bytes(url: str, timeout: int = 30) -> bytes | None:
-    """Download an image URL and return raw bytes."""
-    try:
-        resp = requests.get(url, timeout=timeout)
-        resp.raise_for_status()
-        return resp.content
-    except Exception:  # noqa: BLE001
-        logger.warning("Failed to download image: %s", url)
-        return None
+_download_image_bytes = download_image_bytes
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -259,32 +257,6 @@ def build_team_poster(
 
 def _resolve_brand_color(activity_id: str) -> str | None:
     """Look up brand primary color from the project's BrandProfile."""
-    try:
-        from django.apps import apps
+    from src.video.services._common import resolve_brand_color
 
-        Activity = apps.get_model("activities", "Activity")
-        BrandProfile = apps.get_model("branding", "BrandProfile")
-
-        activity = Activity.objects.select_related("project__parent_project").get(id=activity_id)
-        project = activity.project
-
-        for proj in [project, project.parent_project]:
-            if not proj:
-                continue
-            brand = BrandProfile.objects.filter(project=proj, is_active=True).first()
-            if brand:
-                tokens = brand.get_tokens()
-                value = tokens.get("primary_color") or tokens.get("primary")
-                if value:
-                    return value
-        org = getattr(project, "organisation", None)
-        if org:
-            brand = BrandProfile.objects.filter(organisation=org, is_active=True).first()
-            if brand:
-                tokens = brand.get_tokens()
-                value = tokens.get("primary_color") or tokens.get("primary")
-                if value:
-                    return value
-        return None
-    except Exception:  # noqa: BLE001
-        return None
+    return resolve_brand_color(activity_id)

@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import io
 import logging
-import shutil
 import subprocess
 import tempfile
 import uuid as uuid_module
@@ -21,13 +20,21 @@ from pathlib import Path
 import requests
 from PIL import Image, ImageDraw, ImageFont
 
+from src.video.services._common import (
+    CANVAS_HEIGHT,
+    CANVAS_WIDTH,
+    HEADER_HEIGHT,
+    download_image_cached,
+    get_ffmpeg_path,
+    get_pil_font,
+)
 from src.video.services.lineup_builder import LineupData
 
 logger = logging.getLogger(__name__)
 
-# ── Output dimensions (portrait 9:16) ──────────────────────────────────────
-WIDTH = 1080
-HEIGHT = 1920
+# ── Output dimensions (portrait 9:16) ─────────────────────────────────────────
+WIDTH = CANVAS_WIDTH
+HEIGHT = CANVAS_HEIGHT
 
 # ── Player sizing ───────────────────────────────────────────────────────────
 FLYER_SCALE = 0.16  # fullbody height as fraction of HEIGHT
@@ -72,8 +79,7 @@ FLYER_Y_ADJUST = {
 }
 
 # ── Header dimensions ─────────────────────────────────────────────────────
-HEADER_WIDTH = 1080
-HEADER_HEIGHT = 300
+HEADER_WIDTH = CANVAS_WIDTH
 
 
 # ── Image download cache ──────────────────────────────────────────────────
@@ -86,62 +92,17 @@ def _reset_cache() -> None:
 
 def _download_image(url: str) -> Image.Image | None:
     """Download an image from URL with caching."""
-    if not url:
-        return None
-    if url in _image_cache:
-        cached = _image_cache[url]
-        return cached.copy() if cached else None
-    try:
-        resp = requests.get(url, timeout=45)
-        resp.raise_for_status()
-        img = Image.open(io.BytesIO(resp.content))
-        _image_cache[url] = img.copy()
-        return img
-    except Exception:  # noqa: BLE001
-        logger.warning("Failed to download image: %s", url[:120])
-        _image_cache[url] = None
-        return None
+    return download_image_cached(url, _image_cache)
 
 
 def _get_font(size: int, bold: bool = True) -> ImageFont.FreeTypeFont:
     """Get a font, trying bold first then regular, with multiple fallbacks."""
-    if bold:
-        names = [
-            "arialbd.ttf",
-            "Arial Bold.ttf",
-            "DejaVuSans-Bold.ttf",
-            "FreeSansBold.ttf",
-            "LiberationSans-Bold.ttf",
-        ]
-    else:
-        names = [
-            "arial.ttf",
-            "Arial.ttf",
-            "DejaVuSans.ttf",
-            "FreeSans.ttf",
-            "LiberationSans-Regular.ttf",
-        ]
-    for name in names:
-        try:
-            return ImageFont.truetype(name, size)
-        except OSError:
-            continue
-    return ImageFont.load_default()
+    return get_pil_font(size, bold=bold)
 
 
 def _get_ffmpeg_path() -> str:
     """Find FFmpeg binary."""
-    path = shutil.which("ffmpeg")
-    if path:
-        return path
-    # Try imageio-ffmpeg as fallback
-    try:
-        import imageio_ffmpeg
-
-        return imageio_ffmpeg.get_ffmpeg_exe()
-    except Exception:
-        pass
-    return "ffmpeg"
+    return get_ffmpeg_path()
 
 
 # ── Label helpers ──────────────────────────────────────────────────────────

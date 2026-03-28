@@ -25,6 +25,11 @@ from pathlib import Path
 import requests
 from PIL import Image, ImageDraw, ImageFont
 
+from src.video.services._common import (
+    download_image_cached,
+    get_pil_font,
+)
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -92,47 +97,11 @@ def _upload_and_get_url(img: Image.Image, prefix: str = "lineup_scene") -> str:
 
 def _download_image(url: str) -> Image.Image | None:
     """Download an image from url, using in-memory cache to avoid repeated S3 round-trips."""
-    if not url:
-        return None
-    if url in _image_cache:
-        cached = _image_cache[url]
-        return cached.copy() if cached is not None else None
-    try:
-        response = requests.get(url, timeout=45)
-        response.raise_for_status()
-        img = Image.open(io.BytesIO(response.content))
-        _image_cache[url] = img.copy()
-        return img
-    except Exception:  # noqa: BLE001
-        logger.warning("Failed to download image from %s", url)
-        _image_cache[url] = None
-        return None
+    return download_image_cached(url, _image_cache)
 
 
 def _get_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
-    font_names = [
-        "arial.ttf",
-        "Arial.ttf",
-        "DejaVuSans.ttf",
-        "FreeSans.ttf",
-        "LiberationSans-Regular.ttf",
-    ]
-    if bold:
-        font_names = [
-            "arialbd.ttf",
-            "Arial Bold.ttf",
-            "DejaVuSans-Bold.ttf",
-            "FreeSansBold.ttf",
-            "LiberationSans-Bold.ttf",
-        ] + font_names
-
-    for font_name in font_names:
-        try:
-            return ImageFont.truetype(font_name, size)
-        except OSError:
-            continue
-
-    return ImageFont.load_default()
+    return get_pil_font(size, bold=bold)
 
 
 def generate_line_scene_image(

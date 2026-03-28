@@ -17,15 +17,29 @@ FFmpeg compositing produces per-phase clips, then concat demuxer joins them.
 from __future__ import annotations
 
 import logging
-import shutil
 import subprocess
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import requests
 from PIL import Image
+
+from src.video.services._common import (
+    CANVAS_FPS,
+    CANVAS_HEIGHT,
+    CANVAS_WIDTH,
+    HEADER_HEIGHT,
+    SPONSOR_BOX_H,
+    SPONSOR_MARGIN,
+    SPONSOR_PAD,
+    SPONSOR_W,
+    download_file,
+    get_ffmpeg_path,
+    resolve_brand_color,
+    resolve_ffmpeg_font_path,
+    run_ffmpeg,
+)
 
 if TYPE_CHECKING:
     from src.video.services.lineup_builder import LineupData
@@ -33,48 +47,13 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _get_ffmpeg_path() -> str:
-    """Find FFmpeg binary.
-
-    Priority order:
-    1. /usr/local/ffmpeg/bin/ffmpeg — bundled build (from Dockerfile)
-    2. /usr/local/bin/ffmpeg — legacy static location
-    3. imageio-ffmpeg — pip-installed static binary
-    4. System ffmpeg
-    """
-    # 1. Bundled build installed by Dockerfile
-    bundled_path = Path("/usr/local/ffmpeg/bin/ffmpeg")
-    if bundled_path.exists():
-        return str(bundled_path)
-
-    # 2. Legacy static location
-    legacy_static_path = Path("/usr/local/bin/ffmpeg")
-    if legacy_static_path.exists():
-        return str(legacy_static_path)
-
-    # 3. imageio-ffmpeg static binary
-    try:
-        import imageio_ffmpeg
-
-        path = imageio_ffmpeg.get_ffmpeg_exe()
-        if path:
-            return path
-    except Exception:  # noqa: BLE001
-        pass
-
-    # 4. System ffmpeg
-    path = shutil.which("ffmpeg")
-    if path:
-        return path
-
-    return "ffmpeg"
-
+# ── Aliases for backward compat ──
+_get_ffmpeg_path = get_ffmpeg_path
 
 # ── Video / canvas settings ──
-WIDTH = 1080
-HEIGHT = 1920
-FPS = 30
-HEADER_HEIGHT = 300  # px reserved for header band
+WIDTH = CANVAS_WIDTH
+HEIGHT = CANVAS_HEIGHT
+FPS = CANVAS_FPS
 
 # ── Player sizing ──
 PLAYER_SCALE_FULLBODY = 0.28  # fraction of HEIGHT
@@ -99,11 +78,7 @@ BADGE_LABEL_EXTRA_W = 60
 BADGE_LABEL_BG = "white"
 BADGE_LABEL_TEXT_COLOR = "black"
 
-# ── Sponsor box ──
-SPONSOR_W = 220
-SPONSOR_MARGIN = 36
-SPONSOR_PAD = 16
-SPONSOR_BOX_H = 120
+# ── Sponsor box (from _common) ──
 
 # ── Watermark ──
 WATERMARK_PATH = Path(__file__).resolve().parent.parent / "assets" / "watermark.png"
@@ -130,25 +105,8 @@ Y_POS = {
 }
 
 
-def _resolve_font_path() -> str:
-    """Find FFmpeg-safe font path (Linux or Windows)."""
-    candidates = [
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf",
-        "C:/Windows/Fonts/arialbd.ttf",
-        "C:/Windows/Fonts/arial.ttf",
-    ]
-    for p in candidates:
-        if Path(p).exists():
-            # FFmpeg drawtext requires colons escaped and forward slashes
-            return p.replace("\\", "/").replace(":", "\\:")
-    # Fallback — let FFmpeg try to find it
-    return "DejaVuSans-Bold"
-
-
-FONT_PATH = _resolve_font_path()
+_resolve_font_path = resolve_ffmpeg_font_path
+FONT_PATH = resolve_ffmpeg_font_path()
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -156,59 +114,8 @@ FONT_PATH = _resolve_font_path()
 # ─────────────────────────────────────────────────────────────────
 
 
-def _download_file(url: str, dest: Path, timeout: int = 60) -> bool:
-    """Download a file from URL (presigned S3 or http) to *dest*."""
-    if not url:
-        return False
-    try:
-        r = requests.get(url, timeout=timeout, stream=True)
-        r.raise_for_status()
-        with open(dest, "wb") as f:
-            for chunk in r.iter_content(8192):
-                f.write(chunk)
-        return True
-    except Exception:
-        logger.warning("Failed to download %s", url, exc_info=True)
-        return False
-
-
-def _resolve_brand_color(activity_id: str) -> str | None:
-    """Look up brand primary color from the project's BrandProfile.
-
-    Returns hex color string (e.g., "#D2122E") or None if not found.
-    """
-    try:
-        from django.apps import apps
-
-        Activity = apps.get_model("activities", "Activity")
-        BrandProfile = apps.get_model("branding", "BrandProfile")
-
-        activity = Activity.objects.select_related("project__parent_project").get(id=activity_id)
-        project = activity.project
-
-        # Try team brand first, then club brand
-        for proj in [project, project.parent_project]:
-            if not proj:
-                continue
-            brand = BrandProfile.objects.filter(project=proj, is_active=True).first()
-            if brand:
-                tokens = brand.get_tokens()  # {key: value} dict from DesignToken rows
-                value = tokens.get("primary_color") or tokens.get("primary")
-                if value:
-                    return value
-        # Fallback: check organisation-level brand
-        org = getattr(project, "organisation", None)
-        if org:
-            brand = BrandProfile.objects.filter(organisation=org, is_active=True).first()
-            if brand:
-                tokens = brand.get_tokens()
-                value = tokens.get("primary_color") or tokens.get("primary")
-                if value:
-                    return value
-        return None
-    except Exception:  # noqa: BLE001
-        logger.warning("Failed to resolve brand color for activity %s", activity_id, exc_info=True)
-        return None
+_download_file = download_file
+_resolve_brand_color = resolve_brand_color
 
 
 def _generate_circle_mask(size: int, dest: Path) -> None:
@@ -744,26 +651,7 @@ def _get_label_animation_expr(
         return (target_x, f"'({ys}) + {fh} + 10'", "1")
 
 
-def _run_ffmpeg(cmd: list[str], desc: str) -> None:
-    """Run FFmpeg and raise on failure.
-
-    We intentionally *do not* swallow FFmpeg failures. The lineup pipeline is strict:
-    missing/bad inputs should fail fast with an actionable error.
-    """
-
-    logger.info("FFmpeg: %s", desc)
-    try:
-        subprocess.run(cmd, check=True, capture_output=True, timeout=300)
-    except subprocess.CalledProcessError as e:
-        stderr = e.stderr.decode(errors="replace") if e.stderr else ""
-        tail = stderr[-2000:] if stderr else ""
-        logger.error("FFmpeg failed (%s): %s", desc, tail)
-        raise RuntimeError(
-            f"FFmpeg failed during {desc}. " f"Return code: {e.returncode}. " f"Stderr tail: {tail}"
-        ) from e
-    except subprocess.TimeoutExpired as e:
-        logger.error("FFmpeg timed out (%s)", desc)
-        raise RuntimeError(f"FFmpeg timed out during {desc}.") from e
+_run_ffmpeg = run_ffmpeg
 
 
 def _compose_phase(

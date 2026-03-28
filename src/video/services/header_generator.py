@@ -16,8 +16,12 @@ import tempfile
 import uuid as uuid_module
 from pathlib import Path
 
-import requests
 from PIL import Image, ImageDraw, ImageFont
+
+from src.video.services._common import (
+    download_image as _common_download_image,
+    get_pil_font,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -127,15 +131,7 @@ DEFAULT_COLORS = {
 
 def download_image(url: str) -> Image.Image | None:
     """Download image from URL and return PIL Image."""
-    if not url:
-        return None
-    try:
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()
-        return Image.open(io.BytesIO(response.content))
-    except Exception:  # noqa: BLE001
-        logger.warning("Failed to download image from %s", url)
-        return None
+    return _common_download_image(url, timeout=30)
 
 
 def _clean_logo_alpha(img: Image.Image) -> Image.Image:
@@ -164,31 +160,7 @@ def _clean_logo_alpha(img: Image.Image) -> Image.Image:
 
 def get_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
     """Get a font, falling back to default if custom fonts not available."""
-    # Try common system fonts
-    font_names = [
-        "arial.ttf",
-        "Arial.ttf",
-        "DejaVuSans.ttf",
-        "FreeSans.ttf",
-        "LiberationSans-Regular.ttf",
-    ]
-    if bold:
-        font_names = [
-            "arialbd.ttf",
-            "Arial Bold.ttf",
-            "DejaVuSans-Bold.ttf",
-            "FreeSansBold.ttf",
-            "LiberationSans-Bold.ttf",
-        ] + font_names
-
-    for font_name in font_names:
-        try:
-            return ImageFont.truetype(font_name, size)
-        except OSError:
-            continue
-
-    # Fallback to default
-    return ImageFont.load_default()
+    return get_pil_font(size, bold=bold)
 
 
 def _hex_to_rgba(hex_color: str) -> tuple[int, int, int, int]:

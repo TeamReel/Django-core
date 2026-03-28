@@ -80,15 +80,7 @@ def _hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
 
 def _download_image(url: str) -> Image.Image | None:
     """Download an image from URL."""
-    if not url:
-        return None
-    try:
-        resp = requests.get(url, timeout=45)
-        resp.raise_for_status()
-        return Image.open(io.BytesIO(resp.content))
-    except Exception:  # noqa: BLE001
-        logger.warning("Failed to download image from %s", url[:120] if url else "None")
-        return None
+    return download_image(url)
 
 
 def _upload_flyer(img: Image.Image, activity_id: str) -> dict:

@@ -27,23 +27,32 @@ from pathlib import Path
 import requests
 from PIL import Image, ImageDraw
 
+from src.video.services._common import (
+    CANVAS_FPS,
+    CANVAS_HEIGHT,
+    CANVAS_WIDTH,
+    HEADER_HEIGHT,
+    SPONSOR_BOX_H,
+    SPONSOR_MARGIN,
+    SPONSOR_PAD,
+    SPONSOR_W,
+    download_file,
+    get_ffmpeg_path,
+    resolve_ffmpeg_font_path,
+)
+
 logger = logging.getLogger(__name__)
 
 # ── Video / canvas settings ──
-WIDTH = 1080
-HEIGHT = 1920
-FPS = 30
-HEADER_HEIGHT = 300
+WIDTH = CANVAS_WIDTH
+HEIGHT = CANVAS_HEIGHT
+FPS = CANVAS_FPS
 # Transition duration used for fade-in/out between members.
 # Important: we do NOT overlap members anymore (no xfade), because that makes
 # the next member start before the previous ends.
 XFADE_DURATION = 2.0
 
-# ── Reserved zones ──
-SPONSOR_BOX_H = 120
-SPONSOR_MARGIN = 36
-SPONSOR_PAD = 16
-SPONSOR_W = 220
+# ── Reserved zones (from _common) ──
 NAME_LABEL_H = 60  # space for name text
 BOTTOM_RESERVED = SPONSOR_BOX_H + SPONSOR_MARGIN + NAME_LABEL_H  # ~216px
 
@@ -88,33 +97,18 @@ class MemberPhotoComposite:
 
 
 def _get_ffmpeg_path() -> str:
-    """Find FFmpeg binary (delegates to lineup_composer)."""
-    from src.video.services.lineup_composer import _get_ffmpeg_path as _lineup_ffmpeg
-
-    return _lineup_ffmpeg()
+    """Find FFmpeg binary (delegates to _common)."""
+    return get_ffmpeg_path()
 
 
 def _resolve_font_path() -> str:
-    """Find FFmpeg-safe font path (delegates to lineup_composer)."""
-    from src.video.services.lineup_composer import _resolve_font_path as _lineup_font
-
-    return _lineup_font()
+    """Find FFmpeg-safe font path (delegates to _common)."""
+    return resolve_ffmpeg_font_path()
 
 
 def _download_file(url: str, dest: Path, timeout: int = 120) -> bool:
     """Download a file from URL to dest."""
-    if not url:
-        return False
-    try:
-        r = requests.get(url, timeout=timeout, stream=True)
-        r.raise_for_status()
-        with open(dest, "wb") as f:
-            for chunk in r.iter_content(8192):
-                f.write(chunk)
-        return True
-    except Exception:
-        logger.warning("Failed to download %s", url, exc_info=True)
-        return False
+    return download_file(url, dest, timeout=timeout)
 
 
 def _probe_duration(video_path: Path) -> float:

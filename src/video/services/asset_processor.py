@@ -677,12 +677,12 @@ class AssetProcessor:
         Returns the storage path of the uploaded MP4, or None on failure.
         The MP4 uses H.264 with a black background (alpha composited to black).
         """
-        from src.video.services.rvm_processor import _get_ffmpeg_path, _get_ffprobe_path
+        from src.video.services._common import get_ffmpeg_path, get_ffprobe_path
 
         preview_path = mov_path.parent / "preview.mp4"
         try:
-            ffmpeg = _get_ffmpeg_path()
-            ffprobe = _get_ffprobe_path()
+            ffmpeg = get_ffmpeg_path()
+            ffprobe = get_ffprobe_path()
 
             # First, probe the input MOV to verify it's readable and get duration
             input_probe_cmd = [
