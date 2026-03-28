@@ -362,81 +362,16 @@ class ContentItemViewSet(ContentItemPermissionMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, pk=None):
-        """
-        Approve completed content.
+        """Approve completed content. Creates ContentApproval and updates status."""
+        from .services import InvalidStatusError, approve_content
 
-        Creates ContentApproval with status='approved' and updates
-        ContentItem status to 'approved'. Sends B17 notification.
-        """
         item = self.get_object()
-
-        # Validate content is completed
-        if item.status != ContentStatus.COMPLETED:
-            return Response(
-                {
-                    "error": (
-                        f'Cannot approve content with status "{item.status}". '
-                        "Only completed content can be approved."
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Create approval record
-        approval = ContentApproval.objects.create(
-            content_item=item,
-            reviewer=request.user,
-            status="approved",
-            feedback_text=request.data.get("feedback_text", ""),
-        )
-
-        # Update ContentItem status
-        item.status = ContentStatus.APPROVED
-        item.save()
-
-        # Send B17 notification
-        from .tasks import send_notification_b17
-
         try:
-            send_notification_b17(
-                user=item.created_by,
-                notification_type="content_approved",
-                message=(
-                    f"Your content '{item.template.name}' has been approved "
-                    f"by {request.user.username}"
-                ),
-                related_object_type="ContentItem",
-                related_object_id=item.id,
+            approval = approve_content(
+                item, reviewer=request.user, feedback_text=request.data.get("feedback_text", "")
             )
-        except Exception as e:
-            # Log but don't fail the approval
-            import logging
-
-            logging.warning(f"Failed to send approval notification: {e}")
-
-        # B64: Publish approval event
-        try:
-            from rtc_websockets.events import (
-                ApprovalDecidedPayload,
-                EventType,
-                build_event,
-            )
-            from rtc_websockets.services import RealtimeEventPublisher
-
-            publisher = RealtimeEventPublisher()
-            event = build_event(
-                EventType.APPROVAL_DECIDED,
-                ApprovalDecidedPayload(
-                    content_item_id=item.id,
-                    project_id=item.project_id,
-                    decision="approved",
-                    reviewer_name=request.user.get_full_name() or request.user.username,
-                ),
-                actor_id=request.user.id,
-            )
-            publisher.publish_to_project(item.project_id, event)
-        except Exception:
-            pass
+        except InvalidStatusError as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
             {
@@ -449,27 +384,10 @@ class ContentItemViewSet(ContentItemPermissionMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, pk=None):
-        """
-        Reject completed content with feedback.
+        """Reject completed content with feedback."""
+        from .services import InvalidStatusError, reject_content
 
-        Requires feedback_text. Creates ContentApproval with status='rejected'
-        and updates ContentItem status to 'rejected'. Sends B17 notification.
-        """
         item = self.get_object()
-
-        # Validate content is completed
-        if item.status != ContentStatus.COMPLETED:
-            return Response(
-                {
-                    "error": (
-                        f'Cannot reject content with status "{item.status}". '
-                        "Only completed content can be rejected."
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Validate feedback is provided
         feedback_text = request.data.get("feedback_text", "").strip()
         if not feedback_text:
             return Response(
@@ -477,61 +395,10 @@ class ContentItemViewSet(ContentItemPermissionMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Create approval record
-        approval = ContentApproval.objects.create(
-            content_item=item,
-            reviewer=request.user,
-            status="rejected",
-            feedback_text=feedback_text,
-        )
-
-        # Update ContentItem status
-        item.status = ContentStatus.REJECTED
-        item.save()
-
-        # Send B17 notification
-        from .tasks import send_notification_b17
-
         try:
-            send_notification_b17(
-                user=item.created_by,
-                notification_type="content_rejected",
-                message=(
-                    f"Your content '{item.template.name}' was rejected "
-                    f"by {request.user.username}: {feedback_text}"
-                ),
-                related_object_type="ContentItem",
-                related_object_id=item.id,
-            )
-        except Exception as e:
-            import logging
-
-            logging.warning(f"Failed to send rejection notification: {e}")
-
-        # B64: Publish rejection event
-        try:
-            from rtc_websockets.events import (
-                ApprovalDecidedPayload,
-                EventType,
-                build_event,
-            )
-            from rtc_websockets.services import RealtimeEventPublisher
-
-            publisher = RealtimeEventPublisher()
-            event = build_event(
-                EventType.APPROVAL_DECIDED,
-                ApprovalDecidedPayload(
-                    content_item_id=item.id,
-                    project_id=item.project_id,
-                    decision="rejected",
-                    reviewer_name=request.user.get_full_name() or request.user.username,
-                    comment=feedback_text,
-                ),
-                actor_id=request.user.id,
-            )
-            publisher.publish_to_project(item.project_id, event)
-        except Exception:
-            pass
+            approval = reject_content(item, reviewer=request.user, feedback_text=feedback_text)
+        except InvalidStatusError as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
             {
@@ -545,28 +412,10 @@ class ContentItemViewSet(ContentItemPermissionMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="request-revision")
     def request_revision(self, request, pk=None):
-        """
-        Request revision for completed content with feedback.
+        """Request revision for completed content with feedback."""
+        from .services import InvalidStatusError, request_revision as svc_request_revision
 
-        Requires feedback_text. Creates ContentApproval with
-        status='revision_requested' and updates ContentItem status.
-        Sends B17 notification.
-        """
         item = self.get_object()
-
-        # Validate content is completed
-        if item.status != ContentStatus.COMPLETED:
-            return Response(
-                {
-                    "error": (
-                        f'Cannot request revision for content with status "{item.status}". '
-                        "Only completed content can have revision requested."
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Validate feedback is provided
         feedback_text = request.data.get("feedback_text", "").strip()
         if not feedback_text:
             return Response(
@@ -574,61 +423,12 @@ class ContentItemViewSet(ContentItemPermissionMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Create approval record
-        approval = ContentApproval.objects.create(
-            content_item=item,
-            reviewer=request.user,
-            status="revision_requested",
-            feedback_text=feedback_text,
-        )
-
-        # Update ContentItem status
-        item.status = ContentStatus.REVISION_REQUESTED
-        item.save()
-
-        # Send B17 notification
-        from .tasks import send_notification_b17
-
         try:
-            send_notification_b17(
-                user=item.created_by,
-                notification_type="content_revision_requested",
-                message=(
-                    f"Revision requested for '{item.template.name}' "
-                    f"by {request.user.username}: {feedback_text}"
-                ),
-                related_object_type="ContentItem",
-                related_object_id=item.id,
+            approval = svc_request_revision(
+                item, reviewer=request.user, feedback_text=feedback_text
             )
-        except Exception as e:
-            import logging
-
-            logging.warning(f"Failed to send revision request notification: {e}")
-
-        # B64: Publish revision_requested event
-        try:
-            from rtc_websockets.events import (
-                ApprovalDecidedPayload,
-                EventType,
-                build_event,
-            )
-            from rtc_websockets.services import RealtimeEventPublisher
-
-            publisher = RealtimeEventPublisher()
-            event = build_event(
-                EventType.APPROVAL_DECIDED,
-                ApprovalDecidedPayload(
-                    content_item_id=item.id,
-                    project_id=item.project_id,
-                    decision="revision_requested",
-                    reviewer_name=request.user.get_full_name() or request.user.username,
-                    comment=feedback_text,
-                ),
-                actor_id=request.user.id,
-            )
-            publisher.publish_to_project(item.project_id, event)
-        except Exception:
-            pass
+        except InvalidStatusError as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
             {
