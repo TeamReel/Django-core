@@ -22,10 +22,10 @@ from .views_auth import (  # noqa: F401
 
 # ── Context ──────────────────────────────────────────────────────────
 from .views_context import (  # noqa: F401
-    auth_active_context,
     auth_default_context,
     auth_me,
 )
+from .views_context_active import auth_active_context  # noqa: F401
 
 # ── Profile ──────────────────────────────────────────────────────────
 from .views_profile import (  # noqa: F401
@@ -38,11 +38,13 @@ from .views_profile import (  # noqa: F401
 # ── Admin ────────────────────────────────────────────────────────────
 from .views_admin import (  # noqa: F401
     UserPagination,
-    admin_change_role,
     admin_update_avatar,
+    admin_user_list,
+)
+from .views_admin_detail import (  # noqa: F401
+    admin_change_role,
     admin_user_activate,
     admin_user_deactivate,
     admin_user_detail,
-    admin_user_list,
     admin_user_reset_password,
 )

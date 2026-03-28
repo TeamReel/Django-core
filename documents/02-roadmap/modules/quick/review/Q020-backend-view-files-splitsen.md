@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | � REVIEW |
 | Bron | Code Review / Codebase Audit |
 | Impact | 🟡 important |
 | Effort | ~4 uur |
@@ -23,9 +23,10 @@ Meerdere backend view-bestanden bevatten te veel logica en zijn moeilijk te onde
 | `accounts/api/views_context.py` | 1348 | Te veel context endpoints |
 
 ## Checklist
-- [ ] `video/views/job.py` → split in meerdere ViewSets/aparte modules
-- [ ] `video/services/` → extract shared helpers
-- [ ] `accounts/api/views_admin.py` → groepeer per domein
+- [x] `video/views/job.py` → split in mixin pattern (1724 → 501 + 810 + 726)
+- [ ] `video/services/` → composition pipelines, bewust niet gesplitst
+- [x] `accounts/api/views_admin.py` → gesplitst (1434 → 744 + 720)
+- [x] `accounts/api/views_context.py` → gesplitst (1348 → 546 + 816)
 - [ ] `generative/_asset_helpers.py` → al deels gesplitst in H14, rest afronden
-- [ ] Tests blijven passing
-- [ ] Verify
+- [x] Tests blijven passing (348 passed, 5 skipped)
+- [x] Verify (Django check: no issues)
