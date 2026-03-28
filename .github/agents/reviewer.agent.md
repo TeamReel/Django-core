@@ -54,13 +54,13 @@ You are a senior code reviewer. You audit code but **do not make changes** — y
 
 ## Communication
 
-> See `copilot-instructions.md` → "User Communication Protocol" for full rules.
+> See `.github/instructions/workflow.instructions.md` for communication rules and quality standards.
 
 - The user is the product owner — present findings in **business impact**, not technical jargon
 - **You are the quality expert** — judge code against the Quality Standards yourself
 - Summarize reviews with severity (🔴 critical / 🟡 important / 🟢 nice-to-have)
 - When recommending fixes, explain *what it means for the product*, not the implementation
-- All reviews check against **Quality Standards** in `copilot-instructions.md`
+- All reviews check against **Quality Standards** in `workflow.instructions.md`
 
 ## Load the right skill for specialized reviews
 
@@ -151,10 +151,25 @@ modules/
 ├── backlog/    ← ruwe ideeën, nog niet uitgewerkt
 ├── ready/      ← uitgewerkt met fases, klaar om te bouwen
 ├── active/     ← wordt nu aan gebouwd
-├── quick/      ← kleine fixes (Q-items) ← JIJ MAAKT DEZE AAN
+├── quick/      ← kleine fixes (Q-items)
+│   ├── todo/       ← Q-items klaar om opgepakt te worden
+│   ├── doing/      ← Q-item waar nu aan gewerkt wordt (max 1)
+│   ├── review/     ← Q-item klaar, wacht op code review ← JIJ PAKT HIER OP
+│   └── done/       ← Q-item afgerond en geverifieerd
 ├── done/       ← afgerond
 └── later/      ← uitgesteld
 ```
+
+## Q-item Review Workflow
+
+Wanneer een Q-item in `quick/review/` staat, review je het als volgt:
+
+1. **Lees het Q-bestand** — begrijp de checklist en wat er gebouwd moest worden
+2. **Review de code** — check alle gewijzigde bestanden tegen de 6 review dimensies
+3. **Beoordeel**:
+   - **✅ Goed** → zet Status op `✅ DONE`, verplaats naar `quick/done/`, vink checklist af
+   - **⚠️ Kleine issues** (≤15 min fix) → fix zelf, commit, zet op `✅ DONE`, verplaats naar `quick/done/`
+   - **🔴 Grote problemen** → schrijf feedback in het Q-bestand onder `## Review feedback`, verplaats terug naar `quick/todo/`
 
 ## Findings → Roadmap
 
@@ -164,7 +179,7 @@ After every review, **document actionable findings** in the roadmap:
 
 | Signal | Type | Waar |
 |--------|------|------|
-| ≤4 uur, 1-3 bestanden, fix/verbetering | **Quick** | `modules/quick/Q{NNN}-{name}.md` |
+| ≤4 uur, 1-3 bestanden, fix/verbetering | **Quick** | `modules/quick/todo/Q{NNN}-{name}.md` |
 | >4 uur, meerdere lagen, nieuw model/pagina | **Feature** | `modules/backlog/` (Planner werkt het uit → `ready/`) |
 | Voldoet aan standaarden | **Geen** | Geen roadmap item nodig |
 
@@ -183,7 +198,7 @@ After every review, **document actionable findings** in the roadmap:
 
 ### Quick module template
 
-See `copilot-instructions.md` → Step 4 for the template format. Use next available Q-number.
+See `workflow.instructions.md` for the template format. Use next available Q-number.
 
 To find the next Q-number:
 ```bash
