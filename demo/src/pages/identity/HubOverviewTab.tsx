@@ -6,8 +6,7 @@ import {
   ChevronRight, ChevronDown,
 } from 'lucide-react';
 import { AppIcon } from '../../components/AppIcon';
-import { getTeamAssetStatus, getMemberAssetSummary } from '../../utils/assetStatus';
-import { iterVariants, ROLE_KIT_MAP, type TeamreelAssets } from '../../utils/assetMetadata';
+import { getTeamAssetStatus } from '../../utils/assetStatus';
 import type { SquadMember } from '../periods/squadTabTypes';
 import type { MatchRecord } from '../periods/SeasonMatchesTab';
 import type { AssetSheetType } from './AssetDetailSheet';
@@ -24,6 +23,7 @@ interface HubOverviewTabProps {
   season: { name?: string; start_date?: string; end_date?: string } | null;
   batchBrandKits: Record<string, string | null>;
   brandSponsorUrl: string | null | undefined;
+  memberAssetSummary: { complete: number; total: number };
   isAdmin: boolean;
   userCanEditProject: boolean;
   orgIdForDirectoryLists: string;
@@ -45,6 +45,7 @@ export const HubOverviewTab: React.FC<HubOverviewTabProps> = ({
   season,
   batchBrandKits,
   brandSponsorUrl,
+  memberAssetSummary,
   isAdmin,
   userCanEditProject,
   orgIdForDirectoryLists,
@@ -114,26 +115,6 @@ export const HubOverviewTab: React.FC<HubOverviewTabProps> = ({
     () => Object.values(batchBrandKits).some(Boolean),
     [batchBrandKits],
   );
-  const memberAssetSummary = useMemo(
-    () => getMemberAssetSummary(members as Record<string, unknown>[]),
-    [members],
-  );
-
-  // ── Members with photo count ──
-  const membersWithPhoto = useMemo(() => {
-    return members.filter((m) => {
-      const assets = (m.metadata as Record<string, unknown> | undefined)
-        ?.teamreel_assets as TeamreelAssets | undefined;
-      if (!assets) return false;
-      const funcRoles = (m as Record<string, unknown>).functional_roles as string[] | undefined;
-      const primaryRole = funcRoles?.[0] ?? 'player';
-      const allowedKits = ROLE_KIT_MAP[primaryRole]?.kits ?? ['home', 'away', 'third'];
-      return allowedKits.some((kit) => {
-        const variants = iterVariants(assets, primaryRole, 'images', 'closeup', kit);
-        return variants.some((v) => typeof v.value?.processed === 'string' && v.value.processed);
-      });
-    }).length;
-  }, [members]);
 
   return (
     <>

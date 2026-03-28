@@ -358,7 +358,7 @@ export const HubPageSheets: React.FC<HubPageSheetsProps> = ({
               }}
             >
               <span className="flex-1">{toast.message}</span>
-              <button onClick={() => dismissToast(toast.id)} className={s.toastDismiss}>
+              <button type="button" aria-label="Melding sluiten" onClick={() => dismissToast(toast.id)} className={s.toastDismiss}>
                 {'\u2715'}
               </button>
             </div>

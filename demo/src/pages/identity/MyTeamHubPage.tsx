@@ -12,7 +12,7 @@
  *   Admin    → Overview, Wedstrijden, Media, Selectie, Beheer, Club (6)
  */
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Alert } from '@django-core/design-system';
 import { Pencil, MoreHorizontal, Eye, Trash2, Plus } from 'lucide-react';
 import { ShareButton } from '../../components/ShareButton';
@@ -25,7 +25,6 @@ import { periodPathKey } from '../../utils/periodPath';
 import { setActiveContext } from '../../utils/activeContext';
 import { getMemberAssetSummary } from '../../utils/assetStatus';
 import { useTeamDetailData } from './useTeamDetailData';
-import { useTeamTabData } from './useTeamTabData';
 import { useSeasonDetailPageData } from '../periods/useSeasonDetailPageData';
 import type { MatchRecord } from '../periods/SeasonMatchesTab';
 
@@ -63,20 +62,10 @@ import { matchRecordToMatch } from './matchRecordToMatch';
 
 export const MyTeamHubPage: React.FC = () => {
   const navigate = useNavigate();
-  const { clubId: clubSlugOrId } = useParams<{ clubId: string }>();
   useSetNavTitle('Mijn Team');
 
   // ── Team-level data ──
   const team = useTeamDetailData();
-  const teamTabData = useTeamTabData({
-    activeTabFromUrl: 'overview',
-    apiBaseUrl: team.apiBaseUrl,
-    teamIdForDirectoryLists: team.teamIdForDirectoryLists,
-    clubIdForDirectoryLists: team.clubIdForDirectoryLists,
-    orgSlugForDirectoryLists: team.orgSlugForDirectoryLists,
-    orgId: String(team.org?.id || ''),
-    clubId: team.clubIdForDirectoryLists,
-  });
 
   // ── Season-level data (via SeasonProvider) ──
   const seasonCtx = useSeasonContext();
@@ -382,6 +371,7 @@ export const MyTeamHubPage: React.FC = () => {
               season={seasonCtx.season}
               batchBrandKits={d.batchBrandKits}
               brandSponsorUrl={d.brandSponsorUrl}
+              memberAssetSummary={memberAssetSummary}
               isAdmin={isAdmin}
               userCanEditProject={d.userCanEditProject}
               orgIdForDirectoryLists={team.orgIdForDirectoryLists}
