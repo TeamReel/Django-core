@@ -13,6 +13,7 @@ Reference: kitty-specs/040-content-templates-generation/data-model.md
 """
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -362,13 +363,13 @@ class ContentItem(SoftDeleteMixin, models.Model):
 
         # Validation: output_file required when status='completed'
         if self.status == ContentStatus.COMPLETED and not self.output_file:
-            raise models.ValidationError(
+            raise ValidationError(
                 {"output_file": "Output file is required when status is completed"}
             )
 
         # Validation: error_message required when status='failed'
         if self.status == ContentStatus.FAILED and not self.error_message:
-            raise models.ValidationError(
+            raise ValidationError(
                 {"error_message": "Error message is required when status is failed"}
             )
 
@@ -419,6 +420,6 @@ class ContentApproval(models.Model):
         # Validation: feedback required for rejected/revision_requested
         if self.status in [ApprovalStatus.REJECTED, ApprovalStatus.REVISION_REQUESTED]:
             if not self.feedback_text or not self.feedback_text.strip():
-                raise models.ValidationError(
+                raise ValidationError(
                     {"feedback_text": f"Feedback is required for {self.get_status_display()}"}
                 )
