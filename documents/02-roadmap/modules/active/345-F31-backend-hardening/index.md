@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 ROADMAP |
+| Status | � IN UITVOERING |
 | Type | Feature (cross-cutting) |
 | Impact | 🔴 Kritiek — security gaps + performance + onderhoudbaarheid |
 | Effort | ~20 uur |
