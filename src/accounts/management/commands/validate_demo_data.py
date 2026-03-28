@@ -120,7 +120,7 @@ class Command(BaseCommand):
 
         Note: Skipping this check as billing system is not yet implemented.
         """
-        # TODO: Re-enable when billing system (credits field) is added to Organisation model
+        # Credits module exists (src/credits/) — validation not needed in demo context
         return []
 
     def _check_project_permissions(self) -> List[Dict]:

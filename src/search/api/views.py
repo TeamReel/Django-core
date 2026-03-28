@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 import unicodedata
 from django.db import connection
@@ -94,6 +95,8 @@ class SearchAPIView(APIView):
     API Endpoint for Global and Filtered Search.
     Supports optional hierarchy navigation via ?hierarchy=true parameter.
     """
+
+    permission_classes = [IsAuthenticated]
 
     def select_hierarchy_anchor(self, entries, request):
         """
