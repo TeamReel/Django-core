@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | � DOING |
+| Status | � REVIEW |
 | Bron | Code Review / Codebase Audit |
 | Impact | 🟡 important |
 | Effort | ~4 uur |
