@@ -1,0 +1,188 @@
+/* ============================================================================
+   HubPageSheets — Overlay/sheet/panel styles (extracted from MyTeamHubPage)
+   ============================================================================ */
+
+/* ── Member detail panel overlay ── */
+.memberPanelBackdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--app-overlay);
+  z-index: var(--z-overlay);
+  animation: memberFadeIn var(--duration-normal) ease-out;
+}
+
+.memberPanelBackdropClosing {
+  animation: memberFadeOut var(--duration-normal) ease-in forwards;
+}
+
+@keyframes memberFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes memberFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* Panel — slides in from bottom (mobile) or right (desktop) */
+.memberPanelOverlay {
+  position: fixed;
+  top: 56px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: calc(var(--z-overlay) + 1);
+  background: var(--app-bg);
+  overflow-y: auto;
+  animation: memberSlideUp var(--duration-normal) ease-out;
+}
+
+.memberPanelOverlayClosing {
+  animation: memberSlideDown var(--duration-normal) ease-in forwards;
+}
+
+@keyframes memberSlideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes memberSlideDown {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+
+/* Desktop (>=640px): slide-in from right as side panel */
+@media (min-width: 640px) {
+  .memberPanelOverlay {
+    left: auto;
+    width: min(640px, 100vw - 60px);
+    border-left: 1px solid var(--app-border);
+    box-shadow: -4px 0 24px var(--alpha-black-15);
+    animation: memberSlideInRight var(--duration-normal) ease-out;
+  }
+
+  .memberPanelOverlayClosing {
+    animation: memberSlideOutRight var(--duration-normal) ease-in forwards;
+  }
+
+  @keyframes memberSlideInRight {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+  }
+
+  @keyframes memberSlideOutRight {
+    from { transform: translateX(0); }
+    to   { transform: translateX(100%); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .memberPanelOverlay,
+  .memberPanelOverlayClosing,
+  .memberPanelBackdrop,
+  .memberPanelBackdropClosing {
+    animation: none;
+  }
+}
+
+/* ── Toasts ── */
+.toastContainer {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
+  left: var(--space-4);
+  right: var(--space-4);
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  color: var(--color-white);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  pointer-events: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.toastDismiss {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: var(--space-1);
+  font-size: var(--text-base);
+  opacity: 0.7;
+}
+
+.toastDismiss:hover { opacity: 1; }
+
+/* ── Credits sheet ── */
+.creditsSheet {
+  padding: var(--space-4);
+}
+
+.creditsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.creditsRowTotal {
+  border-bottom: none;
+  font-weight: var(--font-bold);
+}
+
+.creditsRowLabel {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+}
+
+.creditsRowTotal .creditsRowLabel {
+  color: var(--app-text);
+}
+
+.creditsRowValue {
+  font-size: var(--text-base);
+  font-variant-numeric: tabular-nums;
+}
+
+.creditsLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3) 0;
+  margin-top: var(--space-2);
+  border: none;
+  background: none;
+  color: var(--app-link);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.creditsLink:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+.creditsEmpty {
+  font-size: var(--text-sm);
+  color: var(--app-muted-text);
+  text-align: center;
+  padding: var(--space-6) 0;
+  margin: 0;
+}
