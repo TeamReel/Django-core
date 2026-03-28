@@ -7,6 +7,7 @@ import builtins as _builtins
 
 from builtins import isinstance
 
+from django.contrib.admin.views.decorators import staff_member_required
 from django.core.cache import caches
 from django.core.cache.backends.redis import RedisCache
 from django.http import JsonResponse
@@ -56,6 +57,7 @@ def _safe_get_metric_value(metric_name: str, labels: dict | None = None) -> floa
 
 
 @require_http_methods(["GET"])
+@staff_member_required
 def metrics_summary(request):
     """
     Minimal JSON summary of platform metrics for UI consumption.
@@ -125,6 +127,7 @@ def metrics_summary(request):
 
 
 @require_http_methods(["GET"])
+@staff_member_required
 def demo_health_check(request):
     """
     Application-level health check for the Demo environment.

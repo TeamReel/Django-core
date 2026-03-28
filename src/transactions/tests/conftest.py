@@ -2,8 +2,9 @@
 
 import pytest
 from accounts.models import User
-from organisations.models import Organisation
+from organisations.models import Membership, Organisation
 from projects.models import Project
+from rest_framework.test import APIClient
 
 from transactions.models import UsageEvent
 
@@ -24,6 +25,20 @@ def organization(db, user):
 def organisation(organization):
     """Alias for organization fixture (British spelling)."""
     return organization
+
+
+@pytest.fixture
+def membership(db, user, organization):
+    """Create a membership linking user to organization."""
+    return Membership.objects.create(user=user, organisation=organization, role="admin")
+
+
+@pytest.fixture
+def authenticated_client(user, membership):
+    """Return an APIClient authenticated as the test user (with org membership)."""
+    client = APIClient()
+    client.force_authenticate(user=user)
+    return client
 
 
 @pytest.fixture

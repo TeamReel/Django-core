@@ -23,7 +23,7 @@ from typing import Any
 
 from rest_framework import serializers, status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -400,7 +400,7 @@ class AssetGenerateOutputSerializer(serializers.Serializer):
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])  # Demo mode — tighten for production
+@permission_classes([IsAuthenticated])
 def generate_asset_view(request: Request) -> Response:
     """Generate asset variants synchronously.
 
@@ -1211,7 +1211,7 @@ def generate_asset_view(request: Request) -> Response:
 
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def list_asset_models_view(request: Request) -> Response:  # noqa: ARG001
     """List available AI models with pricing info.
 
@@ -1233,7 +1233,7 @@ def list_asset_models_view(request: Request) -> Response:  # noqa: ARG001
 
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def list_asset_templates_view(request: Request) -> Response:  # noqa: ARG001
     """List available asset generation templates.
 
@@ -1372,7 +1372,7 @@ class SaveAssetInputSerializer(serializers.Serializer):
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])  # Demo mode — tighten for production
+@permission_classes([IsAuthenticated])
 def save_asset_view(request: Request) -> Response:
     """Save a generated asset as BrandAsset.
 
@@ -1880,7 +1880,7 @@ def save_asset_view(request: Request) -> Response:
 
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def list_asset_history_view(request: Request) -> Response:
     """List historical file assets, optionally filtered by asset type.
 
@@ -1962,7 +1962,7 @@ def list_asset_history_view(request: Request) -> Response:
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def restore_asset_version_view(request: Request) -> Response:
     """Restore a previous FileAsset as the active BrandAsset.
 
@@ -2399,7 +2399,7 @@ def _run_video_generation(
 
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def generation_task_status_view(request: Request, task_id: str) -> Response:
     """Poll for async generation status (images + videos).
 
@@ -2445,7 +2445,7 @@ def generation_task_status_view(request: Request, task_id: str) -> Response:
 
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def list_generation_jobs_view(request: Request) -> Response:
     """List AI generation jobs for the Workflow Queue UI.
 
@@ -2802,7 +2802,7 @@ def list_generation_jobs_view(request: Request) -> Response:
 
 
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def generation_job_counts_view(request: Request) -> Response:
     """Return aggregated status counts for AI generation jobs.
 
@@ -3142,7 +3142,7 @@ def _crop_closeup_guest_player(request: Request, project_id: str, kit_type: str)
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def crop_closeup_from_fullbody_view(request: Request) -> Response:
     """Crop the top portion of an existing fullbody image to produce a closeup.
 
@@ -3317,7 +3317,7 @@ def crop_closeup_from_fullbody_view(request: Request) -> Response:
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def crop_halfbody_from_fullbody_view(request: Request) -> Response:
     """Crop a halfbody (head to waist) image from the stored fullbody PNG.
 
@@ -4070,7 +4070,7 @@ def _propagate_approved_guest_avatar_to_project(job) -> None:  # noqa: ANN001
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def review_generation_job_view(request: Request, task_id: str) -> Response:
     """Approve or reject a completed AI generation job (or a specific variant).
 

@@ -51,7 +51,7 @@ class TransactionsApiRootCompatView(APIView):
     - Otherwise, return the same link-index payload as the router root.
     """
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
         interesting_params = {
@@ -97,15 +97,16 @@ class UsageEventViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = UsageEventFilter
     http_method_names = ["get", "post"]
-    permission_classes = [AllowAny]  # TODO: Replace with B08 permissions
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Filter queryset based on user permissions.
-
-        TODO: Integrate with B08 permissions to enforce org/project access.
-        For now, return all (must be implemented before production).
-        """
-        return super().get_queryset()
+        """Org-scoped queryset: only return usage events for user's organisations."""
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.is_superuser:
+            return qs
+        user_org_ids = user.organisation_memberships.values_list("organisation_id", flat=True)
+        return qs.filter(organization__in=user_org_ids)
 
     def create(self, request: Request, *args, **kwargs) -> Response:
         """Create usage event with idempotency support."""
@@ -143,15 +144,16 @@ class TransactionViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = TransactionFilter
     http_method_names = ["get", "post"]
-    permission_classes = [AllowAny]  # TODO: Replace with B08 permissions
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Filter queryset based on user permissions.
-
-        TODO: Integrate with B08 permissions to enforce org/project access.
-        For now, return all (must be implemented before production).
-        """
-        return super().get_queryset()
+        """Org-scoped queryset: only return transactions for user's organisations."""
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.is_superuser:
+            return qs
+        user_org_ids = user.organisation_memberships.values_list("organisation_id", flat=True)
+        return qs.filter(organization__in=user_org_ids)
 
     def create(self, request: Request, *args, **kwargs) -> Response:
         """Create transaction via service layer with policy enforcement."""
@@ -379,15 +381,16 @@ class BalancePolicyViewSet(viewsets.ModelViewSet):
     queryset = BalancePolicy.objects.select_related("organization", "project")
     serializer_class = BalancePolicySerializer
     http_method_names = ["get", "patch", "put"]
-    permission_classes = [AllowAny]  # TODO: Replace with B08 permissions
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Filter queryset based on user permissions.
-
-        TODO: Integrate with B08 permissions to enforce org/project access.
-        For now, return all (must be implemented before production).
-        """
-        return super().get_queryset()
+        """Org-scoped queryset: only return balance policies for user's organisations."""
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.is_superuser:
+            return qs
+        user_org_ids = user.organisation_memberships.values_list("organisation_id", flat=True)
+        return qs.filter(organization__in=user_org_ids)
 
     @action(
         detail=False,
