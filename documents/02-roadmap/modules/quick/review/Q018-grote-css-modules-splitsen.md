@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | � REVIEW |
 | Bron | Code Review / Codebase Audit |
 | Impact | 🟢 nice-to-have |
 | Effort | ~3 uur |
