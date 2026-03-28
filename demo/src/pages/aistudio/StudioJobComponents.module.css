@@ -63,11 +63,11 @@
 }
 
 .jobCard[data-status='completed'] .jobIcon {
-  color: var(--color-green-400);
+  color: var(--app-success);
 }
 
 .jobCard[data-status='failed'] .jobIcon {
-  color: var(--color-red-400);
+  color: var(--app-error);
 }
 
 .jobSpinner {
@@ -117,4 +117,14 @@
   background: var(--app-primary);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   transition: width var(--duration-slower) var(--ease-default);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jobSpinner {
+    animation: none;
+  }
+
+  .jobProgressFill {
+    transition: none;
+  }
 }

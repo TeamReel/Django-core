@@ -243,3 +243,13 @@
   }
 
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .contentCard {
+    transition: none;
+  }
+
+  .previewOverlay {
+    animation: none;
+  }
+}
