@@ -1,0 +1,772 @@
+﻿diff --git a/demo/src/pages/activities/match-detail/MatchLineupTab.tsx b/demo/src/pages/activities/match-detail/MatchLineupTab.tsx
+index 3b32f3b5..a3d3ee20 100644
+--- a/demo/src/pages/activities/match-detail/MatchLineupTab.tsx
++++ b/demo/src/pages/activities/match-detail/MatchLineupTab.tsx
+@@ -1,14 +1,14 @@
+ import React from 'react';
+ import { Card } from '@django-core/design-system';
+ import { FormationPicker } from '../../identity/content-generation';
+-import { FieldVisualization } from './MatchLineupField';
++import { FieldVisualization, type SquadMember } from './MatchLineupField';
+ 
+ interface MatchLineupTabProps {
+   lineupFormation: string;
+   setLineupFormation: (formation: string) => void;
+   lineupSlots: Record<string, string[]>;
+   setLineupSlots: (slots: Record<string, string[]>) => void;
+-  lineupSquad: Record<string, any[]>;
++  lineupSquad: Record<string, SquadMember[]>;
+   lineupSquadLoading: boolean;
+   lineupBenchStatus: Record<string, string>;
+   setLineupBenchStatus: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+diff --git a/demo/src/pages/activities/matchDetailTypes.ts b/demo/src/pages/activities/matchDetailTypes.ts
+index ced08d61..02bc82f7 100644
+--- a/demo/src/pages/activities/matchDetailTypes.ts
++++ b/demo/src/pages/activities/matchDetailTypes.ts
+@@ -11,6 +11,7 @@ import type { ContentTemplate } from '../identity/ContentGenerationModal';
+ import type { useBrandProfile } from '../../hooks/useBrandProfile';
+ import type { Period, SeasonOrganisation, SeasonProject as Project } from '../../types/season';
+ import type { User } from '@django-core/auth-ui';
++import type { SquadMember } from './match-detail/MatchLineupField';
+ 
+ // Re-export helpers for backward compatibility
+ export {
+@@ -261,7 +262,7 @@ export interface MatchDetailDataReturn {
+   setLineupFormation: (v: string) => void;
+   lineupSlots: Record<string, string[]>;
+   setLineupSlots: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
+-  lineupSquad: Record<string, Record<string, unknown>[]>;
++  lineupSquad: Record<string, SquadMember[]>;
+   lineupSquadLoading: boolean;
+   lineupBenchStatus: Record<string, string>;
+   setLineupBenchStatus: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+diff --git a/demo/src/pages/activities/useMatchDataFetching.ts b/demo/src/pages/activities/useMatchDataFetching.ts
+index 2b454516..b66877fb 100644
+--- a/demo/src/pages/activities/useMatchDataFetching.ts
++++ b/demo/src/pages/activities/useMatchDataFetching.ts
+@@ -8,13 +8,7 @@ import { logger } from '@/utils/logger';
+ 
+ // ΓöÇΓöÇΓöÇ Local types ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+ 
+-/** Squad member record from the project members API */
+-interface SquadMemberRecord {
+-  functional_roles?: string[];
+-  metadata?: { functional_roles?: string[]; team_role?: string; [key: string]: unknown };
+-  data?: { functional_role?: string; [key: string]: unknown };
+-  [key: string]: unknown;
+-}
++import type { SquadMember } from './match-detail/MatchLineupField';
+ 
+ // ΓöÇΓöÇΓöÇ Types ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+ 
+@@ -45,7 +39,7 @@ interface UseMatchDataFetchingParams {
+   setEligibleMembers: (v: OrgMember[]) => void;
+   setClubProjectMembers: (v: ProjectMember[]) => void;
+   setLineupSquadLoading: (v: boolean) => void;
+-  setLineupSquad: (v: Record<string, SquadMemberRecord[]>) => void;
++  setLineupSquad: (v: Record<string, SquadMember[]>) => void;
+   setLineupFormation: (v: string) => void;
+   setLineupSlots: (v: Record<string, string[]>) => void;
+   setLineupBenchStatus: (v: Record<string, string>) => void;
+@@ -91,7 +85,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
+           // Fallback: search by slug via API when provider hasn't loaded yet
+           if (!competitionUuid && resolvedSeasonId) {
+             try {
+-              const { results } = await api.list<any>('/periods/', {
++              const { results } = await api.list<Period>('/periods/', {
+                 params: { parent: resolvedSeasonId, slug: effectiveCompetitionIdVal },
+               });
+               if (results.length > 0) {
+@@ -316,15 +310,15 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
+     const fetchSquadData = async () => {
+       setLineupSquadLoading(true);
+       try {
+-        const members = await api.listAll<SquadMemberRecord>(`/projects/${encodeURIComponent(String(projectIdVal))}/members/`, { pageSize: 100 });
++        const members = await api.listAll<SquadMember>(`/projects/${encodeURIComponent(String(projectIdVal))}/members/`, { pageSize: 100 });
+ 
+-        const groups: Record<string, SquadMemberRecord[]> = { goalkeeper: [], player: [], coach: [], assistant: [] };
+-        members.forEach((p: SquadMemberRecord) => {
++        const groups: Record<string, SquadMember[]> = { goalkeeper: [], player: [], coach: [], assistant: [] };
++        members.forEach((p: SquadMember) => {
+           let roles: string[] = [];
+           if (p.functional_roles && Array.isArray(p.functional_roles) && p.functional_roles.length > 0) roles = p.functional_roles;
+           else if (p.metadata?.functional_roles && Array.isArray(p.metadata.functional_roles) && p.metadata.functional_roles.length > 0) roles = p.metadata.functional_roles;
+           else if (p.data?.functional_role) roles = [p.data.functional_role];
+-          else if (p.metadata?.team_role) roles = [p.metadata.team_role];
++          else if (p.metadata?.team_role) roles = [String(p.metadata.team_role)];
+           else roles = ['player'];
+           roles.forEach(role => {
+             const nr = role.toLowerCase();
+diff --git a/demo/src/pages/activities/useMatchFormState.ts b/demo/src/pages/activities/useMatchFormState.ts
+index cd2ec09c..c7602c62 100644
+--- a/demo/src/pages/activities/useMatchFormState.ts
++++ b/demo/src/pages/activities/useMatchFormState.ts
+@@ -9,6 +9,7 @@ import { logger } from '@/utils/logger';
+ import type { MatchDetail, ContentItem, OrgMember, ProjectMember } from './matchDetailTypes';
+ import type { ContentTemplate } from '../identity/ContentGenerationModal';
+ import type { MatchMediaItem } from '../../components/MediaAssetCard';
++import type { SquadMember } from './match-detail/MatchLineupField';
+ import { formReducer, makeSetter } from '../../utils/formReducer';
+ 
+ // ΓöÇΓöÇΓöÇ State interface ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+@@ -57,7 +58,7 @@ interface MatchFormState {
+   selectedLineupParticipationIdsAway: Set<string>;
+   lineupFormation: string;
+   lineupSlots: Record<string, string[]>;
+-  lineupSquad: Record<string, Record<string, unknown>[]>;
++  lineupSquad: Record<string, SquadMember[]>;
+   lineupSquadLoading: boolean;
+   lineupSaving: boolean;
+   lineupSaveSuccess: boolean;
+diff --git a/demo/src/pages/identity/ClubOrganisationDetailPage.tsx b/demo/src/pages/identity/ClubOrganisationDetailPage.tsx
+index b11e6fb0..a2cc97d7 100644
+--- a/demo/src/pages/identity/ClubOrganisationDetailPage.tsx
++++ b/demo/src/pages/identity/ClubOrganisationDetailPage.tsx
+@@ -104,7 +104,7 @@ export default function ClubOrganisationDetailPage() {
+     );
+   }
+ 
+-  const isActive = !!club && String(((activeContext as Record<string, any>)?.club as Record<string, unknown>)?.id ?? '') === String(club.id ?? '');
++  const isActive = !!club && String(((activeContext as Record<string, unknown>)?.club as Record<string, unknown>)?.id ?? '') === String(club.id ?? '');
+ 
+   return (
+     <>
+diff --git a/demo/src/pages/identity/ContentGenerationModal/contentGenerationApi.ts b/demo/src/pages/identity/ContentGenerationModal/contentGenerationApi.ts
+index 6c43415a..80610b30 100644
+--- a/demo/src/pages/identity/ContentGenerationModal/contentGenerationApi.ts
++++ b/demo/src/pages/identity/ContentGenerationModal/contentGenerationApi.ts
+@@ -46,9 +46,13 @@ export const resolveProjectId = (
+   return String(id);
+ };
+ 
+-export const postJson = async (path: string, body: Record<string, unknown>, extra?: Record<string, string>) => {
+-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+-  return api.post<any>(path, body, extra ? { headers: extra } as Record<string, unknown> : undefined);
++/** DRF response envelope returned by postJson ΓÇö allows nested .data access without any. */
++interface ApiEnvelope extends Record<string, unknown> {
++  data?: Record<string, unknown>;
++}
++
++export const postJson = async (path: string, body: Record<string, unknown>, extra?: Record<string, string>): Promise<ApiEnvelope> => {
++  return api.post<ApiEnvelope>(path, body, extra ? { headers: extra } as Record<string, unknown> : undefined);
+ };
+ 
+ /* ================================================================== */
+@@ -129,7 +133,7 @@ export const generateGenericAI = async (p: GenerateGenericAIParams): Promise<Gen
+   });
+ 
+   const responseData = data.data || data;
+-  const variants: GeneratedVariant[] = responseData.variants || [];
++  const variants = (responseData.variants || []) as GeneratedVariant[];
+ 
+   const firstError = variants.find((v: GeneratedVariant) => v.error);
+   if (firstError?.error) throw new Error(firstError.error);
+@@ -147,13 +151,13 @@ export const generateGenericAI = async (p: GenerateGenericAIParams): Promise<Gen
+   } else if (responseData.image_base64 || responseData.presigned_url) {
+     const singleVariant: GeneratedVariant = {
+       variant_index: 0,
+-      image_base64: responseData.image_base64,
+-      presigned_url: responseData.presigned_url,
+-      mime_type: responseData.mime_type,
+-      filename: responseData.filename,
++      image_base64: responseData.image_base64 as string | null,
++      presigned_url: responseData.presigned_url as string | null,
++      mime_type: responseData.mime_type as string | null,
++      filename: responseData.filename as string | null,
+       error: null,
+-      storage_info: responseData.storage_info,
+-      metadata: responseData.metadata || {},
++      storage_info: responseData.storage_info as GeneratedVariant['storage_info'],
++      metadata: (responseData.metadata || {}) as Record<string, unknown>,
+     };
+     variants.push(singleVariant);
+     generatedOutput = {
+@@ -209,9 +213,9 @@ export const saveGeneratedVariant = async (p: SaveVariantParams): Promise<SaveVa
+ 
+   const result = data.data || data;
+   return {
+-    file_asset_id: result.file_asset_id,
+-    brand_asset_id: result.brand_asset_id,
+-    media_item_id: result.media_item_id,
+-    storage_path: result.storage_path,
++    file_asset_id: result.file_asset_id as string | undefined,
++    brand_asset_id: result.brand_asset_id as string | undefined,
++    media_item_id: result.media_item_id as string | undefined,
++    storage_path: result.storage_path as string | undefined,
+   };
+ };
+diff --git a/demo/src/pages/identity/ContentGenerationModal/contentGenerationApiVisual.ts b/demo/src/pages/identity/ContentGenerationModal/contentGenerationApiVisual.ts
+index 56534690..47993756 100644
+--- a/demo/src/pages/identity/ContentGenerationModal/contentGenerationApiVisual.ts
++++ b/demo/src/pages/identity/ContentGenerationModal/contentGenerationApiVisual.ts
+@@ -39,7 +39,7 @@ export const generateLineupFlyer = async (p: GenerateLineupFlyerParams): Promise
+     { 'X-Project-ID': projectId },
+   );
+ 
+-  const flyerUrl = data.data?.flyer_url || data.flyer_url;
++  const flyerUrl = (data.data?.flyer_url || data.flyer_url) as string | null;
+   if (!flyerUrl) throw new Error('Flyer generated but no URL returned');
+ 
+   return [{
+@@ -77,7 +77,7 @@ export const generateTeamPoster = async (p: GenerateTeamPosterParams): Promise<G
+     { 'X-Project-ID': projectId },
+   );
+ 
+-  const posterUrl = data.poster_url || data.data?.poster_url;
++  const posterUrl = (data.poster_url || data.data?.poster_url) as string | null;
+   if (!posterUrl) throw new Error('Poster generated but no URL returned');
+ 
+   return [{
+@@ -122,7 +122,7 @@ export const generateMatchFlyer = async (p: GenerateMatchFlyerParams): Promise<G
+     { 'X-Project-ID': projectId },
+   );
+ 
+-  const flyerUrl = data.data?.flyer_url || data.flyer_url;
++  const flyerUrl = (data.data?.flyer_url || data.flyer_url) as string | null;
+   if (!flyerUrl) throw new Error('Flyer generated but no URL returned');
+ 
+   return [{
+@@ -163,7 +163,7 @@ export const generateMatchSummary = async (p: GenerateMatchSummaryParams): Promi
+     { 'X-Project-ID': projectId },
+   );
+ 
+-  const flyerUrl = data.data?.flyer_url || data.flyer_url;
++  const flyerUrl = (data.data?.flyer_url || data.flyer_url) as string | null;
+   if (!flyerUrl) throw new Error('Summary generated but no URL returned');
+ 
+   return [{
+diff --git a/demo/src/pages/identity/ContentGenerationModal/contentGenerationVideoApi.ts b/demo/src/pages/identity/ContentGenerationModal/contentGenerationVideoApi.ts
+index cc771f0a..ea00d544 100644
+--- a/demo/src/pages/identity/ContentGenerationModal/contentGenerationVideoApi.ts
++++ b/demo/src/pages/identity/ContentGenerationModal/contentGenerationVideoApi.ts
+@@ -121,7 +121,7 @@ export const generateLineupVideo = async (p: GenerateLineupVideoParams): Promise
+       },
+       { 'X-Project-ID': projectId },
+     );
+-    jobId = data.data?.id || data.id;
++    jobId = (data.data?.id || data.id) as string;
+   } else {
+     addMemberSegments(targetGKs, gkAssets, 'goalkeeper');
+     addMemberSegments(targetPlayers, playerAssets, 'player');
+@@ -147,7 +147,7 @@ export const generateLineupVideo = async (p: GenerateLineupVideoParams): Promise
+       },
+       { 'X-Project-ID': projectId },
+     );
+-    jobId = data.data?.id || data.id;
++    jobId = (data.data?.id || data.id) as string;
+   }
+ 
+   return jobId;
+@@ -184,7 +184,7 @@ export const generateGoalCelebration = async (p: GenerateGoalCelebrationParams):
+     { 'X-Project-ID': projectId },
+   );
+ 
+-  return data.data?.id || data.id;
++  return (data.data?.id || data.id) as string;
+ };
+ 
+ /* ================================================================== */
+@@ -209,5 +209,5 @@ export const generateMatchIntro = async (p: GenerateMatchIntroParams): Promise<s
+     { 'X-Project-ID': projectId },
+   );
+ 
+-  return data.data?.id || data.id;
++  return (data.data?.id || data.id) as string;
+ };
+diff --git a/demo/src/pages/identity/MemberDetailPage.tsx b/demo/src/pages/identity/MemberDetailPage.tsx
+index 5d7789d8..480487b1 100644
+--- a/demo/src/pages/identity/MemberDetailPage.tsx
++++ b/demo/src/pages/identity/MemberDetailPage.tsx
+@@ -34,7 +34,7 @@ export const MemberDetailPage: React.FC = () => {
+   const { id, memberId } = useParams<{ id: string; memberId: string }>();
+   const navigate = useNavigate();
+   const [searchParams] = useSearchParams();
+-  const [member, setMember] = useState<any | null>(null);
++  const [member, setMember] = useState<OrgMembershipListItem | null>(null);
+   const [loading, setLoading] = useState(true);
+   const [error, setError] = useState<string | null>(null);
+   const [role, setRole] = useState('');
+diff --git a/demo/src/pages/identity/OrgModals.tsx b/demo/src/pages/identity/OrgModals.tsx
+index ae9cbf6e..20e13ccb 100644
+--- a/demo/src/pages/identity/OrgModals.tsx
++++ b/demo/src/pages/identity/OrgModals.tsx
+@@ -291,10 +291,10 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
+         editingMember={editingMember}
+         currentOrgSlug={currentOrgSlug}
+         onSaved={(updated, role) => {
+-          setMembers((prev: any) =>
+-            prev.map((m: any) => {
++          setMembers((prev) =>
++            prev.map((m): User => {
+               if (String(m?.id) !== String(editingMember?.id)) return m;
+-              return updated && updated.id ? updated : { ...m, role };
++              return updated?.id ? { ...m, ...updated } as User : { ...m, role };
+             }),
+           );
+           setIsEditMemberRoleModalOpen(false);
+diff --git a/demo/src/pages/identity/PeriodCreateModal/usePeriodCreateData.ts b/demo/src/pages/identity/PeriodCreateModal/usePeriodCreateData.ts
+index 043b8fb7..2201767a 100644
+--- a/demo/src/pages/identity/PeriodCreateModal/usePeriodCreateData.ts
++++ b/demo/src/pages/identity/PeriodCreateModal/usePeriodCreateData.ts
+@@ -163,7 +163,7 @@ export function usePeriodCreateData({
+           params.set('organisation_id', String(selectedOrganisationId));
+         }
+ 
+-        const data = await api.get<any>(`/periods/?${params.toString()}`);
++        const data = await api.get<{ data?: { data?: Record<string, unknown>[]; results?: Record<string, unknown>[] }; results?: Record<string, unknown>[]; [key: string]: unknown }>(`/periods/?${params.toString()}`);
+         const results = data.data?.data || data.data?.results || data.results || data.data || [];
+         const roots = (Array.isArray(results) ? results : []).filter(
+           (p: Record<string, unknown>) => p?.parent_period_id == null && !p?.parent_period
+diff --git a/demo/src/pages/identity/PermissionsPage.tsx b/demo/src/pages/identity/PermissionsPage.tsx
+index 85b4c9fd..69d4cb34 100644
+--- a/demo/src/pages/identity/PermissionsPage.tsx
++++ b/demo/src/pages/identity/PermissionsPage.tsx
+@@ -25,7 +25,7 @@ import styles from './PermissionsPage.module.css';
+  */
+ export const PermissionsPage: React.FC = () => {
+   const [effectivePermissionKeys, setEffectivePermissionKeys] = useState<string[]>([]);
+-  const [permissionsTree, setPermissionsTree] = useState<any | null>(null);
++  const [permissionsTree, setPermissionsTree] = useState<Record<string, unknown> | null>(null);
+   const [loading, setLoading] = useState(true);
+   const [error, setError] = useState<string | null>(null);
+   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+@@ -40,7 +40,7 @@ export const PermissionsPage: React.FC = () => {
+         const userData = await api.get<User>('/auth/me/');
+         setCurrentUserRole(userData.role ?? null);
+ 
+-        const tree = await api.get<any>('/permissions/current/');
++        const tree = await api.get<Record<string, unknown>>('/permissions/current/');
+         setPermissionsTree(tree);
+ 
+         const keys: string[] = [];
+diff --git a/demo/src/pages/identity/ProjectsTable.tsx b/demo/src/pages/identity/ProjectsTable.tsx
+index f43cf929..caf06aae 100644
+--- a/demo/src/pages/identity/ProjectsTable.tsx
++++ b/demo/src/pages/identity/ProjectsTable.tsx
+@@ -4,7 +4,7 @@
+ import React from 'react';
+ import { Badge } from '@django-core/design-system';
+ import { Table } from '../../shims/design-system';
+-import { Project } from '../../types';
++import { Project, Organisation } from '../../types';
+ import { canEditProject, canDeleteProject } from '../../utils/permissions';
+ import type { useProjectsPageData } from './useProjectsPageData';
+ import { routes } from '../../routes';
+@@ -82,7 +82,7 @@ export function ProjectsTable({ d }: { d: Data }) {
+             const projectOrg = project.organisation;
+             const pCtx: import('@/utils/permissions').PermissionContext = {
+               currentOrganisation: projectOrg
+-                ? { ...projectOrg, name: projectOrg.name || '', user_role: projectOrg.user_role as 'admin' | 'member' | undefined } as any
++                ? { ...projectOrg, name: projectOrg.name || '', user_role: projectOrg.user_role as 'admin' | 'member' | undefined } as unknown as Organisation
+                 : resolvedOrg,
+               isSuperAdmin,
+             };
+diff --git a/demo/src/pages/identity/UsersPage.tsx b/demo/src/pages/identity/UsersPage.tsx
+index e2dc0bf4..12f6dd17 100644
+--- a/demo/src/pages/identity/UsersPage.tsx
++++ b/demo/src/pages/identity/UsersPage.tsx
+@@ -11,6 +11,9 @@ import AddMemberModal from './AddMemberModal';
+ import up from './UsersPage.module.css';
+ import AssignUserToOrgModal from './AssignUserToOrgModal';
+ import LinkUserModal from './LinkUserModal';
++import type { UserEditModalProps } from './userEditTypes';
++import type { User as LinkModalUser } from './linkUserModalTypes';
++import type { User as ApiUser } from '@/types/api/user';
+ import { SkeletonTablePage } from '../../components/Skeleton';
+ import { useUsersData } from './useUsersData';
+ import { UsersFilterBar } from './UsersFilterBar';
+@@ -129,8 +132,8 @@ export default function UsersPage() {
+       <UserEditModal
+         opened={d.isModalOpen}
+         onClose={() => d.setIsModalOpen(false)}
+-        user={d.editingUser as any}
+-        onSave={d.handleSaveUser as any}
++        user={d.editingUser as UserEditModalProps['user']}
++        onSave={d.handleSaveUser as UserEditModalProps['onSave']}
+         onSaved={d.fetchUsers}
+         organisationSlug={String(d.orgIdParam || d.context.organisation?.slug || '')}
+         scopeProjectKey={String(d.selectedTeamKey || d.selectedClubKey || '')}
+@@ -156,7 +159,7 @@ export default function UsersPage() {
+       <AssignUserToOrgModal
+         opened={d.isAssignModalOpen}
+         onClose={() => d.setIsAssignModalOpen(false)}
+-        user={d.assignUser as any}
++        user={d.assignUser as ApiUser | null}
+         organisations={d.isSuperAdmin ? d.organisations : d.myOrganisations}
+         onSuccess={() => { d.fetchUsers(); d.setIsAssignModalOpen(false); }}
+       />
+@@ -164,7 +167,7 @@ export default function UsersPage() {
+       <LinkUserModal
+         opened={d.isLinkModalOpen}
+         onClose={() => d.setIsLinkModalOpen(false)}
+-        user={d.linkUser as any}
++        user={d.linkUser as LinkModalUser | null}
+         organisations={d.isSuperAdmin ? d.organisations : d.myOrganisations}
+         clubs={d.clubs}
+         teams={d.teams}
+@@ -175,7 +178,7 @@ export default function UsersPage() {
+       <UserDetailModal
+         opened={d.isDetailModalOpen}
+         onClose={() => d.setIsDetailModalOpen(false)}
+-        user={d.detailUser as any}
++        user={d.detailUser as ApiUser | null}
+       />
+     </>
+   );
+diff --git a/demo/src/pages/identity/UsersTable.tsx b/demo/src/pages/identity/UsersTable.tsx
+index 8cda6233..6c2a380a 100644
+--- a/demo/src/pages/identity/UsersTable.tsx
++++ b/demo/src/pages/identity/UsersTable.tsx
+@@ -102,7 +102,7 @@ const UserRow: React.FC<UserRowProps & { item: UserRowItem }> = ({
+   const isMembership = !!item.user;
+   const user = (isMembership ? item.user : item) as User;
+   const userOrgs = user.organisations || [];
+-  const userProjects: any[] = user.projects || [];
++  const userProjects = (user.projects ?? []) as UserProject[];
+   const displayRole = user.role || 'User';
+   const isActive = isMembership ? item.is_active : user.is_active;
+ 
+@@ -149,7 +149,7 @@ const UserRow: React.FC<UserRowProps & { item: UserRowItem }> = ({
+       <td>
+         <div className="flex-row gap-4 flex-wrap">
+           {allParentClubs.length > 0
+-            ? allParentClubs.map((club: { id?: string | number; name: string }, idx: number) => (
++            ? allParentClubs.map((club, idx) => (
+                 <span key={club.id || idx} className={`border rounded-4 fs-11 bg-surface-2 text-primary ${styles.tagBadge}`}>{club.name}</span>
+               ))
+             : <span className="text-muted fs-12">-</span>}
+diff --git a/demo/src/pages/identity/orgDataHelpers.ts b/demo/src/pages/identity/orgDataHelpers.ts
+index 3af5b5ae..a0cce168 100644
+--- a/demo/src/pages/identity/orgDataHelpers.ts
++++ b/demo/src/pages/identity/orgDataHelpers.ts
+@@ -126,7 +126,7 @@ export const getBestMatchDetailPath = (m: MatchRef, deps: MatchPathDeps): string
+   const periodId = String(m?.period?.id ?? m?.period_id ?? '').trim();
+   const competition = periodId ? (periodById.get(periodId) || m?.period) : m?.period;
+   const competitionKeyOrId = String(
+-    periodPathKey(competition as any) || competition?.slug || competition?.id || periodId || '',
++    periodPathKey(competition as Parameters<typeof periodPathKey>[0]) || competition?.slug || competition?.id || periodId || '',
+   ).trim();
+   const seasonId = String(
+     competition?.parent_period_id ?? competition?.parent_period?.id ?? '',
+diff --git a/demo/src/pages/identity/useClubOrgDetailData/effects.ts b/demo/src/pages/identity/useClubOrgDetailData/effects.ts
+index 887ffb37..2e3cb1b0 100644
+--- a/demo/src/pages/identity/useClubOrgDetailData/effects.ts
++++ b/demo/src/pages/identity/useClubOrgDetailData/effects.ts
+@@ -237,7 +237,7 @@ export function useClubOrgEffects({
+         if (!cancelled) setBrandProfileId(profileId);
+         const profile = await api.get<BrandProfileDetail>(`/branding/profiles/${profileId}/`);
+         const assetList = profile?.assets || [];
+-        const logoAsset = (assetList as any[]).find((a: { asset_type?: string; url?: string }) => a.asset_type === 'logo' || String(a.asset_type || '').includes('logo'));
++        const logoAsset = assetList.find((a) => a.asset_type === 'logo' || String(a.asset_type || '').includes('logo'));
+         if (logoAsset?.url && !cancelled) {
+           const url = logoAsset.url;
+           setBrandLogoUrl(getAssetUrl(url)!);
+diff --git a/demo/src/pages/identity/useClubOrgHierarchy.ts b/demo/src/pages/identity/useClubOrgHierarchy.ts
+index 7a19d8f3..d1290303 100644
+--- a/demo/src/pages/identity/useClubOrgHierarchy.ts
++++ b/demo/src/pages/identity/useClubOrgHierarchy.ts
+@@ -45,7 +45,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
+             const clubId = String(clubIdForDirectoryLists || '').trim();
+             if (!clubId) return;
+             try {
+-                const data = await api.list<any>(`/projects/${encodeURIComponent(clubId)}/members/`, { pageSize: 1 });
++                const data = await api.list<Record<string, unknown>>(`/projects/${encodeURIComponent(clubId)}/members/`, { pageSize: 1 });
+                 if (!cancelled) setHierarchyMembersCountForClub(data.count);
+             } catch { if (!cancelled) setHierarchyMembersCountForClub(null); }
+         };
+@@ -65,10 +65,10 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
+                 const teamsData = await api.list<Project>(`/organisations/${encodeURIComponent(orgSlugForDirectoryLists)}/projects/`, { pageSize: 2000, params: { include_archived: true, parent_project__isnull: false } });
+                 const teamsList = teamsData.results;
+                 const filteredTeams = teamsList
+-                    .filter((t: any) => {
++                    .filter((t) => {
+                         const parent = t?.parent_id ?? t?.parent_project_id ?? (typeof t?.parent_project === 'object' ? t?.parent_project?.id : t?.parent_project) ?? (typeof t?.parent === 'object' ? t?.parent?.id : t?.parent);
+                         if (parent == null) return false;
+-                        return String(typeof parent === 'object' ? parent.id : parent) === String(clubIdForDirectoryLists);
++                        return String(parent) === String(clubIdForDirectoryLists);
+                     })
+                     .map((t) => ({ id: String(t?.id || '').trim(), name: String(t?.name || 'Team'), slug: t?.slug ? String(t.slug) : undefined, organisation_id: t?.organisation_id ? String(t.organisation_id) : undefined, organisation: t?.organisation }))
+                     .filter((t) => Boolean(t.id));
+@@ -172,7 +172,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
+                                 const tid = String(t?.id || '').trim();
+                                 if (!tid) return null;
+                                 try {
+-                                    const data = await api.list<any>(`/projects/${encodeURIComponent(tid)}/members/`, { pageSize: 1 });
++                                    const data = await api.list<Record<string, unknown>>(`/projects/${encodeURIComponent(tid)}/members/`, { pageSize: 1 });
+                                     return { teamId: tid, count: data.count };
+                                 } catch { return { teamId: tid, count: 0 }; }
+                             }),
+diff --git a/demo/src/pages/identity/useOrgDataFetching.ts b/demo/src/pages/identity/useOrgDataFetching.ts
+index 17aede3d..58a911b6 100644
+--- a/demo/src/pages/identity/useOrgDataFetching.ts
++++ b/demo/src/pages/identity/useOrgDataFetching.ts
+@@ -159,7 +159,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
+     if (!currentOrgSlug) return;
+     setClubsLoading(true);
+     try {
+-      const data = await api.get<any>(`/organisations/${currentOrgSlug}/projects/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`);
++      const data = await api.get<Record<string, unknown>>(`/organisations/${currentOrgSlug}/projects/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`);
+       const { results, count } = parseListEnvelope(data);
+       const clubsOnly = (results as Record<string, unknown>[]).filter((p) => {
+         const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
+@@ -310,7 +310,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
+     const apiV1BaseUrl = getApiV1BaseUrl();
+     try {
+       if (currentOrgSlug) {
+-        const teamsData = await api.list<any>(`/organisations/${currentOrgSlug}/projects/`, { pageSize: 1, params: { parent_project__isnull: false } });
++        const teamsData = await api.list<Project>(`/organisations/${currentOrgSlug}/projects/`, { pageSize: 1, params: { parent_project__isnull: false } });
+         setTeamsCount(teamsData.count);
+       }
+       {
+@@ -324,7 +324,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
+         else void fetchTeamsForOrg({ force: true });
+       }
+       {
+-        const matchesData = await api.list<any>('/activities/', { pageSize: 1, params: { activity_type: 'match', organisation_id: organisationId } });
++        const matchesData = await api.list<Activity>('/activities/', { pageSize: 1, params: { activity_type: 'match', organisation_id: organisationId } });
+         setMatchesCount(matchesData.count);
+       }
+     } catch (e) { logger.warn('[OrganisationDetailPage] Failed to fetch counts', e); }
+diff --git a/demo/src/pages/identity/useOverviewMembers.ts b/demo/src/pages/identity/useOverviewMembers.ts
+index a1506f4f..ccb5ca52 100644
+--- a/demo/src/pages/identity/useOverviewMembers.ts
++++ b/demo/src/pages/identity/useOverviewMembers.ts
+@@ -33,7 +33,7 @@ export function useOverviewMembers({
+   useEffect(() => {
+     let cancelled = false;
+ 
+-    const extractMembersCount = (raw: Record<string, any>, list: OverviewMember[]): number => {
++    const extractMembersCount = (raw: { meta?: { pagination?: { total?: number } }; data?: { count?: number }; count?: number; [key: string]: unknown }, list: OverviewMember[]): number => {
+       const metaTotal = raw?.meta?.pagination?.total;
+       if (typeof metaTotal === 'number') return metaTotal;
+       const dataCount = raw?.data?.count ?? raw?.count;
+diff --git a/demo/src/pages/identity/useTeamDetailData.ts b/demo/src/pages/identity/useTeamDetailData.ts
+index 36118cb4..5a2463cd 100644
+--- a/demo/src/pages/identity/useTeamDetailData.ts
++++ b/demo/src/pages/identity/useTeamDetailData.ts
+@@ -246,7 +246,7 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
+       try {
+         const orgKey = String(org?.slug || resolvedOrgSlug || '').trim();
+ 
+-        const clubIdForFilter = String(getParentProjectId((team || {}) as Record<string, any>) || clubIdForDirectoryLists || '').trim();
++        const clubIdForFilter = String(getParentProjectId((team || {}) as Record<string, unknown>) || clubIdForDirectoryLists || '').trim();
+         if (!clubIdForFilter) {
+           if (!cancelled) setClubTeamsForSwitcher([]);
+           return;
+diff --git a/demo/src/pages/identity/useTeamMatches.ts b/demo/src/pages/identity/useTeamMatches.ts
+index 951ec002..26f0e737 100644
+--- a/demo/src/pages/identity/useTeamMatches.ts
++++ b/demo/src/pages/identity/useTeamMatches.ts
+@@ -38,7 +38,7 @@ export function useTeamMatches({
+ 
+       setContentCountLoading(true);
+       try {
+-        const { count } = await api.list<any>('/generative/requests/', {
++        const { count } = await api.list<Record<string, unknown>>('/generative/requests/', {
+           params: { project: teamId },
+           pageSize: 1,
+         });
+diff --git a/demo/src/pages/identity/useUserDetailApi.ts b/demo/src/pages/identity/useUserDetailApi.ts
+index 1d7dc092..1807fbf4 100644
+--- a/demo/src/pages/identity/useUserDetailApi.ts
++++ b/demo/src/pages/identity/useUserDetailApi.ts
+@@ -58,7 +58,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
+     const fetchUser = async () => {
+         try {
+             setLoading(true);
+-            const userData = await api.get<any>(
++            const userData = await api.get<Record<string, unknown>>(
+                 `/admin/users/${encodeURIComponent(String(userId))}/`,
+             );
+             setUser(userData);
+@@ -148,7 +148,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
+         if (!slugOrId) return;
+ 
+         const membershipId = await findOrganisationMembershipId(slugOrId);
+-        const res = await api.patch<any>(
++        const res = await api.patch<Record<string, unknown>>(
+             `/organisations/${encodeURIComponent(slugOrId)}/members/${encodeURIComponent(membershipId)}/`,
+             { role },
+         );
+@@ -238,7 +238,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
+         if (!pid) return;
+ 
+         const membershipId = await findProjectMembershipId(pid, directMembershipId);
+-        const res = await api.patch<any>(
++        const res = await api.patch<Record<string, unknown>>(
+             `/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`,
+             { role },
+         );
+diff --git a/demo/src/pages/periods/CompetitionLegacyMatchCreateModal.tsx b/demo/src/pages/periods/CompetitionLegacyMatchCreateModal.tsx
+index 43910917..9828dd82 100644
+--- a/demo/src/pages/periods/CompetitionLegacyMatchCreateModal.tsx
++++ b/demo/src/pages/periods/CompetitionLegacyMatchCreateModal.tsx
+@@ -73,7 +73,7 @@ export function CompetitionLegacyMatchCreateModal({
+         params.set('organisation_id', orgId);
+         params.set('parent_project__isnull', 'false');
+ 
+-        const all = await fetchAllPages<any>(
++        const all = await fetchAllPages<{ id: string | number; name: string; [k: string]: unknown }>(
+           `${apiBaseUrl}/api/v1/projects/?${params.toString()}`,
+           { credentials: 'include' },
+           { ttlMs: 10_000, cacheKey: `projects:teams:org:${orgId}`, maxItems: 3000 }
+diff --git a/demo/src/pages/periods/MemberDetailPanel.tsx b/demo/src/pages/periods/MemberDetailPanel.tsx
+index 828ce7c9..7adf809a 100644
+--- a/demo/src/pages/periods/MemberDetailPanel.tsx
++++ b/demo/src/pages/periods/MemberDetailPanel.tsx
+@@ -169,7 +169,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
+ 
+   // Media actions
+   const media = useMemberMediaActions({
+-    membership, setMembership, membershipId, project: project as any, org, apiBaseUrl,
++    membership, setMembership, membershipId, project: project as { id: string; organisation?: { id: string }; [k: string]: unknown } | null, org, apiBaseUrl,
+   });
+ 
+   // Save
+diff --git a/demo/src/pages/periods/ProjectCompetitionDetailPage.tsx b/demo/src/pages/periods/ProjectCompetitionDetailPage.tsx
+index baa20e62..7cd310ba 100644
+--- a/demo/src/pages/periods/ProjectCompetitionDetailPage.tsx
++++ b/demo/src/pages/periods/ProjectCompetitionDetailPage.tsx
+@@ -165,7 +165,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
+                 matches={d.matches}
+                 matchMediaMap={d.matchMediaMap}
+                 matchMediaLoading={d.matchMediaLoading}
+-                matchDisplayTitle={d.matchDisplayTitle as any}
++                matchDisplayTitle={d.matchDisplayTitle as unknown as (m: Record<string, unknown>) => string}
+                 isTeamRoute={d.isTeamRoute}
+                 orgSlugOrId={d.orgSlugOrId}
+                 clubSlugOrId={d.clubSlugOrId}
+diff --git a/demo/src/pages/periods/ProjectSeasonMemberDetailPage.tsx b/demo/src/pages/periods/ProjectSeasonMemberDetailPage.tsx
+index 441745ca..c7be70a1 100644
+--- a/demo/src/pages/periods/ProjectSeasonMemberDetailPage.tsx
++++ b/demo/src/pages/periods/ProjectSeasonMemberDetailPage.tsx
+@@ -74,7 +74,7 @@ export default function ProjectSeasonMemberDetailPage() {
+ 
+   // ΓöÇΓöÇ Media state + actions ΓöÇΓöÇ
+   const media = useMemberMediaActions({
+-    membership, setMembership, membershipId, project: project as any, org, apiBaseUrl,
++    membership, setMembership, membershipId, project: project as { id: string; organisation?: { id: string }; [k: string]: unknown } | null, org, apiBaseUrl,
+   });
+ 
+   // ΓöÇΓöÇ AI Modal ΓöÇΓöÇ
+diff --git a/demo/src/pages/periods/ThenVsNowModal/useThenVsNowData.ts b/demo/src/pages/periods/ThenVsNowModal/useThenVsNowData.ts
+index fefd18a5..2a4d9cd8 100644
+--- a/demo/src/pages/periods/ThenVsNowModal/useThenVsNowData.ts
++++ b/demo/src/pages/periods/ThenVsNowModal/useThenVsNowData.ts
+@@ -39,13 +39,13 @@ export function useThenVsNowData({
+   useEffect(() => {
+     (async () => {
+       try {
+-        const data = await api.get<any>('/branding/assets/app-backgrounds/');
+-        const items = Array.isArray(data) ? data : (data?.data || data?.results || []);
++        const data = await api.get<Record<string, unknown>[] | Record<string, unknown>>('/branding/assets/app-backgrounds/');
++        const items = Array.isArray(data) ? data : (data?.data || data?.results || []) as Record<string, unknown>[];
+         const bgs = items
+           .filter((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => a.url)
+           .map((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => ({
+-            id: a.id,
+-            url: a.url,
++            id: String(a.id || ''),
++            url: String(a.url || ''),
+             label: a.label || '',
+             profile_name: a.project_name || a.profile_name || '',
+           }));
+@@ -87,8 +87,8 @@ export function useThenVsNowData({
+         ...(selectedBgUrl ? { background_url: selectedBgUrl } : {}),
+         ...(Object.keys(variantKeys).length > 0 ? { member_variant_keys: variantKeys } : {}),
+       });
+-      const jobId = data?.data?.id || data?.id || data;
+-      setJobId(jobId as any);
++      const jobId = data?.data?.id || data?.id;
++      setJobId(typeof jobId === 'string' ? jobId : null);
+ 
+       setStep('submitted');
+       setTimeout(() => onClose(), 2500);
+diff --git a/demo/src/pages/periods/useCompetitionDetailData/fetchers.ts b/demo/src/pages/periods/useCompetitionDetailData/fetchers.ts
+index 43cb26bd..f798a3d3 100644
+--- a/demo/src/pages/periods/useCompetitionDetailData/fetchers.ts
++++ b/demo/src/pages/periods/useCompetitionDetailData/fetchers.ts
+@@ -123,7 +123,7 @@ export function useCompetitionFetchers(params: UseFetchersParams) {
+         const map: Record<string, Record<string, unknown>[]> = {};
+         await Promise.all(matches.map(async (m) => {
+           try {
+-            const { results } = await api.list<any>('/media/items/', { params: { activity: String(m.id) } });
++            const { results } = await api.list<Record<string, unknown>>('/media/items/', { params: { activity: String(m.id) } });
+             map[String(m.id)] = results;
+           } catch { map[String(m.id)] = []; }
+         }));
+diff --git a/demo/src/pages/periods/useSeasonBulkActions.ts b/demo/src/pages/periods/useSeasonBulkActions.ts
+index 40c15739..2e72338e 100644
+--- a/demo/src/pages/periods/useSeasonBulkActions.ts
++++ b/demo/src/pages/periods/useSeasonBulkActions.ts
+@@ -2,6 +2,8 @@ import { useCallback } from 'react';
+ import type { Period } from '../../types/season';
+ import type { PeriodCreatePayload } from '../identity/PeriodCreateModal/types';
+ import type { MatchCreatePayload } from '../identity/matchCreateTypes';
++import type { MatchRecord } from './SeasonMatchesTab';
++import type { Activity } from '../../types/api/activity';
+ import { api } from '@/api/client';
+ import { getCsrfToken } from '../../utils/csrf';
+ import { getApiV1BaseUrl } from '../../utils/apiFetch';
+@@ -23,7 +25,7 @@ interface UseSeasonBulkActionsParams {
+   // State setters
+   setCompetitions: Setter<Period[]>;
+   setCompetitionsLoading: Setter<boolean>;
+-  setMatches: Setter<any[]>;
++  setMatches: Setter<MatchRecord[]>;
+   setMatchesLoading: Setter<boolean>;
+   setMembersReloadToken: Setter<number>;
+   setTeamRosterReloadToken: Setter<number>;
+@@ -257,7 +259,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
+     if (!teamIdValue) throw new Error('Select a team first');
+     if (!competitionIdValue) throw new Error('Select a competition first');
+ 
+-    const created = await api.post<any>('/activities/', {
++    const created = await api.post<Activity>('/activities/', {
+       title: payload.title,
+       activity_type: 'match',
+       project_id: teamIdValue ? Number(teamIdValue) : undefined,
+@@ -281,7 +283,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
+         setMatches((prev) => {
+           const list = Array.isArray(prev) ? prev : [];
+           if (list.some((m) => String(m?.id || '').trim() === createdId)) return list;
+-          return [created, ...list];
++          return [created as unknown as MatchRecord, ...list];
+         });
+       }
+     }
+@@ -294,7 +296,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
+             const projectNumericId = String(project?.id || '').trim();
+           const seasonUuid = String(resolvedSeasonId || '').trim();
+           if (projectNumericId && seasonUuid) {
+-            const seasonMatches = await api.listAll<Record<string, unknown>>('/activities/', {
++            const seasonMatches = await api.listAll<MatchRecord>('/activities/', {
+               params: {
+                 project_id: projectNumericId,
+                 period_id: seasonUuid,
+diff --git a/demo/src/pages/periods/useSeasonCrudActions.ts b/demo/src/pages/periods/useSeasonCrudActions.ts
+index 99547e72..9217ce9f 100644
+--- a/demo/src/pages/periods/useSeasonCrudActions.ts
++++ b/demo/src/pages/periods/useSeasonCrudActions.ts
+@@ -144,7 +144,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
+         },
+       };
+ 
+-      const createdMembership = await api.post<any>(`/projects/${encodeURIComponent(teamIdValue)}/members/`, body);
++      const createdMembership = await api.post<Record<string, unknown>>(`/projects/${encodeURIComponent(teamIdValue)}/members/`, body);
+ 
+       // Optimistically reflect the new membership in the current squad list.
+       try {
+diff --git a/demo/src/utils/lazyWithRetry.ts b/demo/src/utils/lazyWithRetry.ts
+index 4a579dca..d7e47551 100644
+--- a/demo/src/utils/lazyWithRetry.ts
++++ b/demo/src/utils/lazyWithRetry.ts
+@@ -10,7 +10,7 @@ import { lazy, ComponentType } from 'react';
+  *   2. If still failing, reloads the page once (picks up fresh index.html)
+  *   3. If the page was already reloaded, lets the error propagate to ErrorBoundary
+  */
+-export function lazyWithRetry<T extends ComponentType<any>>(
++export function lazyWithRetry<T extends ComponentType<Record<string, unknown>>>(
+   importFn: () => Promise<{ default: T }>,
+ ) {
+   return lazy(() =>
