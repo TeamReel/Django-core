@@ -98,11 +98,11 @@ class BrandProfileSerializer(serializers.ModelSerializer):
 
     def get_token_count(self, obj: BrandProfile) -> int:
         """Return count of design tokens for this profile."""
-        return obj.design_tokens.count()
+        return len(obj.design_tokens.all())
 
     def get_asset_count(self, obj: BrandProfile) -> int:
         """Return count of active brand assets for this profile."""
-        return obj.brand_assets.filter(is_active=True).count()
+        return sum(1 for a in obj.brand_assets.all() if a.is_active)
 
     def get_project_name(self, obj: BrandProfile) -> str | None:
         """Return the project name if profile is project-scoped."""

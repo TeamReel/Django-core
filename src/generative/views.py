@@ -164,7 +164,9 @@ class GenerationRequestViewSet(viewsets.ModelViewSet):
     - Delete: Disabled (use cancel instead)
     """
 
-    queryset = GenerationRequest.objects.all()
+    queryset = GenerationRequest.objects.select_related(
+        "template", "requester", "project"
+    ).all()
     serializer_class = GenerationRequestSerializer
     pagination_class = GenerativePagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
@@ -189,9 +191,6 @@ class GenerationRequestViewSet(viewsets.ModelViewSet):
         project_id = self.request.query_params.get("project")
         if project_id:
             qs = qs.filter(project_id=project_id)
-
-        # Use select_related for performance
-        qs = qs.select_related("template", "requester", "project")
 
         return qs
 
@@ -380,7 +379,9 @@ class GenerationOutputViewSet(viewsets.ReadOnlyModelViewSet):
     - Retrieve: Single output with presigned URL (if file)
     """
 
-    queryset = GenerationOutput.objects.all()
+    queryset = GenerationOutput.objects.select_related(
+        "request", "request__template", "request__requester"
+    ).all()
     serializer_class = GenerationOutputSerializer
     pagination_class = GenerativePagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
@@ -399,9 +400,6 @@ class GenerationOutputViewSet(viewsets.ReadOnlyModelViewSet):
         # Filter by request requester
         if self.request.user:
             qs = qs.filter(request__requester=self.request.user)
-
-        # Use select_related for performance
-        qs = qs.select_related("request", "request__template", "request__requester")
 
         return qs
 

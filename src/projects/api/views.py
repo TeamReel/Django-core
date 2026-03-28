@@ -635,16 +635,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
             if not (can_edit_team_profiles or is_org_admin or is_project_admin):
                 raise PermissionDenied("Only admins can view membership statistics.")
 
-        # Calculate stats
-        memberships = ProjectMembership.objects.filter(project=project, deleted_at__isnull=True)
+        # Calculate stats — single query with conditional aggregation
+        from django.db.models import Case, Count, Q, Value, When
 
-        total_members = memberships.count()
-
-        breakdown = {
-            "admin": memberships.filter(role=ProjectMembership.Role.ADMIN).count(),
-            "editor": memberships.filter(role=ProjectMembership.Role.EDITOR).count(),
-            "viewer": memberships.filter(role=ProjectMembership.Role.VIEWER).count(),
-        }
+        stats = ProjectMembership.objects.filter(
+            project=project, deleted_at__isnull=True
+        ).aggregate(
+            total_members=Count("id"),
+            admin_count=Count("id", filter=Q(role=ProjectMembership.Role.ADMIN)),
+            editor_count=Count("id", filter=Q(role=ProjectMembership.Role.EDITOR)),
+            viewer_count=Count("id", filter=Q(role=ProjectMembership.Role.VIEWER)),
+        )
 
         pending_invites = ProjectInvite.objects.filter(
             project=project,
@@ -657,8 +658,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
         ).count()
 
         data = {
-            "total_members": total_members,
-            "breakdown": breakdown,
+            "total_members": stats["total_members"],
+            "breakdown": {
+                "admin": stats["admin_count"],
+                "editor": stats["editor_count"],
+                "viewer": stats["viewer_count"],
+            },
             "pending_invites": pending_invites,
             "pending_promotions": pending_promotions,
         }

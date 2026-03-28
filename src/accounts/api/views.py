@@ -2489,7 +2489,20 @@ def admin_user_list(request):
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    queryset = User.objects.select_related().prefetch_related("groups").order_by("-date_joined")
+    queryset = (
+        User.objects.select_related()
+        .prefetch_related(
+            "groups",
+            "organisation_memberships__organisation",
+            "project_memberships__project__organisation",
+            "project_memberships__project__parent_project",
+            "project_memberships__period__parent_period",
+            "role_assignments__target_organization",
+            "role_assignments__target_project__organisation",
+            "role_assignments__role",
+        )
+        .order_by("-date_joined")
+    )
 
     # Apply filters
     # Full-text search across name and email fields

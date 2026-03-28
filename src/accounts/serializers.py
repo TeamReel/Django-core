@@ -104,9 +104,7 @@ class UserListSerializer(serializers.ModelSerializer):
         try:
             from organisations.models import Membership
 
-            memberships = Membership.objects.filter(user=obj, is_active=True).select_related(
-                "organisation"
-            )
+            memberships = [m for m in obj.organisation_memberships.all() if m.is_active]
             for m in memberships:
                 orgs_data[m.organisation.id] = {
                     "id": str(m.organisation.id),
@@ -122,9 +120,7 @@ class UserListSerializer(serializers.ModelSerializer):
         try:
             from projects.models import ProjectMembership
 
-            project_memberships = ProjectMembership.objects.filter(user=obj).select_related(
-                "project__organisation"
-            )
+            project_memberships = list(obj.project_memberships.all())
 
             for pm in project_memberships:
                 if pm.project and pm.project.organisation:
@@ -147,9 +143,7 @@ class UserListSerializer(serializers.ModelSerializer):
         try:
             from permissions.models import RoleAssignment, ScopeChoices
 
-            assignments = RoleAssignment.objects.filter(user=obj).select_related(
-                "target_organization", "target_project__organisation", "role"
-            )
+            assignments = list(obj.role_assignments.all())
 
             for ra in assignments:
                 org = None
@@ -189,14 +183,9 @@ class UserListSerializer(serializers.ModelSerializer):
         try:
             from projects.models import ProjectMembership
 
-            project_memberships = ProjectMembership.objects.filter(
-                user=obj, deleted_at__isnull=True
-            ).select_related(
-                "project",
-                "project__parent_project",
-                "period",
-                "period__parent_period",
-            )
+            project_memberships = [
+                pm for pm in obj.project_memberships.all() if pm.deleted_at is None
+            ]
 
             def _is_base(pm: "ProjectMembership") -> bool:
                 return pm.period_id is None
