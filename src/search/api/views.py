@@ -306,10 +306,6 @@ class SearchAPIView(APIView):
         Returns:
             Tuple of (tree: HierarchyNode, anchor_path: list[str]) or (None, None)
         """
-        import logging
-
-        logger = logging.getLogger(__name__)
-
         try:
             # Find the root entity and path to anchor
             root, anchor_path = self._find_hierarchy_root(instance)
@@ -476,10 +472,7 @@ class SearchAPIView(APIView):
         """
         from django.conf import settings
         from search.hierarchy.serializers import HierarchyNodeSerializer, HierarchyAnchorSerializer
-        import logging
         import time
-
-        logger = logging.getLogger(__name__)
 
         # Check if hierarchy is requested
         include_hierarchy = request.GET.get("hierarchy", "").lower() == "true"
