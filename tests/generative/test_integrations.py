@@ -5,7 +5,7 @@ WP06 T053-T054: Integration Tests
 Tests for brand context, file storage, and WebSocket integrations.
 """
 
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from django.utils import timezone
@@ -277,25 +277,40 @@ class TestBrandFileIntegration:
 class TestOutputSerializerPresignedURL:
     """Test presigned URL generation in serializer (WP06 T048)."""
 
-    @patch("src.generative.services.file_storage.GenerationFileService.get_presigned_url")
-    def test_presigned_url_generated_for_file_output(self, mock_presigned, generation_request):
+    @patch("files.utils.get_storage_backend")
+    def test_presigned_url_generated_for_file_output(self, mock_get_storage, generation_request):
         """Test presigned URL included in serializer output."""
         import uuid
+        from files.models import FileAsset
         from src.generative.serializers import GenerationOutputSerializer
+
+        file_id = uuid.uuid4()
+
+        # Create FileAsset the serializer will look up
+        FileAsset.objects.create(
+            id=file_id,
+            organization=generation_request.template.organisation,
+            original_name="logo.png",
+            storage_path=f"test/{file_id}/logo.png",
+            file_size=1024,
+            mime_type="image/png",
+        )
 
         # Create output with file
         output = GenerationOutput.objects.create(
             request=generation_request,
             output_type=OutputType.IMAGE,
-            file_id=uuid.uuid4(),
+            file_id=file_id,
         )
 
-        mock_presigned.return_value = "https://presigned-url.example.com"
+        mock_storage = MagicMock()
+        mock_storage.get_url.return_value = "https://presigned-url.example.com"
+        mock_get_storage.return_value = mock_storage
 
         serializer = GenerationOutputSerializer(output)
 
         assert serializer.data["presigned_url"] == "https://presigned-url.example.com"
-        assert mock_presigned.called
+        assert mock_get_storage.called
 
     def test_presigned_url_none_for_text_output(self, generation_request):
         """Test presigned URL is None for text outputs."""

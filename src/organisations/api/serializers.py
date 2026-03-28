@@ -5,7 +5,6 @@ Barrel module — Organisation serializers live here; membership serializers
 are in serializers_membership.py and re-exported for backward compatibility.
 """
 
-from activities.models import Activity, Period
 from django.contrib.auth import get_user_model
 from projects.models import ProjectMembership
 from rest_framework import serializers
@@ -40,12 +39,12 @@ class OrganisationListSerializer(serializers.ModelSerializer):
     user_role = serializers.SerializerMethodField()
     clubs_count = serializers.SerializerMethodField()
     teams_count = serializers.SerializerMethodField()
-    total_players_count = serializers.SerializerMethodField()
-    seasons_count = serializers.SerializerMethodField()
-    competitions_count = serializers.SerializerMethodField()
-    matches_count = serializers.SerializerMethodField()
+    total_players_count = serializers.IntegerField(read_only=True, default=0)
+    seasons_count = serializers.IntegerField(read_only=True, default=0)
+    competitions_count = serializers.IntegerField(read_only=True, default=0)
+    matches_count = serializers.IntegerField(read_only=True, default=0)
     sport = serializers.SerializerMethodField()
-    sport_variants_count = serializers.SerializerMethodField()
+    sport_variants_count = serializers.IntegerField(read_only=True, default=0)
 
     class Meta:
         model = Organisation
@@ -80,19 +79,6 @@ class OrganisationListSerializer(serializers.ModelSerializer):
             }
         return None
 
-    def get_sport_variants_count(self, obj):
-        """Return count of distinct sport variants used in this organisation."""
-        return (
-            Period.objects.filter(
-                organisation=obj,
-                sport__isnull=False,
-                sport__parent_sport__isnull=False,
-            )
-            .values_list("sport_id", flat=True)
-            .distinct()
-            .count()
-        )
-
     def get_member_count(self, obj):
         """Return count of active members (direct org + project members)."""
         direct_user_ids = {m.user_id for m in obj.memberships.all() if m.is_active}
@@ -107,40 +93,16 @@ class OrganisationListSerializer(serializers.ModelSerializer):
         return len(direct_user_ids | project_user_ids)
 
     def get_project_count(self, obj):
-        """Return count of projects."""
+        """Return count of projects (uses prefetched cache)."""
         return len(obj.projects.all())
 
     def get_clubs_count(self, obj):
-        """Return count of root projects (Clubs)."""
-        return obj.projects.filter(parent_project=None).count()
+        """Return count of root projects — uses prefetched cache."""
+        return sum(1 for p in obj.projects.all() if p.parent_project_id is None)
 
     def get_teams_count(self, obj):
-        """Return count of sub-projects (Teams)."""
-        return obj.projects.exclude(parent_project=None).count()
-
-    def get_total_players_count(self, obj):
-        """Return count of unique users across all projects in the organisation."""
-        return (
-            ProjectMembership.objects.filter(project__organisation=obj)
-            .values("user")
-            .distinct()
-            .count()
-        )
-
-    def get_seasons_count(self, obj):
-        """Return count of seasons."""
-        return Period.objects.filter(project__organisation=obj, parent_period=None).count()
-
-    def get_competitions_count(self, obj):
-        """Return count of competitions (child periods under seasons)."""
-        return Period.objects.filter(
-            project__organisation=obj,
-            parent_period__isnull=False,
-        ).count()
-
-    def get_matches_count(self, obj):
-        """Return count of matches."""
-        return Activity.objects.filter(project__organisation=obj, activity_type="match").count()
+        """Return count of sub-projects — uses prefetched cache."""
+        return sum(1 for p in obj.projects.all() if p.parent_project_id is not None)
 
     def get_user_role(self, obj):
         """Return current user's role in this organisation, or None."""

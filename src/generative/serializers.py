@@ -289,10 +289,16 @@ class GenerationOutputSerializer(serializers.ModelSerializer):
             return None
 
         try:
-            from files.models import FileAsset
             from files.utils import get_storage_backend
 
-            asset = FileAsset.objects.get(id=obj.file_id, is_deleted=False)
+            # Use bulk-prefetched asset from context (avoids N+1)
+            file_assets = self.context.get("file_assets", {})
+            asset = file_assets.get(str(obj.file_id))
+            if not asset:
+                from files.models import FileAsset
+
+                asset = FileAsset.objects.get(id=obj.file_id, is_deleted=False)
+
             storage = get_storage_backend()
 
             return {
@@ -314,13 +320,18 @@ class GenerationOutputSerializer(serializers.ModelSerializer):
         """
         if obj.file_id:
             try:
-                # Use WP06 GenerationFileService for presigned URLs
-                from .services.file_storage import GenerationFileService
+                # Use bulk-prefetched asset from context (avoids N+1)
+                file_assets = self.context.get("file_assets", {})
+                asset = file_assets.get(str(obj.file_id))
+                if not asset:
+                    from files.models import FileAsset
 
-                return GenerationFileService.get_presigned_url(
-                    file_id=obj.file_id,
-                    expiration=3600,  # 1 hour
-                )
+                    asset = FileAsset.objects.get(id=obj.file_id, is_deleted=False)
+
+                from files.utils import get_storage_backend
+
+                storage = get_storage_backend()
+                return storage.get_url(asset.storage_path, signed=True)
             except Exception as e:
                 # Log error but don't fail serialization
                 import logging

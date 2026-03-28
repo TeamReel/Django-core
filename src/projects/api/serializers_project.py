@@ -1,11 +1,9 @@
 """DRF serializers for Project CRUD operations."""
 
-from django.db.models import Q
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
-from projects.models import Project, ProjectMembership
-from activities.models import Activity, Period
+from projects.models import Project
 
 User = get_user_model()
 
@@ -66,11 +64,11 @@ class ProjectListSerializer(serializers.ModelSerializer):
     """
 
     organisation = OrganisationNestedSerializer(read_only=True)
-    member_count = serializers.SerializerMethodField()
-    seasons_count = serializers.SerializerMethodField()
-    competitions_count = serializers.SerializerMethodField()
-    matches_count = serializers.SerializerMethodField()
-    sport_variants_count = serializers.SerializerMethodField()
+    member_count = serializers.IntegerField(read_only=True, default=0)
+    seasons_count = serializers.IntegerField(read_only=True, default=0)
+    competitions_count = serializers.IntegerField(read_only=True, default=0)
+    matches_count = serializers.IntegerField(read_only=True, default=0)
+    sport_variants_count = serializers.IntegerField(read_only=True, default=0)
     parent_id = serializers.IntegerField(
         source="parent_project.id", allow_null=True, read_only=True
     )
@@ -101,49 +99,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "parent_name",
         ]
         read_only_fields = ["id", "slug", "is_active", "created_at", "updated_at", "archived_at"]
-
-    def get_member_count(self, obj):
-        # Aggregated count for Clubs (parent projects)
-        return (
-            ProjectMembership.objects.filter(Q(project=obj) | Q(project__parent_project=obj))
-            .values("user")
-            .distinct()
-            .count()
-        )
-
-    def get_seasons_count(self, obj):
-        # Seasons are periods without a parent
-        return Period.objects.filter(
-            Q(project=obj) | Q(project__parent_project=obj), parent_period=None
-        ).count()
-
-    def get_competitions_count(self, obj):
-        # Competitions are periods with a parent (Season)
-        return Period.objects.filter(
-            Q(project=obj) | Q(project__parent_project=obj), parent_period__isnull=False
-        ).count()
-
-    def get_matches_count(self, obj):
-        # Matches are activities of type 'match'
-        return Activity.objects.filter(
-            Q(project=obj) | Q(project__parent_project=obj), activity_type="match"
-        ).count()
-
-    def get_sport_variants_count(self, obj):
-        """Return count of distinct sport variants used in this project scope.
-
-        For clubs (parent projects), this includes all child teams.
-        """
-        return (
-            Period.objects.filter(
-                Q(project=obj) | Q(project__parent_project=obj),
-                sport__isnull=False,
-                sport__parent_sport__isnull=False,
-            )
-            .values_list("sport_id", flat=True)
-            .distinct()
-            .count()
-        )
 
 
 class ProjectPublicListSerializer(serializers.ModelSerializer):

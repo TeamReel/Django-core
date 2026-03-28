@@ -5,7 +5,7 @@
 | Status | 📐 READY |
 | Type | Feature (cross-cutting) |
 | Impact | 🔴 Kritiek — blokkade voor efficiënt doorontwikkelen |
-| Effort | ~42 uur |
+| Effort | ~57 uur |
 
 ## Doel
 
@@ -77,6 +77,11 @@ De volledige codebase opschonen, herstructureren en documentatie actualiseren zo
 | H7 | Type Consolidatie (User + Project) | ~5 uur | 📋 Todo |
 | H8 | API Response Typing | ~4 uur | 📋 Todo |
 | H9 | Accessibility & Conventions Cleanup | ~3 uur | 📋 Todo |
+| H10 | N+1 Serializer Queries fixen | ~3 uur | 📋 Todo |
+| H11 | Video Services common utilities extraheren | ~4 uur | 📋 Todo |
+| H12 | Business logica uit views naar services | ~4 uur | 📋 Todo |
+| H13 | FBV Permission Classes expliciet maken | ~1 uur | 📋 Todo |
+| H14 | Asset Pipeline splitsen | ~3 uur | 📋 Todo |
 
 ## Acceptatiecriteria
 
@@ -90,6 +95,11 @@ De volledige codebase opschonen, herstructureren en documentatie actualiseren zo
 - [ ] `ai-context-index.md` reflecteert huidige codebase staat
 - [x] `npx tsc --noEmit` + `npx vite build` slagen zonder nieuwe fouten
 - [ ] `pytest` slaagt zonder fouten
+- [ ] Project/Org list APIs doen max 5 queries ongeacht lijst-grootte (geen N+1)
+- [ ] Geen duplicate `_get_ffmpeg_path` / `_download_image` in video services (1 canonical versie)
+- [ ] `branding/views.py` en `content_generation/views.py` < 500 LOC (business logica in services)
+- [ ] Alle FBVs met `@api_view` hebben expliciete `@permission_classes`
+- [ ] `asset_pipeline.py` < 600 LOC (was 2616, gesplitst in modules)
 - [ ] 0 hardcoded colors/font-sizes/spacing in CSS Modules (design tokens only)
 - [ ] Exact 1 `Project` interface, exact 1 `User` interface in de codebase
 - [ ] 0 `api.get<any>` / `api.list<any>` calls — alle API responses getypt

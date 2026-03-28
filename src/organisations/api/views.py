@@ -7,6 +7,8 @@ Provides:
 
 from audit.api import audit_log
 from django.db import transaction
+from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import Throttled
@@ -31,6 +33,77 @@ class OrganisationPagination(PageNumberPagination):
     page_size = 20
     page_size_query_param = "page_size"
     max_page_size = 100
+
+
+def _annotate_org_list_counts(queryset):
+    """Annotate queryset with count subqueries for OrganisationListSerializer.
+
+    Replaces N+1 SerializerMethodField queries with correlated subqueries
+    executed in a single SQL statement.
+    """
+    from activities.models import Activity, Period
+    from projects.models import ProjectMembership
+
+    total_players_count_sq = Subquery(
+        ProjectMembership.objects.filter(project__organisation_id=OuterRef("pk"))
+        .values(x=Value(1))
+        .annotate(cnt=Count("user_id", distinct=True))
+        .values("cnt")[:1],
+        output_field=IntegerField(),
+    )
+
+    seasons_count_sq = Subquery(
+        Period.objects.filter(
+            project__organisation_id=OuterRef("pk"),
+            parent_period__isnull=True,
+        )
+        .values(x=Value(1))
+        .annotate(cnt=Count("id"))
+        .values("cnt")[:1],
+        output_field=IntegerField(),
+    )
+
+    competitions_count_sq = Subquery(
+        Period.objects.filter(
+            project__organisation_id=OuterRef("pk"),
+            parent_period__isnull=False,
+        )
+        .values(x=Value(1))
+        .annotate(cnt=Count("id"))
+        .values("cnt")[:1],
+        output_field=IntegerField(),
+    )
+
+    matches_count_sq = Subquery(
+        Activity.objects.filter(
+            project__organisation_id=OuterRef("pk"),
+            activity_type="match",
+        )
+        .values(x=Value(1))
+        .annotate(cnt=Count("id"))
+        .values("cnt")[:1],
+        output_field=IntegerField(),
+    )
+
+    sport_variants_count_sq = Subquery(
+        Period.objects.filter(
+            organisation_id=OuterRef("pk"),
+            sport__isnull=False,
+            sport__parent_sport__isnull=False,
+        )
+        .values(x=Value(1))
+        .annotate(cnt=Count("sport_id", distinct=True))
+        .values("cnt")[:1],
+        output_field=IntegerField(),
+    )
+
+    return queryset.annotate(
+        total_players_count=Coalesce(total_players_count_sq, Value(0)),
+        seasons_count=Coalesce(seasons_count_sq, Value(0)),
+        competitions_count=Coalesce(competitions_count_sq, Value(0)),
+        matches_count=Coalesce(matches_count_sq, Value(0)),
+        sport_variants_count=Coalesce(sport_variants_count_sq, Value(0)),
+    )
 
 
 class OrganisationViewSet(viewsets.ModelViewSet):
@@ -120,6 +193,10 @@ class OrganisationViewSet(viewsets.ModelViewSet):
         include_inactive = self.request.query_params.get("include_inactive", "true").lower()
         if include_inactive == "false":
             queryset = queryset.filter(is_active=True)
+
+        # Annotate with count subqueries for list serializer (avoids N+1)
+        if self.action == "list":
+            queryset = _annotate_org_list_counts(queryset)
 
         return queryset
 

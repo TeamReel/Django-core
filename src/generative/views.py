@@ -403,6 +403,33 @@ class GenerationOutputViewSet(viewsets.ReadOnlyModelViewSet):
 
         return qs
 
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Override list to bulk-fetch FileAssets (avoids N+1 in serializer)."""
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        results = page if page is not None else list(queryset)
+
+        # Bulk-prefetch FileAssets for the page
+        file_ids = [obj.file_id for obj in results if obj.file_id]
+        self._file_assets_cache: dict[str, Any] = {}
+        if file_ids:
+            from files.models import FileAsset
+
+            self._file_assets_cache = {
+                str(fa.id): fa
+                for fa in FileAsset.objects.filter(id__in=file_ids, is_deleted=False)
+            }
+
+        serializer = self.get_serializer(results, many=True)
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
+
+    def get_serializer_context(self) -> dict[str, Any]:
+        context = super().get_serializer_context()
+        context["file_assets"] = getattr(self, "_file_assets_cache", {})
+        return context
+
 
 # ==============================================================================
 # WP07: Operational Endpoints

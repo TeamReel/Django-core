@@ -2,7 +2,8 @@
 
 import logging
 
-from django.db.models import OuterRef, Q, Subquery
+from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -26,6 +27,81 @@ from .serializers import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _annotate_project_list_counts(queryset):
+    """Annotate queryset with count subqueries for ProjectListSerializer.
+
+    Replaces N+1 SerializerMethodField queries (5 per project) with correlated
+    subqueries executed in a single SQL statement.
+
+    Each count aggregates across the project itself AND its child projects,
+    matching the original get_*_count() logic.
+    """
+    from activities.models import Activity, Period
+
+    member_count_sq = Subquery(
+        ProjectMembership.objects.filter(
+            Q(project_id=OuterRef("pk")) | Q(project__parent_project_id=OuterRef("pk"))
+        )
+        .values(x=Value(1))
+        .annotate(cnt=Count("user_id", distinct=True))
+        .values("cnt")[:1],
+        output_field=IntegerField(),
+    )
+
+    seasons_count_sq = Subquery(
+        Period.objects.filter(
+            Q(project_id=OuterRef("pk")) | Q(project__parent_project_id=OuterRef("pk")),
+            parent_period__isnull=True,
+        )
+        .values(x=Value(1))
+        .annotate(cnt=Count("id"))
+        .values("cnt")[:1],
+        output_field=IntegerField(),
+    )
+
+    competitions_count_sq = Subquery(
+        Period.objects.filter(
+            Q(project_id=OuterRef("pk")) | Q(project__parent_project_id=OuterRef("pk")),
+            parent_period__isnull=False,
+        )
+        .values(x=Value(1))
+        .annotate(cnt=Count("id"))
+        .values("cnt")[:1],
+        output_field=IntegerField(),
+    )
+
+    matches_count_sq = Subquery(
+        Activity.objects.filter(
+            Q(project_id=OuterRef("pk")) | Q(project__parent_project_id=OuterRef("pk")),
+            activity_type="match",
+        )
+        .values(x=Value(1))
+        .annotate(cnt=Count("id"))
+        .values("cnt")[:1],
+        output_field=IntegerField(),
+    )
+
+    sport_variants_count_sq = Subquery(
+        Period.objects.filter(
+            Q(project_id=OuterRef("pk")) | Q(project__parent_project_id=OuterRef("pk")),
+            sport__isnull=False,
+            sport__parent_sport__isnull=False,
+        )
+        .values(x=Value(1))
+        .annotate(cnt=Count("sport_id", distinct=True))
+        .values("cnt")[:1],
+        output_field=IntegerField(),
+    )
+
+    return queryset.annotate(
+        member_count=Coalesce(member_count_sq, Value(0)),
+        seasons_count=Coalesce(seasons_count_sq, Value(0)),
+        competitions_count=Coalesce(competitions_count_sq, Value(0)),
+        matches_count=Coalesce(matches_count_sq, Value(0)),
+        sport_variants_count=Coalesce(sport_variants_count_sq, Value(0)),
+    )
 
 
 def _safe_check_permission(
@@ -488,7 +564,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(parent_project_id=parent_project_id)
 
         # Ensure distinct is always applied to prevent duplicates
-        return queryset.distinct()
+        queryset = queryset.distinct()
+
+        # Annotate with count subqueries for list serializer (avoids N+1)
+        if self.action == "list":
+            queryset = _annotate_project_list_counts(queryset)
+
+        return queryset
 
     def get_serializer_class(self):
         """Return appropriate serializer based on action."""
