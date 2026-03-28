@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def auth_me(request):
     """
     Get current authenticated user profile.
@@ -45,6 +46,7 @@ def auth_me(request):
 
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def auth_default_context(request):
     """Return a deterministic default TeamReel navigation context for the current user.
 
@@ -545,6 +547,7 @@ def auth_default_context(request):
 
 
 @api_view(["GET", "PATCH"])
+@permission_classes([IsAuthenticated])
 def auth_active_context(request):
     """Get or update the authenticated user's active TeamReel context."""
 

@@ -6,7 +6,8 @@ import logging
 from audit.api import audit_log
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import User
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 @api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
 def update_profile(request):
     """
     Update authenticated user's profile.
@@ -164,6 +166,7 @@ def update_profile(request):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def change_password(request):
     """Change the authenticated user's password.
 
@@ -275,6 +278,7 @@ def change_password(request):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def update_avatar(request):
     """Upload/update the authenticated user's avatar image."""
 
@@ -381,6 +385,7 @@ def update_avatar(request):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def set_avatar_from_path(request):
     """Set the authenticated user's avatar from an existing S3 path.
 
