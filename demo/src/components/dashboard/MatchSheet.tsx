@@ -17,7 +17,9 @@ import { NavigationSheet } from '../ui/NavigationSheet';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
 import type { Match } from './ActiveMatchCard';
 import type { UseMatchSheetReturn } from './useMatchSheet';
-import styles from './ActiveMatchCard.module.css';
+import cardStyles from './ActiveMatchCard.module.css';
+import flowStyles from './MatchFlow.module.css';
+const styles = { ...cardStyles, ...flowStyles };
 
 /* ── Content-type icon map ─────────────────────────────── */
 const SUBTYPE_ICONS: Record<string, LucideIcon> = {

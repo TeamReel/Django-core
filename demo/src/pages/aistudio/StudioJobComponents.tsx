@@ -4,7 +4,7 @@
 import React from 'react';
 import { CheckCircle2, AlertCircle, Loader2, X } from 'lucide-react';
 import type { VideoJobSummary } from './useStudioData';
-import styles from './AIStudioPage.module.css';
+import styles from './StudioJobComponents.module.css';
 
 // ============================================================================
 // Utility

@@ -10,7 +10,7 @@ import { getAssetTypeLabel } from '../content/contentLibraryTypes';
 import type { ContentItem } from '../content/contentLibraryTypes';
 import { downloadFile } from '../../utils/downloadFile';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
-import styles from './AIStudioPage.module.css';
+import styles from './StudioCards.module.css';
 
 export type ViewMode = 'type' | 'match';
 

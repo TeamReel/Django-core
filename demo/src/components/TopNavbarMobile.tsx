@@ -5,7 +5,7 @@
 import { useEffect, useCallback } from 'react';
 import { X } from 'lucide-react';
 import { SearchBar } from './SearchBar';
-import s from './TopNavbar.module.css';
+import s from './TopNavbarMobile.module.css';
 
 interface MobileSearchOverlayProps {
   onClose: () => void;

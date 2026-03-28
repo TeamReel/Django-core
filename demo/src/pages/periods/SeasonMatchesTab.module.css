@@ -26,31 +26,6 @@
 }
 
 /* ── Sort toggle ── */
-.sortRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
-}
-
-.sortChip {
-  font-size: var(--text-xs);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--app-border, var(--color-neutral-500));
-  background: transparent;
-  color: var(--app-muted-text);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-default);
-}
-
-.sortChip[data-active='true'] {
-  background: var(--color-blue-500-alpha-15, rgba(59, 130, 246, 0.15));
-  border-color: var(--color-blue-500);
-  color: var(--color-blue-500);
-  font-weight: var(--font-semibold);
-}
-
 /* ── Section dividers (Aankomend / Gespeeld) ── */
 .sectionLabel {
   font-size: var(--text-xs);
@@ -240,16 +215,6 @@
   flex-shrink: 0;
 }
 
-.indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-md);
-  font-size: var(--text-xs);
-}
-
 .indicatorLineup {
   display: flex;
   align-items: center;
@@ -322,17 +287,6 @@
   background: var(--app-surface-2, rgba(255, 255, 255, 0.03));
 }
 
-.statusIcon {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--text-sm);
-}
-
 .statusIconGreen {
   flex-shrink: 0;
   width: 28px;
@@ -370,19 +324,6 @@
   font-size: var(--text-sm);
   background: var(--color-blue-500-alpha-15, rgba(59, 130, 246, 0.15));
   color: var(--color-blue-500, var(--color-blue-500));
-}
-
-.statusIconAmber {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--text-sm);
-  background: var(--app-warning-ring);
-  color: var(--color-amber-400);
 }
 
 .statusInfo {

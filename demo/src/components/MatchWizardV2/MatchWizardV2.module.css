@@ -300,10 +300,6 @@
 }
 
 /* ── Output type badge (deprecated – kept for back-compat) ─ */
-.outputBadge {
-  display: none;
-}
-
 /* ── Primary action button ──────────────────────────── */
 .primaryBtn {
   padding: var(--space-4);

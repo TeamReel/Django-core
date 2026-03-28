@@ -1,0 +1,72 @@
+/* TopNavbarMobile — Mobile search overlay styles */
+
+.mobileSearchOverlay {
+  position: fixed;
+  top: 48px;
+  left: 0;
+  right: 0;
+  z-index: 1200;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  animation: mobileSearchSlideDown var(--duration-fast) ease-out;
+}
+
+.mobileSearchBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1199;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+@keyframes mobileSearchSlideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobileSearchOverlay {
+    animation: none;
+  }
+}
+
+.mobileSearchInputRow {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3) 0;
+}
+
+.mobileSearchTitle {
+  flex: 1;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--app-text);
+}
+
+.mobileSearchBody {
+  padding: 0 var(--space-3) var(--space-2);
+}
+
+.mobileSearchClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--app-text);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mobileSearchClose:active {
+  background: var(--app-border);
+}
