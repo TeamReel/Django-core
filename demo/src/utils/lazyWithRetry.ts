@@ -10,7 +10,8 @@ import { lazy, ComponentType } from 'react';
  *   2. If still failing, reloads the page once (picks up fresh index.html)
  *   3. If the page was already reloaded, lets the error propagate to ErrorBoundary
  */
-export function lazyWithRetry<T extends ComponentType<Record<string, unknown>>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches React.lazy signature
+export function lazyWithRetry<T extends ComponentType<any>>(
   importFn: () => Promise<{ default: T }>,
 ) {
   return lazy(() =>
