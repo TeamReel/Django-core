@@ -1,9 +1,11 @@
+import logging
+import unicodedata
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-import unicodedata
 from django.db import connection
 from django.contrib.postgres.search import SearchHeadline, SearchQuery
 from django.contrib.contenttypes.models import ContentType
@@ -16,6 +18,7 @@ from search.utils import sanitize_query
 from projects.models import Project
 from activities.models import Activity, Period
 
+logger = logging.getLogger(__name__)
 
 # Simple category tokens supported by the frontend.
 # These are mapped to concrete content types (app_label.model).
@@ -561,9 +564,9 @@ class SearchAPIView(APIView):
     def get(self, request):
         query_string = request.query_params.get("q", "").strip()
 
-        # Debug logging
-        print(
-            f"Search request: q='{query_string}', user='{request.user}', auth={request.user.is_authenticated}, super={request.user.is_superuser}"
+        logger.debug(
+            "Search request: q='%s', user='%s', auth=%s, super=%s",
+            query_string, request.user, request.user.is_authenticated, request.user.is_superuser,
         )
 
         if not query_string:
@@ -580,7 +583,7 @@ class SearchAPIView(APIView):
         # Get base queryset from backend (includes permission filtering and ranking)
         queryset = backend.search(query_string, request.user, types=types)
 
-        print(f"Search backend returned {queryset.count()} results")
+        logger.debug("Search backend returned %d results", queryset.count())
 
         # Ensure unique results
         queryset = queryset.distinct()

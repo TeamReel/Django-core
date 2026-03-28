@@ -151,7 +151,7 @@ def login_api(request):
             try:
                 request.session["last_activity"] = timezone.now().timestamp()
             except Exception as e:
-                print(f"Session error: {e}")
+                logger.warning("Session error: %s", e)
 
             # Audit log: Successful login
             audit_log.record("auth.login", user=user, request=request)

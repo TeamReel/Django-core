@@ -1,7 +1,11 @@
+import logging
+
 from celery import shared_task
 from django.contrib.contenttypes.models import ContentType
 
 from search.backend.postgres import PostgresSearchBackend
+
+logger = logging.getLogger(__name__)
 
 
 @shared_task
@@ -22,9 +26,7 @@ def update_search_index(content_type_id, object_id):
         # Object or ContentType might have been deleted before task ran
         pass
     except Exception as e:
-        # Log error but don't crash the worker
-        # In a real app we'd use logger.error
-        print(f"Error updating search index: {e}")
+        logger.error("Error updating search index: %s", e)
 
 
 @shared_task

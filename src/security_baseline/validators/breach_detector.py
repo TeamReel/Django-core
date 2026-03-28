@@ -14,12 +14,15 @@ Verify that a password breach detection service is in use.
 """
 
 import hashlib
+import logging
 import time
 from pathlib import Path
 from typing import Optional
 
 import requests
 from pybloom_live import BloomFilter
+
+logger = logging.getLogger(__name__)
 
 
 class BreachDetector:
@@ -62,7 +65,7 @@ class BreachDetector:
                     self._bloom_filter = BloomFilter.fromfile(f)
             except Exception as e:
                 # Log error but continue (fallback to HIBP API only)
-                print(f"Warning: Failed to load bloom filter: {e}")
+                logger.warning("Failed to load bloom filter: %s", e)
 
     def is_breached(self, password: str) -> bool:
         """
@@ -88,7 +91,7 @@ class BreachDetector:
             elapsed_ms = (time.perf_counter() - start_time) * 1000
 
             if elapsed_ms > 5:
-                print(f"Warning: Bloom filter check took {elapsed_ms:.2f}ms (target <5ms)")
+                logger.warning("Bloom filter check took %.2fms (target <5ms)", elapsed_ms)
 
             if not in_bloom:
                 # Definitely not breached (bloom filter guarantees no false negatives)
@@ -141,5 +144,5 @@ class BreachDetector:
         except Exception as e:
             # API error - fail open (return False) to not block users
             # In production, this should be logged for monitoring
-            print(f"Warning: HIBP API error: {e}")
+            logger.warning("HIBP API error: %s", e)
             return False

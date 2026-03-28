@@ -5,11 +5,14 @@ Handles Django app initialization and security rule registration.
 """
 
 import importlib
+import logging
 import os
 import pkgutil
 from pathlib import Path
 
 from django.apps import AppConfig
+
+logger = logging.getLogger(__name__)
 
 
 class SecurityBaselineConfig(AppConfig):
@@ -42,7 +45,7 @@ class SecurityBaselineConfig(AppConfig):
                 try:
                     importlib.import_module(f"{rules_package}.{module_name}")
                 except ImportError as e:
-                    print(f"Warning: Failed to import {module_name}: {e}")
+                    logger.warning("Failed to import %s: %s", module_name, e)
 
         # --- WP08: Constitutional Engine Integration ---
         try:
@@ -58,7 +61,7 @@ class SecurityBaselineConfig(AppConfig):
         try:
             manifest = ManifestLoader().load_manifest()
         except ManifestLoaderError as e:
-            print(f"Security manifest loading failed: {e}")
+            logger.error("Security manifest loading failed: %s", e)
             manifest = {}
 
         # Detect environment
@@ -85,20 +88,20 @@ class SecurityBaselineConfig(AppConfig):
         exemptions = manifest.get("exemptions", [])
         if exemptions:
             _registry.load_exemptions(exemptions, environment)
-            print(f"Loaded {len(exemptions)} exemption(s) for {environment} environment")
+            logger.info("Loaded %d exemption(s) for %s environment", len(exemptions), environment)
 
         # Import Constitutional Engine
         try:
             from constitution_engine.core.engine import Engine
             from constitution_engine.core.models import ConfigurationProfile, RepositoryContext
         except ImportError as e:
-            print(f"Constitutional Engine import failed: {e}")
+            logger.error("Constitutional Engine import failed: %s", e)
             if enforcement_mode == "strict":
                 raise RuntimeError(
                     "Constitutional Engine unavailable; strict enforcement required."
                 )
             else:
-                print("Constitutional Engine unavailable; proceeding in advisory mode.")
+                logger.warning("Constitutional Engine unavailable; proceeding in advisory mode.")
                 return
 
         # Prepare engine configuration

@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime
 
@@ -12,6 +13,8 @@ from rest_framework.views import APIView
 
 from security_baseline.reports.asvs_coverage import ASVSCoverageCalculator
 from security_baseline.rules.registry import _registry
+
+logger = logging.getLogger(__name__)
 
 # Try to import AuditEvent
 try:
@@ -86,7 +89,7 @@ class ConstitutionRulesView(APIView):
                     categories[category] = categories.get(category, 0) + 1
 
             except Exception as e:
-                print(f"Error reading constitution config: {e}")
+                logger.error("Error reading constitution config: %s", e)
                 # Return empty list on error
                 pass
 
@@ -168,7 +171,7 @@ class SecurityEventsView(APIView):
                     if violation:
                         violations.append(violation)
                 except Exception as e:
-                    print(f"Error validating rule {rule.rule_id}: {e}")
+                    logger.error("Error validating rule %s: %s", rule.rule_id, e)
                     # Continue to next rule instead of crashing
                     continue
 
