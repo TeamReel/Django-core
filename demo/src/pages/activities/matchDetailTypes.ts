@@ -11,6 +11,7 @@ import type { ContentTemplate } from '../identity/ContentGenerationModal';
 import type { useBrandProfile } from '../../hooks/useBrandProfile';
 import type { Period, SeasonOrganisation, SeasonProject as Project } from '../../types/season';
 import type { User } from '@django-core/auth-ui';
+import type { SquadMember } from './match-detail/MatchLineupField';
 
 // Re-export helpers for backward compatibility
 export {
@@ -261,7 +262,7 @@ export interface MatchDetailDataReturn {
   setLineupFormation: (v: string) => void;
   lineupSlots: Record<string, string[]>;
   setLineupSlots: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
-  lineupSquad: Record<string, Record<string, unknown>[]>;
+  lineupSquad: Record<string, SquadMember[]>;
   lineupSquadLoading: boolean;
   lineupBenchStatus: Record<string, string>;
   setLineupBenchStatus: React.Dispatch<React.SetStateAction<Record<string, string>>>;

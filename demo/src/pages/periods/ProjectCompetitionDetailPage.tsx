@@ -165,7 +165,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 matches={d.matches}
                 matchMediaMap={d.matchMediaMap}
                 matchMediaLoading={d.matchMediaLoading}
-                matchDisplayTitle={d.matchDisplayTitle as any}
+                matchDisplayTitle={d.matchDisplayTitle as unknown as (m: Record<string, unknown>) => string}
                 isTeamRoute={d.isTeamRoute}
                 orgSlugOrId={d.orgSlugOrId}
                 clubSlugOrId={d.clubSlugOrId}

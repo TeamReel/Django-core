@@ -33,7 +33,7 @@ export function useOverviewMembers({
   useEffect(() => {
     let cancelled = false;
 
-    const extractMembersCount = (raw: Record<string, any>, list: OverviewMember[]): number => {
+    const extractMembersCount = (raw: { meta?: { pagination?: { total?: number } }; data?: { count?: number }; count?: number; [key: string]: unknown }, list: OverviewMember[]): number => {
       const metaTotal = raw?.meta?.pagination?.total;
       if (typeof metaTotal === 'number') return metaTotal;
       const dataCount = raw?.data?.count ?? raw?.count;

@@ -4,7 +4,7 @@
 import React from 'react';
 import { Badge } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
-import { Project } from '../../types';
+import { Project, Organisation } from '../../types';
 import { canEditProject, canDeleteProject } from '../../utils/permissions';
 import type { useProjectsPageData } from './useProjectsPageData';
 import { routes } from '../../routes';
@@ -82,7 +82,7 @@ export function ProjectsTable({ d }: { d: Data }) {
             const projectOrg = project.organisation;
             const pCtx: import('@/utils/permissions').PermissionContext = {
               currentOrganisation: projectOrg
-                ? { ...projectOrg, name: projectOrg.name || '', user_role: projectOrg.user_role as 'admin' | 'member' | undefined } as any
+                ? { ...projectOrg, name: projectOrg.name || '', user_role: projectOrg.user_role as 'admin' | 'member' | undefined } as unknown as Organisation
                 : resolvedOrg,
               isSuperAdmin,
             };

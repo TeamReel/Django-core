@@ -123,7 +123,7 @@ export function useCompetitionFetchers(params: UseFetchersParams) {
         const map: Record<string, Record<string, unknown>[]> = {};
         await Promise.all(matches.map(async (m) => {
           try {
-            const { results } = await api.list<any>('/media/items/', { params: { activity: String(m.id) } });
+            const { results } = await api.list<Record<string, unknown>>('/media/items/', { params: { activity: String(m.id) } });
             map[String(m.id)] = results;
           } catch { map[String(m.id)] = []; }
         }));

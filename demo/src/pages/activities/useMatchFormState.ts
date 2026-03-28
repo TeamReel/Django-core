@@ -9,6 +9,7 @@ import { logger } from '@/utils/logger';
 import type { MatchDetail, ContentItem, OrgMember, ProjectMember } from './matchDetailTypes';
 import type { ContentTemplate } from '../identity/ContentGenerationModal';
 import type { MatchMediaItem } from '../../components/MediaAssetCard';
+import type { SquadMember } from './match-detail/MatchLineupField';
 import { formReducer, makeSetter } from '../../utils/formReducer';
 
 // ─── State interface ─────────────────────────────────────────────────────────
@@ -57,7 +58,7 @@ interface MatchFormState {
   selectedLineupParticipationIdsAway: Set<string>;
   lineupFormation: string;
   lineupSlots: Record<string, string[]>;
-  lineupSquad: Record<string, Record<string, unknown>[]>;
+  lineupSquad: Record<string, SquadMember[]>;
   lineupSquadLoading: boolean;
   lineupSaving: boolean;
   lineupSaveSuccess: boolean;

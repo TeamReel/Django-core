@@ -246,7 +246,7 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
       try {
         const orgKey = String(org?.slug || resolvedOrgSlug || '').trim();
 
-        const clubIdForFilter = String(getParentProjectId((team || {}) as Record<string, any>) || clubIdForDirectoryLists || '').trim();
+        const clubIdForFilter = String(getParentProjectId((team || {}) as Record<string, unknown>) || clubIdForDirectoryLists || '').trim();
         if (!clubIdForFilter) {
           if (!cancelled) setClubTeamsForSwitcher([]);
           return;

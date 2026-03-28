@@ -102,7 +102,7 @@ const UserRow: React.FC<UserRowProps & { item: UserRowItem }> = ({
   const isMembership = !!item.user;
   const user = (isMembership ? item.user : item) as User;
   const userOrgs = user.organisations || [];
-  const userProjects: any[] = user.projects || [];
+  const userProjects = (user.projects ?? []) as UserProject[];
   const displayRole = user.role || 'User';
   const isActive = isMembership ? item.is_active : user.is_active;
 
@@ -149,7 +149,7 @@ const UserRow: React.FC<UserRowProps & { item: UserRowItem }> = ({
       <td>
         <div className="flex-row gap-4 flex-wrap">
           {allParentClubs.length > 0
-            ? allParentClubs.map((club: { id?: string | number; name: string }, idx: number) => (
+            ? allParentClubs.map((club, idx) => (
                 <span key={club.id || idx} className={`border rounded-4 fs-11 bg-surface-2 text-primary ${styles.tagBadge}`}>{club.name}</span>
               ))
             : <span className="text-muted fs-12">-</span>}

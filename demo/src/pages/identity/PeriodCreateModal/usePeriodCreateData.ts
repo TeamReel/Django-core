@@ -163,7 +163,7 @@ export function usePeriodCreateData({
           params.set('organisation_id', String(selectedOrganisationId));
         }
 
-        const data = await api.get<any>(`/periods/?${params.toString()}`);
+        const data = await api.get<{ data?: { data?: Record<string, unknown>[]; results?: Record<string, unknown>[] }; results?: Record<string, unknown>[]; [key: string]: unknown }>(`/periods/?${params.toString()}`);
         const results = data.data?.data || data.data?.results || data.results || data.data || [];
         const roots = (Array.isArray(results) ? results : []).filter(
           (p: Record<string, unknown>) => p?.parent_period_id == null && !p?.parent_period

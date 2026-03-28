@@ -25,7 +25,7 @@ import styles from './PermissionsPage.module.css';
  */
 export const PermissionsPage: React.FC = () => {
   const [effectivePermissionKeys, setEffectivePermissionKeys] = useState<string[]>([]);
-  const [permissionsTree, setPermissionsTree] = useState<any | null>(null);
+  const [permissionsTree, setPermissionsTree] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
@@ -40,7 +40,7 @@ export const PermissionsPage: React.FC = () => {
         const userData = await api.get<User>('/auth/me/');
         setCurrentUserRole(userData.role ?? null);
 
-        const tree = await api.get<any>('/permissions/current/');
+        const tree = await api.get<Record<string, unknown>>('/permissions/current/');
         setPermissionsTree(tree);
 
         const keys: string[] = [];

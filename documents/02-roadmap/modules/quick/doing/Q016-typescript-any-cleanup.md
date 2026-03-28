@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | � DOING |
 | Bron | Code Review / Codebase Audit |
 | Impact | 🟡 important |
 | Effort | ~3 uur |
@@ -22,8 +22,8 @@ Er staan ~37 `any` type-annotaties in productie TypeScript-bestanden (niet test-
 - `sidebarPanelBWork.types.ts`, `useMatchDataFetching.ts`, `orgDataHelpers.ts`, `useTeamMatches.ts`, `contentGenerationApi.ts`, `usePeriodCreateData.ts`, `effects.ts`, `useSeasonBulkActions.ts`, `useSeasonCrudActions.ts`, `fetchers.ts`, `lazyWithRetry.ts` (elk 1×)
 
 ## Checklist
-- [ ] Vervang `any` door correcte interfaces/types
-- [ ] Begin met `UsersPage.tsx` (5 hits) en `useClubOrgHierarchy.ts` (3 hits)
-- [ ] Definieer missende API response interfaces
-- [ ] `npx tsc --noEmit` blijft schoon
-- [ ] Verify
+- [x] Vervang `any` door correcte interfaces/types
+- [x] Begin met `UsersPage.tsx` (5 hits) en `useClubOrgHierarchy.ts` (3 hits)
+- [x] Definieer missende API response interfaces
+- [x] `npx tsc --noEmit` blijft schoon
+- [x] Verify

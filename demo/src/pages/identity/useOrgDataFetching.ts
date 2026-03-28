@@ -159,7 +159,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
     if (!currentOrgSlug) return;
     setClubsLoading(true);
     try {
-      const data = await api.get<any>(`/organisations/${currentOrgSlug}/projects/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`);
+      const data = await api.get<Record<string, unknown>>(`/organisations/${currentOrgSlug}/projects/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`);
       const { results, count } = parseListEnvelope(data);
       const clubsOnly = (results as Record<string, unknown>[]).filter((p) => {
         const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
@@ -310,7 +310,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
     const apiV1BaseUrl = getApiV1BaseUrl();
     try {
       if (currentOrgSlug) {
-        const teamsData = await api.list<any>(`/organisations/${currentOrgSlug}/projects/`, { pageSize: 1, params: { parent_project__isnull: false } });
+        const teamsData = await api.list<Project>(`/organisations/${currentOrgSlug}/projects/`, { pageSize: 1, params: { parent_project__isnull: false } });
         setTeamsCount(teamsData.count);
       }
       {
@@ -324,7 +324,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
         else void fetchTeamsForOrg({ force: true });
       }
       {
-        const matchesData = await api.list<any>('/activities/', { pageSize: 1, params: { activity_type: 'match', organisation_id: organisationId } });
+        const matchesData = await api.list<Activity>('/activities/', { pageSize: 1, params: { activity_type: 'match', organisation_id: organisationId } });
         setMatchesCount(matchesData.count);
       }
     } catch (e) { logger.warn('[OrganisationDetailPage] Failed to fetch counts', e); }

@@ -121,7 +121,7 @@ export const generateLineupVideo = async (p: GenerateLineupVideoParams): Promise
       },
       { 'X-Project-ID': projectId },
     );
-    jobId = data.data?.id || data.id;
+    jobId = (data.data?.id || data.id) as string;
   } else {
     addMemberSegments(targetGKs, gkAssets, 'goalkeeper');
     addMemberSegments(targetPlayers, playerAssets, 'player');
@@ -147,7 +147,7 @@ export const generateLineupVideo = async (p: GenerateLineupVideoParams): Promise
       },
       { 'X-Project-ID': projectId },
     );
-    jobId = data.data?.id || data.id;
+    jobId = (data.data?.id || data.id) as string;
   }
 
   return jobId;
@@ -184,7 +184,7 @@ export const generateGoalCelebration = async (p: GenerateGoalCelebrationParams):
     { 'X-Project-ID': projectId },
   );
 
-  return data.data?.id || data.id;
+  return (data.data?.id || data.id) as string;
 };
 
 /* ================================================================== */
@@ -209,5 +209,5 @@ export const generateMatchIntro = async (p: GenerateMatchIntroParams): Promise<s
     { 'X-Project-ID': projectId },
   );
 
-  return data.data?.id || data.id;
+  return (data.data?.id || data.id) as string;
 };

@@ -2,6 +2,8 @@ import { useCallback } from 'react';
 import type { Period } from '../../types/season';
 import type { PeriodCreatePayload } from '../identity/PeriodCreateModal/types';
 import type { MatchCreatePayload } from '../identity/matchCreateTypes';
+import type { MatchRecord } from './SeasonMatchesTab';
+import type { Activity } from '../../types/api/activity';
 import { api } from '@/api/client';
 import { getCsrfToken } from '../../utils/csrf';
 import { getApiV1BaseUrl } from '../../utils/apiFetch';
@@ -23,7 +25,7 @@ interface UseSeasonBulkActionsParams {
   // State setters
   setCompetitions: Setter<Period[]>;
   setCompetitionsLoading: Setter<boolean>;
-  setMatches: Setter<any[]>;
+  setMatches: Setter<MatchRecord[]>;
   setMatchesLoading: Setter<boolean>;
   setMembersReloadToken: Setter<number>;
   setTeamRosterReloadToken: Setter<number>;
@@ -257,7 +259,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
     if (!teamIdValue) throw new Error('Select a team first');
     if (!competitionIdValue) throw new Error('Select a competition first');
 
-    const created = await api.post<any>('/activities/', {
+    const created = await api.post<Activity>('/activities/', {
       title: payload.title,
       activity_type: 'match',
       project_id: teamIdValue ? Number(teamIdValue) : undefined,
@@ -281,7 +283,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
         setMatches((prev) => {
           const list = Array.isArray(prev) ? prev : [];
           if (list.some((m) => String(m?.id || '').trim() === createdId)) return list;
-          return [created, ...list];
+          return [created as unknown as MatchRecord, ...list];
         });
       }
     }
@@ -294,7 +296,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
             const projectNumericId = String(project?.id || '').trim();
           const seasonUuid = String(resolvedSeasonId || '').trim();
           if (projectNumericId && seasonUuid) {
-            const seasonMatches = await api.listAll<Record<string, unknown>>('/activities/', {
+            const seasonMatches = await api.listAll<MatchRecord>('/activities/', {
               params: {
                 project_id: projectNumericId,
                 period_id: seasonUuid,

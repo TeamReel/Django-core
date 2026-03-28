@@ -169,7 +169,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
 
   // Media actions
   const media = useMemberMediaActions({
-    membership, setMembership, membershipId, project: project as any, org, apiBaseUrl,
+    membership, setMembership, membershipId, project: project as { id: string; organisation?: { id: string }; [k: string]: unknown } | null, org, apiBaseUrl,
   });
 
   // Save

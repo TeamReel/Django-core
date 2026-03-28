@@ -45,7 +45,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
             const clubId = String(clubIdForDirectoryLists || '').trim();
             if (!clubId) return;
             try {
-                const data = await api.list<any>(`/projects/${encodeURIComponent(clubId)}/members/`, { pageSize: 1 });
+                const data = await api.list<Record<string, unknown>>(`/projects/${encodeURIComponent(clubId)}/members/`, { pageSize: 1 });
                 if (!cancelled) setHierarchyMembersCountForClub(data.count);
             } catch { if (!cancelled) setHierarchyMembersCountForClub(null); }
         };
@@ -65,10 +65,10 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                 const teamsData = await api.list<Project>(`/organisations/${encodeURIComponent(orgSlugForDirectoryLists)}/projects/`, { pageSize: 2000, params: { include_archived: true, parent_project__isnull: false } });
                 const teamsList = teamsData.results;
                 const filteredTeams = teamsList
-                    .filter((t: any) => {
+                    .filter((t) => {
                         const parent = t?.parent_id ?? t?.parent_project_id ?? (typeof t?.parent_project === 'object' ? t?.parent_project?.id : t?.parent_project) ?? (typeof t?.parent === 'object' ? t?.parent?.id : t?.parent);
                         if (parent == null) return false;
-                        return String(typeof parent === 'object' ? parent.id : parent) === String(clubIdForDirectoryLists);
+                        return String(parent) === String(clubIdForDirectoryLists);
                     })
                     .map((t) => ({ id: String(t?.id || '').trim(), name: String(t?.name || 'Team'), slug: t?.slug ? String(t.slug) : undefined, organisation_id: t?.organisation_id ? String(t.organisation_id) : undefined, organisation: t?.organisation }))
                     .filter((t) => Boolean(t.id));
@@ -172,7 +172,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                                 const tid = String(t?.id || '').trim();
                                 if (!tid) return null;
                                 try {
-                                    const data = await api.list<any>(`/projects/${encodeURIComponent(tid)}/members/`, { pageSize: 1 });
+                                    const data = await api.list<Record<string, unknown>>(`/projects/${encodeURIComponent(tid)}/members/`, { pageSize: 1 });
                                     return { teamId: tid, count: data.count };
                                 } catch { return { teamId: tid, count: 0 }; }
                             }),

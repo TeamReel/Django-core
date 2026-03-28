@@ -34,7 +34,7 @@ export const MemberDetailPage: React.FC = () => {
   const { id, memberId } = useParams<{ id: string; memberId: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [member, setMember] = useState<any | null>(null);
+  const [member, setMember] = useState<OrgMembershipListItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState('');

@@ -58,7 +58,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
     const fetchUser = async () => {
         try {
             setLoading(true);
-            const userData = await api.get<any>(
+            const userData = await api.get<Record<string, unknown>>(
                 `/admin/users/${encodeURIComponent(String(userId))}/`,
             );
             setUser(userData);
@@ -148,7 +148,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         if (!slugOrId) return;
 
         const membershipId = await findOrganisationMembershipId(slugOrId);
-        const res = await api.patch<any>(
+        const res = await api.patch<Record<string, unknown>>(
             `/organisations/${encodeURIComponent(slugOrId)}/members/${encodeURIComponent(membershipId)}/`,
             { role },
         );
@@ -238,7 +238,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         if (!pid) return;
 
         const membershipId = await findProjectMembershipId(pid, directMembershipId);
-        const res = await api.patch<any>(
+        const res = await api.patch<Record<string, unknown>>(
             `/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`,
             { role },
         );

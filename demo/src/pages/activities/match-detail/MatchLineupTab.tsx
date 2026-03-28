@@ -1,14 +1,14 @@
 import React from 'react';
 import { Card } from '@django-core/design-system';
 import { FormationPicker } from '../../identity/content-generation';
-import { FieldVisualization } from './MatchLineupField';
+import { FieldVisualization, type SquadMember } from './MatchLineupField';
 
 interface MatchLineupTabProps {
   lineupFormation: string;
   setLineupFormation: (formation: string) => void;
   lineupSlots: Record<string, string[]>;
   setLineupSlots: (slots: Record<string, string[]>) => void;
-  lineupSquad: Record<string, any[]>;
+  lineupSquad: Record<string, SquadMember[]>;
   lineupSquadLoading: boolean;
   lineupBenchStatus: Record<string, string>;
   setLineupBenchStatus: React.Dispatch<React.SetStateAction<Record<string, string>>>;

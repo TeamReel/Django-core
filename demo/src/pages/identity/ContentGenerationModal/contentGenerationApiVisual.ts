@@ -39,7 +39,7 @@ export const generateLineupFlyer = async (p: GenerateLineupFlyerParams): Promise
     { 'X-Project-ID': projectId },
   );
 
-  const flyerUrl = data.data?.flyer_url || data.flyer_url;
+  const flyerUrl = (data.data?.flyer_url || data.flyer_url) as string | null;
   if (!flyerUrl) throw new Error('Flyer generated but no URL returned');
 
   return [{
@@ -77,7 +77,7 @@ export const generateTeamPoster = async (p: GenerateTeamPosterParams): Promise<G
     { 'X-Project-ID': projectId },
   );
 
-  const posterUrl = data.poster_url || data.data?.poster_url;
+  const posterUrl = (data.poster_url || data.data?.poster_url) as string | null;
   if (!posterUrl) throw new Error('Poster generated but no URL returned');
 
   return [{
@@ -122,7 +122,7 @@ export const generateMatchFlyer = async (p: GenerateMatchFlyerParams): Promise<G
     { 'X-Project-ID': projectId },
   );
 
-  const flyerUrl = data.data?.flyer_url || data.flyer_url;
+  const flyerUrl = (data.data?.flyer_url || data.flyer_url) as string | null;
   if (!flyerUrl) throw new Error('Flyer generated but no URL returned');
 
   return [{
@@ -163,7 +163,7 @@ export const generateMatchSummary = async (p: GenerateMatchSummaryParams): Promi
     { 'X-Project-ID': projectId },
   );
 
-  const flyerUrl = data.data?.flyer_url || data.flyer_url;
+  const flyerUrl = (data.data?.flyer_url || data.flyer_url) as string | null;
   if (!flyerUrl) throw new Error('Summary generated but no URL returned');
 
   return [{

@@ -11,6 +11,9 @@ import AddMemberModal from './AddMemberModal';
 import up from './UsersPage.module.css';
 import AssignUserToOrgModal from './AssignUserToOrgModal';
 import LinkUserModal from './LinkUserModal';
+import type { UserEditModalProps } from './userEditTypes';
+import type { User as LinkModalUser } from './linkUserModalTypes';
+import type { User as ApiUser } from '@/types/api/user';
 import { SkeletonTablePage } from '../../components/Skeleton';
 import { useUsersData } from './useUsersData';
 import { UsersFilterBar } from './UsersFilterBar';
@@ -129,8 +132,8 @@ export default function UsersPage() {
       <UserEditModal
         opened={d.isModalOpen}
         onClose={() => d.setIsModalOpen(false)}
-        user={d.editingUser as any}
-        onSave={d.handleSaveUser as any}
+        user={d.editingUser as UserEditModalProps['user']}
+        onSave={d.handleSaveUser as UserEditModalProps['onSave']}
         onSaved={d.fetchUsers}
         organisationSlug={String(d.orgIdParam || d.context.organisation?.slug || '')}
         scopeProjectKey={String(d.selectedTeamKey || d.selectedClubKey || '')}
@@ -156,7 +159,7 @@ export default function UsersPage() {
       <AssignUserToOrgModal
         opened={d.isAssignModalOpen}
         onClose={() => d.setIsAssignModalOpen(false)}
-        user={d.assignUser as any}
+        user={d.assignUser as ApiUser | null}
         organisations={d.isSuperAdmin ? d.organisations : d.myOrganisations}
         onSuccess={() => { d.fetchUsers(); d.setIsAssignModalOpen(false); }}
       />
@@ -164,7 +167,7 @@ export default function UsersPage() {
       <LinkUserModal
         opened={d.isLinkModalOpen}
         onClose={() => d.setIsLinkModalOpen(false)}
-        user={d.linkUser as any}
+        user={d.linkUser as LinkModalUser | null}
         organisations={d.isSuperAdmin ? d.organisations : d.myOrganisations}
         clubs={d.clubs}
         teams={d.teams}
@@ -175,7 +178,7 @@ export default function UsersPage() {
       <UserDetailModal
         opened={d.isDetailModalOpen}
         onClose={() => d.setIsDetailModalOpen(false)}
-        user={d.detailUser as any}
+        user={d.detailUser as ApiUser | null}
       />
     </>
   );

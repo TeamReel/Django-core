@@ -73,7 +73,7 @@ export function CompetitionLegacyMatchCreateModal({
         params.set('organisation_id', orgId);
         params.set('parent_project__isnull', 'false');
 
-        const all = await fetchAllPages<any>(
+        const all = await fetchAllPages<{ id: string | number; name: string; [k: string]: unknown }>(
           `${apiBaseUrl}/api/v1/projects/?${params.toString()}`,
           { credentials: 'include' },
           { ttlMs: 10_000, cacheKey: `projects:teams:org:${orgId}`, maxItems: 3000 }

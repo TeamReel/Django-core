@@ -46,9 +46,13 @@ export const resolveProjectId = (
   return String(id);
 };
 
-export const postJson = async (path: string, body: Record<string, unknown>, extra?: Record<string, string>) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return api.post<any>(path, body, extra ? { headers: extra } as Record<string, unknown> : undefined);
+/** DRF response envelope returned by postJson — allows nested .data access without any. */
+interface ApiEnvelope extends Record<string, unknown> {
+  data?: Record<string, unknown>;
+}
+
+export const postJson = async (path: string, body: Record<string, unknown>, extra?: Record<string, string>): Promise<ApiEnvelope> => {
+  return api.post<ApiEnvelope>(path, body, extra ? { headers: extra } as Record<string, unknown> : undefined);
 };
 
 /* ================================================================== */
@@ -129,7 +133,7 @@ export const generateGenericAI = async (p: GenerateGenericAIParams): Promise<Gen
   });
 
   const responseData = data.data || data;
-  const variants: GeneratedVariant[] = responseData.variants || [];
+  const variants = (responseData.variants || []) as GeneratedVariant[];
 
   const firstError = variants.find((v: GeneratedVariant) => v.error);
   if (firstError?.error) throw new Error(firstError.error);
@@ -147,13 +151,13 @@ export const generateGenericAI = async (p: GenerateGenericAIParams): Promise<Gen
   } else if (responseData.image_base64 || responseData.presigned_url) {
     const singleVariant: GeneratedVariant = {
       variant_index: 0,
-      image_base64: responseData.image_base64,
-      presigned_url: responseData.presigned_url,
-      mime_type: responseData.mime_type,
-      filename: responseData.filename,
+      image_base64: responseData.image_base64 as string | null,
+      presigned_url: responseData.presigned_url as string | null,
+      mime_type: responseData.mime_type as string | null,
+      filename: responseData.filename as string | null,
       error: null,
-      storage_info: responseData.storage_info,
-      metadata: responseData.metadata || {},
+      storage_info: responseData.storage_info as GeneratedVariant['storage_info'],
+      metadata: (responseData.metadata || {}) as Record<string, unknown>,
     };
     variants.push(singleVariant);
     generatedOutput = {
@@ -209,9 +213,9 @@ export const saveGeneratedVariant = async (p: SaveVariantParams): Promise<SaveVa
 
   const result = data.data || data;
   return {
-    file_asset_id: result.file_asset_id,
-    brand_asset_id: result.brand_asset_id,
-    media_item_id: result.media_item_id,
-    storage_path: result.storage_path,
+    file_asset_id: result.file_asset_id as string | undefined,
+    brand_asset_id: result.brand_asset_id as string | undefined,
+    media_item_id: result.media_item_id as string | undefined,
+    storage_path: result.storage_path as string | undefined,
   };
 };

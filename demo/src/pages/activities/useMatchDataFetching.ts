@@ -8,13 +8,7 @@ import { logger } from '@/utils/logger';
 
 // ─── Local types ─────────────────────────────────────────────────────────────
 
-/** Squad member record from the project members API */
-interface SquadMemberRecord {
-  functional_roles?: string[];
-  metadata?: { functional_roles?: string[]; team_role?: string; [key: string]: unknown };
-  data?: { functional_role?: string; [key: string]: unknown };
-  [key: string]: unknown;
-}
+import type { SquadMember } from './match-detail/MatchLineupField';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -45,7 +39,7 @@ interface UseMatchDataFetchingParams {
   setEligibleMembers: (v: OrgMember[]) => void;
   setClubProjectMembers: (v: ProjectMember[]) => void;
   setLineupSquadLoading: (v: boolean) => void;
-  setLineupSquad: (v: Record<string, SquadMemberRecord[]>) => void;
+  setLineupSquad: (v: Record<string, SquadMember[]>) => void;
   setLineupFormation: (v: string) => void;
   setLineupSlots: (v: Record<string, string[]>) => void;
   setLineupBenchStatus: (v: Record<string, string>) => void;
@@ -91,7 +85,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
           // Fallback: search by slug via API when provider hasn't loaded yet
           if (!competitionUuid && resolvedSeasonId) {
             try {
-              const { results } = await api.list<any>('/periods/', {
+              const { results } = await api.list<Period>('/periods/', {
                 params: { parent: resolvedSeasonId, slug: effectiveCompetitionIdVal },
               });
               if (results.length > 0) {
@@ -316,15 +310,15 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
     const fetchSquadData = async () => {
       setLineupSquadLoading(true);
       try {
-        const members = await api.listAll<SquadMemberRecord>(`/projects/${encodeURIComponent(String(projectIdVal))}/members/`, { pageSize: 100 });
+        const members = await api.listAll<SquadMember>(`/projects/${encodeURIComponent(String(projectIdVal))}/members/`, { pageSize: 100 });
 
-        const groups: Record<string, SquadMemberRecord[]> = { goalkeeper: [], player: [], coach: [], assistant: [] };
-        members.forEach((p: SquadMemberRecord) => {
+        const groups: Record<string, SquadMember[]> = { goalkeeper: [], player: [], coach: [], assistant: [] };
+        members.forEach((p: SquadMember) => {
           let roles: string[] = [];
           if (p.functional_roles && Array.isArray(p.functional_roles) && p.functional_roles.length > 0) roles = p.functional_roles;
           else if (p.metadata?.functional_roles && Array.isArray(p.metadata.functional_roles) && p.metadata.functional_roles.length > 0) roles = p.metadata.functional_roles;
           else if (p.data?.functional_role) roles = [p.data.functional_role];
-          else if (p.metadata?.team_role) roles = [p.metadata.team_role];
+          else if (p.metadata?.team_role) roles = [String(p.metadata.team_role)];
           else roles = ['player'];
           roles.forEach(role => {
             const nr = role.toLowerCase();

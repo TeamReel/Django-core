@@ -237,7 +237,7 @@ export function useClubOrgEffects({
         if (!cancelled) setBrandProfileId(profileId);
         const profile = await api.get<BrandProfileDetail>(`/branding/profiles/${profileId}/`);
         const assetList = profile?.assets || [];
-        const logoAsset = (assetList as any[]).find((a: { asset_type?: string; url?: string }) => a.asset_type === 'logo' || String(a.asset_type || '').includes('logo'));
+        const logoAsset = assetList.find((a) => a.asset_type === 'logo' || String(a.asset_type || '').includes('logo'));
         if (logoAsset?.url && !cancelled) {
           const url = logoAsset.url;
           setBrandLogoUrl(getAssetUrl(url)!);

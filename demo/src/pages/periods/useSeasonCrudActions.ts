@@ -144,7 +144,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
         },
       };
 
-      const createdMembership = await api.post<any>(`/projects/${encodeURIComponent(teamIdValue)}/members/`, body);
+      const createdMembership = await api.post<Record<string, unknown>>(`/projects/${encodeURIComponent(teamIdValue)}/members/`, body);
 
       // Optimistically reflect the new membership in the current squad list.
       try {
