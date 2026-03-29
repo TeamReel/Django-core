@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | ✅ DONE |
 | Bron | Code Review |
 | Impact | 🟡 important |
 | Effort | ~3 uur |
@@ -17,10 +17,10 @@ Hardcoded rgba() kleuren, z-index magic numbers, en pixel-spacing waarden in CSS
 - Inline styles in `UserDetailMembershipTabs.tsx` → CSS Module verplaatsen
 
 ## Checklist
-- [ ] Definieer z-index tokens in `tokens.css` (--z-dropdown, --z-modal, --z-overlay, etc.)
-- [ ] Vervang alle losse z-index waarden door tokens
-- [ ] Vervang hardcoded rgba() in `utility.css` door semantic color tokens
-- [ ] Vervang hardcoded box-shadow kleur in `design-system-interactive.css`
-- [ ] Verplaats inline styles in `UserDetailMembershipTabs.tsx` naar CSS Module
-- [ ] Tests
-- [ ] Verify: `pnpm exec tsc --noEmit` + `pnpm exec vite build`
+- [x] Definieer z-index tokens in `tokens.css` (--z-dropdown, --z-modal, --z-overlay, etc.)
+- [x] Vervang alle losse z-index waarden door tokens
+- [x] Vervang hardcoded rgba() in `utility.css` door semantic color tokens
+- [x] Vervang hardcoded box-shadow kleur in `design-system-interactive.css`
+- [x] Verplaats inline styles in `UserDetailMembershipTabs.tsx` naar CSS Module
+- [x] Tests
+- [x] Verify: `pnpm exec tsc --noEmit` + `pnpm exec vite build`

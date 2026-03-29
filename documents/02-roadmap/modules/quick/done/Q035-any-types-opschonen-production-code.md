@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | ✅ DONE |
 | Bron | Code Review |
 | Impact | 🟡 important |
 | Effort | ~2 uur |
@@ -18,10 +18,10 @@
 - `packages/theme-system/scripts/validate-theme.ts` — 1× `let theme: any`
 
 ## Checklist
-- [ ] Type `response.data` correct in projectsApi.ts
-- [ ] Type `response.data` correct in organisationsApi.ts
-- [ ] Type css.d.ts module declarations met Record of specifieke types
-- [ ] Vervang `as any` in Tooltip.tsx door correcte type
-- [ ] Type `theme` in validate-theme.ts
-- [ ] Tests
-- [ ] Verify: `pnpm exec tsc --noEmit`
+- [x] Type `response.data` correct in projectsApi.ts
+- [x] Type `response.data` correct in organisationsApi.ts
+- [x] Type css.d.ts module declarations met Record of specifieke types
+- [x] Vervang `as any` in Tooltip.tsx door correcte type
+- [x] Type `theme` in validate-theme.ts
+- [x] Tests
+- [x] Verify: `pnpm exec tsc --noEmit`
