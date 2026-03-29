@@ -51,7 +51,7 @@
 }
 
 .whatsapp {
-  background: #25d366;
+  background: var(--color-brand-whatsapp);
 }
 
 .download {

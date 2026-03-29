@@ -39,7 +39,7 @@ interface Props {
 function Thumb({ asset }: { asset: BrandAsset | undefined }) {
   const url = asset ? getAssetUrl(asset.url) : null;
   if (!url) return <div className={s.thumbEmpty} />;
-  return <img src={url} alt="" className={s.thumb} />;
+  return <img src={url} alt="" className={s.thumb} loading="lazy" />;
 }
 
 /* ── Single asset row ──────────────────────────────────────────────────── */

@@ -216,7 +216,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, clos
     <div className={memberStyles.memberDetailHeader}>
       <div className={memberStyles.memberDetailAvatar}>
         {member.avatarUrl ? (
-          <img src={member.avatarUrl} alt="" className={memberStyles.memberDetailAvatarImg} />
+          <img src={member.avatarUrl} alt="" className={memberStyles.memberDetailAvatarImg} loading="lazy" />
         ) : (
           <span className={memberStyles.memberDetailInitial}>{member.name.charAt(0).toUpperCase()}</span>
         )}
