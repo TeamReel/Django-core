@@ -262,6 +262,20 @@ class TestPresignedUrlsOrgScoping:
         assert resp.status_code == status.HTTP_200_OK
         assert resp.data["urls"][path] is None
 
+    @patch("files.views.get_storage_backend")
+    def test_path_traversal_blocked(self, mock_backend_fn, client_a, org_a, org_b, membership_a):
+        """Relative path traversal attempts using .. should be rejected and return null."""
+        path = f"uploads/{org_a.id}/../../uploads/{org_b.id}/secret.jpg"
+        
+        resp = client_a.post(
+            URL,
+            {"paths": [path]},
+            format="json",
+            HTTP_X_ORGANIZATION_ID=str(org_a.id),
+        )
+        assert resp.status_code == status.HTTP_200_OK
+        assert resp.data["urls"][path] is None
+
     def test_unauthenticated_returns_401_or_403(self):
         """Unauthenticated request is rejected."""
         client = APIClient()

@@ -315,8 +315,11 @@ class FileViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Filter to valid string paths
-        valid_paths = [p for p in paths if p and isinstance(p, str)]
+        # Filter out path traversal attempts ("..") and ensure strings
+        valid_paths = [
+            p for p in paths 
+            if p and isinstance(p, str) and ".." not in p
+        ]
 
         # ── Ownership check: only allow paths belonging to this org ──
         # 1. Paths with a FileAsset in this org are always allowed
