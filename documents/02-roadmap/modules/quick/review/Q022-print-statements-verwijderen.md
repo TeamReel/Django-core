@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | 🔍 REVIEW |
 | Bron | Codebase Audit maart 2026 |
 | Impact | 🔴 critical |
 | Effort | ~30 min |
