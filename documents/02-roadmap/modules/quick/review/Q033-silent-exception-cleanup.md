@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | � REVIEW |
 | Bron | Code Review |
 | Impact | 🟡 important |
 | Effort | ~3 uur |
@@ -17,9 +17,9 @@ Fase 1 focust op de ergste bestanden:
 - `accounts/api/views_admin_detail.py` (5×)
 
 ## Checklist
-- [ ] Vervang `except Exception: pass` door `except Exception: logger.exception(...)` in video_service.py
-- [ ] Idem voor then_vs_now.py
-- [ ] Idem voor _asset_helpers.py
-- [ ] Idem voor views_admin_detail.py
-- [ ] Tests
-- [ ] Verify
+- [x] Vervang `except Exception: pass` door `except Exception: logger.exception(...)` in video_service.py
+- [x] Idem voor then_vs_now.py
+- [x] Idem voor _asset_helpers.py
+- [x] Idem voor views_admin_detail.py
+- [x] Tests
+- [x] Verify
