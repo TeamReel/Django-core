@@ -66,7 +66,11 @@ class SecretKeyValidationRule(SecurityRule):
             severity="CRITICAL",
             owasp_asvs_refs=["V1.2.2", "V6.2.1"],
             description="Validates SECRET_KEY is present, non-default, and has sufficient entropy",
-            remediation="Generate new SECRET_KEY using: python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'",
+            remediation=(
+                "Generate new SECRET_KEY using: python -c"
+                " 'from django.core.management.utils import"
+                " get_random_secret_key; print(get_random_secret_key())'"
+            ),
             enforcement_mode="strict",
             enabled=True,
         )
@@ -115,7 +119,11 @@ class SecretKeyValidationRule(SecurityRule):
             return SecurityRuleViolation(
                 rule_id=self.rule_id,
                 rule_name=self.name,
-                message=f"SECRET_KEY is too short ({len(secret_key)} chars, minimum {self.MINIMUM_LENGTH})",
+                message=(
+                    f"SECRET_KEY is too short"
+                    f" ({len(secret_key)} chars,"
+                    f" minimum {self.MINIMUM_LENGTH})"
+                ),
                 severity=self.severity,
                 violated_setting="SECRET_KEY",
                 current_value=f"<{len(secret_key)} characters>",
@@ -140,8 +148,14 @@ class AllowedHostsValidationRule(SecurityRule):
             category="django_settings",
             severity="CRITICAL",
             owasp_asvs_refs=["V14.1.1"],
-            description="Validates ALLOWED_HOSTS does not use wildcard ('*') in production",
-            remediation="Set ALLOWED_HOSTS to specific domain names in config/settings/production.py",
+            description=(
+                "Validates ALLOWED_HOSTS does not use"
+                " wildcard ('*') in production"
+            ),
+            remediation=(
+                "Set ALLOWED_HOSTS to specific domain names"
+                " in config/settings/production.py"
+            ),
             enforcement_mode="strict",
             enabled=True,
         )
@@ -166,7 +180,10 @@ class AllowedHostsValidationRule(SecurityRule):
                 severity=self.severity,
                 violated_setting="ALLOWED_HOSTS",
                 current_value=str(allowed_hosts),
-                expected_value="List of specific domain names (e.g., ['example.com', 'www.example.com'])",
+                expected_value=(
+                    "List of specific domain names"
+                    " (e.g., ['example.com', 'www.example.com'])"
+                ),
                 owasp_asvs_refs=self.owasp_asvs_refs,
                 remediation=self.remediation,
                 timestamp=datetime.now(),

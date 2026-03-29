@@ -323,7 +323,8 @@ class MembershipViewSet(viewsets.ModelViewSet):
         Optional query params:
         - include_role_assignments=true: include RoleAssignments as virtual entries
         - include_project_memberships=true: include ProjectMembership users as virtual entries
-        - include_project_membership_details=true: attach each user's ProjectMemberships in this organisation
+        - include_project_membership_details=true: attach each user's
+          ProjectMemberships in this organisation
         - project_id=<id>: filter to only users with a ProjectMembership at this project
           or any of its child projects (server-side club/team scoping)
         """

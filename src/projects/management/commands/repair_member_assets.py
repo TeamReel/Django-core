@@ -52,7 +52,10 @@ class Command(BaseCommand):
             "--recover",
             action="store_true",
             default=False,
-            help="Recover assets from soft-deleted predecessors for active memberships missing them",
+            help=(
+                "Recover assets from soft-deleted predecessors"
+                " for active memberships missing them"
+            ),
         )
         parser.add_argument(
             "--commit",

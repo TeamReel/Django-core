@@ -67,8 +67,12 @@ class FeatureFlagViewSet(viewsets.ModelViewSet):
                 raise PermissionDenied(
                     {
                         "error": "forbidden",
-                        "detail": "Cannot enable organisation override when global flag is disabled. "
-                        "Organisation admins can only be more restrictive, not more permissive.",
+                        "detail": (
+                            "Cannot enable organisation override"
+                            " when global flag is disabled. "
+                            "Organisation admins can only be"
+                            " more restrictive, not more permissive."
+                        ),
                         "global_value": global_flag.enabled,
                         "attempted_value": enabled,
                     }
@@ -96,8 +100,12 @@ class FeatureFlagViewSet(viewsets.ModelViewSet):
                 raise PermissionDenied(
                     {
                         "error": "forbidden",
-                        "detail": "Cannot enable organisation override when global flag is disabled. "
-                        "Organisation admins can only be more restrictive, not more permissive.",
+                        "detail": (
+                            "Cannot enable organisation override"
+                            " when global flag is disabled. "
+                            "Organisation admins can only be"
+                            " more restrictive, not more permissive."
+                        ),
                         "global_value": global_flag.enabled,
                         "attempted_value": new_enabled,
                     }

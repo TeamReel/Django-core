@@ -166,6 +166,7 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"\n✓ Theme settings seeded: {stats['global']} global, {stats['org']} org, {stats['project']} project"
+                f"\n✓ Theme settings seeded: {stats['global']} global, "
+                f"{stats['org']} org, {stats['project']} project"
             )
         )

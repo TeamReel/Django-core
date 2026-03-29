@@ -43,7 +43,9 @@ class PeriodQuerySet(SoftDeleteQuerySet):
                 UNION ALL
 
                 -- Recursive case: children of children
-                SELECT p.id, p.parent_period_id, p.name, p.start_date, p.end_date, p.organisation_id, p.project_id
+                SELECT p.id, p.parent_period_id, p.name,
+                    p.start_date, p.end_date,
+                    p.organisation_id, p.project_id
                 FROM activities_period p
                 INNER JOIN period_tree pt ON p.parent_period_id = pt.id
             )

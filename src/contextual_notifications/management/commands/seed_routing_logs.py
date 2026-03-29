@@ -48,7 +48,8 @@ class Command(BaseCommand):
         # Create 20 random logs
         for _ in range(20):
             org = random.choice(orgs)
-            # Pick a project belonging to the org if possible, or just any project (for demo simplicity)
+            # Pick a project belonging to the org if possible,
+            # or just any project (for demo simplicity)
             # Ideally we should pick a project from the org
             org_projects = projects.filter(organisation=org)
             project = (

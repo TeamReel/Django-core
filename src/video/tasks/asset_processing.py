@@ -841,7 +841,8 @@ def reprocess_stuck_assets_periodic(self, *, stuck_minutes: int = 60) -> dict:
                                 )
                                 stats["halfbodies_queued"] += 1
                                 logger.info(
-                                    "reprocess_stuck: queued halfbody crop for membership=%s kit=%s",
+                                    "reprocess_stuck: queued halfbody crop "
+                                    "for membership=%s kit=%s",
                                     membership.id,
                                     kit_type,
                                 )

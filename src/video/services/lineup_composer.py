@@ -883,8 +883,10 @@ def _compose_phase(
             path = p.fullbody or p.closeup
             if not path:
                 raise ValueError(
-                    f"Phase {phase_idx} player {i} ({p.name}) has no intro, fullbody, or closeup asset. "
-                    f"Cannot compose intro phase — all players must have visual assets."
+                    f"Phase {phase_idx} player {i} ({p.name}) has no"
+                    " intro, fullbody, or closeup asset. "
+                    f"Cannot compose intro phase — all players"
+                    f" must have visual assets."
                 )
             inp = actual_inp2
             actual_inp2 += 1
@@ -1424,7 +1426,8 @@ def compose_lineup_video(
         raise ValueError(
             "Cannot generate lineup video — not enough field players resolved for formation "
             f"{formation}. Required {required_field}, got {len(field_players)}. "
-            "This usually means the Activity has no usable lineup/participation data for the selected members, "
+            "This usually means the Activity has no usable "
+            "lineup/participation data for the selected members, "
             "or members are missing required assets. "
             f"Resolved field players: {resolved_names}"
         )
@@ -1436,7 +1439,9 @@ def compose_lineup_video(
     ):
         raise ValueError(
             "Cannot generate lineup video — formation slicing produced incomplete groups. "
-            f"Expected D/M/A={req['defenders']}/{req['midfielders']}/{req['attackers']} for {formation} "
+            f"Expected D/M/A="
+            f"{req['defenders']}/{req['midfielders']}/"
+            f"{req['attackers']} for {formation} "
             f"but got {len(defenders)}/{len(midfielders)}/{len(attackers)}."
         )
 
@@ -1515,7 +1520,8 @@ def compose_lineup_video(
                 all_segments.extend(segs)
             else:
                 raise ValueError(
-                    f"Cannot generate lineup video — solo phase for '{player.name}' produced no output."
+                    f"Cannot generate lineup video — solo phase"
+                    f" for '{player.name}' produced no output."
                 )
 
             # Badge at correct formation position (not centre)
@@ -1548,8 +1554,10 @@ def compose_lineup_video(
         for idx, (name, group) in enumerate(phases):
             if not group:
                 raise ValueError(
-                    f"Cannot generate lineup video — phase '{name}' has 0 players. "
-                    "Fix the lineup selection / participation data so all formation lines are populated."
+                    f"Cannot generate lineup video — phase"
+                    f" '{name}' has 0 players. "
+                    "Fix the lineup selection / participation"
+                    " data so all formation lines are populated."
                 )
 
             logger.info("Composing phase %d: %s (%d players)", idx, name, len(group))
@@ -1561,7 +1569,8 @@ def compose_lineup_video(
                 has_in = bool(p.intro)
                 if not (has_fb or has_cu):
                     logger.warning(
-                        "Phase %d player %d (%s) has NO visual assets (fullbody=%s, closeup=%s, intro=%s)",
+                        "Phase %d player %d (%s) has NO visual"
+                        " assets (fullbody=%s, closeup=%s, intro=%s)",
                         idx,
                         pi,
                         p.name,
@@ -1590,8 +1599,11 @@ def compose_lineup_video(
                 all_segments.extend(segs)
             else:
                 raise ValueError(
-                    f"Cannot generate lineup video — phase '{name}' produced no output. "
-                    "This indicates missing input assets or an FFmpeg composition failure for that phase."
+                    f"Cannot generate lineup video — phase"
+                    f" '{name}' produced no output. "
+                    "This indicates missing input assets or"
+                    " an FFmpeg composition failure"
+                    " for that phase."
                 )
 
             # Add to persistent (skip coach)

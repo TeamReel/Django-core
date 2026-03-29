@@ -32,7 +32,8 @@ class MediaItemRelationService:
         if key not in MediaItemRelationService.ALLOWED_TARGETS:
             raise ValidationError(
                 f"Relations to {content_type.app_label}.{content_type.model} are not allowed. "
-                "Allowed targets: activities.Activity, projects.Project, organisations.Organisation, etc."
+                "Allowed targets: activities.Activity,"
+                " projects.Project, organisations.Organisation, etc."
             )
 
     @staticmethod

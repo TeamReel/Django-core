@@ -128,7 +128,9 @@ class Command(BaseCommand):
             default="v1",
             help=(
                 "Namespace for idempotency keys (default: v1). "
-                "Use a new value (e.g. v2) to seed a new deterministic set without touching existing records."
+                "Use a new value (e.g. v2) to seed a new"
+                " deterministic set without touching"
+                " existing records."
             ),
         )
 
@@ -379,7 +381,9 @@ class Command(BaseCommand):
                 if not clubs:
                     self.stdout.write(
                         self.style.WARNING(
-                            f"{org.slug}: no clubs found for --club-slugs={club_slugs}; skipping per-project seeding"
+                            f"{org.slug}: no clubs found for"
+                            f" --club-slugs={club_slugs};"
+                            f" skipping per-project seeding"
                         )
                     )
                     continue

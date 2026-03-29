@@ -70,14 +70,18 @@ class Command(BaseCommand):
                     self.stdout.write("\nExample Missing Club Memberships:")
                     for m in missing_club_memberships[:10]:
                         self.stdout.write(
-                            f" - User {m.user.email} in Team '{m.project.name}' missing in Club '{m.project.parent_project.name}'"
+                            f" - User {m.user.email} in Team "
+                            f"'{m.project.name}' missing in Club "
+                            f"'{m.project.parent_project.name}'"
                         )
 
                 if missing_org_memberships:
                     self.stdout.write("\nExample Missing Org Memberships:")
                     for m in missing_org_memberships[:10]:
                         self.stdout.write(
-                            f" - User {m.user.email} in Team '{m.project.name}' missing in Org '{m.project.organisation.name}'"
+                            f" - User {m.user.email} in Team "
+                            f"'{m.project.name}' missing in Org "
+                            f"'{m.project.organisation.name}'"
                         )
             else:
                 self.stdout.write(self.style.SUCCESS("All hierarchy checks passed."))
@@ -113,7 +117,9 @@ class Command(BaseCommand):
                     },
                 )
                 self.stdout.write(
-                    f"Created Club membership for {tm.user.email} in {tm.project.parent_project.name}"
+                    f"Created Club membership for "
+                    f"{tm.user.email} in "
+                    f"{tm.project.parent_project.name}"
                 )
 
             self.stdout.write(self.style.SUCCESS("Fixes applied."))

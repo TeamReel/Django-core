@@ -129,8 +129,10 @@ class TemplateRenderer:
         """Render a template.
 
         Supports two modes (for backward compatibility with tests):
-        - File mode: when initialized with template_dir and variables is None, `template` is a relative file path.
-        - String mode: when variables is provided OR template_dir is None, `template` is a raw Jinja2 template string.
+        - File mode: when initialized with template_dir and variables is None,
+          `template` is a relative file path.
+        - String mode: when variables is provided OR template_dir is None,
+          `template` is a raw Jinja2 template string.
         """
         try:
             if variables is None and self.template_dir is not None:

@@ -58,7 +58,10 @@ FOOTBALL_FEDERATIONS = ["KNVB", "FIGC", "DFB", "RBFA", "The FA"]
 
 
 class Command(BaseCommand):
-    help = "Seed TeamReel sports data: sports, sport assignments, and outfit configurations for top clubs"
+    help = (
+        "Seed TeamReel sports data: sports, sport assignments, "
+        "and outfit configurations for top clubs"
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -124,14 +127,16 @@ class Command(BaseCommand):
             football = Sport.objects.filter(slug="football-11v11").first()
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"✅ Sports seeded. Football 11v11 ID: {football.id if football else 'NOT FOUND'}"
+                    "✅ Sports seeded. Football 11v11 ID: "
+                    f"{football.id if football else 'NOT FOUND'}"
                 )
             )
             return football
         else:
             self.stdout.write("🔍 Would run: python manage.py seed_sports")
             self.stdout.write(
-                "   Creates 6 categories (Football, Handball, etc.) + 9 variants (11v11, Futsal, etc.)"
+                "   Creates 6 categories (Football, Handball, etc.)"
+                " + 9 variants (11v11, Futsal, etc.)"
             )
             return None
 

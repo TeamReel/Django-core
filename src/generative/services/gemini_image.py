@@ -59,7 +59,8 @@ def analyze_kit(reference_image_bytes: bytes) -> str:
 9. ANY DISTINCTIVE FEATURES: Special design elements, watermarks, subtle patterns
 
 Describe as if writing a MANUFACTURING SPECIFICATION for a factory to reproduce this EXACT kit.
-Be VERY specific about colors and patterns. Use the format: "Primary: [color]. Secondary: [color]. Pattern: [description]."
+Be VERY specific about colors and patterns.
+Use the format: "Primary: [color]. Secondary: [color]. Pattern: [description]."
 """
 
     # Build content parts
@@ -169,7 +170,9 @@ def _pillow_only_postprocess(
 
 
 # Validation prompt for photo composite quality check
-PHOTO_COMPOSITE_VALIDATION_PROMPT = """You are a quality control AI for photo composites. Analyze this composite image against the source images.
+PHOTO_COMPOSITE_VALIDATION_PROMPT = (
+    """You are a quality control AI for photo composites. """
+    """Analyze this composite image against the source images.
 
 SOURCE IMAGES PROVIDED:
 1. Generated composite (the image to validate)
@@ -211,6 +214,7 @@ ISSUES: [list specific problems found, or "None" if all pass]
 Be strict. If faces or kits are noticeably different from source, that's a FAIL.
 If ANY legs or lower body is visible beyond the waist, that's a FAIL.
 """
+)
 
 
 def _validate_photo_composite(
@@ -485,7 +489,8 @@ def _generate_photo_composite_gemini(
                     else:
                         validation_issues = issues
                         logger.warning(
-                            "Photo composite variant %d failed validation (attempt %d, score %d/6): %s",
+                            "Photo composite variant %d failed "
+                            "validation (attempt %d, score %d/6): %s",
                             i + 1,
                             attempt,
                             score,

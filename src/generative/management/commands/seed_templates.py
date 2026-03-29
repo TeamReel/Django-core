@@ -403,11 +403,26 @@ class Command(BaseCommand):
             )
         )
         self.stdout.write(f"Total templates in database: {total}")
+        member_count = len(
+            [t for t in TEMPLATE_DEFINITIONS if t[0] == TemplateType.MEMBER]
+        )
+        season_count = len(
+            [t for t in TEMPLATE_DEFINITIONS if t[0] == TemplateType.SEASON]
+        )
+        pre_match_count = len(
+            [t for t in TEMPLATE_DEFINITIONS if t[0] == TemplateType.PRE_MATCH]
+        )
+        during_match_count = len(
+            [t for t in TEMPLATE_DEFINITIONS if t[0] == TemplateType.DURING_MATCH]
+        )
+        post_match_count = len(
+            [t for t in TEMPLATE_DEFINITIONS if t[0] == TemplateType.POST_MATCH]
+        )
         self.stdout.write(
             f"\nTemplate breakdown:\n"
-            f"  - {len([t for t in TEMPLATE_DEFINITIONS if t[0] == TemplateType.MEMBER])} Member templates\n"
-            f"  - {len([t for t in TEMPLATE_DEFINITIONS if t[0] == TemplateType.SEASON])} Season templates\n"
-            f"  - {len([t for t in TEMPLATE_DEFINITIONS if t[0] == TemplateType.PRE_MATCH])} Pre-Match templates\n"
-            f"  - {len([t for t in TEMPLATE_DEFINITIONS if t[0] == TemplateType.DURING_MATCH])} During-Match templates\n"
-            f"  - {len([t for t in TEMPLATE_DEFINITIONS if t[0] == TemplateType.POST_MATCH])} Post-Match templates"
+            f"  - {member_count} Member templates\n"
+            f"  - {season_count} Season templates\n"
+            f"  - {pre_match_count} Pre-Match templates\n"
+            f"  - {during_match_count} During-Match templates\n"
+            f"  - {post_match_count} Post-Match templates"
         )

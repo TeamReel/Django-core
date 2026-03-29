@@ -30,7 +30,10 @@ class DatabaseSSLValidationRule(SecurityRule):
             severity="HIGH",
             owasp_asvs_refs=["V2.2.1", "V6.2.1"],
             description="Validates database connections use SSL/TLS",
-            remediation="Configure SSL in DATABASES['default']['OPTIONS'] (sslmode for PostgreSQL, ssl_ca for MySQL)",
+            remediation=(
+                "Configure SSL in DATABASES['default']['OPTIONS'] "
+                "(sslmode for PostgreSQL, ssl_ca for MySQL)"
+            ),
         )
 
     def validate(self, context: dict) -> SecurityRuleViolation | None:

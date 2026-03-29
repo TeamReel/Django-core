@@ -233,7 +233,10 @@ class MembershipService:
         create_notification(
             recipient_user_id=str(membership.user.id),
             title=f"Role Updated in {membership.project.name}",
-            message=f"Your role in project '{membership.project.name}' has been updated to {new_role}.",
+            message=(
+                f"Your role in project '{membership.project.name}' "
+                f"has been updated to {new_role}."
+            ),
             level="info",
         )
 
@@ -320,7 +323,8 @@ class MembershipService:
                     # No Org Admin available to take over
                     raise ValidationError(
                         "Cannot remove the last admin from the project. "
-                        "Please assign another admin first or ensure an Organisation Admin is available."
+                        "Please assign another admin first or "
+                        "ensure an Organisation Admin is available."
                     )
 
         # Soft delete (use the mixin's method to also set deleted_by)
@@ -336,4 +340,5 @@ class MembershipService:
                 "user_id": str(user.id),
             },
         )
-        # but IMM-004 mentions notification on add. I'll skip notification on remove for now unless required.)
+        # but IMM-004 mentions notification on add.
+        # I'll skip notification on remove for now unless required.)

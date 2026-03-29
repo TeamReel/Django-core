@@ -19,7 +19,8 @@ class Command(BaseCommand):
         for item in failed:
             item.state = (
                 MediaItemState.RAW
-            )  # Reset to RAW or Processing? Prompt said PENDING but model has RAW. Views use RAW/PENDING logic?
+            )  # Reset to RAW or Processing? Prompt said PENDING
+            # but model has RAW. Views use RAW/PENDING logic?
             # Model has RAW, PROCESSING, PROCESSED, ERROR.
             # View perform_create uses default which is RAW (from model default?) No wait.
             # Views.py: instance = serializer.save(..., state=MediaItemState.PENDING)

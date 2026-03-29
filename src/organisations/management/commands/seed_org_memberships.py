@@ -2,7 +2,8 @@
 Management command to create Organisation Memberships for all players.
 
 Logic:
-- Every user who has a ProjectMembership (player in a team) should also have an Organisation Membership
+- Every user who has a ProjectMembership (player in a team)
+  should also have an Organisation Membership
 - The organisation is the team's parent club's organisation
 - Default role: "member" (unless they already have a higher role)
 """

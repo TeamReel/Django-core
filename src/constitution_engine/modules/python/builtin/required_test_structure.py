@@ -3,7 +3,8 @@ Constitutional rule: Required Test Structure (Article IV v1.2.0)
 
 Validates that Django modules have proper test coverage according to Constitution requirements:
 - Every src/ module MUST have a tests/ directory
-- Required test files: test_models.py, test_api.py, test_serializers.py, test_permissions.py, test_managers.py
+- Required test files: test_models.py, test_api.py, test_serializers.py,
+  test_permissions.py, test_managers.py
 - Coverage thresholds: models ≥90%, API ≥85%, serializers ≥80%, permissions ≥90%, managers ≥85%
 """
 
@@ -41,7 +42,10 @@ class RequiredTestStructureRule(RuleInterface):
 
     @property
     def description(self) -> str:
-        return "Validates Django modules have required test files and coverage (Constitution Article IV v1.2.0)"
+        return (
+            "Validates Django modules have required test files and coverage"
+            " (Constitution Article IV v1.2.0)"
+        )
 
     def check(self, context: Dict[str, Any]) -> List[CheckResult]:
         """Check if modules have proper test structure."""
@@ -72,11 +76,17 @@ class RequiredTestStructureRule(RuleInterface):
                     CheckResult(
                         rule_id=self.identifier,
                         severity=self.severity,
-                        message=f"Module '{app_dir.name}' missing tests/ directory (Constitution Article IV)",
+                        message=(
+                            f"Module '{app_dir.name}' missing tests/ directory"
+                            " (Constitution Article IV)"
+                        ),
                         file_path=str(app_dir),
                         line_number=None,
                         column_number=None,
-                        suggestion=f"Create tests/ directory with required test files: {', '.join(self.required_test_files)}",
+                        suggestion=(
+                            "Create tests/ directory with required test files: "
+                            f"{', '.join(self.required_test_files)}"
+                        ),
                     )
                 )
                 continue
@@ -93,11 +103,17 @@ class RequiredTestStructureRule(RuleInterface):
                     CheckResult(
                         rule_id=self.identifier,
                         severity=self.severity,
-                        message=f"Module '{app_dir.name}' missing required test files: {', '.join(missing_files)}",
+                        message=(
+                            f"Module '{app_dir.name}' missing required test files: "
+                            f"{', '.join(missing_files)}"
+                        ),
                         file_path=str(tests_dir),
                         line_number=None,
                         column_number=None,
-                        suggestion="Create missing test files according to Constitution Article IV v1.2.0",
+                        suggestion=(
+                            "Create missing test files according to"
+                            " Constitution Article IV v1.2.0"
+                        ),
                     )
                 )
 
@@ -122,11 +138,18 @@ class RequiredTestStructureRule(RuleInterface):
                                         CheckResult(
                                             rule_id=self.identifier,
                                             severity="medium",
-                                            message=f"Module '{app_dir.name}' {file_pattern}: coverage {actual_coverage:.1f}% < {min_coverage}% (Constitution Article IV)",
+                                            message=(
+                                                f"Module '{app_dir.name}' {file_pattern}: "
+                                                f"coverage {actual_coverage:.1f}% < {min_coverage}%"
+                                                " (Constitution Article IV)"
+                                            ),
                                             file_path=file_path,
                                             line_number=None,
                                             column_number=None,
-                                            suggestion=f"Increase test coverage to meet {min_coverage}% threshold",
+                                            suggestion=(
+                                                f"Increase test coverage to meet"
+                                                f" {min_coverage}% threshold"
+                                            ),
                                         )
                                     )
                 except (json.JSONDecodeError, KeyError):

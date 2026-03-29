@@ -99,7 +99,8 @@ class Command(BaseCommand):
 
             for season in seasons:
                 self.stdout.write(
-                    f"\n   [SEASON] Season: {season.name} ({season.start_date} to {season.end_date})"
+                    f"\n   [SEASON] Season: {season.name}"
+                    f" ({season.start_date} to {season.end_date})"
                 )
 
                 # Get all teams with players for this season ONCE (performance)
@@ -128,7 +129,8 @@ class Command(BaseCommand):
                 ]
 
                 self.stdout.write(
-                    f"      [TEAMS] Found {len(senior_teams)} senior teams and {len(youth_teams)} youth teams with players"
+                    f"      [TEAMS] Found {len(senior_teams)} senior teams"
+                    f" and {len(youth_teams)} youth teams with players"
                 )
 
                 # Get competitions (child periods) for this season
@@ -154,10 +156,12 @@ class Command(BaseCommand):
 
                     if len(teams) < 2:
                         self.stdout.write(
-                            f"         [!] Need at least 2 teams for {competition.name}, found {len(teams)}"
+                            f"         [!] Need at least 2 teams"
+                            f" for {competition.name}, found {len(teams)}"
                         )
                         self.stdout.write(
-                            "         [!] Run 'seed_competition_registrations' first to register teams"
+                            "         [!] Run 'seed_competition_registrations'"
+                            " first to register teams"
                         )
                         continue
 
@@ -277,7 +281,8 @@ class Command(BaseCommand):
             else:
                 if created < 5:  # Only show first 5 in dry-run
                     self.stdout.write(
-                        f"            [DRY RUN] {title} @ {location} on {match_date} {kickoff_hour}:{kickoff_minute:02d}"
+                        f"            [DRY RUN] {title} @ {location}"
+                        f" on {match_date} {kickoff_hour}:{kickoff_minute:02d}"
                     )
 
         return created

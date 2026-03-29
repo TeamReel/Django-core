@@ -65,7 +65,8 @@ class Command(BaseCommand):
         self.stdout.write(f"Supporters (Project):   {supporters}")
         self.stdout.write(f"{'=' * 70}")
         self.stdout.write(
-            f"TOTAL USERS:            {land_admins + club_admins + team_admins + team_members + supporters}"
+            "TOTAL USERS:           "
+            f" {land_admins + club_admins + team_admins + team_members + supporters}"
         )
         self.stdout.write(f"TOTAL ORG MEMBERSHIPS:  {land_admins}")
         self.stdout.write(
@@ -128,7 +129,11 @@ class Command(BaseCommand):
                 continue
 
             # Create User
-            email = f"{admin_data['first_name'].lower()}.{admin_data['last_name'].lower()}@{admin_data['org_name'].lower()}.demo"
+            email = (
+                f"{admin_data['first_name'].lower()}"
+                f".{admin_data['last_name'].lower()}"
+                f"@{admin_data['org_name'].lower()}.demo"
+            )
             user, user_created = User.objects.get_or_create(
                 email=email,
                 defaults={
@@ -261,7 +266,10 @@ class Command(BaseCommand):
         return created
 
     def seed_support_staff(self, full_mode):
-        """Create Team Members with different functional roles (Keeper, Player, Assistant, Verzorger)."""
+        """Create Team Members with different functional roles.
+
+        Roles: Keeper, Player, Assistant, Verzorger.
+        """
         self.stdout.write("\n[4/5] Seeding Team Members (Project Memberships)...")
 
         # Get teams
@@ -302,7 +310,8 @@ class Command(BaseCommand):
                     },
                 )
 
-                # Create Project Membership (viewer role - same RBAC permissions via Team Member role)
+                # Create Project Membership
+                # (viewer role - same RBAC permissions via Team Member role)
                 membership, created_new = ProjectMembership.objects.get_or_create(
                     user=user,
                     project=team,

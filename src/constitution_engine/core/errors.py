@@ -288,7 +288,10 @@ class ErrorHandler:
             message = f"Configuration validation failed: {validation_errors[0]}"
         else:
             errors_str = "\n  - ".join(validation_errors)
-            message = f"Configuration validation failed with {len(validation_errors)} errors:\n  - {errors_str}"
+            message = (
+                f"Configuration validation failed with"
+                f" {len(validation_errors)} errors:\n  - {errors_str}"
+            )
 
         suggestion = (
             "Fix the configuration issues:\n"

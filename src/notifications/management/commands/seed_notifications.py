@@ -50,19 +50,28 @@ class Command(BaseCommand):
             notifications_data = [
                 {
                     "title": "Welcome to Django Core!",
-                    "message": f"Hi {user.first_name or user.email}, welcome to the demo shell. Explore the features!",
+                    "message": (
+                        f"Hi {user.first_name or user.email}, "
+                        "welcome to the demo shell. Explore the features!"
+                    ),
                     "level": "success",
                     "is_read": True,
                 },
                 {
                     "title": "New Feature Available",
-                    "message": "Check out the new Notifications system with persistent read/unread status.",
+                    "message": (
+                        "Check out the new Notifications system"
+                        " with persistent read/unread status."
+                    ),
                     "level": "info",
                     "is_read": False,
                 },
                 {
                     "title": "Security Update",
-                    "message": "Your account security settings have been updated. Review your settings.",
+                    "message": (
+                        "Your account security settings have"
+                        " been updated. Review your settings."
+                    ),
                     "level": "warning",
                     "is_read": False,
                 },

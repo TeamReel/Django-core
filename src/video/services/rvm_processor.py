@@ -374,7 +374,8 @@ def process_video_rvm(
     ffprobe = _get_ffprobe_path()
 
     logger.info(
-        "rvm_start input=%s output=%s model=%s device=%s portrait=%s vf=%s downsample=%.2f ffmpeg=%s ffprobe=%s",
+        "rvm_start input=%s output=%s model=%s device=%s"
+        " portrait=%s vf=%s downsample=%.2f ffmpeg=%s ffprobe=%s",
         str(input_path),
         str(output_path),
         model_name,
@@ -471,8 +472,10 @@ def process_video_rvm(
             message = (
                 "FFmpeg VP9-alpha preflight failed. "
                 f"Selected ffmpeg='{ffmpeg}' cannot produce an alpha pix_fmt (expected yuva420p). "
-                "This environment will only produce opaque WebM (yuv420p), so RVM outputs will be unusable. "
-                "Fix the runtime FFmpeg build (use a static ffmpeg with --enable-libvpx and VP9 alpha support) "
+                "This environment will only produce opaque WebM (yuv420p), "
+                "so RVM outputs will be unusable. "
+                "Fix the runtime FFmpeg build (use a static ffmpeg with "
+                "--enable-libvpx and VP9 alpha support) "
                 "and redeploy/restart the Celery worker service."
             )
             logger.error("PREFLIGHT_FAIL: %s", message)
@@ -661,7 +664,8 @@ def process_video_rvm(
         _validate_rvm_output(output_path, ffprobe, output_format)
 
     logger.info(
-        "rvm_done frames=%d total_time_s=%.2f avg_ms_per_frame=%.1f stability=%.2f out_w=%d out_h=%d fps=%.3f format=%s",
+        "rvm_done frames=%d total_time_s=%.2f avg_ms_per_frame=%.1f"
+        " stability=%.2f out_w=%d out_h=%d fps=%.3f format=%s",
         frame_count,
         total_time,
         avg_time * 1000,
@@ -760,7 +764,8 @@ def _validate_rvm_output(output_path: Path, ffprobe: str, output_format: str) ->
                 f"RVM output pix_fmt is '{pix_fmt}', expected a format with alpha "
                 f"(e.g. argb, yuva420p). The output has no alpha channel — "
                 f"lineup compositing will fail. "
-                f"(codec='{codec}', output_format='{output_format}', ffprobe='{ffprobe}', file='{output_path.name}')"
+                f"(codec='{codec}', output_format='{output_format}',"
+                f" ffprobe='{ffprobe}', file='{output_path.name}')"
             )
     except (subprocess.TimeoutExpired, _json.JSONDecodeError) as exc:
         logger.warning("rvm_validate_skip reason=%s output=%s", type(exc).__name__, output_path)

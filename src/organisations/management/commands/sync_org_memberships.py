@@ -123,7 +123,9 @@ class Command(BaseCommand):
             with transaction.atomic():
                 Membership.objects.bulk_create(memberships_to_create, batch_size=500)
                 self.stdout.write(
-                    self.style.SUCCESS(f"\n✅ Bulk created {len(memberships_to_create)} memberships")
+                    self.style.SUCCESS(
+                        f"\n✅ Bulk created {len(memberships_to_create)} memberships"
+                    )
                 )
 
         # Summary

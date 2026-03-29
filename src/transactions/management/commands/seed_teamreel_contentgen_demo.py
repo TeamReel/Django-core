@@ -56,7 +56,10 @@ class Command(BaseCommand):
             "--team-name",
             type=str,
             default="Ajax 1",
-            help="Team project name match (icontains) used to find the team under the club (default: Ajax 1)",
+            help=(
+                "Team project name match (icontains) used to find"
+                " the team under the club (default: Ajax 1)"
+            ),
         )
         parser.add_argument(
             "--team-id",
@@ -68,7 +71,11 @@ class Command(BaseCommand):
             "--season-id",
             type=str,
             default="",
-            help="Optional explicit season Period UUID (root period under the team). If omitted, picks the most recent team season.",
+            help=(
+                "Optional explicit season Period UUID"
+                " (root period under the team)."
+                " If omitted, picks the most recent team season."
+            ),
         )
         parser.add_argument(
             "--matches",
@@ -136,13 +143,15 @@ class Command(BaseCommand):
 
         if not club:
             self.stderr.write(
-                f"Club project not found for org '{org.slug}' using --club-name '{club_name}' (or via --team-id)"
+                f"Club project not found for org '{org.slug}'"
+                f" using --club-name '{club_name}' (or via --team-id)"
             )
             return
 
         if not team:
             self.stderr.write(
-                f"Team project not found under club '{club.name}' using --team-name '{team_name}' (or via --team-id)"
+                f"Team project not found under club '{club.name}'"
+                f" using --team-name '{team_name}' (or via --team-id)"
             )
             return
 
@@ -155,8 +164,12 @@ class Command(BaseCommand):
         is_member = ProjectMembership.objects.filter(user=user, project=team).exists()
         if not is_member:
             self.stdout.write(
-                "! WARNING: user is not a member of the team. The API/UI may not show team transactions/balance for this user.\n"
-                "  Consider running: python manage.py seed_team_manager_memberships --org knvb (or your membership seeders)."
+                "! WARNING: user is not a member of the team."
+                " The API/UI may not show team transactions/balance"
+                " for this user.\n"
+                "  Consider running: python manage.py"
+                " seed_team_manager_memberships --org knvb"
+                " (or your membership seeders)."
             )
 
         prefix = f"demo:teamreel:contentgen:{org.slug}:{club.id}:{team.id}:{user.id}:v2"
@@ -216,8 +229,10 @@ class Command(BaseCommand):
 
         if not season:
             self.stderr.write(
-                "No team-scoped root season Period found for this team. "
-                "This command expects TeamReel team-scoped seasons (Period.project=team, parent_period=NULL)."
+                "No team-scoped root season Period found for"
+                " this team. This command expects TeamReel"
+                " team-scoped seasons"
+                " (Period.project=team, parent_period=NULL)."
             )
             return
 
@@ -248,15 +263,17 @@ class Command(BaseCommand):
             self._maybe_create(
                 idempotency_key=f"{prefix}:{key_suffix}",
                 dry_run=dry_run,
-                fn=lambda amount=amount, project=project, charged_user=charged_user, notes=notes, key_suffix=key_suffix: create_transaction(
-                    organization=org,
-                    project=project,
-                    charged_user=charged_user,
-                    amount=amount,
-                    source_type=SourceTypeChoices.ADJUSTMENT,
-                    created_by=user,
-                    idempotency_key=f"{prefix}:{key_suffix}",
-                    notes=f"TeamReel demo: {notes}",
+                fn=lambda amount=amount, project=project, charged_user=charged_user, notes=notes, key_suffix=key_suffix: (  # noqa: E501
+                    create_transaction(
+                        organization=org,
+                        project=project,
+                        charged_user=charged_user,
+                        amount=amount,
+                        source_type=SourceTypeChoices.ADJUSTMENT,
+                        created_by=user,
+                        idempotency_key=f"{prefix}:{key_suffix}",
+                        notes=f"TeamReel demo: {notes}",
+                    )
                 ),
             )
 
@@ -411,7 +428,10 @@ class Command(BaseCommand):
         if dry_run:
             label = f"season={season.id}" + (f" match={match.id}" if match else "")
             self.stdout.write(
-                f"  · would create usage_event={event_key} and transaction={txn_key} amount={item.amount} ({item.description}) [{label}]"
+                f"  · would create usage_event={event_key}"
+                f" and transaction={txn_key}"
+                f" amount={item.amount}"
+                f" ({item.description}) [{label}]"
             )
             return
 
@@ -452,17 +472,19 @@ class Command(BaseCommand):
         self._maybe_create(
             idempotency_key=txn_key,
             dry_run=dry_run,
-            fn=lambda item=item, txn_key=txn_key, usage_event=usage_event, charged_user=charged_user, project=project: create_transaction_with_routing(
-                organization=org,
-                project=project,
-                charged_user=charged_user,
-                amount=item.amount,
-                source_type=SourceTypeChoices.USAGE_EVENT,
-                created_by=user,
-                idempotency_key=txn_key,
-                payer_routing=item.payer_routing,
-                usage_event=usage_event,
-                notes=f"TeamReel demo usage: {item.description}",
+            fn=lambda item=item, txn_key=txn_key, usage_event=usage_event, charged_user=charged_user, project=project: (  # noqa: E501
+                create_transaction_with_routing(
+                    organization=org,
+                    project=project,
+                    charged_user=charged_user,
+                    amount=item.amount,
+                    source_type=SourceTypeChoices.USAGE_EVENT,
+                    created_by=user,
+                    idempotency_key=txn_key,
+                    payer_routing=item.payer_routing,
+                    usage_event=usage_event,
+                    notes=f"TeamReel demo usage: {item.description}",
+                )
             ),
         )
 
@@ -474,7 +496,11 @@ class Command(BaseCommand):
         try:
             txn = fn()
             self.stdout.write(
-                f"  + created {idempotency_key} -> wallet_scope={txn.wallet_scope} project_id={txn.project_id} charged_user_id={txn.charged_user_id} amount={txn.amount}"
+                f"  + created {idempotency_key}"
+                f" -> wallet_scope={txn.wallet_scope}"
+                f" project_id={txn.project_id}"
+                f" charged_user_id={txn.charged_user_id}"
+                f" amount={txn.amount}"
             )
             return txn
         except DuplicateIdempotencyKeyError:

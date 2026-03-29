@@ -51,7 +51,11 @@ class HSTSHeaderRule(SecurityRule):
             return SecurityRuleViolation(
                 rule_id=self.rule_id,
                 rule_name=self.name,
-                message=f"HSTS max-age too short ({hsts_seconds}s, minimum {self.MINIMUM_SECONDS}s)",
+                message=(
+                    f"HSTS max-age too short"
+                    f" ({hsts_seconds}s,"
+                    f" minimum {self.MINIMUM_SECONDS}s)"
+                ),
                 severity=self.severity,
                 violated_setting="SECURE_HSTS_SECONDS",
                 current_value=str(hsts_seconds),
@@ -274,7 +278,10 @@ class SSLRedirectRule(SecurityRule):
             severity="HIGH",
             owasp_asvs_refs=["V2.2.1"],
             description="Validates SECURE_SSL_REDIRECT=True and SECURE_PROXY_SSL_HEADER configured",
-            remediation="Set SECURE_SSL_REDIRECT = True and SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')",
+            remediation=(
+                "Set SECURE_SSL_REDIRECT = True and"
+                " SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')"
+            ),
         )
 
     def validate(self, context: dict) -> SecurityRuleViolation | None:

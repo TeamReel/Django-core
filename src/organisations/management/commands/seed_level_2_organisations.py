@@ -48,7 +48,11 @@ class Command(BaseCommand):
             },
             {
                 "name": "RBFA",
-                "description": "Koninklijke Belgische Voetbalbond / Union Royale Belge des Sociétés de Football",
+                "description": (
+                    "Koninklijke Belgische Voetbalbond"
+                    " / Union Royale Belge des"
+                    " Sociétés de Football"
+                ),
                 "country": "Belgium",
                 "website": "https://www.rbfa.be",
                 "logo": "https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Royal_Belgian_FA_logo.svg/200px-Royal_Belgian_FA_logo.svg.png",

@@ -29,7 +29,8 @@ class Command(BaseCommand):
 
         if not organisations.exists() or not users.exists():
             raise CommandError(
-                "No Organisations or Users found. Please run 'python manage.py seed_football_data' first."
+                "No Organisations or Users found. Please run"
+                " 'python manage.py seed_football_data' first."
             )
 
         self.stdout.write(f"Found {organisations.count()} organisations and {users.count()} users.")

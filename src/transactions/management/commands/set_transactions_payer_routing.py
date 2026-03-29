@@ -13,7 +13,8 @@ Allowed values:
 - project_user_org
 
 Example:
-    $env:DATABASE_URL="postgresql://..."; python manage.py set_transactions_payer_routing --org knvb --value user_project_org
+    $env:DATABASE_URL="postgresql://..."; python manage.py set_transactions_payer_routing \
+        --org knvb --value user_project_org
 """
 
 from __future__ import annotations
@@ -86,5 +87,6 @@ class Command(BaseCommand):
             )
         else:
             self.stdout.write(
-                f"transactions_payer_routing_default {action} for org '{org.slug}' = '{setting.value}'"
+                f"transactions_payer_routing_default {action}"
+                f" for org '{org.slug}' = '{setting.value}'"
             )

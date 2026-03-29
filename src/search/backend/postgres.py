@@ -111,7 +111,8 @@ class PostgresSearchBackend:
         # Let's assume get_vector returns a SearchVector instance.
 
         # We need to handle the vector update carefully.
-        # Django's SearchVectorField is usually populated via a trigger or an update query with SearchVector.
+        # Django's SearchVectorField is usually populated
+        # via a trigger or an update query with SearchVector.
 
         try:
             body_text = index.get_body_text(obj)

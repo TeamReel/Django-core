@@ -209,7 +209,8 @@ class Command(BaseCommand):
 
         total_memberships = qs.count()
         self.stdout.write(
-            f"Found {total_memberships} memberships with teamreel_assets in project '{project.slug}'."
+            f"Found {total_memberships} memberships with"
+            f" teamreel_assets in project '{project.slug}'."
         )
 
         processor = AssetProcessor()
@@ -226,11 +227,14 @@ class Command(BaseCommand):
                     self.stdout.write(f"Reached --limit={limit}, stopping.")
                     if not do_apply:
                         self.stdout.write(
-                            f"Dry-run: would process {processed_count} variants. Re-run with --apply."
+                            f"Dry-run: would process {processed_count}"
+                            " variants. Re-run with --apply."
                         )
                     else:
                         self.stdout.write(
-                            f"Done. processed={processed_count}, skipped={skipped_count}, errors={error_count}."
+                            f"Done. processed={processed_count},"
+                            f" skipped={skipped_count},"
+                            f" errors={error_count}."
                         )
                     return
 
@@ -284,7 +288,9 @@ class Command(BaseCommand):
                         },
                     )
                     self.stderr.write(
-                        f"ERROR membership={membership.id} asset={asset_type} kit={kit_type} variant={variant_id or '-'}: {exc}"
+                        f"ERROR membership={membership.id}"
+                        f" asset={asset_type} kit={kit_type}"
+                        f" variant={variant_id or '-'}: {exc}"
                     )
 
             skipped_count += 0

@@ -76,7 +76,9 @@ class PerformBatchPermissionCheck:
                             # Object was deleted
                             accessibility_map[cache_key] = False
                         else:
-                            # Check if user has permission (default to True if no permission checking available)
+                            # Check if user has permission
+                            # (default to True if no permission
+                            # checking available)
                             # In a real app, this would call a permission service
                             accessibility_map[cache_key] = True
             except Exception:

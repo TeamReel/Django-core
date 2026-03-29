@@ -575,7 +575,8 @@ class LineupSegmentBuilder:
             ).values_list("user_id", flat=True)
             selected_user_ids = set(pm_qs)
             self._debug_trace.append(
-                f"Resolved {len(selected_user_ids)} user_ids from {len(self.selected_member_ids)} PM ids"
+                f"Resolved {len(selected_user_ids)} user_ids"
+                f" from {len(self.selected_member_ids)} PM ids"
             )
 
         # Get lineup (participations) - expanded role matching
@@ -614,7 +615,8 @@ class LineupSegmentBuilder:
                 len(v) for v in self.selected_member_ids_by_role.values() if isinstance(v, list)
             )
             logger.info(
-                "Using ProjectMembership path — frontend provided %d real + %d total members with roles "
+                "Using ProjectMembership path — frontend provided"
+                " %d real + %d total members with roles "
                 "(participations found: %d, but PM path is preferred)",
                 real_count,
                 total_count,
@@ -650,7 +652,8 @@ class LineupSegmentBuilder:
                 field_background_url=field_background_url,
             )
 
-        # Fail fast if there is no lineup data. We intentionally do NOT fall back to frontend segments.
+        # Fail fast if there is no lineup data.
+        # We intentionally do NOT fall back to frontend segments.
         if participations.count() == 0:
             raise ValueError(
                 "No participations found for this activity to build a lineup. "
@@ -780,7 +783,8 @@ class LineupSegmentBuilder:
                 y=y,
             )
 
-            # Group by functional role / position (case-insensitive, supports Dutch words + abbreviations)
+            # Group by functional role / position
+            # (case-insensitive, supports Dutch words + abbreviations)
             fr_lower = (functional_role or "").lower()
             pos_lower = (position or "").lower()
 
@@ -844,7 +848,9 @@ class LineupSegmentBuilder:
             if missing_player_ids or missing_gk_ids:
                 all_missing = list(missing_player_ids | missing_gk_ids)
                 logger.info(
-                    "Supplementing %d missing members from ProjectMembership (missing_players=%d, missing_gk=%d)",
+                    "Supplementing %d missing members from"
+                    " ProjectMembership"
+                    " (missing_players=%d, missing_gk=%d)",
                     len(all_missing),
                     len(missing_player_ids),
                     len(missing_gk_ids),
@@ -951,7 +957,10 @@ class LineupSegmentBuilder:
                             attackers.append(p)
 
                     self._debug_trace.append(
-                        f"Auto-split supplemented: D={len(defenders)} M={len(midfielders)} A={len(attackers)}"
+                        f"Auto-split supplemented:"
+                        f" D={len(defenders)}"
+                        f" M={len(midfielders)}"
+                        f" A={len(attackers)}"
                     )
 
                 # Spread x positions
@@ -1376,7 +1385,9 @@ class LineupSegmentBuilder:
                 attackers.append(p)
 
         self._debug_trace.append(
-            f"Formation-split ({self.formation}): D={len(defenders)} M={len(midfielders)} A={len(attackers)}"
+            f"Formation-split ({self.formation}):"
+            f" D={len(defenders)} M={len(midfielders)}"
+            f" A={len(attackers)}"
         )
 
         # Spread players evenly across x-axis within each line
@@ -2087,8 +2098,10 @@ class LineupSegmentBuilder:
                 #    Data: Defenders y=15, Attackers y=25
                 y_expr = f"(H*0.15+(H*0.85)*{p['y_pct']}/100-h)"
 
-                # Use eof_action=repeat to hold the last frame of the overlay if it ends before the background
-                # This prevents the video from disappearing or cutting short
+                # Use eof_action=repeat to hold the last frame
+                # of the overlay if it ends before the background.
+                # This prevents the video from disappearing or
+                # cutting short.
                 fc.append(
                     f"[{last}][p{pid}_s]overlay=x={x_expr}:y={y_expr}:shortest=0:eof_action=repeat[ov{pid}]"
                 )

@@ -34,7 +34,10 @@ class PasswordLengthRule(SecurityRule):
             severity="HIGH",
             owasp_asvs_refs=["V2.1.1"],
             description="Validates minimum password length of 12 characters configured",
-            remediation="Add MinimumLengthValidator with min_length=12 to AUTH_PASSWORD_VALIDATORS in config/settings/base.py",
+            remediation=(
+                "Add MinimumLengthValidator with min_length=12"
+                " to AUTH_PASSWORD_VALIDATORS in config/settings/base.py"
+            ),
         )
 
     def validate(self, context: dict) -> SecurityRuleViolation | None:
@@ -83,7 +86,10 @@ class PasswordComplexityRule(SecurityRule):
             severity="MEDIUM",
             owasp_asvs_refs=["V2.1.7"],
             description="Validates password complexity validator configured",
-            remediation="Add CommonPasswordValidator to AUTH_PASSWORD_VALIDATORS in config/settings/base.py",
+            remediation=(
+                "Add CommonPasswordValidator to"
+                " AUTH_PASSWORD_VALIDATORS in config/settings/base.py"
+            ),
         )
 
     def validate(self, context: dict) -> SecurityRuleViolation | None:
@@ -130,7 +136,10 @@ class PasswordSimilarityRule(SecurityRule):
             severity="MEDIUM",
             owasp_asvs_refs=["V2.1.7"],
             description="Validates UserAttributeSimilarityValidator configured",
-            remediation="Add UserAttributeSimilarityValidator to AUTH_PASSWORD_VALIDATORS in config/settings/base.py",
+            remediation=(
+                "Add UserAttributeSimilarityValidator to"
+                " AUTH_PASSWORD_VALIDATORS in config/settings/base.py"
+            ),
         )
 
     def validate(self, context: dict) -> SecurityRuleViolation | None:
@@ -176,7 +185,10 @@ class PasswordBreachRule(SecurityRule):
             severity="HIGH",
             owasp_asvs_refs=["V2.1.8"],
             description="Validates password breach detection available",
-            remediation="Ensure breach detector bloom filter exists at .security/data/breached-passwords.bloom",
+            remediation=(
+                "Ensure breach detector bloom filter exists"
+                " at .security/data/breached-passwords.bloom"
+            ),
         )
 
     def validate(self, context: dict) -> SecurityRuleViolation | None:

@@ -142,7 +142,10 @@ class Command(BaseCommand):
                     defaults={
                         "start_date": season_start,
                         "end_date": season_end,
-                        "description": f"Official match calendar for {project.name} ({season_start.year}/{season_end.year}).",
+                        "description": (
+                            f"Official match calendar for {project.name}"
+                            f" ({season_start.year}/{season_end.year})."
+                        ),
                     },
                 )
 
@@ -340,7 +343,10 @@ class Command(BaseCommand):
             try:
                 # Assuming ProjectMembership links to User, we find their Org Memberhsip
                 # Note: This depends on exact User->PM vs User->Membership relations
-                # Most robust: Membership.objects.get(user=pm.user, organisation=activity.project.organisation)
+                # Most robust: Membership.objects.get(
+                #     user=pm.user,
+                #     organisation=activity.project.organisation,
+                # )
                 if hasattr(pm, "user"):
                     mem = Membership.objects.get(
                         user=pm.user, organisation=activity.project.organisation

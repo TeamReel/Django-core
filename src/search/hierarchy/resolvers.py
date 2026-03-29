@@ -151,7 +151,11 @@ class ProjectHierarchyResolver(BaseHierarchyResolver):
             base_url = f"/apps/identity/organisations/{org_slug}/clubs/{project.slug}/members"
         else:
             club_slug = project.parent_project.slug if project.parent_project else "unknown"
-            base_url = f"/apps/identity/organisations/{org_slug}/clubs/{club_slug}/teams/{project.slug}/squad"
+            base_url = (
+                f"/apps/identity/organisations/{org_slug}"
+                f"/clubs/{club_slug}"
+                f"/teams/{project.slug}/squad"
+            )
 
         nodes = []
         for membership in memberships:
@@ -248,7 +252,11 @@ class PeriodHierarchyResolver(BaseHierarchyResolver):
                 id=str(match.id),
                 type="match",
                 title=match.title
-                or f"{match.project.name if match.project else '?'} vs {match.opponent_project.name if match.opponent_project else '?'}",
+                or (
+                    f"{match.project.name if match.project else '?'}"
+                    f" vs"
+                    f" {match.opponent_project.name if match.opponent_project else '?'}"
+                ),
                 url=f"/apps/match/{match.id}",
                 description=None,
                 instance=None,  # Don't recurse into matches

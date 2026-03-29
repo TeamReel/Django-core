@@ -30,7 +30,10 @@ class Command(BaseCommand):
             "--minutes",
             type=int,
             default=30,
-            help="Minutes threshold — jobs active longer than this are considered stuck (default: 30)",
+            help=(
+                "Minutes threshold — jobs active longer"
+                " than this are considered stuck (default: 30)"
+            ),
         )
         parser.add_argument(
             "--project-id",

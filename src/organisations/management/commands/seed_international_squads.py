@@ -176,7 +176,9 @@ class Command(BaseCommand):
                     self.stdout.write(f"    ✅ {team.name}: 17 members created")
 
                 self.stdout.write(
-                    f"  {fed_config['name']} total: {fed_memberships} memberships ({fed_users} users)"
+                    f"  {fed_config['name']} total:"
+                    f" {fed_memberships} memberships"
+                    f" ({fed_users} users)"
                 )
                 total_users += fed_users
                 total_memberships += fed_memberships

@@ -268,7 +268,10 @@ class AssetGenerateInputSerializer(serializers.Serializer):
         child=serializers.CharField(),
         required=False,
         default=dict,
-        help_text="Input images as base64 strings. Keys: logo, sponsor, reference_photo, person_photo",
+        help_text=(
+            "Input images as base64 strings."
+            " Keys: logo, sponsor, reference_photo, person_photo"
+        ),
     )
 
     # Alternative: input image URLs (S3 presigned)
@@ -333,7 +336,10 @@ class AssetGenerateInputSerializer(serializers.Serializer):
         allow_null=True,
         allow_blank=True,
         default=None,
-        help_text="Explicit model ID (e.g. gen4_turbo, video-01). If omitted, uses provider default.",
+        help_text=(
+            "Explicit model ID (e.g. gen4_turbo, video-01)."
+            " If omitted, uses provider default."
+        ),
     )
 
 
@@ -993,7 +999,10 @@ def _crop_closeup_guest_player(request: Request, project_id: str, kit_type: str)
     if not fullbody_val:
         return Response(
             {
-                "error": f"No guest fullbody found for kit_type='{kit_type}'. Generate a fullbody first."
+                "error": (
+                    f"No guest fullbody found for kit_type='{kit_type}'."
+                    " Generate a fullbody first."
+                )
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
@@ -1389,7 +1398,8 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
                     role=role,
                 )
                 logger.info(
-                    "propagate_approved_image: queued process_member_asset for membership=%s kit=%s",
+                    "propagate_approved_image: queued"
+                    " process_member_asset for membership=%s kit=%s",
                     job.membership_id,
                     kit_type,
                 )

@@ -105,14 +105,20 @@ def notify_project_created(*, project, creator) -> None:
             create_notification(
                 recipient_user_id=str(member_id),
                 title="Project Created",
-                message=f"Project '{project.name}' was successfully created in {project.organisation.name}.",
+                message=(
+                    f"Project '{project.name}' was successfully"
+                    f" created in {project.organisation.name}."
+                ),
                 level="success",
             )
         else:
             create_notification(
                 recipient_user_id=str(member_id),
                 title="New Project Created",
-                message=f"{creator.email} created project '{project.name}' in {project.organisation.name}.",
+                message=(
+                    f"{creator.email} created project"
+                    f" '{project.name}' in {project.organisation.name}."
+                ),
                 level="info",
             )
 
@@ -140,7 +146,10 @@ def notify_member_role_changed(*, membership, changed_by, old_role, new_role) ->
             create_notification(
                 recipient_user_id=str(membership.user.id),
                 title="Role Changed",
-                message=f"Your role in {org_name} was changed from {old_role} to {new_role} by {changer_name}.",
+                message=(
+                    f"Your role in {org_name} was changed"
+                    f" from {old_role} to {new_role} by {changer_name}."
+                ),
                 level="info",
             )
 
@@ -148,7 +157,10 @@ def notify_member_role_changed(*, membership, changed_by, old_role, new_role) ->
         create_notification(
             recipient_user_id=str(changed_by.id),
             title="Member Role Updated",
-            message=f"Successfully updated {affected_name}'s role from {old_role} to {new_role} in {org_name}.",
+            message=(
+                f"Successfully updated {affected_name}'s role"
+                f" from {old_role} to {new_role} in {org_name}."
+            ),
             level="success",
         )
     except Exception as e:

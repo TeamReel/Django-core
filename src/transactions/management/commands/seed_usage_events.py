@@ -29,7 +29,10 @@ class Command(BaseCommand):
         parser.add_argument(
             "--orgs",
             nargs="+",
-            help="Specific organization slugs to seed (e.g., eredivisie bundesliga). If omitted, seeds all.",
+            help=(
+                "Specific organization slugs to seed "
+                "(e.g., eredivisie bundesliga). If omitted, seeds all."
+            ),
         )
         parser.add_argument(
             "--count",

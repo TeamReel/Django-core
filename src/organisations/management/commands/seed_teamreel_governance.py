@@ -42,12 +42,18 @@ class Command(BaseCommand):
         parser.add_argument(
             "--quiet-hours",
             action="store_true",
-            help="Enable quiet hours (22:00-08:00 Europe/Amsterdam) for newly created org policies.",
+            help=(
+                "Enable quiet hours (22:00-08:00 Europe/Amsterdam)"
+                " for newly created org policies."
+            ),
         )
         parser.add_argument(
             "--allow-sqlite",
             action="store_true",
-            help="Allow running against SQLite (not recommended; intended for local-only debugging).",
+            help=(
+                "Allow running against SQLite (not recommended;"
+                " intended for local-only debugging)."
+            ),
         )
 
     def handle(self, *args, **options):
@@ -127,7 +133,8 @@ class Command(BaseCommand):
                 )
 
         self.stdout.write(
-            f"OrganisationNotificationPolicy: create={created_org_policies} skip={skipped_org_policies}"
+            f"OrganisationNotificationPolicy: "
+            f"create={created_org_policies} skip={skipped_org_policies}"
         )
 
         # 3) BalancePolicy (org-level) for prepaid safety

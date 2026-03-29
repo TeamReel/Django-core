@@ -120,7 +120,10 @@ class SessionCookieSameSiteRule(SecurityRule):
             severity="HIGH",
             owasp_asvs_refs=["V3.4.1"],
             description="Validates SESSION_COOKIE_SAMESITE='Strict' or 'Lax'",
-            remediation="Set SESSION_COOKIE_SAMESITE = 'Strict' or 'Lax' in config/settings/base.py",
+            remediation=(
+                "Set SESSION_COOKIE_SAMESITE = 'Strict' or 'Lax' "
+                "in config/settings/base.py"
+            ),
         )
 
     def validate(self, context: dict) -> SecurityRuleViolation | None:

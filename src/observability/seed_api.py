@@ -45,21 +45,44 @@ def seed_metrics(request):
         <head>
             <title>Seed Cache Metrics</title>
             <style>
-                body {{ font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }}
+                body {{
+                    font-family: system-ui, -apple-system, sans-serif;
+                    max-width: 600px;
+                    margin: 50px auto;
+                    padding: 20px;
+                }}
                 h1 {{ color: #2563eb; }}
-                form {{ background: #f9fafb; padding: 20px; border-radius: 8px; }}
+                form {{ background: #f9fafb; padding: 20px;
+                    border-radius: 8px; }}
                 label {{ display: block; margin: 15px 0 5px; font-weight: 600; }}
-                input {{ width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; }}
-                button {{ background: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px; }}
+                input {{
+                    width: 100%; padding: 8px;
+                    border: 1px solid #d1d5db;
+                    border-radius: 4px;
+                }}
+                button {{
+                    background: #2563eb; color: white;
+                    padding: 10px 20px; border: none;
+                    border-radius: 4px; cursor: pointer;
+                    margin-top: 15px;
+                }}
                 button:hover {{ background: #1d4ed8; }}
-                .info {{ background: #dbeafe; padding: 15px; border-radius: 4px; margin: 20px 0; }}
-                pre {{ background: #1f2937; color: #10b981; padding: 15px; border-radius: 4px; overflow-x: auto; }}
+                .info {{
+                    background: #dbeafe; padding: 15px;
+                    border-radius: 4px; margin: 20px 0;
+                }}
+                pre {{
+                    background: #1f2937; color: #10b981;
+                    padding: 15px; border-radius: 4px;
+                    overflow-x: auto;
+                }}
             </style>
         </head>
         <body>
             <h1>🌱 Seed Cache Metrics</h1>
             <div class="info">
-                <strong>Purpose:</strong> Generate 7 days of historical cache performance data for the demo dashboard.
+                <strong>Purpose:</strong> Generate 7 days of historical
+                cache performance data for the demo dashboard.
             </div>
 
             <form method="POST" id="seedForm">
@@ -114,7 +137,8 @@ def seed_metrics(request):
                             credentials: 'include'
                         }});
                         const data = await response.json();
-                        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+                        document.getElementById('output').textContent =
+                            JSON.stringify(data, null, 2);
                     }} catch (error) {{
                         document.getElementById('output').textContent = 'Error: ' + error.message;
                     }}

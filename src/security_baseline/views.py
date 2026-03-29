@@ -80,7 +80,9 @@ class ConstitutionRulesView(APIView):
                         "active": rule.get("enabled", True),
                         "severity": rule.get("severity", "medium"),
                         "parameters": rule.get("parameters", {}),
-                        "violation_count": 0,  # Placeholder: Real violations would come from engine report
+                        # Placeholder: Real violations would come
+                        # from engine report
+                        "violation_count": 0,
                     }
                     rules.append(r)
 
@@ -130,7 +132,8 @@ class SecurityEventsView(APIView):
         else:
             # No org specified
             if not is_system_admin:
-                # Non-system admins MUST specify an org (or be redirected to one, but API expects explicit)
+                # Non-system admins MUST specify an org
+                # (or be redirected to one, but API expects explicit)
                 # However, for the "All" view, only system admin is allowed.
                 # If a user is an org admin but requests root, we could either:
                 # 1. Deny
@@ -212,7 +215,8 @@ class SecurityEventsView(APIView):
 
                 if org_slug and Organisation:
                     # Filter by org if specified
-                    # Include events directly linked to org OR events linked to users of this org (e.g. login failures)
+                    # Include events directly linked to org OR events
+                    # linked to users of this org (e.g. login failures)
                     # Note: Membership related_name is 'organisation_memberships'
                     audit_qs = audit_qs.filter(
                         Q(organization__slug=org_slug)
@@ -268,7 +272,9 @@ class SecurityEventsView(APIView):
                             "id": str(audit_event.id),
                             "event_type": audit_event.event_type,
                             "severity": severity,
-                            "resolved": True,  # Audit logs are historical records, effectively "resolved" or "acknowledged"
+                            # Audit logs are historical records,
+                            # effectively "resolved" or "acknowledged"
+                            "resolved": True,
                             "timestamp": audit_event.created_at.isoformat(),
                             "description": description,
                         }

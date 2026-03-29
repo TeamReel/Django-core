@@ -11,7 +11,9 @@ Designed to align with planned B30/B32 work:
 
 Usage:
     python manage.py seed_match_activity_events --organisation knvb --season "Season 2024/2025"
-    python manage.py seed_match_activity_events --organisation knvb --season "Season 2024/2025" --limit-matches 50 --dry-run
+    python manage.py seed_match_activity_events \
+        --organisation knvb --season "Season 2024/2025" \
+        --limit-matches 50 --dry-run
     python manage.py seed_match_activity_events --all --force
 """
 
@@ -141,7 +143,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("[DRY-RUN] Complete"))
         self.stdout.write(
             self.style.SUCCESS(
-                f"[OK] Matches processed: {total_matches} | Events created: {total_created} | Matches skipped: {total_skipped}"
+                f"[OK] Matches processed: {total_matches}"
+                f" | Events created: {total_created}"
+                f" | Matches skipped: {total_skipped}"
             )
         )
 
@@ -191,8 +195,9 @@ class Command(BaseCommand):
             ).select_related("member__user")
         )
 
-        # Fallback if side isn't present (older data): split by project memberships is not possible here,
-        # so just treat all starters as eligible.
+        # Fallback if side isn't present (older data): split by project
+        # memberships is not possible here, so just treat all starters
+        # as eligible.
         if not home_starters and not away_starters:
             all_starters = list(
                 Participation.objects.filter(activity=match, role="starter").select_related(

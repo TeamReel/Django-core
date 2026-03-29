@@ -52,7 +52,10 @@ class WorkflowTemplateViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="List workflow templates",
-        description="Returns paginated list of workflow templates. Filterable by is_active status and searchable by name/description.",
+        description=(
+            "Returns paginated list of workflow templates."
+            " Filterable by is_active status and searchable by name/description."
+        ),
         parameters=[
             OpenApiParameter(
                 name="is_active",
@@ -77,7 +80,10 @@ class WorkflowTemplateViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Create workflow template",
-        description="Create a new workflow template. Admin only. Validates definition structure (states, transitions, initial_state).",
+        description=(
+            "Create a new workflow template. Admin only."
+            " Validates definition structure (states, transitions, initial_state)."
+        ),
         tags=["Templates"],
     )
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -86,7 +92,10 @@ class WorkflowTemplateViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Get template details",
-        description="Retrieve full details of a specific workflow template including definition structure.",
+        description=(
+            "Retrieve full details of a specific workflow template"
+            " including definition structure."
+        ),
         tags=["Templates"],
     )
     def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -137,7 +146,10 @@ class WorkflowTemplateViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Soft-delete workflow template",
-        description="Deactivates template by setting is_active=False. Does not delete the actual record. Admin only.",
+        description=(
+            "Deactivates template by setting is_active=False."
+            " Does not delete the actual record. Admin only."
+        ),
         tags=["Templates"],
     )
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -159,7 +171,10 @@ class WorkflowTemplateViewSet(viewsets.ModelViewSet):
         if instance_count > 0 and not force_update:
             raise ValidationError(
                 {
-                    "error": f"{instance_count} active instance(s) exist. Use force_update=true to proceed.",
+                    "error": (
+                        f"{instance_count} active instance(s) exist."
+                        " Use force_update=true to proceed."
+                    ),
                     "active_instances": instance_count,
                 }
             )

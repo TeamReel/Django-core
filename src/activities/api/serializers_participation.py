@@ -132,7 +132,10 @@ class ParticipationSerializer(serializers.ModelSerializer):
                     if activity_org_id and str(member.organisation_id) != str(activity_org_id):
                         raise serializers.ValidationError(
                             {
-                                "member_id": "Member must belong to same organisation as activity's period"
+                                "member_id": (
+                                    "Member must belong to same"
+                                    " organisation as activity's period"
+                                )
                             }
                         )
 

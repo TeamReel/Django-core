@@ -27,7 +27,8 @@ class Command(BaseCommand):
                 # Matches: | **app.Model** | `table_name` | 123 | ✅ OK | impact text |
                 # We extract group 1 (model label) and group 5 (impact)
                 rows = re.findall(
-                    r"\| \s*\*\*(.*?)\*\* \s*\| \s*`(.*?)` \s*\| \s*(\d+) \s*\| \s*(.*?) \s*\| \s*(.*?) \s*\|",
+                    r"\| \s*\*\*(.*?)\*\* \s*\| \s*`(.*?)` \s*"
+                    r"\| \s*(\d+) \s*\| \s*(.*?) \s*\| \s*(.*?) \s*\|",
                     content,
                 )
                 for r in rows:
@@ -100,7 +101,8 @@ class Command(BaseCommand):
             env_name = f"Railway ({os.environ.get('RAILWAY_ENVIRONMENT')})"
 
         lines.append(f"**Environment:** {env_name}")
-        # Database host is hard to get safely from settings if it's a URL, but we can skip or put placeholder
+        # Database host is hard to get safely from settings if
+        # it's a URL, but we can skip or put placeholder
         db_host = django_settings.DATABASES["default"].get("HOST", "localhost")
         lines.append(f"**Database Host:** {db_host}")
         lines.append("")
@@ -123,7 +125,8 @@ class Command(BaseCommand):
 
         for r in results:
             lines.append(
-                f"| **{r['label']}** | `{r['table']}` | {r['count']} | {r['status']} | {r['impact']} |"
+                f"| **{r['label']}** | `{r['table']}` "
+                f"| {r['count']} | {r['status']} | {r['impact']} |"
             )
 
         lines.append("")

@@ -69,8 +69,10 @@ class ProjectPermissionOverrideSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {
                         "action_name": (
-                            f"Action '{action_name}' not found in workflow '{workflow.name}'. "
-                            f"Available actions: {sorted([a for a in action_names if a is not None])}"
+                            f"Action '{action_name}' not found in "
+                            f"workflow '{workflow.name}'. "
+                            f"Available actions: "
+                            f"{sorted([a for a in action_names if a is not None])}"
                         )
                     }
                 )

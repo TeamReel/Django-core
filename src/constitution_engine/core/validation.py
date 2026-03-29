@@ -296,7 +296,8 @@ class ConfigValidator:
             # Validate description
             if rule.description and len(rule.description) > 500:
                 result.add_warning(
-                    f"Very long description for rule {rule.identifier} ({len(rule.description)} chars)",
+                    f"Very long description for rule"
+                    f" {rule.identifier} ({len(rule.description)} chars)",
                     f"{rule_path}.description",
                     "Consider shortening the description for better readability",
                 )

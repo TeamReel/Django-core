@@ -1,4 +1,7 @@
-"""Admin user detail & lifecycle views — detail, activate, deactivate, reset password, change role."""
+"""Admin user detail & lifecycle views.
+
+Detail, activate, deactivate, reset password, change role.
+"""
 
 from __future__ import annotations
 

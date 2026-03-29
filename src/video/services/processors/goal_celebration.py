@@ -151,7 +151,8 @@ class GoalCelebrationProcessor(BaseVideoProcessor):
         return str(output_path)
 
     def _upload_output(self, output_path: str) -> FileAsset:
-        """Upload output to S3 under match/goal_celebration/ path when match context is available."""
+        """Upload output to S3 under match/goal_celebration/ path
+        when match context is available."""
         import os
 
         config = self.job.config or {}

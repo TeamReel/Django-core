@@ -140,7 +140,9 @@ class Command(BaseCommand):
                     self.stdout.write(
                         self.style.SUCCESS(
                             f"  ✅ {team.name}: Created {created_this_team} memberships "
-                            f"(1 admin, {min(2, created_this_team-1)} staff, {max(0, created_this_team-3)} players)"
+                            f"(1 admin,"
+                            f" {min(2, created_this_team-1)} staff,"
+                            f" {max(0, created_this_team-3)} players)"
                         )
                     )
 

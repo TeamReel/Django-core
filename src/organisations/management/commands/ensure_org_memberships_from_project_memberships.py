@@ -12,7 +12,8 @@ Safe to run multiple times.
 
 Usage examples:
   python manage.py ensure_org_memberships_from_project_memberships --orgs knvb
-  python manage.py ensure_org_memberships_from_project_memberships --orgs knvb --period-id <season_uuid>
+  python manage.py ensure_org_memberships_from_project_memberships \
+      --orgs knvb --period-id <season_uuid>
   python manage.py ensure_org_memberships_from_project_memberships --orgs knvb --dry-run
 """
 
@@ -112,5 +113,7 @@ class Command(BaseCommand):
 
         suffix = " (dry-run)" if dry_run else ""
         self.stdout.write(
-            f"\n[OK]{suffix} users_scanned={total_users} memberships_created={created} memberships_activated={activated}"
+            f"\n[OK]{suffix} users_scanned={total_users}"
+            f" memberships_created={created}"
+            f" memberships_activated={activated}"
         )

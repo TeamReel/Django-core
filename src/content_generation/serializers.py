@@ -119,7 +119,8 @@ class ContentTemplateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """Log update operation for debugging."""
         logger.info(
-            f"ContentTemplateSerializer.update() called for {instance.id} with data: {validated_data}"
+            f"ContentTemplateSerializer.update() called"
+            f" for {instance.id} with data: {validated_data}"
         )
         try:
             # Handle each field explicitly to catch specific errors

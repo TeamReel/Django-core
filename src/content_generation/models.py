@@ -204,7 +204,10 @@ class ContentTemplate(models.Model):
         null=True,
         blank=True,
         related_name="content_templates",
-        help_text="Formation this template is designed for (e.g., 4-3-3). Only for lineup templates.",
+        help_text=(
+            "Formation this template is designed for"
+            " (e.g., 4-3-3). Only for lineup templates."
+        ),
     )
     style_variant = models.CharField(
         max_length=100,

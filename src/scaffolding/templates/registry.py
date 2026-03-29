@@ -152,7 +152,9 @@ class TemplateRegistry:
 
             if grandparent.extends:
                 raise ValueError(
-                    f"Template inheritance depth > 2: {template_name} → {base.name} → {grandparent.name} → {grandparent.extends}"
+                    f"Template inheritance depth > 2: {template_name}"
+                    f" → {base.name} → {grandparent.name}"
+                    f" → {grandparent.extends}"
                 )
 
             # Merge grandparent + base
@@ -260,7 +262,8 @@ class TemplateRegistry:
             total_templates += len(templates)
 
         logger.debug(
-            f"Discovered {total_templates} template(s) from {len(template_dirs)} configured director(ies)"
+            f"Discovered {total_templates} template(s) from"
+            f" {len(template_dirs)} configured director(ies)"
         )
 
     def _discover_project_templates(self) -> None:

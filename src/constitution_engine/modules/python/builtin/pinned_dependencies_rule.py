@@ -136,7 +136,8 @@ class PinnedDependenciesRule:
         try:
             content = file_path.read_text()
 
-            # Simple regex to find dependencies in [project.dependencies] or [tool.poetry.dependencies]
+            # Simple regex to find dependencies in
+            # [project.dependencies] or [tool.poetry.dependencies]
             # This is a simplified check; a full implementation would parse TOML properly
             dependency_pattern = r'^["\']?([a-zA-Z0-9_-]+)["\']?\s*=\s*["\']([^"\']+)["\']'
 

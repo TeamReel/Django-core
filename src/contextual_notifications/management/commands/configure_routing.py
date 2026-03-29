@@ -139,7 +139,8 @@ class Command(BaseCommand):
                             updated_count += 1
                         else:
                             self.stdout.write(
-                                f"⊗ Skipped: {event_type} ({scope}) - already exists (use --force to overwrite)"
+                                f"⊗ Skipped: {event_type} ({scope})"
+                                " - already exists (use --force to overwrite)"
                             )
                             skipped_count += 1
                     else:

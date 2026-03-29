@@ -72,7 +72,8 @@ class Command(BaseCommand):
         if missing_roles and not dry_run:
             self.stdout.write(
                 self.style.WARNING(
-                    f"Missing roles: {', '.join(missing_roles)}. Run 'python manage.py seed_default_roles' first."
+                    f"Missing roles: {', '.join(missing_roles)}."
+                    " Run 'python manage.py seed_default_roles' first."
                 )
             )
             return
@@ -730,11 +731,13 @@ class Command(BaseCommand):
                     bondscoach.save()
                     stats["users_created"] += 1
                     self.stdout.write(
-                        f"    + Created bondscoach: {bondscoach.get_full_name()} ({bondscoach.email})"
+                        f"    + Created bondscoach:"
+                        f" {bondscoach.get_full_name()} ({bondscoach.email})"
                     )
                 else:
                     self.stdout.write(
-                        f"    • Bondscoach exists: {bondscoach.get_full_name()} ({bondscoach.email})"
+                        f"    • Bondscoach exists:"
+                        f" {bondscoach.get_full_name()} ({bondscoach.email})"
                     )
 
                 # Assign Organization Admin role
@@ -759,7 +762,8 @@ class Command(BaseCommand):
                 )
             else:
                 self.stdout.write(
-                    f"    Would create bondscoach: {bondscoach_data['first_name']} {bondscoach_data['last_name']}"
+                    f"    Would create bondscoach:"
+                    f" {bondscoach_data['first_name']} {bondscoach_data['last_name']}"
                 )
 
             # Create clubs and their coaches/players

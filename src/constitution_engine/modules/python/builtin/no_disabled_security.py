@@ -55,7 +55,10 @@ class NoDisabledSecurityRule:
                 CheckResult(
                     rule_id=self.identifier,
                     severity=Severity.ERROR,
-                    message=f"Critical security rules are disabled: {', '.join(disabled_critical_rules)}",
+                    message=(
+                        "Critical security rules are disabled:"
+                        f" {', '.join(disabled_critical_rules)}"
+                    ),
                     file_path=None,
                     line_number=None,
                 )

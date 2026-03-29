@@ -154,7 +154,8 @@ class AuditLog:
 
                             # Log count for debugging
                             logger.info(
-                                f"Broadcasting global event {event_type} to user {user.id}'s organisations"
+                                f"Broadcasting global event {event_type}"
+                                f" to user {user.id}'s organisations"
                             )
 
                             for membership in memberships:

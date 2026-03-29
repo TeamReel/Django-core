@@ -152,9 +152,13 @@ class PeriodSerializer(serializers.ModelSerializer):
         return None
 
     def get_sport(self, obj):
-        """Return nested sport representation (for competition-level sport variant)"""
+        """Return nested sport representation.
+
+        For competition-level sport variant.
+        """
         if obj.sport:
-            # For variants, include category icon as fallback (variants often don't have their own icon)
+            # For variants, include category icon as fallback
+            # (variants often don't have their own icon)
             category_icon = (
                 obj.sport.category.sport_icon
                 if obj.sport.is_variant and obj.sport.category
@@ -197,7 +201,10 @@ class PeriodSerializer(serializers.ModelSerializer):
                 if str(parent.organisation_id) != str(organisation_id):
                     raise serializers.ValidationError(
                         {
-                            "parent_period_id": "Child period must belong to same organisation as parent"
+                            "parent_period_id": (
+                                "Child period must belong to same"
+                                " organisation as parent"
+                            )
                         }
                     )
             except Period.DoesNotExist:

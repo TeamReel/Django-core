@@ -568,7 +568,9 @@ class SearchAPIView(APIView):
         # Parse types
         # Supported:
         # - ?types=projects.project,accounts.user (explicit model labels)
-        # - ?types=users|organisations|projects|clubs|teams|matches|activities|periods|seasons|competitions (frontend category tokens)
+        # - ?types=users|organisations|projects|clubs|teams|
+        #   matches|activities|periods|seasons|competitions
+        #   (frontend category tokens)
         types_param = request.query_params.get("types")
         types, project_scope, activity_scope, period_scope = _normalize_types(types_param)
 
@@ -699,7 +701,8 @@ class SearchAPIView(APIView):
                         email = getattr(obj, "email", "")
                         norm_email = ""
                         if email:
-                            # NORMALIZE: NFKD decomposes chars, encode ASCII ignores non-ascii/accents
+                            # NORMALIZE: NFKD decomposes chars,
+                            # encode ASCII ignores non-ascii/accents
                             norm_email = (
                                 unicodedata.normalize("NFKD", email.lower().strip())
                                 .encode("ASCII", "ignore")
@@ -718,7 +721,8 @@ class SearchAPIView(APIView):
                     try:
                         obj = entry.content_object
 
-                        # Deduplicate by (normalized_email, project) to handle duplicate user accounts
+                        # Deduplicate by (normalized_email, project)
+                        # to handle duplicate user accounts
                         u_email = getattr(obj.user, "email", "")
                         if u_email:
                             u_norm = (

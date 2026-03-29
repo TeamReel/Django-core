@@ -117,7 +117,10 @@ def get_my_user_credits(request):
         if not has_access:
             return Response(
                 {
-                    "error": "You do not have permission to view personal credits for this organisation"
+                    "error": (
+                        "You do not have permission to view"
+                        " personal credits for this organisation"
+                    )
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )

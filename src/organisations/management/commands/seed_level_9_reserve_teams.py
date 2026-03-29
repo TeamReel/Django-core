@@ -20,7 +20,10 @@ from projects.models import Project, ProjectMembership
 
 
 class Command(BaseCommand):
-    help = "Seed reserve team players + assistant coaches (Jong, Tweede & Vrouwen) with generated names"
+    help = (
+        "Seed reserve team players + assistant coaches"
+        " (Jong, Tweede & Vrouwen) with generated names"
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -123,7 +126,10 @@ class Command(BaseCommand):
 
                 # Create assistant coach first
                 coach_data = self._generate_assistant_coach(club, team_type)
-                coach_email = f"{coach_data['first_name'].lower()}.{coach_data['last_name'].lower()}@{club.lower().replace(' ', '')}.demo"
+                first = coach_data['first_name'].lower()
+                last = coach_data['last_name'].lower()
+                domain = club.lower().replace(' ', '')
+                coach_email = f"{first}.{last}@{domain}.demo"
                 coach_email = coach_email.replace("ë", "e").replace("ö", "o").replace("ü", "u")
 
                 coach, coach_created = User.objects.get_or_create(
@@ -162,7 +168,10 @@ class Command(BaseCommand):
 
                 for player_data in players:
                     # Create user
-                    email = f"{player_data['first_name'].lower()}.{player_data['last_name'].lower()}@{club.lower().replace(' ', '')}.demo"
+                    first = player_data['first_name'].lower()
+                    last = player_data['last_name'].lower()
+                    domain = club.lower().replace(' ', '')
+                    email = f"{first}.{last}@{domain}.demo"
                     email = email.replace("ë", "e").replace("ö", "o").replace("ü", "u")
 
                     user, user_created = User.objects.get_or_create(

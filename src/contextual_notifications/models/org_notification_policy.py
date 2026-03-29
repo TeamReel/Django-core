@@ -102,7 +102,10 @@ class OrganisationNotificationPolicy(models.Model):
             if not self.quiet_hours_start or not self.quiet_hours_end:
                 raise ValidationError(
                     {
-                        "quiet_hours_enabled": "Quiet hours start and end times must be set when quiet hours are enabled."
+                        "quiet_hours_enabled": (
+                            "Quiet hours start and end times must"
+                            " be set when quiet hours are enabled."
+                        )
                     }
                 )
 

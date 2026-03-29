@@ -273,7 +273,9 @@ class Command(BaseCommand):
             )
         else:
             self.stdout.write(
-                "  ! skipped org fallback debit: org balance is too low to cover a debit larger than the project balance"
+                "  ! skipped org fallback debit: org balance is"
+                " too low to cover a debit larger than"
+                " the project balance"
             )
 
         # 3) Minimal verification (DB-backed): fetch by idempotency key and show wallet_scope.
@@ -292,7 +294,10 @@ class Command(BaseCommand):
                 self.stdout.write(f"- {key}: (missing)")
                 continue
             self.stdout.write(
-                f"- {key}: wallet_scope={txn.wallet_scope} project_id={txn.project_id} charged_user_id={txn.charged_user_id} amount={txn.amount}"
+                f"- {key}: wallet_scope={txn.wallet_scope}"
+                f" project_id={txn.project_id}"
+                f" charged_user_id={txn.charged_user_id}"
+                f" amount={txn.amount}"
             )
 
         user_bal = get_user_balance(organization_id=org.id, user_id=user.id, use_cache=False)[

@@ -513,7 +513,10 @@ class Command(BaseCommand):
                                     {"type": "background", "required": False},
                                 ],
                             },
-                            "description": f"{style_name} style match announcement flyer for {sport_label}",
+                            "description": (
+                                f"{style_name} style match announcement flyer"
+                                f" for {sport_label}"
+                            ),
                         }
                     )
 
@@ -570,7 +573,10 @@ class Command(BaseCommand):
                                     {"type": "team_logo", "required": True},
                                 ],
                             },
-                            "description": f"{style_name} player walk-on introduction video for {sport_label}",
+                            "description": (
+                                f"{style_name} player walk-on introduction"
+                                f" video for {sport_label}"
+                            ),
                         }
                     )
 
@@ -605,7 +611,10 @@ class Command(BaseCommand):
                                     {"type": "stadium_footage", "required": False},
                                 ],
                             },
-                            "description": f"{style_name} anthem video with team lineup for {sport_label}",
+                            "description": (
+                                f"{style_name} anthem video with team lineup"
+                                f" for {sport_label}"
+                            ),
                         }
                     )
 
@@ -632,11 +641,17 @@ class Command(BaseCommand):
                     for style_name, style_id, style_desc in celebration_styles:
                         template_definitions.append(
                             {
-                                "name": f"Goal Celebration {role_label} - {style_name} ({sport_label})",
+                                "name": (
+                                    f"Goal Celebration {role_label}"
+                                    f" - {style_name} ({sport_label})"
+                                ),
                                 "template_type": TemplateType.DURING_MATCH,
                                 "template_subtype": TemplateSubtype.GOAL,
                                 "style_variant": style_name,
-                                "ai_workflow_id": f"wf_goal_celebration_{role}_{style_id}_{sport_key}",
+                                "ai_workflow_id": (
+                                    f"wf_goal_celebration_{role}_{style_id}"
+                                    f"_{sport_key}"
+                                ),
                                 "sport_variant": sport_key,
                                 "input_requirements": {
                                     "members": {
@@ -694,7 +709,10 @@ class Command(BaseCommand):
                             "ai_workflow_id": f"summary_editorial_v1_{sport_key}",
                             "sport_variant": sport_key,
                             "input_requirements": get_match_summary_requirements(),
-                            "description": f"Magazine-style match recap with key moments for {sport_label}",
+                            "description": (
+                                f"Magazine-style match recap with key"
+                                f" moments for {sport_label}"
+                            ),
                         },
                         {
                             "name": f"Highlights Reel - Dynamic ({sport_label})",
@@ -713,7 +731,10 @@ class Command(BaseCommand):
                                     "optional": ["key_moments", "duration"],
                                 },
                             },
-                            "description": f"Fast-paced highlight compilation with transitions for {sport_label}",
+                            "description": (
+                                f"Fast-paced highlight compilation"
+                                f" with transitions for {sport_label}"
+                            ),
                         },
                     ]
                 )
@@ -811,11 +832,17 @@ class Command(BaseCommand):
                     for style_name, style_id, style_desc in celebration_styles:
                         template_definitions.append(
                             {
-                                "name": f"{role_label} Goal Celebration - {style_name} ({sport_label})",
+                                "name": (
+                                    f"{role_label} Goal Celebration"
+                                    f" - {style_name} ({sport_label})"
+                                ),
                                 "template_type": TemplateType.MEMBER,
                                 "template_subtype": TemplateSubtype.MEMBER_GOAL_CELEBRATION,
                                 "style_variant": style_name,
-                                "ai_workflow_id": f"wf_member_goal_celebration_{role}_{style_id}_{sport_key}",
+                                "ai_workflow_id": (
+                                    f"wf_member_goal_celebration_{role}"
+                                    f"_{style_id}_{sport_key}"
+                                ),
                                 "sport_variant": sport_key,
                                 "credits_required": 1,
                                 "input_requirements": {
@@ -834,7 +861,10 @@ class Command(BaseCommand):
                             "template_type": TemplateType.MEMBER,
                             "template_subtype": TemplateSubtype.PROFILE_PHOTO,
                             "style_variant": "Professional",
-                            "ai_workflow_id": f"wf_member_profile_photo_{role}_professional_{sport_key}",
+                            "ai_workflow_id": (
+                                f"wf_member_profile_photo_{role}"
+                                f"_professional_{sport_key}"
+                            ),
                             "sport_variant": sport_key,
                             "credits_required": 1,
                             "input_requirements": {
@@ -932,7 +962,10 @@ class Command(BaseCommand):
                             "template_type": TemplateType.MEMBER,
                             "template_subtype": TemplateSubtype.MEMBER_LEGACY_IN_TENUE,
                             "style_variant": "Modern",
-                            "ai_workflow_id": f"wf_member_legacy_in_tenue_{role}_modern_{sport_key}",
+                            "ai_workflow_id": (
+                                f"wf_member_legacy_in_tenue_{role}"
+                                f"_modern_{sport_key}"
+                            ),
                             "sport_variant": sport_key,
                             "credits_required": 1,
                             "input_requirements": {
@@ -964,7 +997,10 @@ class Command(BaseCommand):
                                 "template_type": TemplateType.MEMBER,
                                 "template_subtype": TemplateSubtype.MEMBER_ACTION_PHOTO,
                                 "style_variant": style_key,
-                                "ai_workflow_id": f"wf_member_action_photo_{role}_{style_key}_{sport_key}",
+                                "ai_workflow_id": (
+                                    f"wf_member_action_photo_{role}"
+                                    f"_{style_key}_{sport_key}"
+                                ),
                                 "sport_variant": sport_key,
                                 "credits_required": 2,
                                 "input_requirements": {
@@ -975,7 +1011,10 @@ class Command(BaseCommand):
                                         "required": [{"type": "tenue", "label": "Team Tenue"}],
                                     },
                                 },
-                                "description": f"Dynamic {style_label.lower()} action photo for {role}",
+                                "description": (
+                                    f"Dynamic {style_label.lower()}"
+                                    f" action photo for {role}"
+                                ),
                             }
                         )
 
@@ -1043,7 +1082,10 @@ class Command(BaseCommand):
                             "template_type": TemplateType.PRE_MATCH,
                             "template_subtype": TemplateSubtype.LINEUP,
                             "style_variant": style["style_variant"],
-                            "ai_workflow_id": f"{style['ai_workflow_id']}_{formation.code.replace('-', '')}",
+                            "ai_workflow_id": (
+                                f"{style['ai_workflow_id']}"
+                                f"_{formation.code.replace('-', '')}"
+                            ),
                             "input_requirements": get_lineup_requirements(11, use_formation=True),
                             "sport": football_11v11,
                             "formation": formation,
@@ -1073,7 +1115,10 @@ class Command(BaseCommand):
                             "template_type": TemplateType.PRE_MATCH,
                             "template_subtype": TemplateSubtype.LINEUP,
                             "style_variant": style["style_variant"],
-                            "ai_workflow_id": f"{style['ai_workflow_id']}_{formation.code.replace('-', '')}_7v7",
+                            "ai_workflow_id": (
+                                f"{style['ai_workflow_id']}"
+                                f"_{formation.code.replace('-', '')}_7v7"
+                            ),
                             "input_requirements": get_lineup_requirements(7, use_formation=True),
                             "sport": football_7v7,
                             "formation": formation,
@@ -1088,7 +1133,9 @@ class Command(BaseCommand):
         # Summary
         self.stdout.write(
             self.style.SUCCESS(
-                f"\n[DONE] Seed complete! {'Would create' if dry_run else 'Created/updated'} {template_count} templates"
+                f"\n[DONE] Seed complete!"
+                f" {'Would create' if dry_run else 'Created/updated'}"
+                f" {template_count} templates"
             )
         )
         self.stdout.write(f"   - {len(formations_11v11)} formations for 11v11")
@@ -1096,7 +1143,8 @@ class Command(BaseCommand):
 
         if category in ["all", "pre_match"]:
             self.stdout.write(
-                f"   - {len(LINEUP_TEMPLATE_STYLES) * len(formations_11v11)} lineup templates for 11v11"
+                f"   - {len(LINEUP_TEMPLATE_STYLES) * len(formations_11v11)}"
+                " lineup templates for 11v11"
             )
             self.stdout.write(f"   - {2 * len(formations_7v7)} lineup templates for 7v7")
 

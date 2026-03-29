@@ -215,7 +215,10 @@ def send_submission_notification(instance: WorkflowInstance, transition: dict) -
             recipient_ids=[m.user_id for m in instance.project.memberships.all()],
             notification_type="workflow_submitted",
             title=f"Workflow Submitted: {instance.workflow.name}",
-            message=f"A new workflow instance has been submitted for review in {instance.project.name}",
+            message=(
+                f"A new workflow instance has been submitted "
+                f"for review in {instance.project.name}"
+            ),
             metadata={
                 "workflow_id": str(instance.workflow_id),
                 "instance_id": str(instance.id),

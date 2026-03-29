@@ -98,7 +98,10 @@ class UsageEventSerializer(serializers.ModelSerializer):
                 if str(project.organisation_id) != str(organization_id):
                     raise serializers.ValidationError(
                         {
-                            "project_id": f"Project {project_id} does not belong to organization {organization_id}"
+                            "project_id": (
+                                f"Project {project_id} does not belong "
+                                f"to organization {organization_id}"
+                            )
                         }
                     )
             except Exception as exc:
@@ -274,7 +277,10 @@ class TransactionSerializer(serializers.ModelSerializer):
                 if str(project.organisation_id) != str(organization_id):
                     raise serializers.ValidationError(
                         {
-                            "project_id": f"Project {project_id} does not belong to organization {organization_id}"
+                            "project_id": (
+                                f"Project {project_id} does not belong "
+                                f"to organization {organization_id}"
+                            )
                         }
                     )
             except Exception as exc:
@@ -320,7 +326,9 @@ class TransactionSerializer(serializers.ModelSerializer):
         if usage_event_id:
             usage_event = UsageEvent.objects.get(id=usage_event_id)
 
-        # Call service layer (raises InsufficientBalanceError, PolicyViolationError, DuplicateIdempotencyKeyError)
+        # Call service layer
+        # (raises InsufficientBalanceError, PolicyViolationError,
+        # DuplicateIdempotencyKeyError)
         return create_transaction_with_routing(
             organization=organization,
             amount=validated_data["amount"],

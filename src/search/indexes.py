@@ -75,7 +75,8 @@ class ProjectIndex(SearchIndex):
         # Project model uses 'name' not 'title' based on models.py check earlier
         # But the previous code used 'title'. Let's check models.py again.
         # Ah, I checked src/projects/models.py and it has 'name'.
-        # The previous implementation of ProjectIndex used 'title'. This is a bug in WP02 implementation?
+        # The previous implementation of ProjectIndex used
+        # 'title'. This is a bug in WP02 implementation?
         # Let's fix it here.
         return f"{obj.name} {obj.description or ''}"
 

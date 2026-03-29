@@ -320,7 +320,8 @@ def cache_metrics(request):
         # would treat a non-Redis mock as Redis and return non-zero metrics.
         allow_redis_heuristics = not (is_mock and not is_redis_backend)
 
-        # Check if cache backend supports Redis client (both django.core.cache.backends.redis.RedisCache
+        # Check if cache backend supports Redis client
+        # (both django.core.cache.backends.redis.RedisCache
         # and django_redis.cache.RedisCache have this)
         redis_client = None
 

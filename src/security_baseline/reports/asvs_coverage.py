@@ -28,8 +28,9 @@ class ASVSCoverageCalculator:
             violations: List of security rule violations found
 
         Returns:
-            Dictionary with top-level fields (total_controls_checked, level_1_coverage_percent, categories)
-            plus per-category coverage information
+            Dictionary with top-level fields
+            (total_controls_checked, level_1_coverage_percent,
+            categories) plus per-category coverage information
         """
         # Group rules by ASVS category
         rules_by_category = self._group_rules_by_asvs_category(all_rules)

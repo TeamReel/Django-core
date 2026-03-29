@@ -33,7 +33,8 @@ class Command(BaseCommand):
             type=str,
             default="",
             help=(
-                "Comma-separated model labels or prefixes to skip (e.g. activities,activities.activity). "
+                "Comma-separated model labels or prefixes to skip "
+                "(e.g. activities,activities.activity). "
                 "Matches on label_lower."
             ),
         )

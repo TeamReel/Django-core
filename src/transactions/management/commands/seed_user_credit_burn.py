@@ -12,7 +12,8 @@ Idempotent:
 - Uses deterministic idempotency keys so it can be safely re-run.
 
 Example:
-    $env:DATABASE_URL="postgresql://..."; python manage.py seed_user_credit_burn --org knvb --user admin@teamreel.demo
+    $env:DATABASE_URL="postgresql://..."
+    python manage.py seed_user_credit_burn --org knvb --user admin@teamreel.demo
 """
 
 from __future__ import annotations

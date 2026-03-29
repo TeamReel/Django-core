@@ -69,7 +69,11 @@ def format_template_not_found_error(
 
     if available_templates:
         templates_list = ", ".join(available_templates)
-        suggestion = f"Available templates: {templates_list}\nRun 'django-core-scaffold list-templates' for descriptions"
+        suggestion = (
+            f"Available templates: {templates_list}\n"
+            "Run 'django-core-scaffold list-templates'"
+            " for descriptions"
+        )
     else:
         suggestion = "Run 'django-core-scaffold list-templates' to see available templates"
 

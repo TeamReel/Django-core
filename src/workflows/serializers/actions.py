@@ -57,7 +57,8 @@ class TransitionExecuteSerializer(serializers.Serializer):
                 raise serializers.ValidationError(
                     {
                         "action": (
-                            f"Action '{action}' not available from state '{instance.current_state}'. "
+                            f"Action '{action}' not available from "
+                            f"state '{instance.current_state}'. "
                             f"Available actions: {sorted(available_actions)}"
                         )
                     }

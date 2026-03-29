@@ -90,7 +90,10 @@ class ActivityLog(models.Model):
     extra_data = models.JSONField(
         default=dict,
         blank=True,
-        help_text="Context-specific information, e.g. {'old_status': 'draft', 'new_status': 'approved'}.",
+        help_text=(
+            "Context-specific information, e.g."
+            " {'old_status': 'draft', 'new_status': 'approved'}."
+        ),
     )
 
     # TIMESTAMP — immutable creation time

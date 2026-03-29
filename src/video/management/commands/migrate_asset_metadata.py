@@ -141,7 +141,8 @@ def _migrate_videos(
     roles_dict: dict,
     stats: dict,
 ) -> None:
-    """Migrate root-level videos.{type}.{composite_key} → roles.{role}.videos.{type}.{kit}.{variant}."""
+    """Migrate root-level videos.{type}.{composite_key} →
+    roles.{role}.videos.{type}.{kit}.{variant}."""
     for asset_type, category_data in videos.items():
         if not isinstance(category_data, dict):
             continue

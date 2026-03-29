@@ -137,7 +137,8 @@ class WorkflowInstanceViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Create workflow instance",
-        description="Create a new workflow instance. Snapshots the workflow template definition (immutable). "
+        description="Create a new workflow instance. "
+        "Snapshots the workflow template definition (immutable). "
         "Sets initial state from template. Requires project membership.",
         tags=["Instances"],
     )
@@ -178,7 +179,8 @@ class WorkflowInstanceViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Get workflow instance",
-        description="Returns workflow instance details including snapshot, current state, and available actions. "
+        description="Returns workflow instance details including "
+        "snapshot, current state, and available actions. "
         "Requires project membership.",
         tags=["Instances"],
     )
@@ -213,9 +215,12 @@ class WorkflowInstanceViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Execute state transition",
-        description="Execute a workflow transition (state change). Validates transition permissions, "
-        "executes validators, fires hooks, and records transition history. "
-        "Requires project membership and appropriate transition permissions.",
+        description="Execute a workflow transition (state change). "
+        "Validates transition permissions, "
+        "executes validators, fires hooks, and records "
+        "transition history. "
+        "Requires project membership and appropriate "
+        "transition permissions.",
         request=TransitionExecuteSerializer,
         responses={200: TransitionHistorySerializer},
         tags=["Transitions"],

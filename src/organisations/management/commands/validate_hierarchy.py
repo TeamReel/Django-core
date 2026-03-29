@@ -103,6 +103,8 @@ class Command(BaseCommand):
         self.stdout.write("  1-3: ✅ Organisation → Club → Team hierarchy correct")
         period_status = "⚠️ " if seasons_root > 50 else "✅"
         self.stdout.write(
-            f"  4-5: {period_status} Season → Competition hierarchy ({seasons_root} seasons found, expected 50)"
+            f"  4-5: {period_status} Season → Competition"
+            f" hierarchy ({seasons_root} seasons found,"
+            " expected 50)"
         )
         self.stdout.write("  6:   ❌ Match level empty (to be implemented)")

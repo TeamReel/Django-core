@@ -364,7 +364,8 @@ class LineupProcessor(BaseVideoProcessor):
                 ):
                     # We'll use this segment's resolution when we process it
                     # But wait, we iterate one by one.
-                    # We can let the loop handle it: if first segment is image, we might pick image res.
+                    # We can let the loop handle it: if first
+                    # segment is image, we might pick image res.
                     # Better to prefer video res.
                     pass
 
@@ -401,9 +402,11 @@ class LineupProcessor(BaseVideoProcessor):
                 # If resolution is auto and not yet determined
                 if not resolution_determined:
                     # Prefer video segments for resolution detection
-                    # Only detect from image if it's the very first segment and no videos are coming?
+                    # Only detect from image if it's the very first
+                    # segment and no videos are coming?
                     # Or just detect from current segment.
-                    # Let's enforce: if type is video, OR if it's the first segment and we have no choice.
+                    # Let's enforce: if type is video, OR if it's
+                    # the first segment and we have no choice.
                     # Actually, user said "Net zo groot als de input files" (plural).
                     # Using first segment is safest for consistency, even if it's an image.
                     # But images might be 4K. Intro videos 1080p.

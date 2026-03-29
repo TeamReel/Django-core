@@ -84,10 +84,10 @@ class AssetProcessor:
             variant_id: Optional style variant (e.g. 'arms_crossed')
             organisation_id: Organisation ID for S3 path scoping
             bg_removal_backend: "rvm" (Robust Video Matting) or "rembg" (per-frame U2-Net)
-                                RVM is preferred for video — temporal consistency, no flicker.
-                                If "rvm" is requested but unavailable, processing fails (no fallback).
-                                Only used for video types (intro, celebration);
-                                images always use rembg single-pass.
+                RVM is preferred for video — temporal consistency, no flicker.
+                If "rvm" is requested but unavailable, processing fails (no fallback).
+                Only used for video types (intro, celebration);
+                images always use rembg single-pass.
 
         Returns:
             Updated variant value dict with processed URL and specs
@@ -342,7 +342,8 @@ class AssetProcessor:
             # backgrounds and should NOT have bg removal applied. Just resize/re-encode.
             if not spec.bg_removed:
                 logger.info(
-                    "asset_processing_video_backend_selected type=%s backend=passthrough (no bg removal)",
+                    "asset_processing_video_backend_selected"
+                    " type=%s backend=passthrough (no bg removal)",
                     asset_type,
                 )
                 return self._process_video_passthrough(
@@ -813,7 +814,8 @@ class AssetProcessor:
 
             if not duration_s or duration_s <= 0.01 or (nb_frames is not None and nb_frames <= 1):
                 logger.warning(
-                    "mov_to_mp4_preview_invalid duration_s=%s nb_frames=%s transcode_s=%.3f stderr=%s",
+                    "mov_to_mp4_preview_invalid"
+                    " duration_s=%s nb_frames=%s transcode_s=%.3f stderr=%s",
                     duration_s,
                     nb_frames,
                     transcode_s,
@@ -836,7 +838,8 @@ class AssetProcessor:
             with open(preview_path, "rb") as f:
                 storage_backend.save(storage_path, f)
             logger.info(
-                "mov_to_mp4_preview_done transcode_s=%.3f upload_s=%.3f size_bytes=%d duration_s=%s storage_path=%s",
+                "mov_to_mp4_preview_done transcode_s=%.3f"
+                " upload_s=%.3f size_bytes=%d duration_s=%s storage_path=%s",
                 transcode_s,
                 time.monotonic() - t_up,
                 preview_path.stat().st_size,
@@ -1082,7 +1085,8 @@ class AssetProcessor:
         with open(output_path, "rb") as f:
             saved_path = storage_backend.save(storage_path, f)
         logger.info(
-            "asset_processing_upload_done type=%s format=webm backend=rembg in=%.3fs storage_path=%s",
+            "asset_processing_upload_done"
+            " type=%s format=webm backend=rembg in=%.3fs storage_path=%s",
             asset_type,
             time.monotonic() - t_up,
             storage_path,

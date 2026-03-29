@@ -157,7 +157,8 @@ class Command(BaseCommand):
                             except Exception as e:
                                 self.stdout.write(
                                     self.style.WARNING(
-                                        f"  ⚠️  User {user.id}: Invalid timezone '{timezone_value}': {e}"
+                                        f"  ⚠️  User {user.id}:"
+                                        f" Invalid timezone '{timezone_value}': {e}"
                                     )
                                 )
                                 timezone_value = None

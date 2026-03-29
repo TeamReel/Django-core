@@ -29,7 +29,8 @@ class SeedNotification:
 class Command(BaseCommand):
     help = (
         "Seed TeamReel in-app notifications (idempotent). "
-        "Creates many notifications for ajax-1 team users (Option C) and a small baseline for all other users (Option A)."
+        "Creates many notifications for ajax-1 team users (Option C) "
+        "and a small baseline for all other users (Option A)."
     )
 
     def add_arguments(self, parser):
@@ -46,7 +47,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--club-slug",
             default=None,
-            help="Optional club (parent project) slug to disambiguate the team project (e.g. ajax).",
+            help="Optional club (parent project) slug to disambiguate"
+            " the team project (e.g. ajax).",
         )
         parser.add_argument(
             "--ajax-count",
@@ -191,7 +193,10 @@ class Command(BaseCommand):
             SeedNotification(
                 event_type="team_welcome",
                 title=f"Welkom bij {team.name}",
-                message=f"Je bent toegevoegd aan {team.name}. Check je team, roles en aankomende wedstrijden.",
+                message=(
+                    f"Je bent toegevoegd aan {team.name}."
+                    " Check je team, roles en aankomende wedstrijden."
+                ),
                 level="success",
                 link_url=team_url,
                 mark_read=True,
@@ -200,7 +205,10 @@ class Command(BaseCommand):
             SeedNotification(
                 event_type="schedule_updated",
                 title="Wedstrijdschema geüpdatet",
-                message=f"Er zijn nieuwe wedstrijden toegevoegd voor {team.name}.",
+                message=(
+                    f"Er zijn nieuwe wedstrijden toegevoegd"
+                    f" voor {team.name}."
+                ),
                 level="info",
                 link_url=team_url,
                 mark_read=True,
@@ -209,7 +217,10 @@ class Command(BaseCommand):
             SeedNotification(
                 event_type="lineup_due",
                 title="Line-up nog niet compleet",
-                message="Er ontbreken nog spelers in de opstelling. Vul dit aan vóór de wedstrijddag.",
+                message=(
+                    "Er ontbreken nog spelers in de opstelling."
+                    " Vul dit aan vóór de wedstrijddag."
+                ),
                 level="warning",
                 link_url=team_url,
                 age=timedelta(days=1, hours=6),
@@ -217,7 +228,10 @@ class Command(BaseCommand):
             SeedNotification(
                 event_type="credits_used",
                 title="Credits gebruikt",
-                message="Er is een transactie aangemaakt voor een wedstrijdactie. Check je saldo en usage events.",
+                message=(
+                    "Er is een transactie aangemaakt voor een wedstrijdactie."
+                    " Check je saldo en usage events."
+                ),
                 level="info",
                 link_url="/credits",
                 age=timedelta(hours=18),
@@ -225,7 +239,10 @@ class Command(BaseCommand):
             SeedNotification(
                 event_type="ai_content_ready",
                 title="AI content concept klaar",
-                message="Er staat een concept klaar in AI Studio. Review en publiceer wanneer je wilt.",
+                message=(
+                    "Er staat een concept klaar in AI Studio."
+                    " Review en publiceer wanneer je wilt."
+                ),
                 level="success",
                 link_url="/studio/create",
                 age=timedelta(hours=6),
@@ -241,7 +258,10 @@ class Command(BaseCommand):
             SeedNotification(
                 event_type="match_scheduled",
                 title="Nieuwe wedstrijd ingepland",
-                message="Er is een nieuwe wedstrijd toegevoegd. Check datum, locatie en beschikbaarheid.",
+                message=(
+                    "Er is een nieuwe wedstrijd toegevoegd."
+                    " Check datum, locatie en beschikbaarheid."
+                ),
                 level="info",
                 link_url=team_url,
                 age=timedelta(days=6),
@@ -257,7 +277,10 @@ class Command(BaseCommand):
             SeedNotification(
                 event_type="txn_created",
                 title="Transactie aangemaakt",
-                message="Er is een nieuwe transactie geregistreerd voor team-usage. Bekijk details in Credits/Usage Events.",
+                message=(
+                    "Er is een nieuwe transactie geregistreerd voor team-usage."
+                    " Bekijk details in Credits/Usage Events."
+                ),
                 level="info",
                 link_url="/usage-events",
                 age=timedelta(days=4, hours=2),
@@ -265,7 +288,10 @@ class Command(BaseCommand):
             SeedNotification(
                 event_type="permission_hint",
                 title="Toegang & Rollen",
-                message="Tip: controleer rollen per club en team in Permissions. Dit bepaalt wat je kan zien/bewerken.",
+                message=(
+                    "Tip: controleer rollen per club en team in Permissions."
+                    " Dit bepaalt wat je kan zien/bewerken."
+                ),
                 level="info",
                 link_url="/permissions",
                 age=timedelta(days=7),
@@ -390,7 +416,10 @@ class Command(BaseCommand):
                 SeedNotification(
                     event_type="profile_hint",
                     title="Maak je demo-ready",
-                    message="Controleer je notificatievoorkeuren en je rolrechten (Preferences/Permissions).",
+                    message=(
+                        "Controleer je notificatievoorkeuren en je rolrechten"
+                        " (Preferences/Permissions)."
+                    ),
                     level="info",
                     link_url="/config/preferences",
                 ),
@@ -421,6 +450,10 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"Seeded notifications: ajax_team='{team.slug}' ajax_users={len(ajax_users)} others={other_users.count()} created={created} skipped={skipped} dry_run={dry_run}"
+                f"Seeded notifications: ajax_team='{team.slug}'"
+                f" ajax_users={len(ajax_users)}"
+                f" others={other_users.count()}"
+                f" created={created} skipped={skipped}"
+                f" dry_run={dry_run}"
             )
         )

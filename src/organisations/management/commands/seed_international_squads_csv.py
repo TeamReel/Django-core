@@ -15,7 +15,10 @@ from projects.models import Project, ProjectMembership
 
 
 class Command(BaseCommand):
-    help = "Seed international squads from CSV (Bundesliga, Serie A, Premier League, Jupiler Pro League)"
+    help = (
+        "Seed international squads from CSV"
+        " (Bundesliga, Serie A, Premier League, Jupiler Pro League)"
+    )
 
     def handle(self, *args, **options):
         self.stdout.write("=" * 70)
@@ -156,7 +159,11 @@ class Command(BaseCommand):
                     # Create players
                     for player in club_players:
                         # Create user (email-only authentication)
-                        email = f"{player['first_name'].lower()}.{player['last_name'].lower()}@{club.slug}.demo"
+                        email = (
+                            f"{player['first_name'].lower()}"
+                            f".{player['last_name'].lower()}"
+                            f"@{club.slug}.demo"
+                        )
 
                         user, created = User.objects.get_or_create(
                             email=email,

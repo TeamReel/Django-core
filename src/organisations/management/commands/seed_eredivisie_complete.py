@@ -64,7 +64,11 @@ class Command(BaseCommand):
         if not creator:
             creator = User.objects.first()
         if not creator:
-            self.stdout.write(self.style.ERROR("❌ No users found. Create at least one user first."))
+            self.stdout.write(
+                self.style.ERROR(
+                    "❌ No users found. Create at least one user first."
+                )
+            )
             return
 
         total_processed = 0
@@ -97,7 +101,8 @@ class Command(BaseCommand):
                         # Map team type to match existing database structure
                         team_suffix = team_type_map.get(raw_team_type, raw_team_type)
 
-                        # Build team name: use "Jong {Club}" format for Jong teams, otherwise "{Club} {suffix}"
+                        # Build team name: use "Jong {Club}" format for
+                        # Jong teams, otherwise "{Club} {suffix}"
                         if team_suffix == "Jong":
                             team_name = f"Jong {club_name}"
                         else:

@@ -152,5 +152,6 @@ class Command(BaseCommand):
                     self.stdout.write(f"  - R{ronde:02d} {date_str} {home}: {match.title}")
                     self.stdout.write(f"      └─ Location: {match.location}")
                     self.stdout.write(
-                        f"      └─ Competition: {match.period.name} ({match.period.parent_period.name})"
+                        f"      └─ Competition: {match.period.name}"
+                        f" ({match.period.parent_period.name})"
                     )

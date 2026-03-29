@@ -131,7 +131,8 @@ def collect_system_metrics(self) -> dict[str, int]:
             except (TypeError, ValueError):
                 return default
 
-        # Check if cache has a Redis client (works with both django.core.cache.backends.redis and django_redis)
+        # Check if cache has a Redis client
+        # (works with both django.core.cache.backends.redis and django_redis)
         redis_client = None
         is_redis_backend = isinstance(cache, RedisCache)
 
@@ -148,7 +149,8 @@ def collect_system_metrics(self) -> dict[str, int]:
 
         # NOTE:
         # - In prod backends, these attributes may or may not exist.
-        # - In tests, MagicMock stores children in internal structures; relying on __dict__ misses them.
+        # - In tests, MagicMock stores children in internal structures;
+        #   relying on __dict__ misses them.
         # We prefer a straightforward getattr() with exception isolation.
         cache_backend = None
         cache_client = None

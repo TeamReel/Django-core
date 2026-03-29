@@ -8,12 +8,16 @@ Key properties:
 - Ensures Participation.member is an organisations.Membership (creates it if missing)
 
 Usage:
-    python manage.py seed_match_participations --organisation knvb --season "Season 2024/2025"
-    python manage.py seed_match_participations --organisation knvb --season "Season 2024/2025" --limit-matches 50
+    python manage.py seed_match_participations
+        --organisation knvb --season "Season 2024/2025"
+    python manage.py seed_match_participations
+        --organisation knvb
+        --season "Season 2024/2025" --limit-matches 50
     python manage.py seed_match_participations --all --dry-run
 
 Notes:
-- Participation has unique constraint (member, activity), so each org member can appear once per match.
+- Participation has unique constraint (member, activity),
+  so each org member can appear once per match.
 """
 
 from __future__ import annotations
@@ -200,15 +204,18 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("[DRY-RUN] Complete"))
         self.stdout.write(
             self.style.SUCCESS(
-                f"[OK] Matches processed: {total_matches} | Participations created: {total_created} | "
-                f"Already existed: {total_skipped_existing} | Missing candidates: {total_missing_candidates}"
+                f"[OK] Matches processed: {total_matches}"
+                f" | Participations created: {total_created} | "
+                f"Already existed: {total_skipped_existing}"
+                f" | Missing candidates: {total_missing_candidates}"
             )
         )
 
         if total_missing_candidates:
             self.stdout.write(
                 self.style.WARNING(
-                    "[WARN] Some matches could not be fully populated (not enough project memberships)."
+                    "[WARN] Some matches could not be fully populated"
+                    " (not enough project memberships)."
                 )
             )
 

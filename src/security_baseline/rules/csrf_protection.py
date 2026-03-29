@@ -120,7 +120,10 @@ class CsrfMiddlewareEnabledRule(SecurityRule):
             severity="CRITICAL",
             owasp_asvs_refs=["V4.2.2"],
             description="Validates CsrfViewMiddleware is enabled in MIDDLEWARE",
-            remediation="Add 'django.middleware.csrf.CsrfViewMiddleware' to MIDDLEWARE in config/settings/base.py",
+            remediation=(
+                "Add 'django.middleware.csrf.CsrfViewMiddleware' "
+                "to MIDDLEWARE in config/settings/base.py"
+            ),
         )
 
     def validate(self, context: dict) -> SecurityRuleViolation | None:

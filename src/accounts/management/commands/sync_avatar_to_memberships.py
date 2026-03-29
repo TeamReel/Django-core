@@ -6,7 +6,10 @@ from projects.models import ProjectMembership
 
 
 class Command(BaseCommand):
-    help = "Sync avatar path from User.avatar into membership metadata.teamreel_assets.media.profile.url"
+    help = (
+        "Sync avatar path from User.avatar into"
+        " membership metadata.teamreel_assets.media.profile.url"
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(

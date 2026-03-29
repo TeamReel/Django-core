@@ -92,13 +92,15 @@ class AssetProcessingMixin:
         Request body:
         {
             "membership_id": "uuid",
-            "asset_type": "fullbody" | "closeup" | "intro" | "celebration" | "photo_composite" | "walking_composite" | "action_photo",
+            "asset_type": "fullbody" | "closeup" | "intro" | "celebration"
+                | "photo_composite" | "walking_composite" | "action_photo",
             "kit_type": "home" | "away" | "third" | "goalkeeper" | ...,
             "variant_id": "arms_crossed" | null    // for intro/celebration style
         }
 
         Triggers background removal + resize/crop to lineup-ready specs.
-        Updates membership.metadata.teamreel_assets in-place with { raw, processed, processing_state }.
+        Updates membership.metadata.teamreel_assets in-place
+        with { raw, processed, processing_state }.
         """
         membership_id = request.data.get("membership_id")
         asset_type = request.data.get("asset_type")
@@ -187,7 +189,8 @@ class AssetProcessingMixin:
             backend = "none"
 
         logger.info(
-            "process_asset_background_start membership_id=%s asset_type=%s kit_type=%s variant_id=%s backend=%s",
+            "process_asset_background_start membership_id=%s"
+            " asset_type=%s kit_type=%s variant_id=%s backend=%s",
             str(membership_id),
             asset_type,
             kit_type,
@@ -449,7 +452,8 @@ class AssetProcessingMixin:
         Body:
         {
             "membership_id": "uuid",
-            "asset_type": "fullbody" | "closeup" | "intro" | "celebration" | "photo_composite" | "walking_composite" | "action_photo",
+            "asset_type": "fullbody" | "closeup" | "intro" | "celebration"
+                | "photo_composite" | "walking_composite" | "action_photo",
             "kit_type": "home" | "away" | "third" | "goalkeeper" | ...,
             "variant_id": "arms_crossed" | null
         }
@@ -561,7 +565,8 @@ class AssetProcessingMixin:
                 },
             )
             logger.info(
-                "cancel-asset-processing: force cancelled (stale_cancel=%s, stale_processing=%s, force=%s)",
+                "cancel-asset-processing: force cancelled"
+                " (stale_cancel=%s, stale_processing=%s, force=%s)",
                 is_stale_cancel,
                 is_stale_processing,
                 force,

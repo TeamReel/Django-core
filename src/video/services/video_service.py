@@ -238,7 +238,8 @@ class VideoService:
 
                 if not activity_id:
                     raise ValueError(
-                        "Lineup job config must include segments[] or activity_id for deferred build"
+                        "Lineup job config must include segments[] "
+                        "or activity_id for deferred build"
                     )
 
                 # Mark as processing early so UI doesn't look stuck in queued.

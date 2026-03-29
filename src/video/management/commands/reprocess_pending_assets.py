@@ -167,7 +167,8 @@ class Command(BaseCommand):
                                             pass
 
                                     self.stdout.write(
-                                        f"  [{member_name}] {role_name}.images.{asset_type}.{kit_type}: "
+                                        f"  [{member_name}] "
+                                        f"{role_name}.images.{asset_type}.{kit_type}: "
                                         f"STUCK ({state})"
                                     )
 
@@ -188,7 +189,8 @@ class Command(BaseCommand):
 
                                 elif state in REPROCESS_STATES and not stuck_only:
                                     self.stdout.write(
-                                        f"  [{member_name}] {role_name}.images.{asset_type}.{kit_type}: "
+                                        f"  [{member_name}] "
+                                        f"{role_name}.images.{asset_type}.{kit_type}: "
                                         f"NEEDS REPROCESS ({state})"
                                     )
                                     if not is_dry_run and requeue and raw_url:
@@ -232,7 +234,8 @@ class Command(BaseCommand):
                                             pass
 
                                     self.stdout.write(
-                                        f"  [{member_name}] {role_name}.videos.{asset_type}.{kit_type}: "
+                                        f"  [{member_name}] "
+                                        f"{role_name}.videos.{asset_type}.{kit_type}: "
                                         f"STUCK ({state})"
                                     )
 

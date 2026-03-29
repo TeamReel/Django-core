@@ -155,7 +155,10 @@ def save_asset_view(request: Request) -> Response:
     else:
         return Response(
             {
-                "error": "Provide image_base64, video_base64, presigned_url, video_url, or storage_path"
+                "error": (
+                    "Provide image_base64, video_base64,"
+                    " presigned_url, video_url, or storage_path"
+                )
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
@@ -354,7 +357,8 @@ def save_asset_view(request: Request) -> Response:
             )
     else:
         # ── BrandAsset path: organisation-level branding (logos, kits, sponsors) ──
-        # Skip BrandAsset for member-scoped assets — they live in membership metadata, not brand profile.
+        # Skip BrandAsset for member-scoped assets —
+        # they live in membership metadata, not brand profile.
         if is_member_asset:
             logger.info(
                 f"👤 Member-scoped asset (membership={membership_id}), "

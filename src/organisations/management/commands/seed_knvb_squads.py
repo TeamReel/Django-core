@@ -6,7 +6,8 @@ This is designed to populate the demo UI (Users tab, and as a prerequisite for m
 
 Prerequisites:
 - A KNVB Organisation exists (slug: knvb)
-- An org-wide Season Period exists for KNVB (Period.organisation=KNVB, parent_period=NULL, project=NULL)
+- An org-wide Season Period exists for KNVB
+  (Period.organisation=KNVB, parent_period=NULL, project=NULL)
   (Typically created via: python manage.py seed_level_5_seasons)
 
 Usage:
@@ -127,7 +128,9 @@ class Command(BaseCommand):
         if not teams:
             self.stdout.write(
                 self.style.WARNING(
-                    "[!] No teams matched. If your dataset doesn't use ' 1' suffix, rerun with --include-youth or adjust naming."
+                    "[!] No teams matched. If your dataset doesn't"
+                    " use ' 1' suffix, rerun with"
+                    " --include-youth or adjust naming."
                 )
             )
             return
@@ -151,8 +154,10 @@ class Command(BaseCommand):
                     project=team, period=season
                 ).count()
                 if existing_memberships > 0:
-                    # Team already seeded for this season. Still ensure Organisation Memberships exist
-                    # for all existing squad users so they can be used in match participations.
+                    # Team already seeded for this season. Still ensure
+                    # Organisation Memberships exist
+                    # for all existing squad users so they can be
+                    # used in match participations.
                     if not dry_run:
                         existing_users = User.objects.filter(
                             project_memberships__project=team,
@@ -204,7 +209,8 @@ class Command(BaseCommand):
                         total_users_created += 1
 
                     if not dry_run:
-                        # Ensure organisation-level membership exists (required for lineups/participations)
+                        # Ensure organisation-level membership exists
+                        # (required for lineups/participations)
                         m, _ = Membership.objects.get_or_create(
                             organisation=team.organisation,
                             user=user,
@@ -258,7 +264,8 @@ class Command(BaseCommand):
                     shirt_number = shirt_numbers[i] if i < len(shirt_numbers) else None
 
                     if not dry_run:
-                        # Ensure organisation-level membership exists (required for lineups/participations)
+                        # Ensure organisation-level membership exists
+                        # (required for lineups/participations)
                         m, _ = Membership.objects.get_or_create(
                             organisation=team.organisation,
                             user=user,
@@ -295,7 +302,9 @@ class Command(BaseCommand):
 
                 self.stdout.write(
                     self.style.SUCCESS(
-                        f"[+] {team.name}: created {created_this_team} memberships (season: {season.name})"
+                        f"[+] {team.name}: created"
+                        f" {created_this_team} memberships"
+                        f" (season: {season.name})"
                     )
                 )
 
@@ -323,8 +332,10 @@ class Command(BaseCommand):
             return existing, False
 
         if dry_run:
-            # Return a dummy existing user-like object? We still need a real object reference for membership.
-            # For dry run, we avoid creating memberships via ORM, so we can safely return None.
+            # Return a dummy existing user-like object?
+            # We still need a real object reference for membership.
+            # For dry run, we avoid creating memberships via ORM,
+            # so we can safely return None.
             return (
                 User(email=email, username=username, first_name=first_name, last_name=last_name),
                 True,

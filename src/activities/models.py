@@ -83,7 +83,10 @@ class Period(SoftDeleteMixin, models.Model):
         max_length=20,
         choices=PeriodType.choices,
         default=PeriodType.REGULAR,
-        help_text="Period type (regular, legends). Enables legend-specific features like lineup videos.",
+        help_text=(
+            "Period type (regular, legends). Enables"
+            " legend-specific features like lineup videos."
+        ),
     )
     name = models.CharField(max_length=200, help_text='Display name (e.g., "Seizoen 2023/2024")')
     description = models.TextField(blank=True, default="")
@@ -340,7 +343,10 @@ class Participation(SoftDeleteMixin, models.Model):
     )
     role = models.CharField(
         max_length=50,
-        help_text="Flexible role field (squad_member, captain, starter, substitute, attendee, etc.)",
+        help_text=(
+            "Flexible role field (squad_member, captain,"
+            " starter, substitute, attendee, etc.)"
+        ),
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="confirmed")
     notes = models.TextField(blank=True, default="")

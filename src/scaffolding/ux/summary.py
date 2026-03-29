@@ -98,7 +98,8 @@ def print_generation_summary(
     steps = [
         f"Review generated files: src/{app_name}/",
         f"Run tests: pytest src/{app_name}/tests/",
-        f"Add app to INSTALLED_APPS in settings.py: '{app_name}.apps.{_to_pascal_case(app_name)}Config'",
+        f"Add app to INSTALLED_APPS in settings.py:"
+        f" '{app_name}.apps.{_to_pascal_case(app_name)}Config'",
         f"Run migrations: python manage.py makemigrations {app_name}",
         "Start development server: python manage.py runserver",
     ]
@@ -112,7 +113,9 @@ def print_generation_summary(
     if template_name == "api-first":
         click.secho("API-specific tips:", fg="yellow")
         click.echo(
-            f"  • Add app URLs to project urls.py: path('api/{app_name}/', include('{app_name}.urls'))"
+            f"  • Add app URLs to project urls.py:"
+            f" path('api/{app_name}/',"
+            f" include('{app_name}.urls'))"
         )
         click.echo("  • Test API endpoints: python manage.py test")
         click.echo()

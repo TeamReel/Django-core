@@ -300,9 +300,11 @@ class Command(BaseCommand):
 
                 new_prefs = []
                 for user in target_users:
-                    # Voor elke user, maak willekeurig wat aanpassingen (niet alles, want dan is alles 'custom')
+                    # Voor elke user, maak willekeurig wat aanpassingen
+                    # (niet alles, want dan is alles 'custom')
                     # We simuleren dat sommige users specifieke dingen UIT zetten.
-                    # Default is alles AAN (True). We slaan alleen afwijkingen op, of expliciete voorkeuren.
+                    # Default is alles AAN (True). We slaan alleen
+                    # afwijkingen op, of expliciete voorkeuren.
 
                     for event in event_types:
                         for channel in channels:
@@ -323,7 +325,8 @@ class Command(BaseCommand):
                 if new_prefs:
                     NotificationPreference.objects.bulk_create(new_prefs)
                     self.stdout.write(
-                        f"   [OK] Created {len(new_prefs)} preferences for {len(target_users)} users."
+                        f"   [OK] Created {len(new_prefs)} preferences"
+                        f" for {len(target_users)} users."
                     )
                 else:
                     self.stdout.write("   [INFO] No new preferences generated (random chance).")

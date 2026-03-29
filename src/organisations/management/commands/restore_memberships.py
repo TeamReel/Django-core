@@ -586,7 +586,8 @@ class Command(BaseCommand):
                                     user=user, organisation=org
                                 ).exists():
                                     self.stdout.write(
-                                        f"  [DRY-RUN] Would create Member Membership (Coach): {email}"
+                                        f"  [DRY-RUN] Would create Member"
+                                        f" Membership (Coach): {email}"
                                     )
 
                         except User.DoesNotExist:
@@ -607,7 +608,11 @@ class Command(BaseCommand):
                                     if created:
                                         m.role = "member"
                                         m.save()
-                                        # self.stdout.write(self.style.SUCCESS(f"  + Created Member Membership (Player): {email}"))
+                                        # self.stdout.write(
+                                        #     self.style.SUCCESS(
+                                        #         f"  + Created Member Membership (Player): {email}"
+                                        #     )
+                                        # )
                                         stats["created"] += 1
                                     else:
                                         stats["skipped"] += 1
@@ -615,7 +620,10 @@ class Command(BaseCommand):
                                     if not Membership.objects.filter(
                                         user=user, organisation=org
                                     ).exists():
-                                        # self.stdout.write(f"  [DRY-RUN] Would create Member Membership (Player): {email}")
+                                        # self.stdout.write(
+                                        #     f"  [DRY-RUN] Would create Member"
+                                        #     f" Membership (Player): {email}"
+                                        # )
                                         pass  # Too noisy for dry run to print every player
 
                             except User.DoesNotExist:

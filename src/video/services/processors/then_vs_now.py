@@ -22,8 +22,13 @@ class ThenVsNowProcessor(BaseVideoProcessor):
     Config schema:
     {
         "project_id": "uuid",          # Team project ID
-        "video_type": "sidebyside" | "transformation" | "photo_composite" | "duo_portret" | "walking_composite",
-        "composition_style": "cover" | "overlay" | null,  # Optional — cover (fullscreen, no bg) or overlay (RVM on bg)
+        "video_type": (
+            "sidebyside" | "transformation" | "photo_composite"
+            | "duo_portret" | "walking_composite"
+        ),
+        "composition_style": (
+            "cover" | "overlay" | null
+        ),  # Optional — cover (fullscreen, no bg) or overlay (RVM on bg)
         "period_id": "uuid",           # Optional — season/period ID
         "selected_member_ids": [...],  # Optional — filter to specific members
         "background_url": "https://...",  # Optional — override location background

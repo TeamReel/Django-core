@@ -288,7 +288,10 @@ class PeriodViewSet(viewsets.ModelViewSet):
         return queryset
 
     def destroy(self, request, *args, **kwargs):
-        """Override destroy to prevent deletion if children or activities exist, and use soft-delete."""
+        """Override destroy to prevent deletion if children or activities exist.
+
+        Uses soft-delete.
+        """
         instance = self.get_object()
 
         # Check if period has children
@@ -793,8 +796,10 @@ class ParticipationViewSet(viewsets.ModelViewSet):
         """Bulk create participations (primarily for match lineups).
 
         Payload options:
-        - {"activity_id": "...", "member_ids": ["..."], "role": "starter", "status": "confirmed", "data": {...}}
-        - {"participations": [{"member_id": "...", "activity_id": "...", ...}, ...]}
+        - {"activity_id": "...", "member_ids": ["..."],
+          "role": "starter", "status": "confirmed", "data": {...}}
+        - {"participations": [{"member_id": "...",
+          "activity_id": "...", ...}, ...]}
 
         Returns:
         - {"created": N, "skipped": N, "errors": [...]}

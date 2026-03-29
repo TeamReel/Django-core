@@ -91,7 +91,10 @@ class ProjectPermissionOverrideViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="List permission overrides",
-        description="Returns list of permission overrides filtered by accessible projects. Only project admins can view overrides.",
+        description=(
+            "Returns list of permission overrides filtered by "
+            "accessible projects. Only project admins can view overrides."
+        ),
         parameters=[
             OpenApiParameter(
                 name="project",

@@ -1,7 +1,8 @@
 """
 Management command to remove duplicate foreign clubs from KNVB.
 
-These are duplicates - the correct versions already exist in the proper organisations (The FA, FIGC, DFB).
+These are duplicates - the correct versions already exist
+in the proper organisations (The FA, FIGC, DFB).
 """
 
 from django.core.management.base import BaseCommand
@@ -34,7 +35,15 @@ class Command(BaseCommand):
             return
 
         # Define foreign club patterns (clubs that should NOT be in KNVB)
-        foreign_club_pattern = r"(Tottenham|Chelsea|Manchester|Liverpool|Arsenal|Southampton|Ipswich|Wolverhampton|Crystal Palace|Brentford|Leicester|Everton|West Ham|Bournemouth|Aston Villa|Fulham|Brighton|Nottingham|Newcastle|Milan|Inter|Juventus|Roma|Lazio|Napoli|Atalanta|Bayern|Dortmund|Leipzig|Leverkusen|Frankfurt|Stuttgart)"
+        foreign_club_pattern = (
+            r"(Tottenham|Chelsea|Manchester|Liverpool|Arsenal"
+            r"|Southampton|Ipswich|Wolverhampton|Crystal Palace"
+            r"|Brentford|Leicester|Everton|West Ham|Bournemouth"
+            r"|Aston Villa|Fulham|Brighton|Nottingham|Newcastle"
+            r"|Milan|Inter|Juventus|Roma|Lazio|Napoli|Atalanta"
+            r"|Bayern|Dortmund|Leipzig|Leverkusen|Frankfurt"
+            r"|Stuttgart)"
+        )
 
         total_deleted = 0
         total_teams_deleted = 0
@@ -93,7 +102,8 @@ class Command(BaseCommand):
 
                             # Delete in correct order (child to parent)
                             if period_ids:
-                                # 1. Delete activities in these periods (may reference periods from these teams)
+                                # 1. Delete activities in these periods
+                                # (may reference periods from these teams)
                                 cursor.execute(
                                     "DELETE FROM activities_activity WHERE period_id = ANY(%s)",
                                     [period_ids],

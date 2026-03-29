@@ -155,7 +155,10 @@ class SecurityBaselineConfig(AppConfig):
 
             security_logger.log_enforcement_action(
                 action="BLOCK",
-                reason=f"Strict mode blocks startup on {len(critical_high)} CRITICAL/HIGH violations",
+                reason=(
+                    f"Strict mode blocks startup on "
+                    f"{len(critical_high)} CRITICAL/HIGH violations"
+                ),
                 violation_count=len(violations),
                 critical_high_count=len(critical_high),
             )

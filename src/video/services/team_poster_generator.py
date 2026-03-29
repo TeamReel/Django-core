@@ -72,7 +72,8 @@ def _generate_team_photo(
     front_row = names[6:]  # crouching
 
     prompt = (
-        "Generate a professional football team photo (elftalfoto) in PORTRAIT orientation (9:16 aspect ratio). "
+        "Generate a professional football team photo (elftalfoto) "
+        "in PORTRAIT orientation (9:16 aspect ratio). "
         "This is a classic pre-match team photo on a football pitch.\n\n"
         "COMPOSITION:\n"
         f"- Back row (standing, left to right): {', '.join(back_row)}\n"
@@ -83,10 +84,12 @@ def _generate_team_photo(
         "- The back row of 6 players stands upright, shoulder to shoulder\n"
         "- The front row of 5 players crouches or kneels in front\n"
         "- Green football pitch visible, stadium atmosphere in background\n"
-        f"- Overall colour mood should lean towards the team colours (primary: {brand_primary})\n"
+        "- Overall colour mood should lean towards "
+        f"the team colours (primary: {brand_primary})\n"
         "- Photorealistic, cinematic lighting, high quality\n"
         "- Each player should wear the EXACT kit/outfit shown in their reference image\n"
-        "- Preserve each player's appearance, skin tone, and body type from their reference image\n\n"
+        "- Preserve each player's appearance, skin tone, "
+        "and body type from their reference image\n\n"
         "IMPORTANT:\n"
         "- Use the attached reference images as the appearances for each player\n"
         "- The first 6 images are the standing back row (left to right)\n"
@@ -222,7 +225,8 @@ def build_team_poster(
 
     if len(player_images) < 5:
         raise ValueError(
-            f"Not enough player images for team poster ({len(player_images)} downloaded, minimum 5)."
+            f"Not enough player images for team poster "
+            f"({len(player_images)} downloaded, minimum 5)."
         )
 
     logger.info(

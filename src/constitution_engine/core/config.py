@@ -240,7 +240,8 @@ class ConfigSchema:
 
         if disabled_constitutional_rules:
             raise ConfigurationError(
-                f"Constitutional rules cannot be disabled: {', '.join(disabled_constitutional_rules)}. "
+                "Constitutional rules cannot be disabled: "
+                f"{', '.join(disabled_constitutional_rules)}. "
                 f"These rules are required for constitutional compliance."
             )
 

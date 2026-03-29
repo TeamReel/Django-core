@@ -55,7 +55,8 @@ def process_media_item(self, media_item_id: str):
         try:
             # Get file content
             backend = get_storage_backend()
-            # If backend supports direct path access (local), we might optimize extract_video_metadata
+            # If backend supports direct path access (local),
+            # we might optimize extract_video_metadata
             # to use path instead of bytes, but for abstraction consistency we use backend.open().
             # Note: For S3, backend.open() typically downloads to a temp spoofed file or memory.
 
@@ -194,10 +195,12 @@ def generate_media_thumbnails(self, media_item_id: str):
                     # or better: inspect the generated buffer.
                     # Since we don't want to reopen PIL image, we rely on standard sizes.
                     # Ideally generate_X returns (bytes, mime, width, height).
-                    # I'll update generate_image_thumbnail briefly? No, let's just stick to spec or infer.
+                    # I'll update generate_image_thumbnail briefly?
+                    # No, let's just stick to spec or infer.
                     # Checking spec: T028 implementation detail didn't ask for width/height return.
                     # But MediaThumbnail model needs it.
-                    # I'll just hardcode from config because `thumbnail` preserves aspect ratio within box?
+                    # I'll just hardcode from config because
+                    # `thumbnail` preserves aspect ratio within box?
                     # No, that's inaccurate.
                     # I should update services to return dimensions.
 

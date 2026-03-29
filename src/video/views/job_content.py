@@ -83,11 +83,14 @@ class ContentCreationMixin:
         sync_mode = request.data.get("sync", False) or request.query_params.get("sync") == "true"
 
         # Fast path (default): create a job immediately and do heavy work in background.
-        # This avoids the UI hanging on "Aanvraag verstuurd" while we generate scenes / download assets.
+        # This avoids the UI hanging on "Aanvraag verstuurd" while
+        # we generate scenes / download assets.
         if not sync_mode:
             if frontend_segments and not allow_frontend_segments:
                 logger.warning(
-                    "Frontend segments were provided but are ignored (allow_frontend_segments=false): job will use backend lineup builder"
+                    "Frontend segments were provided but are ignored"
+                    " (allow_frontend_segments=false):"
+                    " job will use backend lineup builder"
                 )
 
             try:
@@ -145,7 +148,9 @@ class ContentCreationMixin:
             )
             if frontend_segments and not allow_frontend_segments:
                 logger.warning(
-                    "Frontend segments were provided but are ignored (allow_frontend_segments=false): job will use backend lineup builder"
+                    "Frontend segments were provided but are ignored"
+                    " (allow_frontend_segments=false):"
+                    " job will use backend lineup builder"
                 )
 
         except Exception as e:  # noqa: BLE001
@@ -157,7 +162,11 @@ class ContentCreationMixin:
                 {
                     "error": "Failed to build lineup config",
                     "detail": str(e),
-                    "hint": "No fallback to frontend segments is enabled. Fix Participation lineup + member kit assets + stadium_background brand asset.",
+                    "hint": (
+                        "No fallback to frontend segments is enabled."
+                        " Fix Participation lineup + member kit assets"
+                        " + stadium_background brand asset."
+                    ),
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -268,7 +277,11 @@ class ContentCreationMixin:
         ):
             return Response(
                 {
-                    "error": "video_type must be 'sidebyside', 'transformation', 'photo_composite', 'duo_portret', or 'walking_composite'"
+                    "error": (
+                        "video_type must be 'sidebyside', 'transformation',"
+                        " 'photo_composite', 'duo_portret',"
+                        " or 'walking_composite'"
+                    )
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )

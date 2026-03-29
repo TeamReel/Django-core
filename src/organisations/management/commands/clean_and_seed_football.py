@@ -271,12 +271,14 @@ class Command(BaseCommand):
                 if created:
                     created_users += 1
                     self.stdout.write(
-                        f"  ✅ Created: {player_data['name']} ({player_data['role']}) - {player_data['club']}"
+                        f"  ✅ Created: {player_data['name']}"
+                        f" ({player_data['role']}) - {player_data['club']}"
                     )
                 else:
                     existing_users += 1
                     self.stdout.write(
-                        f"  ➡️ Exists: {player_data['name']} ({player_data['role']}) - {player_data['club']}"
+                        f"  ➡️ Exists: {player_data['name']}"
+                        f" ({player_data['role']}) - {player_data['club']}"
                     )
 
                 # Assign role to project
@@ -296,18 +298,21 @@ class Command(BaseCommand):
                         self.stdout.write(f"    🏆 Assigned {role.name} role to {project.name}")
                     else:
                         self.stdout.write(
-                            f"    ♻️ Role assignment already exists for {user.first_name} {user.last_name}"
+                            f"    ♻️ Role assignment already exists for "
+                            f"{user.first_name} {user.last_name}"
                         )
 
                 except Project.DoesNotExist:
                     self.stdout.write(
-                        f"    ❌ Project '{player_data['club']}' not found for {player_data['name']}"
+                        f"    ❌ Project '{player_data['club']}'"
+                        f" not found for {player_data['name']}"
                     )
                 except Exception as e:
                     self.stdout.write(f"    ❌ Error assigning role: {e}")
             else:
                 self.stdout.write(
-                    f"  Would create: {player_data['name']} ({player_data['role']}) - {player_data['club']}"
+                    f"  Would create: {player_data['name']}"
+                    f" ({player_data['role']}) - {player_data['club']}"
                 )
 
         # Summary

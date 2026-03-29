@@ -251,7 +251,9 @@ class RoutingService:
             # Extract user IDs and pair with channel
             for assignment in role_assignments:
                 logger.info(
-                    f"DEBUG: Processing assignment for user {assignment.user_id}. Active: {assignment.user.is_active}"
+                    f"DEBUG: Processing assignment for"
+                    f" user {assignment.user_id}."
+                    f" Active: {assignment.user.is_active}"
                 )
                 if assignment.user and assignment.user.is_active:
                     targets.add((assignment.user.id, rule.channel))

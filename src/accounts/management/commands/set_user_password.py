@@ -4,7 +4,9 @@ Intended for demo/ops flows where you run commands locally against Railway by
 providing DATABASE_URL.
 
 Examples:
-  $env:DATABASE_URL="postgresql://..."; $env:DJANGO_SETTINGS_MODULE="config.settings.production"; python manage.py set_user_password land-admin@knvb.demo --password "Basis123."
+  $env:DATABASE_URL="postgresql://..."
+  $env:DJANGO_SETTINGS_MODULE="config.settings.production"
+  python manage.py set_user_password land-admin@knvb.demo --password "Basis123."
 
 This command also ensures the account is active and email verified by default.
 """

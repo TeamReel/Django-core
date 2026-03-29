@@ -156,7 +156,10 @@ class Command(BaseCommand):
             "--asset-types",
             required=False,
             default="fullbody,closeup,intro,celebration",
-            help="Comma-separated subset of asset types to reset: fullbody,closeup,intro,celebration",
+            help=(
+                "Comma-separated subset of asset types to reset:"
+                " fullbody,closeup,intro,celebration"
+            ),
         )
         parser.add_argument(
             "--apply",
@@ -237,7 +240,8 @@ class Command(BaseCommand):
                 )
                 has_tr = bool((m.metadata or {}).get("teamreel_assets"))
                 self.stdout.write(
-                    f"- {m.id} | {name or '(no name)'} | {email or '(no email)'} | teamreel_assets={has_tr}"
+                    f"- {m.id} | {name or '(no name)'}"
+                    f" | {email or '(no email)'} | teamreel_assets={has_tr}"
                 )
                 shown += 1
                 if shown >= 200:
@@ -249,12 +253,14 @@ class Command(BaseCommand):
             qs = qs.filter(id=membership_id)
             if not qs.exists():
                 raise CommandError(
-                    f"No active membership found for id={membership_id} in project '{project.slug}'."
+                    f"No active membership found for id={membership_id}"
+                    f" in project '{project.slug}'."
                 )
 
         if user_email and not qs.exists():
             raise CommandError(
-                f"No active membership found for user_email={user_email} in project '{project.slug}'."
+                f"No active membership found for user_email={user_email}"
+                f" in project '{project.slug}'."
             )
 
         total = qs.count()
@@ -458,7 +464,8 @@ class Command(BaseCommand):
 
             if not do_apply:
                 self.stdout.write(
-                    f"Dry-run: would enqueue {len(to_reprocess)} processing tasks. Re-run with --apply."
+                    f"Dry-run: would enqueue {len(to_reprocess)}"
+                    " processing tasks. Re-run with --apply."
                 )
                 return
 

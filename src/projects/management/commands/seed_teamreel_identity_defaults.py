@@ -204,7 +204,9 @@ class Command(BaseCommand):
         if not apply:
             self.stdout.write(
                 self.style.NOTICE(
-                    "Dry-run only. Re-run with --apply to persist changes (optionally --force to overwrite)."
+                    "Dry-run only. Re-run with --apply to"
+                    " persist changes (optionally --force"
+                    " to overwrite)."
                 )
             )
 

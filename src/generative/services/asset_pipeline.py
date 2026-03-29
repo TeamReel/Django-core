@@ -103,7 +103,8 @@ def generate_asset(
     Args:
         template_id: Template key from teamreel_prompts.TEMPLATES
         params: Parameter values (e.g. {"sleeves": "short", "neck": "round"})
-        input_images: Dict of input images as bytes (keys: logo, sponsor, reference_photo, person_photo)
+        input_images: Dict of input images as bytes
+            (keys: logo, sponsor, reference_photo, person_photo)
         variant_count: Number of variants to generate (1-4)
 
     Returns:
@@ -233,7 +234,8 @@ def generate_asset(
                     )
 
             # Check for generation config in template
-            # Note: nano-banana-pro-preview does not support aspect_ratio in GenerateContentConfig yet.
+            # Note: nano-banana-pro-preview does not support
+            # aspect_ratio in GenerateContentConfig yet.
             # We rely on the prompt instructions for image aspect ratio.
 
             response = client.models.generate_content(
@@ -283,7 +285,10 @@ def generate_asset(
                         "mime_type": None,
                         "filename": None,
                         "variant_index": i,
-                        "error": f"Gemini returned empty response (possibly content-blocked): {block_reason}",
+                        "error": (
+                            "Gemini returned empty response"
+                            f" (possibly content-blocked): {block_reason}"
+                        ),
                     }
                 )
                 continue
@@ -312,7 +317,8 @@ def generate_asset(
                 safe_params = {k: v for k, v in params.items() if k != "user_instruction"}
                 param_str = "_".join(f"{k}-{v}" for k, v in sorted(safe_params.items()))
 
-                # Truncate param string to ~100 chars to satisfy DB limits (FileAsset.original_name is 255)
+                # Truncate param string to ~100 chars to satisfy
+                # DB limits (FileAsset.original_name is 255)
                 # and filesystem limits.
                 if len(param_str) > 100:
                     param_str = param_str[:97] + "..."
@@ -420,7 +426,8 @@ def generate_video(
                   If None, auto-selects based on available API keys.
 
     Returns:
-        Dict with keys: {video_bytes, video_url, mime_type, filename, file_asset_id, metadata, variants} or {error}
+        Dict with keys: {video_bytes, video_url, mime_type, filename,
+            file_asset_id, metadata, variants} or {error}
     """
     prompts_module = _load_prompts_module()
     TEMPLATES = prompts_module.TEMPLATES
@@ -461,8 +468,10 @@ def generate_video(
                 bool(reference_img),
             )
     elif composite_mode == "first_last_frame":
-        # For transformation: person_photo is the first frame (legacy), reference_photo is the last frame (current)
-        # MiniMax uses person_photo as first_frame_image and reference_photo as last_frame_image
+        # For transformation: person_photo is the first frame (legacy),
+        # reference_photo is the last frame (current).
+        # MiniMax uses person_photo as first_frame_image and
+        # reference_photo as last_frame_image
         reference_img = input_images.get("reference_photo")
         if reference_img:
             input_images = {**input_images, "_last_frame": reference_img}
@@ -600,7 +609,8 @@ def generate_video(
         )
     elif google_key:
         logger.warning(
-            "MiniMax/Runway/Pika not configured. Falling back to Google Veo (may be content-blocked)."
+            "MiniMax/Runway/Pika not configured. "
+            "Falling back to Google Veo (may be content-blocked)."
         )
         return _generate_video_veo(
             template_id=template_id,

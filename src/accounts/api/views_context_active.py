@@ -273,7 +273,8 @@ def auth_active_context(request):
         season = getattr(ctx, "season", None)
         if season or team:
             # For active seasons, enforce the invariant by ensuring a membership exists.
-            # (This is a small, intentional side-effect on GET to keep frontend navigation deterministic.)
+            # (This is a small, intentional side-effect on GET to keep
+            # frontend navigation deterministic.)
             if team and season:
                 ensured = ensure_current_user_membership(team, season)
                 if ensured and user_has_project(getattr(ensured, "project", None)):
@@ -367,7 +368,8 @@ def auth_active_context(request):
                     "message": "Invalid kind",
                     "details": {
                         "kind": [
-                            "Must be one of organisation, club, team, season, competition, match, membership, clear"
+                            "Must be one of organisation, club, team,"
+                            " season, competition, match, membership, clear"
                         ]
                     },
                 },

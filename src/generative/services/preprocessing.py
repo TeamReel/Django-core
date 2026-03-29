@@ -290,7 +290,8 @@ def _strip_checkerboard(img, logo_type: str = "logo"):  # noqa: ANN001, ANN201
             stripped = int(bg_mask.sum())
             data[bg_mask, 3] = 0
             logger.info(
-                "checkerboard_cleanup stripped %d/%d pixels (block=%d, %.0f%% alt, shade_diff=%.0f)",
+                "checkerboard_cleanup stripped %d/%d pixels"
+                " (block=%d, %.0f%% alt, shade_diff=%.0f)",
                 stripped,
                 total_candidates,
                 block_size,
@@ -556,7 +557,8 @@ def _crop_gemini_output_upper_body(image_bytes: bytes) -> bytes:
     result_bytes = output.getvalue()
 
     logger.info(
-        "Post-Gemini strip: %dx%d -> stripped %.0f%% black -> %dx%d -> cover-crop 1080x1920 (%d bytes)",
+        "Post-Gemini strip: %dx%d -> stripped %.0f%% black"
+        " -> %dx%d -> cover-crop 1080x1920 (%d bytes)",
         img.width,
         img.height,
         stripped_pct,

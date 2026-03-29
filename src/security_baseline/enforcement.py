@@ -38,7 +38,9 @@ def enforce_security(results, mode):
         critical_or_high = critical + high + medium
         if critical_or_high:
             logger.error(
-                f"Security Baseline enforcement failed: {len(critical_or_high)} CRITICAL/HIGH/MEDIUM violations."
+                "Security Baseline enforcement failed:"
+                " %d CRITICAL/HIGH/MEDIUM violations.",
+                len(critical_or_high),
             )
             for v in critical_or_high:
                 logger.error(f"- [{v.severity}] {v.rule_identifier}: {v.message}")
@@ -58,7 +60,10 @@ def enforce_security(results, mode):
         # Log HIGH/MEDIUM but don't block
         if high or medium:
             logger.warning(
-                f"Security Baseline advisory violations: {len(high)} HIGH, {len(medium)} MEDIUM found."
+                "Security Baseline advisory violations:"
+                " %d HIGH, %d MEDIUM found.",
+                len(high),
+                len(medium),
             )
             for v in high + medium:
                 logger.warning(f"- [{v.severity}] {v.rule_identifier}: {v.message}")

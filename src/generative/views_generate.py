@@ -53,8 +53,10 @@ def generate_asset_view(request: Request) -> Response:
             "template_id": "tenue_generate",
             "variant_count": 2,
             "variants": [
-                {"variant_index": 0, "image_base64": "...", "mime_type": "image/png", "filename": "..."},
-                {"variant_index": 1, "image_base64": "...", "mime_type": "image/png", "filename": "..."}
+                {"variant_index": 0, "image_base64": "...",
+                 "mime_type": "image/png", "filename": "..."},
+                {"variant_index": 1, "image_base64": "...",
+                 "mime_type": "image/png", "filename": "..."},
             ]
         }
     """
@@ -650,7 +652,8 @@ def generate_asset_view(request: Request) -> Response:
                             is_public=False,
                             metadata={
                                 "source": "ai_generation",
-                                "asset_type": asset_type,  # Tag with intended asset type (e.g. kit_home)
+                                # Tag with intended asset type (e.g. kit_home)
+                                "asset_type": asset_type,
                                 "template_id": template_id,
                                 "template_type": context_type,
                                 "template_subtype": context_subtype,
@@ -695,7 +698,9 @@ def generate_asset_view(request: Request) -> Response:
                             )
                         else:
                             logger.warning(
-                                f"No BrandProfile found for org={organisation_id} project={project_id}"
+                                "No BrandProfile found for"
+                                f" org={organisation_id}"
+                                f" project={project_id}"
                             )
                     except Exception as ba_error:  # noqa: BLE001
                         logger.warning(f"Failed to create BrandAsset: {ba_error}")

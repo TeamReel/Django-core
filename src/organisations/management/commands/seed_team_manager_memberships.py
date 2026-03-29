@@ -32,7 +32,10 @@ class ManagerSeedUser:
 
 
 class Command(BaseCommand):
-    help = "Seed project admin memberships so users can manage multiple teams (and teams multiple admins)."
+    help = (
+        "Seed project admin memberships so users can manage"
+        " multiple teams (and teams multiple admins)."
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -96,7 +99,12 @@ class Command(BaseCommand):
             candidate_users = [(u, "manager") for u in fallback_users]
 
         if not candidate_users:
-            self.stdout.write(self.style.ERROR("❌ No active users available to assign as managers"))
+            self.stdout.write(
+                self.style.ERROR(
+                    "❌ No active users available"
+                    " to assign as managers"
+                )
+            )
             return
 
         primary_user, primary_role = candidate_users[0]

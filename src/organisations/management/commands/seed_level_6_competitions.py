@@ -160,7 +160,13 @@ class Command(BaseCommand):
                                 f" {season.metadata['year_start']}/{season.metadata['year_end']}"
                             )
                         else:
-                            year_suffix = f" {season.metadata['year_start']}/{str(season.metadata['year_end'])[-2:]}"
+                            year_start = season.metadata['year_start']
+                            year_end_short = str(
+                                season.metadata['year_end']
+                            )[-2:]
+                            year_suffix = (
+                                f" {year_start}/{year_end_short}"
+                            )
 
                         comp_name = f"{comp_def['name']}{year_suffix}"
 
@@ -194,7 +200,9 @@ class Command(BaseCommand):
                 # Show summary per federation
                 fed_total = len(seasons) * len(competitions)
                 self.stdout.write(
-                    f"  ✓ {fed_total} competitions ({len(seasons)} seasons × {len(competitions)} types)"
+                    f"  ✓ {fed_total} competitions"
+                    f" ({len(seasons)} seasons"
+                    f" × {len(competitions)} types)"
                 )
 
         self.stdout.write("\n" + "=" * 70)
