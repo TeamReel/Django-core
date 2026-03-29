@@ -98,7 +98,11 @@ class RecentViewSet(viewsets.ModelViewSet, PerformBatchPermissionCheck):
 
     def get_queryset(self) -> Any:
         """Get recents for the authenticated user, ordered by most recent."""
-        return UserRecent.objects.filter(user=self.request.user).order_by("-last_seen_at")
+        return (
+            UserRecent.objects.select_related("content_type")
+            .filter(user=self.request.user)
+            .order_by("-last_seen_at")
+        )
 
     def get_serializer_class(self) -> type:
         """Use different serializer for create operations."""
@@ -137,7 +141,11 @@ class FavoriteViewSet(viewsets.ModelViewSet, PerformBatchPermissionCheck):
 
     def get_queryset(self) -> Any:
         """Get favorites for the authenticated user, ordered by creation date."""
-        return UserFavorite.objects.filter(user=self.request.user).order_by("-created_at")
+        return (
+            UserFavorite.objects.select_related("content_type")
+            .filter(user=self.request.user)
+            .order_by("-created_at")
+        )
 
     def get_serializer_class(self) -> type:
         """Use different serializer for create operations."""

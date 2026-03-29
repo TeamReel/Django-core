@@ -42,7 +42,7 @@ class FileViewSet(viewsets.ModelViewSet):
         try:
             # Validate user is member of this org
             # We can filter by organization__memberships__user=user
-            return FileAsset.objects.filter(
+            return FileAsset.objects.select_related("uploaded_by").filter(
                 organization__id=org_id,
                 organization__memberships__user=user,
                 organization__memberships__is_active=True,

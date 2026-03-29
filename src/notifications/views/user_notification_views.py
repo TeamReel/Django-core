@@ -36,9 +36,11 @@ class UserNotificationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Return only current user's in-app notifications."""
-        return Notification.objects.filter(
-            recipient_user=self.request.user, channel="in_app"
-        ).order_by("-created_at")
+        return (
+            Notification.objects.select_related("recipient_user")
+            .filter(recipient_user=self.request.user, channel="in_app")
+            .order_by("-created_at")
+        )
 
     def get_serializer_class(self):
         """Use different serializers for read vs update."""
