@@ -2,6 +2,8 @@
 DRF viewsets for permissions API.
 """
 
+import logging
+
 from django.core.cache import cache
 from django_filters.rest_framework import DjangoFilterBackend
 from permissions.api.permissions import HasPermission
@@ -12,6 +14,8 @@ from rest_framework import filters, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+logger = logging.getLogger(__name__)
 
 
 class RoleViewSet(viewsets.ModelViewSet):
@@ -177,7 +181,7 @@ class PermissionsCurrentView(APIView):
                 return Response(cached_data)
         except Exception:
             # If cache fails (e.g. Redis down), proceed without it
-            pass
+            logger.debug("Permission cache read failed", exc_info=True)
 
         # Build hierarchical structure
         permissions_data = {
@@ -190,7 +194,7 @@ class PermissionsCurrentView(APIView):
             cache.set(cache_key, permissions_data, timeout=300)
         except Exception:
             # If cache fails, ignore
-            pass
+            logger.debug("Permission cache write failed", exc_info=True)
 
         return Response(permissions_data)
 

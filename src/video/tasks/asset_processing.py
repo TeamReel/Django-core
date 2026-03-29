@@ -186,7 +186,7 @@ def process_member_asset(
                 _last_check["cancelled"] = True
                 return True
         except Exception:  # noqa: BLE001
-            pass  # On DB error, don't cancel
+            logger.debug("DB error checking cancellation for %s", membership_id, exc_info=True)
         return False
 
     # Create a progress callback that updates metadata with frame progress.
@@ -219,7 +219,7 @@ def process_member_asset(
                 },
             )
         except Exception:  # noqa: BLE001
-            pass  # On DB error, continue processing
+            logger.debug("DB error updating progress for %s", membership_id, exc_info=True)
 
     try:
         processor = AssetProcessor()

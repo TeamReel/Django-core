@@ -58,6 +58,6 @@ def cleanup_stale_connections(self, *, timeout_seconds: int = STALE_TIMEOUT_SECO
         emit_metric("gauge", "websocket_connections_active_db", remaining, {})
         emit_metric("counter", "websocket_stale_connections_cleaned", count, {})
     except Exception:
-        pass
+        logger.debug("Failed to emit WebSocket cleanup metrics", exc_info=True)
 
     return {"deleted": count, "remaining": remaining}

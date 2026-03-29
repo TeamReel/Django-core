@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 from audit.api import audit_log
@@ -9,6 +10,8 @@ from organisations.models import Membership as OrganisationMembership
 from projects.models import Project, ProjectMembership
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
 
 
 class MembershipService:
@@ -154,7 +157,7 @@ class MembershipService:
                     )
             except Exception:
                 # Don't fail the main add_member operation if club auto-add fails.
-                pass
+                logger.warning("Parent cascade membership creation failed", exc_info=True)
 
         # Audit log
         try:
@@ -175,7 +178,7 @@ class MembershipService:
             )
         except Exception:
             # Never fail core membership creation because audit logging is down/misconfigured.
-            pass
+            logger.debug("Audit log write failed for membership creation", exc_info=True)
 
         # Notification
         try:
@@ -187,7 +190,7 @@ class MembershipService:
             )
         except Exception:
             # Notifications are best-effort.
-            pass
+            logger.debug("Failed to send membership notification", exc_info=True)
 
         return membership
 

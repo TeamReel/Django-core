@@ -658,14 +658,14 @@ def restore_asset_version_view(request: Request) -> Response:
             if p:
                 organisation = p.organisation
         except:  # noqa: E722
-            pass
+            logger.debug("Failed to resolve project %s for brand context", project_id, exc_info=True)
     elif organisation_id:
         from organisations.models import Organisation
 
         try:
             organisation = Organisation.objects.get(id=organisation_id)
         except:  # noqa: E722
-            pass
+            logger.debug("Failed to resolve organisation %s for brand context", organisation_id, exc_info=True)
 
     if not organisation:
         return Response({"error": "Context required"}, status=400)

@@ -336,7 +336,7 @@ class AssetProcessor:
                     input_path.stat().st_size,
                 )
             except Exception:  # noqa: BLE001
-                pass
+                logger.debug("Failed to log input file stats for %s", asset_type, exc_info=True)
 
             # Composite videos (photo_composite, walking_composite) already have
             # backgrounds and should NOT have bg removal applied. Just resize/re-encode.
@@ -601,7 +601,7 @@ class AssetProcessor:
                 output_path.stat().st_size,
             )
         except Exception:  # noqa: BLE001
-            pass
+            logger.debug("Failed to log RVM output file stats", exc_info=True)
 
         # Upload processed version
         from src.video.utils.asset_metadata import build_s3_asset_path
@@ -854,7 +854,7 @@ class AssetProcessor:
             try:
                 preview_path.unlink(missing_ok=True)
             except Exception:  # noqa: BLE001
-                pass
+                logger.debug("Failed to clean up preview file %s", preview_path, exc_info=True)
 
     def _process_video_rembg(
         self,

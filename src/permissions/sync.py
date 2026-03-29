@@ -91,7 +91,7 @@ def sync_rbac_for_membership(
 
             cache.delete(f"permissions:user:{user_id}")
         except Exception:
-            pass
+            logger.debug("Failed to invalidate permission cache for user %s", user_id, exc_info=True)
 
         return target_role_name
 

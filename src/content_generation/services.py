@@ -49,7 +49,7 @@ def _publish_approval_event(
         )
         publisher.publish_to_project(item.project_id, event)
     except Exception:
-        pass
+        logger.debug("Failed to publish approval event", exc_info=True)
 
 
 def _send_notification(

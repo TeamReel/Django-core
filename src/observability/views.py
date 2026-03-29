@@ -79,7 +79,7 @@ def metrics_summary(request):
                 cursor.execute("SELECT 1")
             db_latency = (time.time() - start) * 1000
         except Exception:
-            pass
+            logger.debug("DB latency check failed", exc_info=True)
 
         # Get request count (fallback to simulated if None for demo)
         requests_total = _safe_get_metric_value(

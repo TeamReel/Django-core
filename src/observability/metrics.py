@@ -97,7 +97,7 @@ def _emit_failure_metric(hook_type: str, failure_reason: str) -> None:
         failure_counter.labels(hook_type=hook_type, failure_reason=failure_reason).inc()
     except Exception:
         # Fail silently to avoid infinite recursion
-        pass  # noqa: S110
+        logger.debug("Failed to emit signal failure metric", exc_info=True)
 
 
 # T037: Label cardinality validation

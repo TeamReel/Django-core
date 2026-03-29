@@ -109,7 +109,7 @@ def list_generation_jobs_view(request: Request) -> Response:
                 _proj = Project.objects.only("id").get(slug=project_id_param)
                 resolved_project_id = f"00000000-0000-0000-0000-{_proj.id:012d}"
             except Exception:  # noqa: BLE001
-                pass
+                logger.debug("Failed to resolve project slug %s", project_id_param, exc_info=True)
         # Match both the resolved canonical ID and the raw slug (legacy records)
         from django.db.models import Q
 
@@ -150,7 +150,7 @@ def list_generation_jobs_view(request: Request) -> Response:
                 _project_parent_map[str(p.id)] = p.parent_project.name if p.parent_project else None
                 _project_parent_map[p.slug] = p.parent_project.name if p.parent_project else None
         except Exception:  # noqa: BLE001
-            pass
+            logger.warning("Failed to resolve project names for job listing", exc_info=True)
 
     _membership_ids = {j.membership_id for j in jobs if j.membership_id}
     _membership_name_map: dict[str, str] = {}
@@ -166,7 +166,7 @@ def list_generation_jobs_view(request: Request) -> Response:
                 full = f"{m.user.first_name or ''} {m.user.last_name or ''}".strip()
                 _membership_name_map[str(m.id)] = full or f"Member {m.id}"
         except Exception:  # noqa: BLE001
-            pass
+            logger.warning("Failed to resolve membership names for job listing", exc_info=True)
 
     # Enrich active jobs with live cache progress
     results = []
@@ -218,7 +218,7 @@ def list_generation_jobs_view(request: Request) -> Response:
                         job.output_url = url
                         job.save(update_fields=["output_url"])
                     except Exception:
-                        pass
+                        logger.debug("Failed to persist output_url for job %s", job.task_id, exc_info=True)
 
         # Build output_variants list with fresh presigned URLs
         fresh_variants: list[dict] = []
@@ -644,7 +644,7 @@ def review_generation_job_view(request: Request, task_id: str) -> Response:
         if job.project_id:
             publisher.publish_to_project(job.project_id, event)
     except Exception:
-        pass
+        logger.debug("Failed to publish approval event for job %s", job.task_id, exc_info=True)
 
     return Response(
         {

@@ -5,6 +5,7 @@ When a SoftDeleteMixin model is soft-deleted, a TrashItem is created.
 When restored, the TrashItem is removed.
 """
 
+import logging
 from datetime import timedelta
 
 from django.conf import settings
@@ -15,6 +16,8 @@ from django.dispatch import receiver
 from src.common.mixins import SoftDeleteMixin
 
 from .models import TrashItem
+
+logger = logging.getLogger(__name__)
 
 
 def _get_retention_days(model_label: str) -> int:
@@ -110,7 +113,7 @@ def _record_audit_event(event_type: str, user, organisation, metadata: dict) -> 
         )
     except Exception:
         # Audit should never break the main flow
-        pass
+        logger.debug("Failed to record audit event for trash operation", exc_info=True)
 
 
 def _snapshot_fields(instance) -> dict:

@@ -1,5 +1,9 @@
+import logging
+
 from rest_framework import serializers
 from search.models import SearchEntry
+
+logger = logging.getLogger(__name__)
 
 
 class SearchEntrySerializer(serializers.ModelSerializer):
@@ -44,7 +48,7 @@ class SearchEntrySerializer(serializers.ModelSerializer):
                     ):
                         return "/profile"
             except Exception:
-                pass
+                logger.debug("Failed to resolve profile URL for search entry", exc_info=True)
             return f"/users/{getattr(content_object, 'pk', obj.object_id)}"
 
         if model in {"organisation", "organization"} and content_object is not None:

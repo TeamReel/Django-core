@@ -73,7 +73,7 @@ def get_ffmpeg_path() -> str:
         if path:
             return path
     except Exception:  # noqa: BLE001
-        pass
+        logger.debug("imageio_ffmpeg not available, falling back", exc_info=True)
 
     path = shutil.which("ffmpeg")
     if path:

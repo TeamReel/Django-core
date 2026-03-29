@@ -5,6 +5,7 @@ This module provides Azure Blob Storage integration for file uploads,
 downloads, and presigned URL generation.
 """
 
+import logging
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from typing import IO
@@ -12,6 +13,8 @@ from typing import IO
 from django.conf import settings
 
 from .base import StorageBackend
+
+logger = logging.getLogger(__name__)
 
 
 class AzureBlobStorageBackend(StorageBackend):
@@ -68,7 +71,7 @@ class AzureBlobStorageBackend(StorageBackend):
             self._container_client.create_container()
         except Exception:
             # Container already exists or other error
-            pass
+            logger.debug("Container creation skipped (may already exist)", exc_info=True)
 
     def save(self, path: str, file_obj: IO) -> str:
         """

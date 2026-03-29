@@ -2,8 +2,12 @@
 Activity serializers for Activities API.
 """
 
+import logging
+
 from activities.models import Activity, Period
 from rest_framework import serializers
+
+logger = logging.getLogger(__name__)
 
 from .serializers_event import ActivityEventSerializer
 from .serializers_participation import ParticipationSerializer
@@ -105,7 +109,7 @@ class ActivitySerializer(serializers.ModelSerializer):
                 self._logo_cache[pid] = url
                 return url
         except Exception:
-            pass
+            logger.debug("Failed to resolve project logo URL for project %s", pid, exc_info=True)
 
         self._logo_cache[pid] = None
         return None

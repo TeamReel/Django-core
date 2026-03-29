@@ -1,9 +1,12 @@
 """Serializers for navigation API endpoints."""
 
+import logging
 from typing import Any, Dict
 
 from navigation.models import UserFavorite, UserRecent
 from rest_framework import serializers
+
+logger = logging.getLogger(__name__)
 
 
 class NavigationItemSerializer(serializers.Serializer):
@@ -89,7 +92,7 @@ class RecentCreateSerializer(serializers.ModelSerializer):
                 content_object = content_type.get_object_for_this_type(pk=object_id)
             except (ContentType.DoesNotExist, Exception):
                 # If object doesn't exist, log as path-only
-                pass
+                logger.debug("Could not resolve content object for %s/%s", content_type_model, object_id, exc_info=True)
 
         # Use service to handle update-or-create and pruning
         return log_visit(

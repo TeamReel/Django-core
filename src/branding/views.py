@@ -3,9 +3,13 @@
 This module implements DRF ViewSets for CRUD operations on brand profiles,
 design tokens, and brand assets, plus the critical token resolution endpoint.
 """
+import logging
+
 from accounts.permissions import IsSuperadmin
 from django.db import models
 from rest_framework import status, viewsets
+
+logger = logging.getLogger(__name__)
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -322,7 +326,7 @@ class BrandAssetViewSet(viewsets.ModelViewSet):
                 if membership and membership.organisation and membership.organisation.sport:
                     sport_id = str(membership.organisation.sport_id)
             except Exception:
-                pass
+                logger.debug("Failed to auto-detect sport from user membership", exc_info=True)
 
         # ── Source 1: Global AppBackground records (sport-filtered) ──
         app_bg_qs = AppBackground.objects.filter(is_active=True).select_related("sport", "file")

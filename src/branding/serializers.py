@@ -3,9 +3,12 @@
 This module implements DRF serializers for BrandProfile, DesignToken, and
 BrandAsset models with comprehensive validation logic.
 """
+import logging
 import re
 
 from rest_framework import serializers
+
+logger = logging.getLogger(__name__)
 
 from .models import AppBackground, BrandAsset, BrandProfile, DesignToken
 
@@ -145,7 +148,7 @@ class BrandProfileSerializer(serializers.ModelSerializer):
             if obj.project_id and obj.project and obj.project.organisation_id:
                 return obj.project.organisation.name if obj.project.organisation else None
         except Exception:
-            pass
+            logger.debug("Failed to resolve organisation name for brand profile %s", obj.pk, exc_info=True)
         return None
 
     def get_can_edit(self, obj: BrandProfile) -> bool:

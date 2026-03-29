@@ -171,7 +171,7 @@ def admin_update_avatar(request, user_id):
             metadata={"target_user_id": str(target_user.id)},
         )
     except Exception:
-        pass  # Non-critical — avatar was saved successfully
+        logger.debug("Audit log failed for avatar update", exc_info=True)
 
     from accounts.utils import get_avatar_url
 
@@ -337,7 +337,7 @@ def admin_user_list(request):
                     request=request,
                 )
             except Exception:
-                pass
+                logger.debug("Audit log failed for user creation", exc_info=True)
 
             # If created by an Org Admin, automatically add the user to the organization
             if not is_global_admin and org_check:
@@ -360,7 +360,7 @@ def admin_user_list(request):
                         request=request,
                     )
                 except Exception:
-                    pass
+                    logger.debug("Audit log failed for membership creation", exc_info=True)
 
             # Return the created user using the list serializer format for consistency
             response_serializer = UserListSerializer(user)
@@ -549,11 +549,7 @@ def admin_user_list(request):
     # Filter by project (if provided)
     project_id = request.query_params.get("project_id")
     if project_id:
-        import logging
-
         from projects.models import Project
-
-        logger = logging.getLogger(__name__)
 
         proj = None
         try:

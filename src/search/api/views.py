@@ -177,7 +177,7 @@ class SearchAPIView(APIView):
             try:
                 url = instance.get_absolute_url()
             except Exception:
-                pass
+                logger.debug("get_absolute_url failed for %s", type(instance).__name__, exc_info=True)
 
         anchor_data = {
             "id": str(instance.pk),
@@ -391,7 +391,7 @@ class SearchAPIView(APIView):
             try:
                 url = current.get_absolute_url()
             except Exception:
-                pass
+                logger.debug("get_absolute_url failed for %s", type(current).__name__, exc_info=True)
         elif hasattr(current, "slug"):
             if model_name == "organisation":
                 url = f"/apps/identity/organisations/{current.slug}"

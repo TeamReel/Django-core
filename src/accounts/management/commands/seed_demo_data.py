@@ -21,6 +21,7 @@ Features:
 """
 
 import json
+import logging
 import os
 import time
 from contextlib import contextmanager
@@ -29,6 +30,8 @@ from datetime import timedelta
 from accounts.models import User
 from django.core.management.base import BaseCommand
 from django.db import transaction
+
+logger = logging.getLogger(__name__)
 from organisations.models import Membership, Organisation
 from projects.models import Project
 
@@ -208,7 +211,7 @@ class Command(BaseCommand):
             _disconnect(pre_delete, log_membership_deletion, OrgMembership)
         except Exception:
             # Best-effort: seeding must never fail because of optional signal wiring.
-            pass
+            logger.debug("Failed to disconnect organisation signals for seeding", exc_info=True)
 
         # Projects app signals
         try:
@@ -225,7 +228,7 @@ class Command(BaseCommand):
             _disconnect(post_delete, log_project_deleted, Project)
             _disconnect(post_save, invalidate_on_membership_change, ProjectMembership)
         except Exception:
-            pass
+            logger.debug("Failed to disconnect project signals for seeding", exc_info=True)
 
         try:
             yield

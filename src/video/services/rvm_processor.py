@@ -201,7 +201,7 @@ def _preflight_vp9_alpha(ffmpeg: str) -> bool:
         try:
             Path(tmp_path).unlink(missing_ok=True)
         except Exception:  # noqa: BLE001
-            pass
+            logger.debug("Failed to clean up temp file %s", tmp_path, exc_info=True)
 
 
 def load_rvm_model(model_name: str = "mobilenetv3") -> tuple[Any, Any]:
@@ -516,7 +516,7 @@ def process_video_rvm(
                 if p.poll() is None:
                     p.terminate()
             except Exception:  # noqa: BLE001
-                pass
+                logger.debug("Failed to terminate subprocess", exc_info=True)
         for p in (reader, writer):
             try:
                 p.wait(timeout=3)
@@ -525,7 +525,7 @@ def process_video_rvm(
                     if p.poll() is None:
                         p.kill()
                 except Exception:  # noqa: BLE001
-                    pass
+                    logger.debug("Failed to kill subprocess", exc_info=True)
 
     try:
         logger.info("rvm_loop_start frame_size_rgb=%d", frame_size_rgb)
@@ -614,7 +614,7 @@ def process_video_rvm(
                     try:
                         progress_callback(frame_count, total_frames)
                     except Exception:  # noqa: BLE001
-                        pass  # Don't fail processing if callback fails
+                        logger.debug("Progress callback failed at frame %d", frame_count, exc_info=True)
 
     finally:
         if writer.stdin and not writer.stdin.closed:
@@ -625,14 +625,14 @@ def process_video_rvm(
             try:
                 writer.kill()
             except Exception:  # noqa: BLE001
-                pass
+                logger.debug("Failed to kill ffmpeg writer", exc_info=True)
         try:
             reader.wait(timeout=5)
         except Exception:  # noqa: BLE001
             try:
                 reader.kill()
             except Exception:  # noqa: BLE001
-                pass
+                logger.debug("Failed to kill ffmpeg reader", exc_info=True)
 
         # Capture and log FFmpeg writer stderr for debugging
         writer_stderr = ""
@@ -640,7 +640,7 @@ def process_video_rvm(
             try:
                 writer_stderr = writer.stderr.read().decode(errors="replace")
             except Exception:  # noqa: BLE001
-                pass
+                logger.debug("Failed to read ffmpeg writer stderr", exc_info=True)
         if writer_stderr:
             logger.info("rvm_ffmpeg_writer_stderr: %s", writer_stderr[:2000])
 

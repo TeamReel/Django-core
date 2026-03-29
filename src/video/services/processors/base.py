@@ -246,14 +246,14 @@ class BaseVideoProcessor(ABC):
             try:
                 process.terminate()
             except Exception:
-                pass
+                logger.debug("Failed to terminate ffmpeg process", exc_info=True)
             try:
                 process.wait(timeout=5)
             except Exception:
                 try:
                     process.kill()
                 except Exception:
-                    pass
+                    logger.debug("Failed to kill ffmpeg process", exc_info=True)
 
         if _is_cancelled():
             _terminate_process()

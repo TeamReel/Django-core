@@ -5,6 +5,7 @@ Integrates with B09 audit system to record all CRUD operations on
 FeatureFlag and Setting models, including old/new values and actor context.
 """
 
+import logging
 import threading
 from typing import Any, Dict, Optional
 
@@ -12,6 +13,8 @@ from audit.api import audit_log
 from audit.registry import register_event_type
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
+
+logger = logging.getLogger(__name__)
 
 from .models import FeatureFlag, Setting
 
@@ -38,13 +41,13 @@ def _get_scope_context(instance: Any) -> Dict[str, Any]:
         if hasattr(instance, "organisation") and instance.organisation:
             context["organization"] = instance.organisation
     except Exception:
-        pass
+        logger.debug("Failed to extract organisation from instance", exc_info=True)
 
     try:
         if hasattr(instance, "project") and instance.project:
             context["project"] = instance.project
     except Exception:
-        pass
+        logger.debug("Failed to extract project from instance", exc_info=True)
 
     return context
 

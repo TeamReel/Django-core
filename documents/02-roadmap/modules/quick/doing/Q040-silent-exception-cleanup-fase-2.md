@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | � DOING |
 | Bron | Code Review |
 | Impact | 🟡 important |
 | Effort | ~3 uur |
@@ -26,6 +26,6 @@ Per case beoordelen:
 - **Bewust negeren**: `# noqa: S110` toevoegen met comment waarom
 
 ## Checklist
-- [ ] Alle resterende S110 violations reviewen en fixen
-- [ ] Verify: `ruff check src/ --select=S110` → 0 errors (of bewust ge-noqa'd)
-- [ ] Tests: `pytest -x`
+- [x] Alle resterende S110 violations reviewen en fixen (53 violations in 29 bestanden)
+- [x] Verify: `ruff check src/ --select=S110` → 0 errors
+- [x] Tests: `pytest -x` → 490 passed

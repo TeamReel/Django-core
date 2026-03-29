@@ -1,5 +1,7 @@
 """DRF serializers for Membership, Invitations, and Promotions."""
 
+import logging
+
 from django.contrib.auth import get_user_model
 from projects.models import ProjectInvite, ProjectMembership, ProjectMembershipPromotion
 from rest_framework import serializers
@@ -7,6 +9,8 @@ from rest_framework import serializers
 from .serializers_project import UserNestedSerializer
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
 
 
 class UserAvatarNestedSerializer(serializers.ModelSerializer):
@@ -133,7 +137,7 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
                 roles.update(qs)
         except Exception:
             # Best-effort: do not break members endpoint if functional roles table is missing.
-            pass
+            logger.debug("Failed to fetch functional roles for member", exc_info=True)
 
         # Derived admin→coach logic REMOVED.
         # Functional roles are now fully managed via the assignment table

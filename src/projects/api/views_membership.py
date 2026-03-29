@@ -148,7 +148,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
                 return
         except Exception:
             # If organisations app isn't available for some reason, fall back to stricter checks.
-            pass
+            logger.debug("Organisation admin check failed, falling back", exc_info=True)
 
         is_project_member = ProjectMembership.objects.filter(
             project=project,
@@ -331,7 +331,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
                         functional_roles_cache[cache_key] = set()
                     functional_roles_cache[cache_key].add(r["role"])
             except Exception:
-                pass  # Table may not exist yet
+                logger.debug("Functional role prefetch failed (table may not exist)", exc_info=True)
 
         # Serialize with context caches
         context = self.get_serializer_context()

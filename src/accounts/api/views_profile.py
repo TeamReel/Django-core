@@ -337,7 +337,7 @@ def update_avatar(request):
         file_obj.name = safe_name
     except Exception:
         # If sanitisation fails, continue with storage's default handling.
-        pass
+        logger.debug("Avatar filename sanitisation failed", exc_info=True)
 
     # Save avatar with defensive error handling (storage backends can raise).
     # Upload to S3 via the files storage backend instead of relying on
