@@ -1,0 +1,149 @@
+import React from 'react';
+import { Badge } from '@django-core/design-system';
+import { isUuid, getUserRoleDisplay } from './usersListHelpers';
+import styles from './UsersListTable.module.css';
+import type { UsersListData } from './useUsersListData';
+
+interface UsersMobileCardsProps {
+  data: UsersListData;
+}
+
+export const UsersMobileCards: React.FC<UsersMobileCardsProps> = ({ data }) => {
+  const {
+    sortedUsers,
+    selectedIds,
+    handleSelectOne,
+    teamLocked,
+    selectedTeamId,
+    selectedClubId,
+    navigate,
+    handleEditClick,
+    setDetailUser,
+    setIsDetailModalOpen,
+    getFederationNameForRow,
+    getClubAndTeamForRow,
+    getUserDetailHrefForRow,
+    getUserSeasonCompetitionMatchCounts,
+    handleDeleteOrgMember,
+    handleDeleteTeamMember,
+  } = data;
+
+  return (
+    <div className={styles.mobileCards}>
+        {sortedUsers.map((u) => {
+          const orgName = getFederationNameForRow(u);
+          const scoped = getClubAndTeamForRow(u);
+          const counts = getUserSeasonCompetitionMatchCounts(u);
+          const roleDisplay = getUserRoleDisplay(u, selectedTeamId, selectedClubId);
+          const usernameLabel =
+            String(u?.username || '').trim() ||
+            `${u.first_name || ''} ${u.last_name || ''}`.trim() ||
+            (String(u.email || '').includes('@')
+              ? String(u.email || '').split('@')[0]
+              : String(u.email || ''));
+
+          let membershipId: string | null = null;
+          if (teamLocked) {
+            membershipId = u?.project_membership_id ?? u?.membership?.id ?? null;
+          } else {
+            membershipId = u?.membership?.id ?? u?.membership_id ?? u?.member_id ?? null;
+          }
+          const source = String(u?.membership?.source ?? u?.source ?? '').toLowerCase();
+          const isDirectMembership = Boolean(membershipId) && isUuid(membershipId) && !source;
+          const hasValidTeamMembershipId = teamLocked && Boolean(u?.project_membership_id) && isUuid(u?.project_membership_id);
+
+          return (
+            <div
+              key={u.id}
+              className={styles.card}
+              data-selected={selectedIds.has(String(u.id)) || undefined}
+            >
+              <div className={styles.cardHeader}>
+                <div className={styles.cardHeaderLeft}>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(String(u.id))}
+                    onChange={() => handleSelectOne(String(u.id))}
+                    className={styles.cardCheckbox}
+                  />
+                  <div className={styles.cardInfo}>
+                    {u?.id ? (
+                      <button
+                        className={styles.cardNameLink}
+                        onClick={() => {
+                          const href = getUserDetailHrefForRow({ id: String(u.id) });
+                          if (href) navigate(href);
+                        }}
+                        title="Open user"
+                      >
+                        {usernameLabel}
+                      </button>
+                    ) : (
+                      <p className={styles.cardName}>{usernameLabel}</p>
+                    )}
+                    <div className={styles.cardEmail}>{u.email}</div>
+                    {!teamLocked && scoped.team.label !== '-' && (
+                      <div className={styles.cardTeamLabel}>{scoped.team.label}</div>
+                    )}
+                  </div>
+                </div>
+                <div className={styles.cardBadges}>
+                  <Badge variant="default">{roleDisplay.label}</Badge>
+                  <Badge variant={u.is_active ? 'success' : 'warning'}>
+                    {u.is_active ? 'Active' : 'Inactive'}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className={styles.cardStats}>
+                <div className={styles.cardStat}>
+                  <span className={styles.cardStatValue}>{counts.seasonsCount}</span>
+                  <span className={styles.cardStatLabel}>Season</span>
+                </div>
+                <div className={styles.cardStat}>
+                  <span className={styles.cardStatValue}>{counts.competitionsCount}</span>
+                  <span className={styles.cardStatLabel}>Comp.</span>
+                </div>
+                <div className={styles.cardStat}>
+                  <span className={styles.cardStatValue}>{counts.matchesCount}</span>
+                  <span className={styles.cardStatLabel}>Match</span>
+                </div>
+              </div>
+
+              <div className={styles.cardActions}>
+                <button
+                  onClick={() => { setDetailUser(u); setIsDetailModalOpen(true); }}
+                  className="action-btn action-btn-primary"
+                >
+                  View
+                </button>
+                {isDirectMembership && (
+                  <button onClick={() => handleEditClick(u)} className="action-btn action-btn-warning">
+                    Edit
+                  </button>
+                )}
+                {isDirectMembership && (
+                  <button
+                    onClick={() => handleDeleteOrgMember(membershipId!, usernameLabel, orgName)}
+                    className="action-btn action-btn-danger"
+                  >
+                    Delete
+                  </button>
+                )}
+                {hasValidTeamMembershipId && (
+                  <button
+                    onClick={() => handleDeleteTeamMember(u?.project_membership_id!, usernameLabel, scoped.team.label)}
+                    className="action-btn action-btn-danger"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+
+  );
+};

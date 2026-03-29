@@ -45,6 +45,7 @@ def _annotate_org_list_counts(queryset):
 
     total_players_count_sq = Subquery(
         ProjectMembership.objects.filter(project__organisation_id=OuterRef("pk"))
+        .order_by()
         .values(x=Value(1))
         .annotate(cnt=Count("user_id", distinct=True))
         .values("cnt")[:1],
@@ -56,6 +57,7 @@ def _annotate_org_list_counts(queryset):
             project__organisation_id=OuterRef("pk"),
             parent_period__isnull=True,
         )
+        .order_by()
         .values(x=Value(1))
         .annotate(cnt=Count("id"))
         .values("cnt")[:1],
@@ -67,6 +69,7 @@ def _annotate_org_list_counts(queryset):
             project__organisation_id=OuterRef("pk"),
             parent_period__isnull=False,
         )
+        .order_by()
         .values(x=Value(1))
         .annotate(cnt=Count("id"))
         .values("cnt")[:1],
@@ -78,6 +81,7 @@ def _annotate_org_list_counts(queryset):
             project__organisation_id=OuterRef("pk"),
             activity_type="match",
         )
+        .order_by()
         .values(x=Value(1))
         .annotate(cnt=Count("id"))
         .values("cnt")[:1],
@@ -90,6 +94,7 @@ def _annotate_org_list_counts(queryset):
             sport__isnull=False,
             sport__parent_sport__isnull=False,
         )
+        .order_by()
         .values(x=Value(1))
         .annotate(cnt=Count("sport_id", distinct=True))
         .values("cnt")[:1],
