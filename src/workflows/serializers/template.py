@@ -65,7 +65,7 @@ class WorkflowTemplateSerializer(serializers.ModelSerializer):
             for part in parts:
                 int(part)
         except ValueError:
-            raise serializers.ValidationError("Version parts must be integers (e.g., 1.0.0)")
+            raise serializers.ValidationError("Version parts must be integers (e.g., 1.0.0)") from None
 
         return value
 
@@ -156,7 +156,7 @@ class WorkflowTemplateSerializer(serializers.ModelSerializer):
         try:
             instance.full_clean()
         except DjangoValidationError as e:
-            raise serializers.ValidationError(e.message_dict or str(e))
+            raise serializers.ValidationError(e.message_dict or str(e)) from None
         instance.save()
         return instance
 
@@ -168,6 +168,6 @@ class WorkflowTemplateSerializer(serializers.ModelSerializer):
         try:
             instance.full_clean()
         except DjangoValidationError as e:
-            raise serializers.ValidationError(e.message_dict or str(e))
+            raise serializers.ValidationError(e.message_dict or str(e)) from None
         instance.save()
         return instance

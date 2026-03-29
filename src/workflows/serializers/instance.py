@@ -153,7 +153,7 @@ class WorkflowInstanceSerializer(serializers.ModelSerializer):
         try:
             instance.full_clean()
         except DjangoValidationError as e:
-            raise serializers.ValidationError(e.message_dict or str(e))
+            raise serializers.ValidationError(e.message_dict or str(e)) from None
         instance.save()
         return instance
 
@@ -169,7 +169,7 @@ class WorkflowInstanceSerializer(serializers.ModelSerializer):
         try:
             instance.full_clean()
         except DjangoValidationError as e:
-            raise serializers.ValidationError(e.message_dict or str(e))
+            raise serializers.ValidationError(e.message_dict or str(e)) from None
         instance.save()
         return instance
 

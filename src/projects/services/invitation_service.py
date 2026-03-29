@@ -109,7 +109,7 @@ class InvitationService:
         try:
             invitation = ProjectInvite.objects.get(token=token)
         except ProjectInvite.DoesNotExist:
-            raise ValueError("Invalid invitation token.")
+            raise ValueError("Invalid invitation token.") from None
 
         if invitation.status != ProjectInvite.Status.PENDING:
             raise ValueError(f"Invitation is {invitation.status}.")

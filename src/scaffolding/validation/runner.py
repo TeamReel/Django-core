@@ -124,7 +124,7 @@ class ValidationRunner:
             raise TimeoutError(
                 "Constitutional validation timed out after 60 seconds. "
                 "Use --no-validate to skip validation for large codebases."
-            )
+            ) from None
 
         except Exception as e:
             logger.error(f"Unexpected error during validation: {e}")

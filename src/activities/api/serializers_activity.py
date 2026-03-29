@@ -215,7 +215,7 @@ class ActivitySerializer(serializers.ModelSerializer):
                         f"({period.start_date} to {period.end_date})"
                     )
             except Period.DoesNotExist:
-                raise serializers.ValidationError({"period_id": "Period does not exist"})
+                raise serializers.ValidationError({"period_id": "Period does not exist"}) from None
 
         return data
 

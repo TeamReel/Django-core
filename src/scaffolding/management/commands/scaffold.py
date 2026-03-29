@@ -64,8 +64,8 @@ class Command(BaseCommand):
                     e.code,
                     f"Unknown error (exit code {e.code})",
                 )
-                raise CommandError(f"Scaffolding failed: {message}")
+                raise CommandError(f"Scaffolding failed: {message}") from None
 
         except Exception as e:
             # Catch any unhandled exceptions and convert to CommandError
-            raise CommandError(f"Scaffolding error: {e}")
+            raise CommandError(f"Scaffolding error: {e}") from e

@@ -53,7 +53,7 @@ class MediaItemRelationService:
             try:
                 uuid.UUID(object_id)
             except ValueError:
-                raise ValidationError(f"Target ID '{object_id}' is not a valid UUID.")
+                raise ValidationError(f"Target ID '{object_id}' is not a valid UUID.") from None
 
         relation, created = MediaItemRelation.objects.update_or_create(
             media_item=media_item,

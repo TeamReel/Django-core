@@ -210,7 +210,7 @@ class PeriodSerializer(serializers.ModelSerializer):
             except Period.DoesNotExist:
                 raise serializers.ValidationError(
                     {"parent_period_id": "Parent period does not exist"}
-                )
+                ) from None
 
         return data
 

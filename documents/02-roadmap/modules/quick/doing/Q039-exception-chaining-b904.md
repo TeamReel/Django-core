@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | � DOING |
 | Bron | Code Review |
 | Impact | 🟡 important |
 | Effort | ~2 uur |
@@ -24,6 +24,6 @@ Per case beoordelen:
 - `raise ValidationError(...) from None` → als bewust een nieuwe fout wordt gegeven
 
 ## Checklist
-- [ ] Alle 46 B904 violations fixen
-- [ ] Verify: `ruff check src/ --select=B904` → 0 errors
-- [ ] Tests: `pytest -x`
+- [x] Alle 46 B904 violations fixen
+- [x] Verify: `ruff check src/ --select=B904` → 0 errors
+- [x] Tests: `pytest -x` → 490 passed

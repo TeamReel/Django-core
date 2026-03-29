@@ -191,7 +191,7 @@ class ContentTemplateViewSet(ContentTemplatePermissionMixin, viewsets.ModelViewS
             # Re-raise as a validation error so it gets properly formatted
             from rest_framework.exceptions import ValidationError
 
-            raise ValidationError({"detail": str(e), "error_type": type(e).__name__})
+            raise ValidationError({"detail": str(e), "error_type": type(e).__name__}) from e
 
     def partial_update(self, request, *args, **kwargs):
         """Override partial_update to catch and expose errors for debugging."""
@@ -207,7 +207,7 @@ class ContentTemplateViewSet(ContentTemplatePermissionMixin, viewsets.ModelViewS
             # Re-raise as a validation error so it gets properly formatted
             from rest_framework.exceptions import ValidationError
 
-            raise ValidationError({"detail": str(e), "error_type": type(e).__name__})
+            raise ValidationError({"detail": str(e), "error_type": type(e).__name__}) from e
 
     def destroy(self, request, *args, **kwargs):
         """

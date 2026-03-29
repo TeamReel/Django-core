@@ -195,7 +195,7 @@ class SettingSerializer(serializers.ModelSerializer):
                 # JSONField handles the serialization automatically
                 pass
         except Exception as e:
-            raise serializers.ValidationError(f"Type validation failed for {field_name}: {str(e)}")
+            raise serializers.ValidationError(f"Type validation failed for {field_name}: {str(e)}") from e
 
 
 class FeatureFlagResolveSerializer(serializers.Serializer):

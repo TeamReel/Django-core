@@ -114,7 +114,7 @@ def generate_video_thumbnail(
 
     except subprocess.CalledProcessError as e:
         logger.error(f"ffmpeg failed: {e.stderr.decode() if e.stderr else str(e)}")
-        raise RuntimeError(f"Failed to generate video thumbnail: {e}")
+        raise RuntimeError(f"Failed to generate video thumbnail: {e}") from e
     except Exception as e:
         logger.error(f"Error processing video thumbnail: {str(e)}")
         raise

@@ -147,11 +147,11 @@ class ParticipationSerializer(serializers.ModelSerializer):
                         )
 
             except Membership.DoesNotExist:
-                raise serializers.ValidationError({"member_id": "Member does not exist"})
+                raise serializers.ValidationError({"member_id": "Member does not exist"}) from None
             except Activity.DoesNotExist:
-                raise serializers.ValidationError({"activity_id": "Activity does not exist"})
+                raise serializers.ValidationError({"activity_id": "Activity does not exist"}) from None
             except Period.DoesNotExist:
-                raise serializers.ValidationError({"period_id": "Period does not exist"})
+                raise serializers.ValidationError({"period_id": "Period does not exist"}) from None
 
         return data
 

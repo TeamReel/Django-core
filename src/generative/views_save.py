@@ -571,7 +571,7 @@ def list_asset_history_view(request: Request) -> Response:
                 # Assuming 'slug' field exists or we can't find it
                 p = Project.objects.filter(slug=project_id).first()
                 if not p:
-                    raise Exception("Project not found")
+                    raise Exception("Project not found") from None
 
             filters["organization"] = p.organisation
         except:  # noqa: E722

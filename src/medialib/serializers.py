@@ -235,5 +235,5 @@ class MediaItemRelationSerializer(serializers.ModelSerializer):
                 if not ContentType.objects.filter(app_label=app_label, model=model).exists():
                     raise serializers.ValidationError({"target_type": "Invalid model identifier"})
             except ValueError:
-                raise serializers.ValidationError({"target_type": "Format must be 'app.model'"})
+                raise serializers.ValidationError({"target_type": "Format must be 'app.model'"}) from None
         return attrs

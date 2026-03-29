@@ -34,7 +34,7 @@ class AzureBlobStorageBackend(StorageBackend):
             raise ImportError(
                 "azure-storage-blob is required for Azure Blob Storage. "
                 "Install it with: pip install azure-storage-blob"
-            )
+            ) from None
 
         self.account_name = getattr(settings, "AZURE_STORAGE_ACCOUNT_NAME", None)
         self.account_key = getattr(settings, "AZURE_STORAGE_ACCOUNT_KEY", None)

@@ -113,7 +113,7 @@ def process_media_item(self, media_item_id: str):
         # If we failed to even get the item or save error state
         logger.exception(f"Critical failure in process_media_item for {media_item_id}")
         # Retrying handled by Celery configuration
-        raise self.retry(exc=exc, countdown=60)
+        raise self.retry(exc=exc, countdown=60) from exc
 
 
 @shared_task(bind=True, max_retries=3)
@@ -231,4 +231,4 @@ def generate_media_thumbnails(self, media_item_id: str):
 
     except Exception as exc:
         logger.exception(f"Thumbnail generation failed for {media_item_id}")
-        raise self.retry(exc=exc, countdown=60)
+        raise self.retry(exc=exc, countdown=60) from exc

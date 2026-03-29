@@ -330,7 +330,7 @@ def generate_asset_task(
                 progress=10,
                 error=f"Transient error (attempt {self.request.retries + 1}): {error_str[:200]}",
             )
-            raise self.retry(exc=exc, countdown=retry_delay)
+            raise self.retry(exc=exc, countdown=retry_delay) from exc
 
         set_job(
             job_id,

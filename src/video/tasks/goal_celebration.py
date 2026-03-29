@@ -94,6 +94,6 @@ def process_goal_celebration_video(self, job_id: str) -> str | None:
             job.status = JobStatus.QUEUED
             job.retry_count = self.request.retries + 1
             job.save(update_fields=["status", "retry_count", "updated_at"])
-            raise self.retry(exc=exc)
+            raise self.retry(exc=exc) from exc
 
         return None

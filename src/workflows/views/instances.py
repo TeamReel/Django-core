@@ -161,7 +161,7 @@ class WorkflowInstanceViewSet(viewsets.ModelViewSet):
         try:
             content_object = content_type.get_object_for_this_type(pk=object_id)
         except content_type.model_class().DoesNotExist:
-            raise PermissionDenied(f"Content object with ID {object_id} not found")
+            raise PermissionDenied(f"Content object with ID {object_id} not found") from None
 
         # Create instance using workflow engine (handles snapshot + initial state)
         engine = WorkflowEngine()
@@ -249,7 +249,7 @@ class WorkflowInstanceViewSet(viewsets.ModelViewSet):
             )
         except DjangoValidationError as e:
             # Convert Django validation errors to DRF format
-            raise ValidationError({"action": str(e)})
+            raise ValidationError({"action": str(e)}) from None
 
         # Serialize and return transition history
         output_serializer = TransitionHistorySerializer(history)

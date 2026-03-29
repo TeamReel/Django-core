@@ -81,7 +81,7 @@ class GenerationTemplateSerializer(serializers.ModelSerializer):
         try:
             jsonschema.Draft7Validator.check_schema(value)
         except jsonschema.SchemaError as e:
-            raise serializers.ValidationError(f"Invalid JSON Schema: {e.message}")
+            raise serializers.ValidationError(f"Invalid JSON Schema: {e.message}") from None
         return value
 
     def validate_pipeline_config(self, value: dict[str, Any]) -> dict[str, Any]:
@@ -117,7 +117,7 @@ class GenerationTemplateSerializer(serializers.ModelSerializer):
                 if cost < 0:
                     raise serializers.ValidationError("estimated_cost must be non-negative")
             except (ValueError, TypeError):
-                raise serializers.ValidationError("estimated_cost must be a valid number")
+                raise serializers.ValidationError("estimated_cost must be a valid number") from None
 
         # WP06 T052: Validate brand configuration if present
         if value.get("use_brand_context") and "brand_id" in value:
@@ -126,7 +126,7 @@ class GenerationTemplateSerializer(serializers.ModelSerializer):
                 if brand_id < 1:
                     raise ValueError("brand_id must be positive")
             except (ValueError, TypeError):
-                raise serializers.ValidationError("brand_id must be a valid positive integer")
+                raise serializers.ValidationError("brand_id must be a valid positive integer") from None
 
         return value
 
@@ -217,9 +217,9 @@ class GenerationRequestSerializer(serializers.ModelSerializer):
                 # Validate against template's JSON Schema
                 jsonschema.validate(value, template.input_schema)
             except GenerationTemplate.DoesNotExist:
-                raise serializers.ValidationError("Template does not exist")
+                raise serializers.ValidationError("Template does not exist") from None
             except jsonschema.ValidationError as e:
-                raise serializers.ValidationError(f"Input data validation failed: {e.message}")
+                raise serializers.ValidationError(f"Input data validation failed: {e.message}") from None
 
         return value
 

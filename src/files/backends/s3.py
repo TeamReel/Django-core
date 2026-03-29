@@ -34,7 +34,7 @@ class S3StorageBackend(StorageBackend):
         except ImportError:
             raise ImportError(
                 "boto3 is required for AWS S3 Storage. " "Install it with: pip install boto3"
-            )
+            ) from None
 
         self.access_key = getattr(settings, "AWS_ACCESS_KEY_ID", None)
         self.secret_key = getattr(settings, "AWS_SECRET_ACCESS_KEY", None)

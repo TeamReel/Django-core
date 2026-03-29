@@ -99,7 +99,7 @@ class SecurityBaselineConfig(AppConfig):
             if enforcement_mode == "strict":
                 raise RuntimeError(
                     "Constitutional Engine unavailable; strict enforcement required."
-                )
+                ) from e
             else:
                 logger.warning("Constitutional Engine unavailable; proceeding in advisory mode.")
                 return

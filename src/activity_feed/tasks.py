@@ -94,4 +94,4 @@ def log_event(
         return str(event.id)
     except Exception as exc:
         logger.exception("Failed to create ActivityLog: %s", exc)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc

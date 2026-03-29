@@ -86,4 +86,4 @@ def execute_workflow_hooks(
             "Transient error executing workflow hooks",
             extra={"instance_id": instance_id, "error": str(e), "retry": self.request.retries},
         )
-        raise self.retry(exc=e, countdown=2**self.request.retries)  # Exponential backoff
+        raise self.retry(exc=e, countdown=2**self.request.retries) from e  # Exponential backoff

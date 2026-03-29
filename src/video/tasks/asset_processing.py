@@ -459,7 +459,7 @@ def auto_crop_closeup_from_fullbody(
             source_path,
             exc,
         )
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
     # ── Pillow smart crop ─────────────────────────────────────────────────────
     try:
@@ -490,7 +490,7 @@ def auto_crop_closeup_from_fullbody(
         storage_path = storage.save(upload_path, file_obj)
     except Exception as exc:
         logger.exception("auto_crop_closeup: upload failed: %s", exc)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
     # ── Write metadata ────────────────────────────────────────────────────────
     try:
@@ -600,7 +600,7 @@ def auto_crop_halfbody_from_fullbody(
             source_path,
             exc,
         )
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
     # ── Pillow smart crop ─────────────────────────────────────────────────────
     try:
@@ -631,7 +631,7 @@ def auto_crop_halfbody_from_fullbody(
         storage_path = storage.save(upload_path, file_obj)
     except Exception as exc:
         logger.exception("auto_crop_halfbody: upload failed: %s", exc)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
     # ── Write metadata ────────────────────────────────────────────────────────
     try:

@@ -553,7 +553,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
                     pk=scope_project_param
                 )
             except Project.DoesNotExist:
-                raise ValidationError({"scope_project_id": "Project does not exist."})
+                raise ValidationError({"scope_project_id": "Project does not exist."}) from None
 
             if scope_project.organisation_id != project.organisation_id:
                 raise ValidationError(

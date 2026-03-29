@@ -281,7 +281,7 @@ class GenerationRequestViewSet(viewsets.ModelViewSet):
                         "required_amount": float(e.required_amount),
                     },
                 }
-            )
+            ) from None
 
         # Return 202 Accepted
         return Response(
