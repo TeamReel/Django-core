@@ -6,7 +6,7 @@
  * - All state, effects, handlers \u2192 useTopNavbarData.tsx
  * - Modal components \u2192 NavbarModals.tsx
  */
-import { memo, useState } from 'react';
+import { memo, useState, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ChevronDown, ChevronUp, Sun, Moon,
@@ -18,7 +18,7 @@ import ProfileAvatarDropdown from './ProfileAvatarDropdown';
 import s from './TopNavbar.module.css';
 import { SearchBar } from './SearchBar';
 import Breadcrumbs from './Breadcrumbs';
-import CommandPalette from './CommandPalette';
+const CommandPalette = lazy(() => import('./CommandPalette'));
 import { useTopNavbarData } from './useTopNavbarData';
 import { CREATE_MENU_ITEMS, type TopNavbarProps } from './topNavbarHelpers';
 import { useBackNavigation } from '../providers/BackNavigationProvider';
@@ -37,7 +37,11 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
 
   return (
     <div className={s.wrapper}>
-      <CommandPalette isOpen={d.commandOpen} onClose={() => d.setCommandOpen(false)} />
+      {d.commandOpen && (
+        <Suspense fallback={null}>
+          <CommandPalette isOpen={d.commandOpen} onClose={() => d.setCommandOpen(false)} />
+        </Suspense>
+      )}
       <nav className={s.nav} data-app-top-navbar="true">
         <div className={s.navContainer} data-mobile={isMobile}>
           {/* ── Mobile layout ── */}

@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import TopNavbar from '../components/TopNavbar';
 import Sidebar from '../components/Sidebar';
 import MobileBottomNav from '../components/MobileBottomNav';
-import OnboardingWizard from '../components/OnboardingWizard';
-import { ShortcutGuide } from '../components/ShortcutGuide';
+const OnboardingWizard = lazy(() => import('../components/OnboardingWizard'));
+const ShortcutGuide = lazy(() => import('../components/ShortcutGuide'));
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useRealtimeChannel } from '../hooks/useRealtimeChannel';
 import styles from './MainLayout.module.css';
@@ -254,14 +254,18 @@ export default function MainLayout() {
         {/* Mobile Bottom Navigation */}
         {isMobile && (
           <>
-            <OnboardingWizard />
+            <Suspense fallback={null}><OnboardingWizard /></Suspense>
             <MobileBottomNav />
           </>
         )}
       </div>
 
       {/* Keyboard shortcut cheatsheet */}
-      <ShortcutGuide isOpen={shortcutGuideOpen} onClose={() => setShortcutGuideOpen(false)} />
+      {shortcutGuideOpen && (
+        <Suspense fallback={null}>
+          <ShortcutGuide isOpen={shortcutGuideOpen} onClose={() => setShortcutGuideOpen(false)} />
+        </Suspense>
+      )}
     </div>
   );
 }

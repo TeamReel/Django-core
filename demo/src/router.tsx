@@ -30,15 +30,15 @@ import { ProtectedRoute } from './components/PermissionGuards';
 import RouteErrorBoundary from './components/RouteErrorBoundary';
 import { SkeletonDetailPage, SkeletonTablePage, SkeletonGrid } from './components/SkeletonComposites';
 
-// Critical pages (eager load)
+// Critical pages (eager load — auth + error only)
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
 import ForbiddenPage from './pages/errors/ForbiddenPage';
 import NotFoundPage from './pages/errors/NotFoundPage';
 
 // Lazy-loaded pages
 import {
+  DashboardPage,
   RecentsPage,
   FavoritesPage,
   SearchPage,
@@ -86,7 +86,7 @@ export const router = createBrowserRouter(
       {/* Protected routes with MainLayout */}
       <Route element={<MainLayout />} errorElement={<RouteErrorBoundary />}>
         {/* ── Core navigation ── */}
-        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/dashboard" element={<ProtectedRoute><Suspense fallback={<SkeletonDetailPage />}><DashboardPage /></Suspense></ProtectedRoute>} />
         <Route path="/recents" element={<ProtectedRoute><RecentsPage /></ProtectedRoute>} />
         <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
         <Route path="/directory" element={<ProtectedRoute><DirectoryPage /></ProtectedRoute>} />

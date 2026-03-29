@@ -11,7 +11,7 @@
  * falling back to /directory?tab=clubs when no team is selected.
  * Only visible on mobile (<640px).
  */
-import { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, CalendarDays, Plus, Images, UserCircle } from 'lucide-react';
 import { useAppSelection } from '../hooks/useAppSelection';
@@ -19,7 +19,7 @@ import { useHapticFeedback } from '../hooks/useHapticFeedback';
 import { useCreateContext } from '../hooks/useCreateContext';
 import { preloadRoutes } from '../utils/preloadRoute';
 import { routes } from '../routes';
-import CreateWizard from './CreateWizard';
+const CreateWizard = lazy(() => import('./CreateWizard'));
 import type { CreateFlowType } from './CreateWizard/CreateWizardContext';
 import styles from './MobileBottomNav.module.css';
 
@@ -211,14 +211,18 @@ const MobileBottomNav = memo(function MobileBottomNav() {
       </nav>
 
       {/* CreateWizard — universal create flow via + button */}
-      <CreateWizard
-        isOpen={wizardOpen}
-        onClose={() => { setWizardOpen(false); setWizardMatchId(undefined); setWizardAutoFlow(undefined); setWizardSubtype(undefined); }}
-        initialMatchId={wizardMatchId}
-        initialFlow={wizardAutoFlow}
-        initialSubtype={wizardSubtype}
-        prefill={createPrefill}
-      />
+      {wizardOpen && (
+        <Suspense fallback={null}>
+          <CreateWizard
+            isOpen={wizardOpen}
+            onClose={() => { setWizardOpen(false); setWizardMatchId(undefined); setWizardAutoFlow(undefined); setWizardSubtype(undefined); }}
+            initialMatchId={wizardMatchId}
+            initialFlow={wizardAutoFlow}
+            initialSubtype={wizardSubtype}
+            prefill={createPrefill}
+          />
+        </Suspense>
+      )}
     </>
   );
 });

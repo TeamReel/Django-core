@@ -6,6 +6,7 @@ import { lazyWithRetry } from './utils/lazyWithRetry';
 // =============================================================================
 
 // Core navigation pages
+export const DashboardPage = lazyWithRetry(() => import('./pages/DashboardPage'));
 export const RecentsPage = lazyWithRetry(() => import('./pages/RecentsPage'));
 export const FavoritesPage = lazyWithRetry(() => import('./pages/FavoritesPage'));
 export const SearchPage = lazyWithRetry(() => import('./pages/SearchPage'));
