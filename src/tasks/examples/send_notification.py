@@ -1,8 +1,12 @@
 """Example task integrating with B12 notifications (when available)."""
 
+import logging
+
 from celery import shared_task
 
 from tasks.base import AuditedTask
+
+logger = logging.getLogger(__name__)
 
 
 @shared_task(base=AuditedTask)
@@ -62,10 +66,10 @@ def send_bulk_notifications(
                 #     template_id=template_id,
                 #     org_id=org_id
                 # )
-                print(f"[MOCK] Sending notification to user {recipient_id}")
+                logger.info("[MOCK] Sending notification to user %s", recipient_id)
                 sent_count += 1
             except Exception as exc:
-                print(f"Failed to send notification to user {recipient_id}: {exc}")
+                logger.warning("Failed to send notification to user %s: %s", recipient_id, exc)
                 failed_count += 1
 
     return {

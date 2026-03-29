@@ -1,9 +1,12 @@
 """Example task with aggressive retry policy for external APIs."""
 
+import logging
 import time
 
 import requests
 from celery import shared_task
+
+logger = logging.getLogger(__name__)
 from requests.exceptions import RequestException, Timeout
 
 
@@ -71,7 +74,7 @@ def sync_external_api(self, api_url: str, org_id: int) -> dict:
 
     except (RequestException, Timeout) as exc:
         # Log retry attempt
-        print(f"Sync failed (attempt {self.request.retries + 1}): {exc}")
+        logger.warning("Sync failed (attempt %d): %s", self.request.retries + 1, exc)
 
         # Celery will auto-retry due to autoretry_for
         # But can manually trigger with custom logic:

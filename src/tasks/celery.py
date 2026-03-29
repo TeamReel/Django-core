@@ -5,9 +5,12 @@ This module initializes the Celery app with Django settings and autodiscovery.
 All task modules are automatically discovered from INSTALLED_APPS.
 """
 
+import logging
 import os
 
 from celery import Celery
+
+logger = logging.getLogger(__name__)
 
 # Set default Django settings module.
 #
@@ -36,4 +39,4 @@ app.autodiscover_tasks()
 @app.task(bind=True, ignore_result=True)
 def debug_task(self):
     """Debug task for testing Celery setup."""
-    print(f"Request: {self.request!r}")
+    logger.debug("Request: %r", self.request)
