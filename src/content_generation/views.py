@@ -10,6 +10,7 @@ from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import ContentApproval, ContentItem, ContentStatus, ContentTemplate
@@ -149,6 +150,7 @@ class ContentTemplateViewSet(ContentTemplatePermissionMixin, viewsets.ModelViewS
     can only be edited by superusers.
     """
 
+    permission_classes = [IsAuthenticated]
     serializer_class = ContentTemplateSerializer
     filterset_class = ContentTemplateFilter
     pagination_class = ContentTemplatePagination
@@ -244,6 +246,7 @@ class ContentItemViewSet(ContentItemPermissionMixin, viewsets.ModelViewSet):
     - download: content.download_content
     """
 
+    permission_classes = [IsAuthenticated]
     serializer_class = ContentItemSerializer
     pagination_class = ContentItemPagination
     filterset_class = ContentItemFilter
@@ -475,6 +478,7 @@ class ContentApprovalViewSet(ContentApprovalPermissionMixin, viewsets.ModelViewS
     - create/update/delete: content.approve_content
     """
 
+    permission_classes = [IsAuthenticated]
     queryset = ContentApproval.objects.select_related(
         "content_item", "content_item__template", "reviewer"
     )

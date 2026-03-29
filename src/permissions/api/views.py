@@ -28,6 +28,7 @@ class RoleViewSet(viewsets.ModelViewSet):
     - ?search=admin - Search by name
     """
 
+    permission_classes = [IsAuthenticated]
     queryset = Role.objects.all().prefetch_related("permissions")
     serializer_class = RoleSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -86,6 +87,7 @@ class RoleAssignmentViewSet(viewsets.ModelViewSet):
     Note: Update not supported (delete old assignment, create new one)
     """
 
+    permission_classes = [IsAuthenticated]
     queryset = RoleAssignment.objects.all().select_related(
         "user", "role", "target_organization", "target_project", "assigned_by"
     )

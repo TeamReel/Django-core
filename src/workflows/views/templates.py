@@ -30,6 +30,7 @@ class WorkflowTemplateViewSet(viewsets.ModelViewSet):
     - DELETE /templates/{id}/ - Soft-delete template
     """
 
+    permission_classes = [IsAuthenticated]
     queryset = WorkflowTemplate.all_objects.all().order_by(
         "-created_at"
     )  # Use all_objects to allow filtering inactive

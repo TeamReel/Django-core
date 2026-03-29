@@ -164,6 +164,7 @@ class GenerationRequestViewSet(viewsets.ModelViewSet):
     - Delete: Disabled (use cancel instead)
     """
 
+    permission_classes = [IsAuthenticated]
     queryset = GenerationRequest.objects.select_related(
         "template", "requester", "project"
     ).all()

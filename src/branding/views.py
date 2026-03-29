@@ -48,6 +48,7 @@ class AppBackgroundViewSet(viewsets.ModelViewSet):
     BrandAssetViewSet.app_backgrounds action (which queries the same model).
     """
 
+    permission_classes = [IsAuthenticated]
     queryset = AppBackground.objects.select_related("sport", "file").all()
     pagination_class = BrandPagination
 
