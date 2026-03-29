@@ -1,0 +1,316 @@
+﻿Starting Container
+ INFO  Accepting connections at http://0.0.0.0:80
+ HTTP  3/29/2026 2:57:23 PM 100.64.0.2 GET /
+ HTTP  3/29/2026 2:57:23 PM 100.64.0.2 Returned 200 in 24 ms
+ HTTP  3/29/2026 3:47:09 PM 100.64.0.3 GET /robots.txt
+ HTTP  3/29/2026 3:47:09 PM 100.64.0.3 Returned 200 in 4 ms
+ HTTP  3/29/2026 3:47:09 PM 100.64.0.4 GET /assets/index-lBV9736M.js
+ HTTP  3/29/2026 3:47:09 PM 100.64.0.4 Returned 200 in 5 ms
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.5 GET /directory?tab=clubs
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.5 Returned 200 in 1 ms
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.5 GET /assets/index-lBV9736M.js
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.5 Returned 200 in 1 ms
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.6 GET /assets/index-BW20AXg5.css
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.7 GET /assets/vendor-react-BSuJhS92.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.12 GET /teamreel-icon.svg
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.12 Returned 200 in 5 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.6 GET /assets/ContentShareSheet-CDp5s6HQ.css
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.8 GET /assets/vendor-D-ZbmMQ9.js
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.9 GET /assets/vendor-recharts-D_B3-s2v.js
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.10 GET /assets/vendor-icons-DD08WzS9.js
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.10 Returned 200 in 7 ms
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.9 Returned 200 in 8 ms
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.6 Returned 200 in 14 ms
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.8 Returned 200 in 14 ms
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.7 Returned 200 in 17 ms
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.11 GET /manifest.json
+ HTTP  3/29/2026 4:16:11 PM 100.64.0.11 Returned 200 in 3 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 GET /assets/ContentShareSheet-CP-8dDM-.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.12 GET /assets/contentLibraryTypes-DqMMcDjV.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.8 GET /assets/AIStudioPage-BGT31vu1.css
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.6 GET /assets/PreferencesModals-DmaZ-Sd0.css
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.6 Returned 200 in 4 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.8 GET /assets/SwipeableCard-Bui3fHtT.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 GET /assets/MobileTabBar-DzKHO-XR.css
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 Returned 200 in 3 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.10 GET /assets/ContentIcon-B_TsnP72.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.12 Returned 200 in 4 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.8 Returned 200 in 4 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 GET /assets/ApprovalsPage-Dpt9joAb.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.8 Returned 200 in 4 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 GET /assets/AIStudioPage-zVBvRIpw.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.12 Returned 200 in 3 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.6 Returned 200 in 3 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 Returned 200 in 7 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.12 GET /assets/Badge-B30p9VQF.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.10 Returned 200 in 5 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 GET /assets/PreferencesModals-CwPZZcr4.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 Returned 200 in 6 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.5 Returned 200 in 8 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.8 GET /assets/useVideoJobs-D0hTjcfN.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.10 GET /assets/useWorkflows-Dh0M1Lqk.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.6 GET /assets/Input-CpxzOXNp.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 GET /assets/ProfileHubPage-9vR0ogPq.css
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 Returned 200 in 8 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 Returned 200 in 9 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.12 Returned 200 in 9 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 GET /assets/WorkflowStatusBadge-CMnWO3yk.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 GET /assets/ProfileHubPage-C32_-ADS.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 Returned 200 in 6 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.8 Returned 200 in 10 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.12 GET /assets/ApprovalsPage-B5nOqoEI.css
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 GET /assets/MobileTabBar-CTu9Dujm.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.5 GET /assets/SlotIcon-BYAJK9Pn.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 GET /assets/contentLibraryTypes-DqMMcDjV.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 GET /assets/AIStudioPage-zVBvRIpw.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 Returned 200 in 3 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 GET /assets/vendor-D-ZbmMQ9.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.10 GET /assets/vendor-recharts-D_B3-s2v.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 GET /assets/index-lBV9736M.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 GET /assets/vendor-react-BSuJhS92.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.10 Returned 304 in 4 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 GET /assets/vendor-icons-DD08WzS9.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 Returned 304 in 8 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.10 Returned 200 in 6 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.6 Returned 200 in 7 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 Returned 200 in 7 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 Returned 200 in 9 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 Returned 200 in 8 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 GET /favicon.svg
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 GET /teamreel-icon.svg
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 Returned 304 in 1 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.8 Returned 304 in 5 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.7 Returned 304 in 5 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 GET /assets/ProfileHubPage-C32_-ADS.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.8 GET /assets/PreferencesModals-CwPZZcr4.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.12 GET /assets/ApprovalsPage-Dpt9joAb.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.10 GET /assets/SwipeableCard-Bui3fHtT.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 Returned 304 in 6 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.7 GET /assets/Input-CpxzOXNp.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.12 Returned 304 in 4 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.10 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 GET /assets/MobileTabBar-CTu9Dujm.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 GET /assets/useVideoJobs-D0hTjcfN.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 GET /assets/useWorkflows-Dh0M1Lqk.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.12 GET /assets/ContentShareSheet-CP-8dDM-.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.10 GET /assets/Badge-B30p9VQF.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 GET /assets/ContentIcon-B_TsnP72.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.6 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 Returned 304 in 24 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.7 GET /assets/ClubsList-BZAs99_0.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 Returned 304 in 7 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 Returned 304 in 1 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.6 GET /assets/PageContent-D6x5wym0.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.9 Returned 304 in 6 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 GET /assets/DirectoryPage-Bl2NURD4.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.14 Returned 304 in 5 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/PageHeader-CP754XLU.js
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.7 GET /assets/SlotIcon-BYAJK9Pn.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.15 GET /assets/WorkflowStatusBadge-CMnWO3yk.js.map
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.10 Returned 304 in 4 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.12 Returned 304 in 8 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.7 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.15 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 Returned 304 in 18 ms
+ HTTP  3/29/2026 4:16:12 PM 100.64.0.13 Returned 304 in 6 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.6 GET /assets/permissions-BDfNhM4Q.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 GET /assets/OrganisationCreateModal-DLoyiQKx.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.8 GET /assets/DirectoryPremium-xOGb5P9w.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 GET /assets/FederationsList-Ci9L8Mcv.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 GET /assets/TeamsList-dASx7_0m.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.5 GET /assets/ProjectCreateModal-CeNy81Os.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 GET /assets/OrganisationCreateModal-Cm5DhM4U.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.14 GET /assets/design-system-CtoTmaeJ.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.14 GET /assets/OrganisationDetailModal-Dvf1By76.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.7 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.10 GET /assets/ClubsList-BxkrIg7x.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 GET /assets/ProjectEditModal-BVUYl2iQ.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.10 GET /assets/DirectoryTableShell-9_GIhFpl.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.7 GET /assets/design-system-BoeXyp_0.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/ProjectEditModal-b1VCcOZ0.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.7 GET /assets/ProjectCreateModal-1-dJKBOB.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 GET /assets/DirectoryPremium.module-CFLX-L3a.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 GET /assets/OrganisationDetailModal-BMpwySx5.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.11 GET /assets/MatchDetailModal-D0491XwP.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.8 Returned 304 in 32 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.6 GET /assets/MatchesList-OG4By35a.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.14 Returned 304 in 40 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.7 Returned 304 in 40 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 Returned 304 in 31 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 Returned 304 in 31 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 Returned 304 in 40 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.10 Returned 304 in 9 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.8 GET /assets/MatchEditModal-eyzDavMP.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.14 Returned 304 in 30 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.16 GET /assets/Card-Bn-DU7fp.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 36 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 Returned 304 in 31 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 GET /assets/index-D7SUfn3n.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.6 Returned 304 in 31 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.7 Returned 304 in 35 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 Returned 304 in 33 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/DirectoryPage-Dkd43BgQ.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/MatchDetailModal-0v_u_Uv_.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.11 Returned 304 in 7 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.6 Returned 304 in 6 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.7 GET /assets/MatchCreateModal-DjGSgVrX.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.5 Returned 304 in 30 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 GET /assets/UsersList-DgzIBuRD.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 Returned 304 in 30 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.8 Returned 304 in 7 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.7 GET /assets/FederationsList-DB2yr5en.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.16 Returned 304 in 6 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.10 Returned 304 in 9 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 Returned 304 in 8 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 GET /assets/trash-duvB1lHU.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 Returned 304 in 8 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.7 Returned 304 in 5 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 GET /assets/index-jdZuznQM.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 5 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 5 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 GET /assets/SeasonsList-BtcJHkrQ.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 GET /assets/PeriodEditModal-CQtHIeMt.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 GET /assets/useModalState-BtL3XrmR.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.14 GET /assets/activities-DYo9KJOZ.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/UsersList-hpsqVM_J.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 Returned 304 in 4 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 GET /assets/TeamsList-DoSwRA4d.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.14 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 GET /assets/MatchCreateModal-BREa2xXb.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.7 Returned 304 in 4 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 GET /assets/index-BZvp4unj.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 Returned 304 in 4 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 GET /assets/DirectoryTableShell-D85rav9I.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 GET /assets/SeasonsList-b1JmiQP3.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 Returned 304 in 38 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.6 GET /assets/CompetitionsList-BlqJ17cS.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.18 GET /assets/PeriodEditModal-J--J0n1G.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 GET /assets/CompetitionsList-DIuFDBvQ.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.11 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/UserEditModal-BAchRxjb.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 GET /assets/MatchesList-wrJeUeAs.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.18 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.6 Returned 304 in 37 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/UserEditModal-WcRDVBD0.css
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 Returned 304 in 39 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.11 GET /assets/index-D2htnDlH.js
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 40 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.11 GET /assets/PageContent-D6x5wym0.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/DirectoryPage-Bl2NURD4.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/design-system-CtoTmaeJ.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/PageHeader-CP754XLU.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.18 GET /assets/ProjectEditModal-b1VCcOZ0.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 GET /assets/ClubsList-BZAs99_0.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.11 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.18 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 GET /assets/CompetitionsList-DIuFDBvQ.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.5 GET /assets/SeasonsList-BtcJHkrQ.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.5 Returned 304 in 1 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/UsersList-hpsqVM_J.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/index-BZvp4unj.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.7 GET /assets/TeamsList-DoSwRA4d.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 GET /assets/useModalState-BtL3XrmR.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/MatchEditModal-eyzDavMP.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 GET /assets/ProjectCreateModal-CeNy81Os.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 GET /assets/DirectoryTableShell-9_GIhFpl.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 GET /assets/activities-DYo9KJOZ.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 GET /assets/FederationsList-Ci9L8Mcv.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 GET /assets/MatchesList-wrJeUeAs.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.14 GET /assets/permissions-BDfNhM4Q.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.11 GET /assets/Card-Bn-DU7fp.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 GET /assets/DirectoryPremium.module-CFLX-L3a.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.6 GET /assets/MatchCreateModal-DjGSgVrX.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 GET /assets/PeriodEditModal-CQtHIeMt.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.18 GET /assets/index-D2htnDlH.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 GET /assets/trash-duvB1lHU.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 GET /assets/UserEditModal-BAchRxjb.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 GET /assets/OrganisationDetailModal-Dvf1By76.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.18 Returned 304 in 8 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 Returned 304 in 6 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.7 Returned 304 in 6 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.13 Returned 304 in 7 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 Returned 304 in 8 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.6 Returned 304 in 7 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.8 GET /assets/MatchDetailModal-D0491XwP.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.14 Returned 304 in 6 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 7 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 GET /assets/OrganisationCreateModal-Cm5DhM4U.js.map
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 Returned 304 in 7 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 8 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 9 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 Returned 304 in 8 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.11 Returned 304 in 8 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.15 Returned 304 in 11 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 Returned 304 in 7 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.17 Returned 304 in 8 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 Returned 304 in 8 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.9 Returned 304 in 7 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.8 Returned 304 in 5 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 Returned 304 in 5 ms
+ HTTP  3/29/2026 4:16:13 PM 100.64.0.12 Returned 304 in 7 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.10 GET /assets/SeasonProvider-DVQ7wusg.js
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.14 GET /assets/MatchDetailWrapper-e_wX8hQR.js
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.11 GET /assets/SeasonDetailPage-Ch8NlM97.js
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.10 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.14 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.11 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.10 GET /assets/ShareButton-DaHRy_FR.css
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.10 Returned 304 in 1 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.14 GET /assets/MatchLineupTab-C782eTA9.css
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.11 GET /assets/index-DMvSBcIz.css
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.14 Returned 304 in 1 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.11 Returned 304 in 1 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.14 GET /assets/SeasonDetailPage-Ch8NlM97.js.map
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.14 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.10 GET /assets/MatchDetailWrapper-CLWgiOfL.css
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.10 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.10 GET /assets/seasonProviderHelpers-hChM9sgP.js
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.14 GET /assets/ShareButton-CAr5BUKt.js
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.10 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.14 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.6 GET /assets/MatchLineupTab-DdPLBdt_.js
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.6 Returned 304 in 1 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.10 GET /assets/featureFlagsApi-DG6T8z_b.js
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.12 GET /assets/index-5Mja9fQM.js
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.10 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.12 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.11 GET /assets/MatchDetailWrapper-e_wX8hQR.js.map
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.11 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.12 GET /assets/featureFlagsApi-DG6T8z_b.js.map
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.13 GET /assets/seasonProviderHelpers-hChM9sgP.js.map
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.10 GET /assets/ShareButton-CAr5BUKt.js.map
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.11 GET /assets/index-5Mja9fQM.js.map
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.12 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.9 GET /assets/MatchLineupTab-DdPLBdt_.js.map
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.13 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.10 Returned 304 in 4 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.19 GET /assets/SeasonProvider-DVQ7wusg.js.map
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.9 Returned 304 in 3 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.11 Returned 304 in 4 ms
+ HTTP  3/29/2026 4:16:21 PM 100.64.0.19 Returned 304 in 2 ms
+ HTTP  3/29/2026 4:22:58 PM 100.64.0.20 GET /sitemap.xml
+ HTTP  3/29/2026 4:22:58 PM 100.64.0.20 Returned 200 in 1 ms
+ HTTP  3/29/2026 4:55:42 PM 100.64.0.21 GET /robots.txt
+ HTTP  3/29/2026 4:55:42 PM 100.64.0.21 Returned 200 in 4 ms
+ HTTP  3/29/2026 4:55:43 PM 100.64.0.21 GET /sitemap.xml
+ HTTP  3/29/2026 4:55:43 PM 100.64.0.21 Returned 200 in 1 ms

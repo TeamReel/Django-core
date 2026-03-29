@@ -1,0 +1,493 @@
+﻿diff --git a/src/activities/api/serializers_activity.py b/src/activities/api/serializers_activity.py
+index 6db0feae..c1949cd0 100644
+--- a/src/activities/api/serializers_activity.py
++++ b/src/activities/api/serializers_activity.py
+@@ -215,7 +215,7 @@ class ActivitySerializer(serializers.ModelSerializer):
+                         f"({period.start_date} to {period.end_date})"
+                     )
+             except Period.DoesNotExist:
+-                raise serializers.ValidationError({"period_id": "Period does not exist"})
++                raise serializers.ValidationError({"period_id": "Period does not exist"}) from None
+ 
+         return data
+ 
+diff --git a/src/activities/api/serializers_participation.py b/src/activities/api/serializers_participation.py
+index e5e7ae59..9b536d67 100644
+--- a/src/activities/api/serializers_participation.py
++++ b/src/activities/api/serializers_participation.py
+@@ -147,11 +147,11 @@ class ParticipationSerializer(serializers.ModelSerializer):
+                         )
+ 
+             except Membership.DoesNotExist:
+-                raise serializers.ValidationError({"member_id": "Member does not exist"})
++                raise serializers.ValidationError({"member_id": "Member does not exist"}) from None
+             except Activity.DoesNotExist:
+-                raise serializers.ValidationError({"activity_id": "Activity does not exist"})
++                raise serializers.ValidationError({"activity_id": "Activity does not exist"}) from None
+             except Period.DoesNotExist:
+-                raise serializers.ValidationError({"period_id": "Period does not exist"})
++                raise serializers.ValidationError({"period_id": "Period does not exist"}) from None
+ 
+         return data
+ 
+diff --git a/src/activities/api/serializers_period.py b/src/activities/api/serializers_period.py
+index ded2e27f..d8d97720 100644
+--- a/src/activities/api/serializers_period.py
++++ b/src/activities/api/serializers_period.py
+@@ -210,7 +210,7 @@ class PeriodSerializer(serializers.ModelSerializer):
+             except Period.DoesNotExist:
+                 raise serializers.ValidationError(
+                     {"parent_period_id": "Parent period does not exist"}
+-                )
++                ) from None
+ 
+         return data
+ 
+diff --git a/src/activity_feed/tasks.py b/src/activity_feed/tasks.py
+index fd382925..905192d7 100644
+--- a/src/activity_feed/tasks.py
++++ b/src/activity_feed/tasks.py
+@@ -94,4 +94,4 @@ def log_event(
+         return str(event.id)
+     except Exception as exc:
+         logger.exception("Failed to create ActivityLog: %s", exc)
+-        raise self.retry(exc=exc)
++        raise self.retry(exc=exc) from exc
+diff --git a/src/content_generation/views.py b/src/content_generation/views.py
+index fbfd81af..6c9a61ff 100644
+--- a/src/content_generation/views.py
++++ b/src/content_generation/views.py
+@@ -191,7 +191,7 @@ class ContentTemplateViewSet(ContentTemplatePermissionMixin, viewsets.ModelViewS
+             # Re-raise as a validation error so it gets properly formatted
+             from rest_framework.exceptions import ValidationError
+ 
+-            raise ValidationError({"detail": str(e), "error_type": type(e).__name__})
++            raise ValidationError({"detail": str(e), "error_type": type(e).__name__}) from e
+ 
+     def partial_update(self, request, *args, **kwargs):
+         """Override partial_update to catch and expose errors for debugging."""
+@@ -207,7 +207,7 @@ class ContentTemplateViewSet(ContentTemplatePermissionMixin, viewsets.ModelViewS
+             # Re-raise as a validation error so it gets properly formatted
+             from rest_framework.exceptions import ValidationError
+ 
+-            raise ValidationError({"detail": str(e), "error_type": type(e).__name__})
++            raise ValidationError({"detail": str(e), "error_type": type(e).__name__}) from e
+ 
+     def destroy(self, request, *args, **kwargs):
+         """
+diff --git a/src/files/backends/azure.py b/src/files/backends/azure.py
+index cd0dfddc..2b5d50a8 100644
+--- a/src/files/backends/azure.py
++++ b/src/files/backends/azure.py
+@@ -34,7 +34,7 @@ class AzureBlobStorageBackend(StorageBackend):
+             raise ImportError(
+                 "azure-storage-blob is required for Azure Blob Storage. "
+                 "Install it with: pip install azure-storage-blob"
+-            )
++            ) from None
+ 
+         self.account_name = getattr(settings, "AZURE_STORAGE_ACCOUNT_NAME", None)
+         self.account_key = getattr(settings, "AZURE_STORAGE_ACCOUNT_KEY", None)
+diff --git a/src/files/backends/s3.py b/src/files/backends/s3.py
+index 48766ed5..230fcccf 100644
+--- a/src/files/backends/s3.py
++++ b/src/files/backends/s3.py
+@@ -34,7 +34,7 @@ class S3StorageBackend(StorageBackend):
+         except ImportError:
+             raise ImportError(
+                 "boto3 is required for AWS S3 Storage. " "Install it with: pip install boto3"
+-            )
++            ) from None
+ 
+         self.access_key = getattr(settings, "AWS_ACCESS_KEY_ID", None)
+         self.secret_key = getattr(settings, "AWS_SECRET_ACCESS_KEY", None)
+diff --git a/src/generative/serializers.py b/src/generative/serializers.py
+index bdebf9f7..e1a7bcec 100644
+--- a/src/generative/serializers.py
++++ b/src/generative/serializers.py
+@@ -81,7 +81,7 @@ class GenerationTemplateSerializer(serializers.ModelSerializer):
+         try:
+             jsonschema.Draft7Validator.check_schema(value)
+         except jsonschema.SchemaError as e:
+-            raise serializers.ValidationError(f"Invalid JSON Schema: {e.message}")
++            raise serializers.ValidationError(f"Invalid JSON Schema: {e.message}") from None
+         return value
+ 
+     def validate_pipeline_config(self, value: dict[str, Any]) -> dict[str, Any]:
+@@ -117,7 +117,7 @@ class GenerationTemplateSerializer(serializers.ModelSerializer):
+                 if cost < 0:
+                     raise serializers.ValidationError("estimated_cost must be non-negative")
+             except (ValueError, TypeError):
+-                raise serializers.ValidationError("estimated_cost must be a valid number")
++                raise serializers.ValidationError("estimated_cost must be a valid number") from None
+ 
+         # WP06 T052: Validate brand configuration if present
+         if value.get("use_brand_context") and "brand_id" in value:
+@@ -126,7 +126,7 @@ class GenerationTemplateSerializer(serializers.ModelSerializer):
+                 if brand_id < 1:
+                     raise ValueError("brand_id must be positive")
+             except (ValueError, TypeError):
+-                raise serializers.ValidationError("brand_id must be a valid positive integer")
++                raise serializers.ValidationError("brand_id must be a valid positive integer") from None
+ 
+         return value
+ 
+@@ -217,9 +217,9 @@ class GenerationRequestSerializer(serializers.ModelSerializer):
+                 # Validate against template's JSON Schema
+                 jsonschema.validate(value, template.input_schema)
+             except GenerationTemplate.DoesNotExist:
+-                raise serializers.ValidationError("Template does not exist")
++                raise serializers.ValidationError("Template does not exist") from None
+             except jsonschema.ValidationError as e:
+-                raise serializers.ValidationError(f"Input data validation failed: {e.message}")
++                raise serializers.ValidationError(f"Input data validation failed: {e.message}") from None
+ 
+         return value
+ 
+diff --git a/src/generative/tasks_asset.py b/src/generative/tasks_asset.py
+index 4e675703..4f0cf398 100644
+--- a/src/generative/tasks_asset.py
++++ b/src/generative/tasks_asset.py
+@@ -330,7 +330,7 @@ def generate_asset_task(
+                 progress=10,
+                 error=f"Transient error (attempt {self.request.retries + 1}): {error_str[:200]}",
+             )
+-            raise self.retry(exc=exc, countdown=retry_delay)
++            raise self.retry(exc=exc, countdown=retry_delay) from exc
+ 
+         set_job(
+             job_id,
+diff --git a/src/generative/views.py b/src/generative/views.py
+index d57fc795..f3ed7bed 100644
+--- a/src/generative/views.py
++++ b/src/generative/views.py
+@@ -281,7 +281,7 @@ class GenerationRequestViewSet(viewsets.ModelViewSet):
+                         "required_amount": float(e.required_amount),
+                     },
+                 }
+-            )
++            ) from None
+ 
+         # Return 202 Accepted
+         return Response(
+diff --git a/src/generative/views_save.py b/src/generative/views_save.py
+index a6fe8c24..46e61169 100644
+--- a/src/generative/views_save.py
++++ b/src/generative/views_save.py
+@@ -571,7 +571,7 @@ def list_asset_history_view(request: Request) -> Response:
+                 # Assuming 'slug' field exists or we can't find it
+                 p = Project.objects.filter(slug=project_id).first()
+                 if not p:
+-                    raise Exception("Project not found")
++                    raise Exception("Project not found") from None
+ 
+             filters["organization"] = p.organisation
+         except:  # noqa: E722
+diff --git a/src/medialib/serializers.py b/src/medialib/serializers.py
+index b50879a9..a484a9ed 100644
+--- a/src/medialib/serializers.py
++++ b/src/medialib/serializers.py
+@@ -235,5 +235,5 @@ class MediaItemRelationSerializer(serializers.ModelSerializer):
+                 if not ContentType.objects.filter(app_label=app_label, model=model).exists():
+                     raise serializers.ValidationError({"target_type": "Invalid model identifier"})
+             except ValueError:
+-                raise serializers.ValidationError({"target_type": "Format must be 'app.model'"})
++                raise serializers.ValidationError({"target_type": "Format must be 'app.model'"}) from None
+         return attrs
+diff --git a/src/medialib/services/relations.py b/src/medialib/services/relations.py
+index c1b087fd..8526d8bd 100644
+--- a/src/medialib/services/relations.py
++++ b/src/medialib/services/relations.py
+@@ -53,7 +53,7 @@ class MediaItemRelationService:
+             try:
+                 uuid.UUID(object_id)
+             except ValueError:
+-                raise ValidationError(f"Target ID '{object_id}' is not a valid UUID.")
++                raise ValidationError(f"Target ID '{object_id}' is not a valid UUID.") from None
+ 
+         relation, created = MediaItemRelation.objects.update_or_create(
+             media_item=media_item,
+diff --git a/src/medialib/services/thumbnails.py b/src/medialib/services/thumbnails.py
+index 9f629bcb..3afc7a00 100644
+--- a/src/medialib/services/thumbnails.py
++++ b/src/medialib/services/thumbnails.py
+@@ -114,7 +114,7 @@ def generate_video_thumbnail(
+ 
+     except subprocess.CalledProcessError as e:
+         logger.error(f"ffmpeg failed: {e.stderr.decode() if e.stderr else str(e)}")
+-        raise RuntimeError(f"Failed to generate video thumbnail: {e}")
++        raise RuntimeError(f"Failed to generate video thumbnail: {e}") from e
+     except Exception as e:
+         logger.error(f"Error processing video thumbnail: {str(e)}")
+         raise
+diff --git a/src/medialib/tasks.py b/src/medialib/tasks.py
+index d37b397c..722c1b80 100644
+--- a/src/medialib/tasks.py
++++ b/src/medialib/tasks.py
+@@ -113,7 +113,7 @@ def process_media_item(self, media_item_id: str):
+         # If we failed to even get the item or save error state
+         logger.exception(f"Critical failure in process_media_item for {media_item_id}")
+         # Retrying handled by Celery configuration
+-        raise self.retry(exc=exc, countdown=60)
++        raise self.retry(exc=exc, countdown=60) from exc
+ 
+ 
+ @shared_task(bind=True, max_retries=3)
+@@ -231,4 +231,4 @@ def generate_media_thumbnails(self, media_item_id: str):
+ 
+     except Exception as exc:
+         logger.exception(f"Thumbnail generation failed for {media_item_id}")
+-        raise self.retry(exc=exc, countdown=60)
++        raise self.retry(exc=exc, countdown=60) from exc
+diff --git a/src/projects/api/views_membership.py b/src/projects/api/views_membership.py
+index 1ce0e34b..d8a46c81 100644
+--- a/src/projects/api/views_membership.py
++++ b/src/projects/api/views_membership.py
+@@ -553,7 +553,7 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
+                     pk=scope_project_param
+                 )
+             except Project.DoesNotExist:
+-                raise ValidationError({"scope_project_id": "Project does not exist."})
++                raise ValidationError({"scope_project_id": "Project does not exist."}) from None
+ 
+             if scope_project.organisation_id != project.organisation_id:
+                 raise ValidationError(
+diff --git a/src/projects/services/invitation_service.py b/src/projects/services/invitation_service.py
+index 37261853..adea8438 100644
+--- a/src/projects/services/invitation_service.py
++++ b/src/projects/services/invitation_service.py
+@@ -109,7 +109,7 @@ class InvitationService:
+         try:
+             invitation = ProjectInvite.objects.get(token=token)
+         except ProjectInvite.DoesNotExist:
+-            raise ValueError("Invalid invitation token.")
++            raise ValueError("Invalid invitation token.") from None
+ 
+         if invitation.status != ProjectInvite.Status.PENDING:
+             raise ValueError(f"Invitation is {invitation.status}.")
+diff --git a/src/scaffolding/management/commands/scaffold.py b/src/scaffolding/management/commands/scaffold.py
+index d308fa28..3ac67d3d 100644
+--- a/src/scaffolding/management/commands/scaffold.py
++++ b/src/scaffolding/management/commands/scaffold.py
+@@ -64,8 +64,8 @@ class Command(BaseCommand):
+                     e.code,
+                     f"Unknown error (exit code {e.code})",
+                 )
+-                raise CommandError(f"Scaffolding failed: {message}")
++                raise CommandError(f"Scaffolding failed: {message}") from None
+ 
+         except Exception as e:
+             # Catch any unhandled exceptions and convert to CommandError
+-            raise CommandError(f"Scaffolding error: {e}")
++            raise CommandError(f"Scaffolding error: {e}") from e
+diff --git a/src/scaffolding/validation/runner.py b/src/scaffolding/validation/runner.py
+index b2f62bd0..69c03ed9 100644
+--- a/src/scaffolding/validation/runner.py
++++ b/src/scaffolding/validation/runner.py
+@@ -124,7 +124,7 @@ class ValidationRunner:
+             raise TimeoutError(
+                 "Constitutional validation timed out after 60 seconds. "
+                 "Use --no-validate to skip validation for large codebases."
+-            )
++            ) from None
+ 
+         except Exception as e:
+             logger.error(f"Unexpected error during validation: {e}")
+diff --git a/src/security_baseline/apps.py b/src/security_baseline/apps.py
+index e1d52d8a..3c1de226 100644
+--- a/src/security_baseline/apps.py
++++ b/src/security_baseline/apps.py
+@@ -99,7 +99,7 @@ class SecurityBaselineConfig(AppConfig):
+             if enforcement_mode == "strict":
+                 raise RuntimeError(
+                     "Constitutional Engine unavailable; strict enforcement required."
+-                )
++                ) from e
+             else:
+                 logger.warning("Constitutional Engine unavailable; proceeding in advisory mode.")
+                 return
+diff --git a/src/settings/serializers.py b/src/settings/serializers.py
+index 0dadcc96..b1ae68c8 100644
+--- a/src/settings/serializers.py
++++ b/src/settings/serializers.py
+@@ -195,7 +195,7 @@ class SettingSerializer(serializers.ModelSerializer):
+                 # JSONField handles the serialization automatically
+                 pass
+         except Exception as e:
+-            raise serializers.ValidationError(f"Type validation failed for {field_name}: {str(e)}")
++            raise serializers.ValidationError(f"Type validation failed for {field_name}: {str(e)}") from e
+ 
+ 
+ class FeatureFlagResolveSerializer(serializers.Serializer):
+diff --git a/src/video/tasks/asset_processing.py b/src/video/tasks/asset_processing.py
+index ca0d47e7..abc32947 100644
+--- a/src/video/tasks/asset_processing.py
++++ b/src/video/tasks/asset_processing.py
+@@ -459,7 +459,7 @@ def auto_crop_closeup_from_fullbody(
+             source_path,
+             exc,
+         )
+-        raise self.retry(exc=exc)
++        raise self.retry(exc=exc) from exc
+ 
+     # ΓöÇΓöÇ Pillow smart crop ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+     try:
+@@ -490,7 +490,7 @@ def auto_crop_closeup_from_fullbody(
+         storage_path = storage.save(upload_path, file_obj)
+     except Exception as exc:
+         logger.exception("auto_crop_closeup: upload failed: %s", exc)
+-        raise self.retry(exc=exc)
++        raise self.retry(exc=exc) from exc
+ 
+     # ΓöÇΓöÇ Write metadata ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+     try:
+@@ -600,7 +600,7 @@ def auto_crop_halfbody_from_fullbody(
+             source_path,
+             exc,
+         )
+-        raise self.retry(exc=exc)
++        raise self.retry(exc=exc) from exc
+ 
+     # ΓöÇΓöÇ Pillow smart crop ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+     try:
+@@ -631,7 +631,7 @@ def auto_crop_halfbody_from_fullbody(
+         storage_path = storage.save(upload_path, file_obj)
+     except Exception as exc:
+         logger.exception("auto_crop_halfbody: upload failed: %s", exc)
+-        raise self.retry(exc=exc)
++        raise self.retry(exc=exc) from exc
+ 
+     # ΓöÇΓöÇ Write metadata ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+     try:
+diff --git a/src/video/tasks/goal_celebration.py b/src/video/tasks/goal_celebration.py
+index 25deb436..996796c3 100644
+--- a/src/video/tasks/goal_celebration.py
++++ b/src/video/tasks/goal_celebration.py
+@@ -94,6 +94,6 @@ def process_goal_celebration_video(self, job_id: str) -> str | None:
+             job.status = JobStatus.QUEUED
+             job.retry_count = self.request.retries + 1
+             job.save(update_fields=["status", "retry_count", "updated_at"])
+-            raise self.retry(exc=exc)
++            raise self.retry(exc=exc) from exc
+ 
+         return None
+diff --git a/src/video/tasks/lineup.py b/src/video/tasks/lineup.py
+index 053de57c..74925a44 100644
+--- a/src/video/tasks/lineup.py
++++ b/src/video/tasks/lineup.py
+@@ -312,6 +312,6 @@ def process_lineup_video(self, job_id: str) -> str | None:
+             job.status = JobStatus.QUEUED
+             job.retry_count = self.request.retries + 1
+             job.save(update_fields=["status", "retry_count", "updated_at"])
+-            raise self.retry(exc=exc)
++            raise self.retry(exc=exc) from exc
+ 
+         return None
+diff --git a/src/video/tasks/match_intro.py b/src/video/tasks/match_intro.py
+index 50b0111b..2a066b7c 100644
+--- a/src/video/tasks/match_intro.py
++++ b/src/video/tasks/match_intro.py
+@@ -94,6 +94,6 @@ def process_match_intro_video(self, job_id: str) -> str | None:
+             job.status = JobStatus.QUEUED
+             job.retry_count = self.request.retries + 1
+             job.save(update_fields=["status", "retry_count", "updated_at"])
+-            raise self.retry(exc=exc)
++            raise self.retry(exc=exc) from exc
+ 
+         return None
+diff --git a/src/video/tasks/then_vs_now.py b/src/video/tasks/then_vs_now.py
+index 76c525a7..252e259e 100644
+--- a/src/video/tasks/then_vs_now.py
++++ b/src/video/tasks/then_vs_now.py
+@@ -146,6 +146,6 @@ def process_then_vs_now_video(self, job_id: str) -> str | None:
+             job.status = JobStatus.QUEUED
+             job.retry_count = self.request.retries + 1
+             job.save(update_fields=["status", "retry_count", "updated_at"])
+-            raise self.retry(exc=exc)
++            raise self.retry(exc=exc) from exc
+ 
+         return None
+diff --git a/src/workflows/serializers/instance.py b/src/workflows/serializers/instance.py
+index 41883582..cc9d218d 100644
+--- a/src/workflows/serializers/instance.py
++++ b/src/workflows/serializers/instance.py
+@@ -153,7 +153,7 @@ class WorkflowInstanceSerializer(serializers.ModelSerializer):
+         try:
+             instance.full_clean()
+         except DjangoValidationError as e:
+-            raise serializers.ValidationError(e.message_dict or str(e))
++            raise serializers.ValidationError(e.message_dict or str(e)) from None
+         instance.save()
+         return instance
+ 
+@@ -169,7 +169,7 @@ class WorkflowInstanceSerializer(serializers.ModelSerializer):
+         try:
+             instance.full_clean()
+         except DjangoValidationError as e:
+-            raise serializers.ValidationError(e.message_dict or str(e))
++            raise serializers.ValidationError(e.message_dict or str(e)) from None
+         instance.save()
+         return instance
+ 
+diff --git a/src/workflows/serializers/template.py b/src/workflows/serializers/template.py
+index a819913a..7af9cbc0 100644
+--- a/src/workflows/serializers/template.py
++++ b/src/workflows/serializers/template.py
+@@ -65,7 +65,7 @@ class WorkflowTemplateSerializer(serializers.ModelSerializer):
+             for part in parts:
+                 int(part)
+         except ValueError:
+-            raise serializers.ValidationError("Version parts must be integers (e.g., 1.0.0)")
++            raise serializers.ValidationError("Version parts must be integers (e.g., 1.0.0)") from None
+ 
+         return value
+ 
+@@ -156,7 +156,7 @@ class WorkflowTemplateSerializer(serializers.ModelSerializer):
+         try:
+             instance.full_clean()
+         except DjangoValidationError as e:
+-            raise serializers.ValidationError(e.message_dict or str(e))
++            raise serializers.ValidationError(e.message_dict or str(e)) from None
+         instance.save()
+         return instance
+ 
+@@ -168,6 +168,6 @@ class WorkflowTemplateSerializer(serializers.ModelSerializer):
+         try:
+             instance.full_clean()
+         except DjangoValidationError as e:
+-            raise serializers.ValidationError(e.message_dict or str(e))
++            raise serializers.ValidationError(e.message_dict or str(e)) from None
+         instance.save()
+         return instance
+diff --git a/src/workflows/tasks.py b/src/workflows/tasks.py
+index debe3bbf..a0930ec6 100644
+--- a/src/workflows/tasks.py
++++ b/src/workflows/tasks.py
+@@ -86,4 +86,4 @@ def execute_workflow_hooks(
+             "Transient error executing workflow hooks",
+             extra={"instance_id": instance_id, "error": str(e), "retry": self.request.retries},
+         )
+-        raise self.retry(exc=e, countdown=2**self.request.retries)  # Exponential backoff
++        raise self.retry(exc=e, countdown=2**self.request.retries) from e  # Exponential backoff
+diff --git a/src/workflows/views/instances.py b/src/workflows/views/instances.py
+index 761d60c0..00af21f3 100644
+--- a/src/workflows/views/instances.py
++++ b/src/workflows/views/instances.py
+@@ -161,7 +161,7 @@ class WorkflowInstanceViewSet(viewsets.ModelViewSet):
+         try:
+             content_object = content_type.get_object_for_this_type(pk=object_id)
+         except content_type.model_class().DoesNotExist:
+-            raise PermissionDenied(f"Content object with ID {object_id} not found")
++            raise PermissionDenied(f"Content object with ID {object_id} not found") from None
+ 
+         # Create instance using workflow engine (handles snapshot + initial state)
+         engine = WorkflowEngine()
+@@ -249,7 +249,7 @@ class WorkflowInstanceViewSet(viewsets.ModelViewSet):
+             )
+         except DjangoValidationError as e:
+             # Convert Django validation errors to DRF format
+-            raise ValidationError({"action": str(e)})
++            raise ValidationError({"action": str(e)}) from None
+ 
+         # Serialize and return transition history
+         output_serializer = TransitionHistorySerializer(history)
