@@ -14,14 +14,13 @@ from uuid import uuid4
 
 import pytest
 from accounts.models import User
+from activities.models import Activity, Period
 from django.core.cache import cache
 from organisations.models import Membership, Organisation
 from permissions.models import Permission, Role, RoleAssignment, ScopeChoices
 from projects.models import Project
 from rest_framework import status
 from rest_framework.test import APIClient
-
-from activities.models import Activity, Period
 
 
 def _dt(y: int, m: int, d: int, hh: int, mm: int) -> datetime:

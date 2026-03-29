@@ -1,8 +1,8 @@
 import pytest
-from django.utils import timezone
 from activities.models import Activity, Participation, Period
 from audit.models import AuditEvent
-from organisations.models import Organisation, Membership
+from django.utils import timezone
+from organisations.models import Membership, Organisation
 from projects.models import Project
 
 

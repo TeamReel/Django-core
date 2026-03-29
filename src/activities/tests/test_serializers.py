@@ -7,10 +7,11 @@ Tests validation logic, nested representations, and edge cases for:
 - ParticipationSerializer
 """
 
-import pytest
 from datetime import date, datetime, timezone
-from activities.api.serializers import PeriodSerializer, ActivitySerializer, ParticipationSerializer
-from activities.models import Period, Activity, Participation
+
+import pytest
+from activities.api.serializers import ActivitySerializer, ParticipationSerializer, PeriodSerializer
+from activities.models import Activity, Participation, Period
 
 
 @pytest.mark.django_db
@@ -413,8 +414,8 @@ class TestParticipationSerializer:
         )
 
         # Create member from different organisation
-        from organisations.models import Organisation, Membership
         from accounts.models import User
+        from organisations.models import Membership, Organisation
 
         other_org = Organisation.objects.create(name="Other Org", slug="other-org", creator=user)
         other_user = User.objects.create_user(email="other@example.com", password="pass123")

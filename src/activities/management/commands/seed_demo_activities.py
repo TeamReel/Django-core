@@ -4,22 +4,22 @@ Management command to seed demo activity data.
 
 import logging
 import random
-from datetime import timedelta, datetime, time
-from django.utils import timezone
-from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
-from django.db.models.signals import post_save, post_delete
+from datetime import datetime, time, timedelta
 
-from organisations.models import Organisation, Membership
-from projects.models import Project, ProjectMembership
-from activities.models import Period, Activity, Participation
-from search.signals import handle_save, handle_delete
+from activities.models import Activity, Participation, Period
 from activities.signals import (
-    activity_post_save,
     activity_post_delete,
-    participation_post_save,
+    activity_post_save,
     participation_post_delete,
+    participation_post_save,
 )
+from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
+from django.db.models.signals import post_delete, post_save
+from django.utils import timezone
+from organisations.models import Membership, Organisation
+from projects.models import Project, ProjectMembership
+from search.signals import handle_delete, handle_save
 
 logger = logging.getLogger(__name__)
 User = get_user_model()

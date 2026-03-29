@@ -13,7 +13,7 @@ from datetime import timedelta
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
-from organisations.models import Organisation, Membership
+from organisations.models import Membership, Organisation
 from transactions.models import UsageEvent
 
 logger = logging.getLogger(__name__)

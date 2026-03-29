@@ -1,9 +1,8 @@
 """DRF serializers for Project CRUD operations."""
 
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
-
 from projects.models import Project
+from rest_framework import serializers
 
 User = get_user_model()
 

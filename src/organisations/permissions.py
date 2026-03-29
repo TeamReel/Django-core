@@ -5,9 +5,8 @@ Provides:
 - IsOrganisationAdmin: Requires user to be active admin of organisation
 """
 
-from rest_framework import permissions
-
 from organisations.models import Membership
+from rest_framework import permissions
 
 
 class IsOrganisationAdmin(permissions.BasePermission):

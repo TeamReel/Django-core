@@ -5,7 +5,6 @@ from accounts.models import User
 from organisations.models import Membership, Organisation
 from projects.models import Project
 from rest_framework.test import APIClient
-
 from transactions.models import UsageEvent
 
 

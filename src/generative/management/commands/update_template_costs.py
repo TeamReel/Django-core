@@ -13,12 +13,12 @@ Usage:
     python manage.py update_template_costs --dry-run
 """
 
+from datetime import timedelta
 from decimal import Decimal
 
 from django.core.management.base import BaseCommand
 from django.db.models import Avg, Count
 from django.utils import timezone
-from datetime import timedelta
 
 from src.generative.models import GenerationRequest, GenerationTemplate, RequestStatus
 

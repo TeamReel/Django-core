@@ -12,9 +12,8 @@ class ProjectsConfig(AppConfig):
 
     def ready(self):
         """Import signal handlers when app is ready."""
-        import projects.signals  # noqa: F401
         import projects.metrics  # noqa: F401
-
+        import projects.signals  # noqa: F401
         from audit.registry import register_event_type
 
         # Register audit events for membership
@@ -36,9 +35,9 @@ class ProjectsConfig(AppConfig):
             "User removed from project",
             required_metadata_keys=["project_id", "user_id"],
         )
-        from search.registry import search_registry
         from projects.models import ProjectMembership
         from projects.search_indexes import ProjectMembershipIndex
+        from search.registry import search_registry
 
         search_registry.register(ProjectMembership, ProjectMembershipIndex)
         # Register audit events for invitations

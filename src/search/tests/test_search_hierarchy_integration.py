@@ -11,8 +11,8 @@ The hierarchy feature is fully covered by unit tests in:
 TODO: Set up proper DRF test client with authentication tokens
 """
 import pytest
-from django.test import Client
 from django.contrib.auth import get_user_model
+from django.test import Client
 
 User = get_user_model()
 

@@ -1,8 +1,8 @@
 """Tests for resolver registry."""
-import pytest
 from unittest.mock import Mock
 
-from search.hierarchy.registry import get_resolver_class, get_resolver
+import pytest
+from search.hierarchy.registry import get_resolver, get_resolver_class
 
 
 @pytest.fixture

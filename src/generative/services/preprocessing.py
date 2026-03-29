@@ -133,8 +133,9 @@ def _border_connected_mask(is_candidate, h, w):  # noqa: ANN001, ANN201
 
     Pure numpy + collections.deque -- no scipy dependency.
     """
-    import numpy as np
     from collections import deque
+
+    import numpy as np
 
     result = np.zeros((h, w), dtype=bool)
 

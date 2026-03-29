@@ -24,14 +24,12 @@ from __future__ import annotations
 import random
 from typing import Optional
 
+from accounts.models import User
+from activities.models import Period
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Q
-
 from faker import Faker
-
-from accounts.models import User
-from activities.models import Period
 from organisations.models import Membership, Organisation
 from projects.models import Project, ProjectMembership
 

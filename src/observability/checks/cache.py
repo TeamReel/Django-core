@@ -3,7 +3,6 @@
 import time
 
 from django.core.cache import cache
-
 from observability.health import HealthCheckResult
 
 

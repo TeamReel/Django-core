@@ -2,9 +2,9 @@
 Normalize competition names to generic names (League, Cup, Youth)
 """
 
+from activities.models import Period
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from activities.models import Period
 
 
 class Command(BaseCommand):

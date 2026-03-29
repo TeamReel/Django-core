@@ -207,11 +207,10 @@ class GenerationRequestViewSet(viewsets.ModelViewSet):
         from decimal import Decimal
 
         from django.db import transaction as db_transaction
-
         from organisations.models import Membership
 
-        from .exceptions import PaymentRequired
         from .credit_service import GenerationCreditService, InsufficientCreditsException
+        from .exceptions import PaymentRequired
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -299,7 +298,6 @@ class GenerationRequestViewSet(viewsets.ModelViewSet):
         - Only works for pending/processing requests
         """
         from django.db import transaction as db_transaction
-
         from organisations.models import Membership
 
         from .credit_service import GenerationCreditService

@@ -1,11 +1,12 @@
-from unittest.mock import patch, MagicMock
-from django.test import TestCase
-from medialib.models import MediaItem, MediaItemState
-from medialib.tasks import process_media_item, generate_media_thumbnails
-from projects.models import Project
+from unittest.mock import MagicMock, patch
+
 from django.contrib.auth import get_user_model
-from organisations.models import Organisation
+from django.test import TestCase
 from files.models import FileAsset
+from medialib.models import MediaItem, MediaItemState
+from medialib.tasks import generate_media_thumbnails, process_media_item
+from organisations.models import Organisation
+from projects.models import Project
 
 
 class MediaItemTaskTests(TestCase):

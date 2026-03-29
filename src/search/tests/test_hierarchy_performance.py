@@ -1,9 +1,9 @@
 """Performance benchmark tests for hierarchy generation."""
 import time
-import pytest
 from unittest.mock import Mock
-from django.test import RequestFactory
 
+import pytest
+from django.test import RequestFactory
 from search.hierarchy.base import BaseHierarchyResolver
 from search.hierarchy.nodes import HierarchyNode
 
@@ -125,8 +125,8 @@ class TestHierarchyPerformance:
 
     def test_anchor_selection_performance(self):
         """Test anchor selection performance with many results."""
-        from search.api.views import SearchAPIView
         from django.test import RequestFactory
+        from search.api.views import SearchAPIView
 
         view = SearchAPIView()
         factory = RequestFactory()

@@ -5,11 +5,12 @@ Tests permission classes using mock requests and direct permission checking.
 Target coverage: ≥90% for api/permissions.py
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
+from activities.api.permissions import ActivityPermission, ParticipationPermission, PeriodPermission
+from activities.models import Activity, Participation, Period
 from rest_framework.test import APIRequestFactory
-from activities.api.permissions import PeriodPermission, ActivityPermission, ParticipationPermission
-from activities.models import Period, Activity, Participation
 
 
 @pytest.fixture

@@ -1,9 +1,8 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client
-from rest_framework import status
-
 from organisations.models import Membership, Organisation
+from rest_framework import status
 from sport_configuration.models import Sport
 
 User = get_user_model()

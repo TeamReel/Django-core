@@ -6,7 +6,6 @@ import pytest
 from django.db import IntegrityError
 from organisations.models import Organisation
 from projects.models import Project
-
 from transactions.models import (
     BalancePolicy,
     EnforcementModeChoices,

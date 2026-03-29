@@ -1,9 +1,10 @@
 import os
 import re
 from datetime import datetime
-from django.core.management.base import BaseCommand
+
 from django.apps import apps
 from django.conf import settings as django_settings
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):

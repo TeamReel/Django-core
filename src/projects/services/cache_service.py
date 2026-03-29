@@ -1,5 +1,6 @@
-from django.core.cache import cache
 from typing import Any, Optional
+
+from django.core.cache import cache
 from projects.metrics import cache_invalidation_total
 
 

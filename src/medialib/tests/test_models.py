@@ -1,10 +1,10 @@
-from django.test import TestCase
-from django.db.utils import IntegrityError
 from django.contrib.auth import get_user_model
+from django.db.utils import IntegrityError
+from django.test import TestCase
+from files.models import FileAsset
+from medialib.models import Collection, CollectionMembership, MediaItem, MediaItemState, MediaTag
 from organisations.models import Organisation
 from projects.models import Project
-from files.models import FileAsset
-from medialib.models import MediaItem, MediaItemState, MediaTag, Collection, CollectionMembership
 
 
 class MediaItemModelTests(TestCase):

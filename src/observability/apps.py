@@ -19,7 +19,6 @@ class ObservabilityConfig(AppConfig):
         - T033: Register PrometheusCollector if metrics enabled
         """
         from django.conf import settings
-
         from observability.checks.cache import CacheHealthCheck
         from observability.checks.database import DatabaseHealthCheck
         from observability.checks.migrations import MigrationHealthCheck

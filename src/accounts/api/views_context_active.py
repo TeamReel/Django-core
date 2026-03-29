@@ -35,11 +35,11 @@ def auth_active_context(request):
     import re
     import unicodedata
 
+    from accounts.models import UserActiveContext
+    from activities.models import Activity, Period
     from django.db import transaction
     from organisations.models import Membership as OrganisationMembership
     from projects.models import Project, ProjectMembership
-    from activities.models import Activity, Period
-    from accounts.models import UserActiveContext
 
     user = request.user
 

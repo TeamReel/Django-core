@@ -1,9 +1,8 @@
 """URL routing for navigation API endpoints."""
 
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
-
 from navigation.views import FavoriteViewSet, RecentViewSet
+from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r"recents", RecentViewSet, basename="recent")

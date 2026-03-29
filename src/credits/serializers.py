@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
-from .models import CreditsBalance, ProjectCreditsBalance
-from .models import UserCreditsBalance
+from .models import CreditsBalance, ProjectCreditsBalance, UserCreditsBalance
 
 
 class CreditsBalanceSerializer(serializers.ModelSerializer):

@@ -4,13 +4,6 @@ from django.db.models import Count
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
-from permissions.audit import evaluate_permission
-from rest_framework import filters, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-
 from notifications.filters import NotificationFilter
 from notifications.models import Notification
 from notifications.pagination import NotificationPagination
@@ -19,6 +12,12 @@ from notifications.serializers import (
     NotificationListSerializer,
     NotificationSerializer,
 )
+from permissions.audit import evaluate_permission
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 
 class HasNotificationPermission(IsAuthenticated):

@@ -2,7 +2,6 @@
 
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
-
 from trash.models import TrashItem
 
 

@@ -1,12 +1,11 @@
 """Management command to seed branding data for all clubs (projects)."""
 
 import hashlib
-from django.core.management.base import BaseCommand
-from django.db import transaction
 
 from branding.models import BrandProfile, DesignToken
+from django.core.management.base import BaseCommand
+from django.db import transaction
 from projects.models import Project
-
 
 # Well-known club colors (official brand colors)
 CLUB_BRANDS = {

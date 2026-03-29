@@ -2,9 +2,8 @@
 Period serializers for Activities API.
 """
 
-from rest_framework import serializers
-
 from activities.models import Period
+from rest_framework import serializers
 
 
 class PeriodSerializer(serializers.ModelSerializer):

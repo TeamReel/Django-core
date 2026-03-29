@@ -3,13 +3,12 @@ from __future__ import annotations
 
 import logging
 
+from accounts.serializers import UserListSerializer
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-from accounts.serializers import UserListSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -81,12 +80,11 @@ def auth_default_context(request):
             status=status.HTTP_401_UNAUTHORIZED,
         )
 
-    from django.db.models import Exists, OuterRef
-
     from accounts.models import UserActiveContext
+    from activities.models import Activity, Period
+    from django.db.models import Exists, OuterRef
     from organisations.models import Membership as OrganisationMembership
     from projects.models import ProjectMembership
-    from activities.models import Activity, Period
 
     user = request.user
     now = timezone.now()

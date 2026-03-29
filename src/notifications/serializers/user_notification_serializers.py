@@ -1,8 +1,7 @@
 """Serializers for user-facing in-app notifications."""
 
-from rest_framework import serializers
-
 from notifications.models import Notification
+from rest_framework import serializers
 
 
 class UserNotificationSerializer(serializers.ModelSerializer):

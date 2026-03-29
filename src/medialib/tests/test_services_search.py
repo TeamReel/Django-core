@@ -1,12 +1,13 @@
-from django.test import TestCase
-from django.db import connection
 import unittest
+
 from django.contrib.auth import get_user_model
-from medialib.services.search import MediaSearchService
-from medialib.models import MediaItem, MediaTag
-from projects.models import Project
-from organisations.models import Organisation
+from django.db import connection
+from django.test import TestCase
 from files.models import FileAsset
+from medialib.models import MediaItem, MediaTag
+from medialib.services.search import MediaSearchService
+from organisations.models import Organisation
+from projects.models import Project
 
 
 class MediaSearchServiceTests(TestCase):
@@ -37,8 +38,9 @@ class MediaSearchServiceTests(TestCase):
         self.item3 = create_item("Football Training")
 
         # Ensure distinct timestamps for ordering tests
-        from django.utils import timezone
         from datetime import timedelta
+
+        from django.utils import timezone
 
         self.item1.created_at = timezone.now() - timedelta(hours=3)
         self.item1.save()

@@ -3,7 +3,6 @@ import os
 
 from django.conf import settings
 from django.utils.module_loading import import_string
-
 from files.backends.base import StorageBackend
 from files.backends.local import LocalStorageBackend
 

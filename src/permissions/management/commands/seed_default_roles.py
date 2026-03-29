@@ -10,7 +10,6 @@ Usage:
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
-
 from permissions.models import Permission, Role, ScopeChoices
 
 

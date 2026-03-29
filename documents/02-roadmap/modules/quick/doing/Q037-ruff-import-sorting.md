@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | � DOING |
 | Bron | Code Review |
 | Impact | 🟢 nice-to-have |
 | Effort | ~0.5 uur |
@@ -11,6 +11,6 @@
 365 Python-bestanden hebben ongesorteerde imports. Automatisch te fixen met `ruff check src/ --select=I001 --fix`. Geen functionele impact, maar maakt code consistent en diffs kleaner.
 
 ## Checklist
-- [ ] `ruff check src/ --select=I001 --fix`
-- [ ] Verify: `ruff check src/ --select=I001` → 0 errors
-- [ ] Tests: `pytest -x`
+- [x] `ruff check src/ --select=I001 --fix`
+- [x] Verify: `ruff check src/ --select=I001` → 0 errors
+- [x] Tests: `pytest -x`

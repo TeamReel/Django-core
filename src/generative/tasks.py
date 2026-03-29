@@ -551,8 +551,9 @@ def cleanup_expired_outputs(self):
     Raises:
         Exception: If cleanup command fails (will trigger retry)
     """
-    from django.core.management import call_command
     from io import StringIO
+
+    from django.core.management import call_command
 
     logger.info("Starting cleanup_expired_outputs task")
 
@@ -586,8 +587,9 @@ def update_template_costs(self):
     Raises:
         Exception: If cost update fails (will trigger retry)
     """
-    from django.core.management import call_command
     from io import StringIO
+
+    from django.core.management import call_command
 
     logger.info("Starting update_template_costs task")
 

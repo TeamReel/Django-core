@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 import dj_database_url
 from corsheaders.defaults import default_headers
 from django.core.management.utils import get_random_secret_key

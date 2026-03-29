@@ -14,12 +14,12 @@ from rest_framework.response import Response
 
 from ._asset_helpers import (
     MODEL_REGISTRY,
+    AssetGenerateInputSerializer,
     _cleanup_old_tasks,
     _create_generation_job,
     _run_video_generation,
     _set_task,
     _upload_image_bytes_to_storage,
-    AssetGenerateInputSerializer,
 )
 
 logger = logging.getLogger("generative.views.asset")
@@ -112,9 +112,9 @@ def generate_asset_view(request: Request) -> Response:
 
     # Fetch images from URLs if provided (and not already in base64)
     if input_image_urls:
-        import requests as http_requests
         from urllib.parse import unquote, urlparse
 
+        import requests as http_requests
         from django.conf import settings
 
         # Detect our own S3 bucket URLs and download directly via boto3
@@ -573,10 +573,10 @@ def generate_asset_view(request: Request) -> Response:
         image_bytes = r.get("image_bytes")
         if image_bytes and not r.get("error"):
             try:
+                import uuid as uuid_module
+
                 from django.core.files.base import ContentFile
                 from django.utils import timezone
-
-                import uuid as uuid_module
 
                 filename = r.get("filename") or f"generated_{r['variant_index']}.png"
                 mime_type = r.get("mime_type") or "image/png"

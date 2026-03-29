@@ -14,7 +14,6 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
 from organisations.models import Organisation
-
 from transactions.models import SourceTypeChoices, Transaction
 
 logger = logging.getLogger(__name__)

@@ -11,11 +11,12 @@ Assigns Team Admin roles for assistant coaches, Team Member roles for players.
 """
 
 import random
+
+from accounts.models import User
+from activities.models import Period
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from accounts.models import User
 from projects.models import Project, ProjectMembership
-from activities.models import Period
 
 
 class Command(BaseCommand):

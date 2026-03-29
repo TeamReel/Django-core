@@ -1,9 +1,9 @@
 """DRF serializers for Membership, Invitations, and Promotions."""
 
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from projects.models import ProjectInvite, ProjectMembership, ProjectMembershipPromotion
+from rest_framework import serializers
 
-from projects.models import ProjectMembership, ProjectInvite, ProjectMembershipPromotion
 from .serializers_project import UserNestedSerializer
 
 User = get_user_model()

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
-
 from search.backend.postgres import PostgresSearchBackend
 from search.models import SearchEntry
 from search.registry import search_registry

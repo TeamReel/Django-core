@@ -21,11 +21,12 @@ Usage:
 
 import random
 from datetime import datetime, time, timedelta
+
+from activities.models import Activity, Period
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from organisations.models import Organisation
 from projects.models import Project
-from activities.models import Activity, Period
 
 
 class Command(BaseCommand):

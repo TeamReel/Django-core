@@ -3,11 +3,11 @@
 Target coverage: CreditsBalance, ProjectCreditsBalance, UserCreditsBalance.
 """
 
-import pytest
 from decimal import Decimal
-from django.db import IntegrityError
 
+import pytest
 from credits.models import CreditsBalance, ProjectCreditsBalance, UserCreditsBalance
+from django.db import IntegrityError
 
 
 @pytest.mark.django_db

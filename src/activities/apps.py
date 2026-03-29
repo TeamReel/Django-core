@@ -12,9 +12,8 @@ class ActivitiesConfig(AppConfig):
 
         # Register B14 search indexes if available
         try:
-            from search.registry import search_registry
-
             from activities.search import ActivityIndex, PeriodIndex
+            from search.registry import search_registry
 
             search_registry.register(PeriodIndex.model, PeriodIndex)
             search_registry.register(ActivityIndex.model, ActivityIndex)

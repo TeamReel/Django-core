@@ -4,10 +4,10 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from src.generative.models import (
-    GenerationTemplate,
-    GenerationRequest,
-    GenerationOutput,
     GenerationJob,
+    GenerationOutput,
+    GenerationRequest,
+    GenerationTemplate,
     RequestStatus,
 )
 

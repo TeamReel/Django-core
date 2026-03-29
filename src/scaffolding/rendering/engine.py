@@ -21,7 +21,6 @@ from jinja2 import (
     TemplateSyntaxError,
     UndefinedError,
 )
-
 from scaffolding import __version__
 from scaffolding.templates.manifest import TemplateManifest
 from scaffolding.utils.errors import format_user_error

@@ -2,9 +2,10 @@
 URL configuration for Activities & Period Hierarchy API.
 """
 
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import SimpleRouter
-from .views import PeriodViewSet, ActivityEventViewSet, ActivityViewSet, ParticipationViewSet
+
+from .views import ActivityEventViewSet, ActivityViewSet, ParticipationViewSet, PeriodViewSet
 
 router = SimpleRouter()
 router.register(r"periods", PeriodViewSet, basename="period")

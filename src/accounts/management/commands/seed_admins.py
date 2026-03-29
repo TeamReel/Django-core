@@ -2,8 +2,8 @@
 Seed Team Admins for demo data via management command.
 """
 
-from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
 from projects.models import Project, ProjectMembership
 
 User = get_user_model()

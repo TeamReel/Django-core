@@ -2,15 +2,16 @@
 API endpoint to trigger cache metrics seeding (superadmin only).
 """
 
-from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAdminUser
-from rest_framework.response import Response
+from io import StringIO
+
 from django.core.management import call_command
 from django.http import HttpResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
-from io import StringIO
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
 
 
 @api_view(["GET", "POST"])

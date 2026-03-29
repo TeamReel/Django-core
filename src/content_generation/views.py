@@ -416,7 +416,8 @@ class ContentItemViewSet(ContentItemPermissionMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="request-revision")
     def request_revision(self, request, pk=None):
         """Request revision for completed content with feedback."""
-        from .services import InvalidStatusError, request_revision as svc_request_revision
+        from .services import InvalidStatusError
+        from .services import request_revision as svc_request_revision
 
         item = self.get_object()
         feedback_text = request.data.get("feedback_text", "").strip()

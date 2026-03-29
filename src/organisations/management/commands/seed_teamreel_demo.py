@@ -22,14 +22,15 @@ Usage:
     $env:DATABASE_URL="postgresql://postgres:..."; python manage.py seed_teamreel_demo
 """
 
-from django.core.management.base import BaseCommand
+from datetime import datetime
+
+from activities.models import Activity, Period
 from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
 from django.utils import timezone
 from organisations.models import Organisation
 from projects.models.project import Project
 from projects.models.project_membership import ProjectMembership
-from activities.models import Period, Activity
-from datetime import datetime
 
 User = get_user_model()
 

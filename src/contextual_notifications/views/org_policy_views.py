@@ -1,15 +1,14 @@
 """DRF API view for organisation notification policies."""
 
-from django.core.exceptions import PermissionDenied
 from typing import Any, cast
 
 from django.apps import apps
+from django.core.exceptions import PermissionDenied
+from organisations.models import Organisation
+from permissions.audit import evaluate_permission
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from organisations.models import Organisation
-from permissions.audit import evaluate_permission
 
 from ..serializers.routing_serializers import OrganisationNotificationPolicySerializer
 

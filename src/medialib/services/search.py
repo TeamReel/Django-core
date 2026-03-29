@@ -1,6 +1,7 @@
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db import models
-from django.db.models import F, Q, Count
+from django.db.models import Count, F, Q
+
 from ..models import MediaItem
 
 

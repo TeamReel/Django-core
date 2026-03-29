@@ -16,13 +16,11 @@ import time
 
 from celery import shared_task
 from django.apps import apps
-from django.db import DatabaseError
-from django.db import transaction
+from django.db import DatabaseError, transaction
 from django.utils import timezone
 
 from src.video.services.asset_processing_specs import ProcessingState
-from src.video.services.asset_processor import AssetProcessor
-from src.video.services.asset_processor import AssetProcessingCancelled
+from src.video.services.asset_processor import AssetProcessingCancelled, AssetProcessor
 from src.video.utils.asset_metadata import (
     build_s3_asset_path,
     get_variant_value,
@@ -415,8 +413,7 @@ def auto_crop_closeup_from_fullbody(
     from PIL import Image as PilImage
 
     # Import crop algorithm + constants from views_asset (pure Pillow, no Django deps)
-    from src.generative.views_asset import CLOSEUP_OUTPUT_SIZE
-    from src.generative.views_asset import _smart_crop_closeup
+    from src.generative.views_asset import CLOSEUP_OUTPUT_SIZE, _smart_crop_closeup
 
     ProjectMembership = apps.get_model("projects", "ProjectMembership")
     try:
@@ -557,8 +554,7 @@ def auto_crop_halfbody_from_fullbody(
     from PIL import Image as PilImage
 
     # Import crop algorithm + constants from views_asset
-    from src.generative.views_asset import HALFBODY_OUTPUT_SIZE
-    from src.generative.views_asset import _smart_crop_halfbody
+    from src.generative.views_asset import HALFBODY_OUTPUT_SIZE, _smart_crop_halfbody
 
     ProjectMembership = apps.get_model("projects", "ProjectMembership")
     try:

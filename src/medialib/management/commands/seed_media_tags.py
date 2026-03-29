@@ -11,9 +11,8 @@ Usage:
 """
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
-from projects.models import Project
 from medialib.models import MediaTag
-
+from projects.models import Project
 
 # System tags - aligned with ContentTemplate types and Sport configuration
 # Organized by category for maintainability

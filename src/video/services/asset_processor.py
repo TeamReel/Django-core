@@ -935,7 +935,7 @@ class AssetProcessor:
 
         # 4. Remove background from each frame using rembg
         try:
-            from rembg import remove, new_session
+            from rembg import new_session, remove
         except ImportError as e:
             raise AssetProcessingError(
                 f"rembg import failed: {e}. " "Background removal requires rembg + onnxruntime."

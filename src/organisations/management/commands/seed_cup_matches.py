@@ -3,15 +3,15 @@ Management command to generate KNVB Beker (Cup) matches for the 2024/2025 season
 Knock-out tournament: Round of 32 → Round of 16 → Quarter-finals → Semi-finals → Final
 """
 
+import random
+from datetime import datetime, timedelta
+
+from activities.models import Activity, Period
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
-from datetime import datetime, timedelta
-import random
-
-from activities.models import Period, Activity
-from projects.models import Project
 from organisations.models import Organisation
+from projects.models import Project
 
 
 class Command(BaseCommand):

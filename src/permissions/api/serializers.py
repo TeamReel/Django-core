@@ -29,9 +29,8 @@ Usage Examples:
     }
 """
 
-from rest_framework import serializers
-
 from permissions.models import Permission, Role, RoleAssignment, ScopeChoices
+from rest_framework import serializers
 
 
 class PermissionSerializer(serializers.ModelSerializer):

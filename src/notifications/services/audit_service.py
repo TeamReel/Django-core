@@ -4,7 +4,6 @@ import hashlib
 from typing import Any, Dict, Optional
 
 from audit.api import audit_log
-
 from notifications.models import Notification
 
 

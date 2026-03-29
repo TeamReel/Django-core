@@ -11,8 +11,8 @@ from django.utils import timezone
 
 from src.video.models import VideoJob
 from src.video.models.job import JobStatus
-from src.video.services.processors.lineup import LineupProcessor
 from src.video.services.processors.base import JobCancelledError
+from src.video.services.processors.lineup import LineupProcessor
 
 logger = logging.getLogger(__name__)
 

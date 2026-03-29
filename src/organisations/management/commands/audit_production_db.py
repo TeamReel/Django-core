@@ -8,10 +8,10 @@ Usage:
     python manage.py audit_production_db
 """
 
-from django.core.management.base import BaseCommand
 from django.apps import apps
-from django.utils import timezone
+from django.core.management.base import BaseCommand
 from django.db import connection
+from django.utils import timezone
 
 
 class Command(BaseCommand):

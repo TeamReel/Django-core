@@ -1,12 +1,11 @@
 """DRF viewsets for notification routing rules."""
 
 from django.core.exceptions import PermissionDenied
+from permissions.audit import evaluate_permission
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-
-from permissions.audit import evaluate_permission
 
 from ..models import RoutingRule
 from ..serializers.routing_serializers import RoutingRuleSerializer

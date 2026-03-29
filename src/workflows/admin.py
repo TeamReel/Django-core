@@ -1,7 +1,8 @@
 """Django admin configuration for workflows app."""
+import json
+
 from django.contrib import admin
 from django.utils.html import format_html
-import json
 
 from src.workflows.models import (
     ProjectPermissionOverride,
@@ -9,7 +10,6 @@ from src.workflows.models import (
     WorkflowInstance,
     WorkflowTemplate,
 )
-
 
 # =============================================================================
 # Inline Admin Classes

@@ -1,12 +1,13 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
-from rest_framework import status
-from medialib.models import MediaItem, MediaTag, Collection, CollectionMembership
-from organisations.models import Organisation, Membership
-from projects.models import Project, ProjectMembership
 from files.models import FileAsset
+from medialib.models import Collection, CollectionMembership, MediaItem, MediaTag
+from organisations.models import Membership, Organisation
+from projects.models import Project, ProjectMembership
+from rest_framework import status
+from rest_framework.test import APIClient
 
 User = get_user_model()
 
@@ -101,9 +102,8 @@ class TestMediaItemViewSet:
 
     def test_list_media_items_filter_by_relation(self, api_client, user, media_item, collection):
         # Create a relation first
-        from medialib.models import MediaItemRelation
         from django.contrib.contenttypes.models import ContentType
-        from medialib.models import Collection
+        from medialib.models import Collection, MediaItemRelation
 
         collection_ct = ContentType.objects.get_for_model(Collection)
         MediaItemRelation.objects.create(

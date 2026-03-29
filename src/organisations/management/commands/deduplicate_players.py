@@ -5,11 +5,12 @@ This command identifies players with the same name who have memberships in diffe
 seasons and merges them into a single user account with multiple period-based memberships.
 """
 
+from collections import defaultdict
+
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from projects.models import Project, ProjectMembership
 from organisations.models import Organisation
-from collections import defaultdict
+from projects.models import Project, ProjectMembership
 
 
 class Command(BaseCommand):

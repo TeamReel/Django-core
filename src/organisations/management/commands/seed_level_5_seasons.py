@@ -15,12 +15,13 @@ Each season:
 - organisation FK to federation
 """
 
+from datetime import date
+
+from accounts.models import User
+from activities.models import Period
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from datetime import date
 from organisations.models import Organisation
-from activities.models import Period
-from accounts.models import User
 
 
 class Command(BaseCommand):

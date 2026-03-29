@@ -1,6 +1,5 @@
-from rest_framework import serializers
-
 from files.models import FileAsset
+from rest_framework import serializers
 
 
 class FileAssetSerializer(serializers.ModelSerializer):

@@ -3,6 +3,11 @@ from __future__ import annotations
 
 import logging
 
+from accounts.models import User
+from accounts.serializers import (
+    RegistrationSerializer,
+    UserListSerializer,
+)
 from audit.api import audit_log
 from django.utils import timezone
 from permissions.evaluator import check_permission
@@ -11,12 +16,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-from accounts.models import User
-from accounts.serializers import (
-    RegistrationSerializer,
-    UserListSerializer,
-)
 
 logger = logging.getLogger(__name__)
 

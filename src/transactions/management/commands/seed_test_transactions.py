@@ -14,7 +14,6 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from organisations.models import Organisation
 from projects.models import Project
-
 from transactions.models import SourceTypeChoices, Transaction, UsageEvent
 from transactions.services import create_transaction, record_usage_event
 

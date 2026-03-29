@@ -8,8 +8,8 @@ Usage:
     $env:DATABASE_URL="postgresql://..."; python manage.py seed_level_1_users
 """
 
-from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
 
 User = get_user_model()
 

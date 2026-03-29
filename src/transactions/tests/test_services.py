@@ -13,7 +13,6 @@ from decimal import Decimal
 
 import pytest
 from django.core.cache import cache
-
 from transactions.exceptions import (
     DuplicateIdempotencyKeyError,
     InsufficientBalanceError,

@@ -1,7 +1,6 @@
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
-
 from files.views import FileViewSet
+from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r"files", FileViewSet, basename="file")

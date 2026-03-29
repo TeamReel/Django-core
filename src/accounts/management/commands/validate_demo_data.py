@@ -13,12 +13,11 @@ import json
 import time
 from typing import Dict, List
 
+from accounts.models import User
 from django.core.management.base import BaseCommand
 from django.db import connection
 from organisations.models import Membership, Organisation
 from projects.models import Project
-
-from accounts.models import User
 
 from ._seed_helpers import DEMO_ACCOUNTS, ORG_DATA
 

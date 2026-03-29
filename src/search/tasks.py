@@ -2,7 +2,6 @@ import logging
 
 from celery import shared_task
 from django.contrib.contenttypes.models import ContentType
-
 from search.backend.postgres import PostgresSearchBackend
 
 logger = logging.getLogger(__name__)

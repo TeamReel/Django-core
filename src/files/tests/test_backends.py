@@ -3,7 +3,6 @@ import os
 import pytest
 from django.conf import settings
 from django.core.files.base import ContentFile
-
 from files.backends.local import LocalStorageBackend
 
 

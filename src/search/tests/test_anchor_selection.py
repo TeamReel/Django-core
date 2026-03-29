@@ -1,8 +1,8 @@
 """Tests for anchor selection logic."""
-import pytest
 from unittest.mock import Mock
-from django.test import RequestFactory
 
+import pytest
+from django.test import RequestFactory
 from search.api.views import SearchAPIView
 
 

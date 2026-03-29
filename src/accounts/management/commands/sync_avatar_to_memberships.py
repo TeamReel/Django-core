@@ -1,8 +1,7 @@
 """Sync User.avatar to active ProjectMembership metadata (one-time backfill)."""
 
-from django.core.management.base import BaseCommand
-
 from accounts.models import User
+from django.core.management.base import BaseCommand
 from projects.models import ProjectMembership
 
 

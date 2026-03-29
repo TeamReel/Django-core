@@ -1,6 +1,7 @@
 import base64
 import subprocess
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from django.test import SimpleTestCase
 from medialib.services.thumbnails import generate_image_thumbnail, generate_video_thumbnail
 

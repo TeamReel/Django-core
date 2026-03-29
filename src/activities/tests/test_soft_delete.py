@@ -3,10 +3,10 @@ Test cases for soft-delete functionality on Period, Activity, and Participation.
 Verifies SoftDeleteMixin integration and cascade behavior.
 """
 
-import pytest
 from datetime import date, datetime, timezone
 
-from activities.models import Period, Activity, Participation
+import pytest
+from activities.models import Activity, Participation, Period
 
 
 @pytest.mark.django_db
@@ -315,8 +315,8 @@ class TestTrashItemIntegration:
 
     def test_period_soft_delete_creates_trash_item(self, organisation, user):
         """Soft-deleting a period creates a TrashItem."""
-        from trash.models import TrashItem
         from django.contrib.contenttypes.models import ContentType
+        from trash.models import TrashItem
 
         period = Period.objects.create(
             name="Trash Test Season",
@@ -340,8 +340,8 @@ class TestTrashItemIntegration:
 
     def test_activity_soft_delete_creates_trash_item(self, project, period, user):
         """Soft-deleting an activity creates a TrashItem."""
-        from trash.models import TrashItem
         from django.contrib.contenttypes.models import ContentType
+        from trash.models import TrashItem
 
         activity = Activity.objects.create(
             project=project,
@@ -366,8 +366,8 @@ class TestTrashItemIntegration:
 
     def test_restore_removes_trash_item(self, organisation, user):
         """Restoring an item removes its TrashItem."""
-        from trash.models import TrashItem
         from django.contrib.contenttypes.models import ContentType
+        from trash.models import TrashItem
 
         period = Period.objects.create(
             name="Restore Test Season",

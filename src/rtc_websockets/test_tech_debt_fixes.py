@@ -10,13 +10,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import jwt
 from django.test import override_settings
-
 from rtc_websockets.services import (
     FAILED_MESSAGE_QUEUE,
     FAILED_MESSAGE_QUEUE_MAX_SIZE,
     NotificationService,
 )
-
 
 # ── FAILED_MESSAGE_QUEUE cap ───────────────────────────────────────
 

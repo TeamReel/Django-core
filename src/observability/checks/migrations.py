@@ -4,7 +4,6 @@ import time
 
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
-
 from observability.health import HealthCheckResult
 
 

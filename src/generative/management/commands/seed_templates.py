@@ -9,15 +9,15 @@ Creates standard content generation templates per context:
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
+from organisations.models import Organisation
 
 from src.generative.models import (
     GenerationTemplate,
-    TemplateType,
-    TemplateSubtype,
-    ProviderChoices,
     OutputType,
+    ProviderChoices,
+    TemplateSubtype,
+    TemplateType,
 )
-from organisations.models import Organisation
 
 User = get_user_model()
 

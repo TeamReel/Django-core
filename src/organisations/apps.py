@@ -9,7 +9,6 @@ class OrganisationsConfig(AppConfig):
     def ready(self):
         """Import signal handlers when app is ready."""
         import organisations.signals  # noqa: F401
-
         from audit.registry import register_event_type
 
         register_event_type(

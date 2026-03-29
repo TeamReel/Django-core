@@ -8,7 +8,6 @@ Typically run on application startup or via cron/systemd timer.
 """
 
 from django.core.management.base import BaseCommand
-
 from permissions.evaluator import check_permission
 from permissions.models import RoleAssignment, ScopeChoices
 

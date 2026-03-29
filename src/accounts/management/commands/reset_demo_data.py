@@ -8,13 +8,12 @@ import json
 import time
 from typing import Dict
 
+from accounts.models import User
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from organisations.models import Membership, Organisation
 from projects.models import Project
-
-from accounts.models import User
 
 from ._seed_helpers import DEMO_ACCOUNTS, ORG_DATA
 

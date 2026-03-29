@@ -3,15 +3,15 @@ Management command to seed international squads (DFB, FIGC, The FA, RBFA).
 Mirrors the Eredivisie structure: admin, editor, 15 players per first team.
 """
 
-from django.core.management.base import BaseCommand
-from django.db import transaction
-from faker import Faker
 import random
 
 from accounts.models import User
-from projects.models import Project, ProjectMembership
 from activities.models import Period
+from django.core.management.base import BaseCommand
+from django.db import transaction
+from faker import Faker
 from organisations.models import Organisation
+from projects.models import Project, ProjectMembership
 
 
 class Command(BaseCommand):

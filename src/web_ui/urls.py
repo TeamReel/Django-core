@@ -1,7 +1,6 @@
 """URL configuration for Web UI Baseline."""
 
 from django.urls import path
-
 from web_ui import views
 
 app_name = "web_ui"

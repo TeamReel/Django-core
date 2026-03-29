@@ -1,13 +1,6 @@
 """DRF views for Project Invitations and Promotions."""
 
 from django.db.models import Q
-from rest_framework import status, viewsets
-from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied, ValidationError
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
-
 from projects.models import (
     Project,
     ProjectInvite,
@@ -16,6 +9,12 @@ from projects.models import (
 )
 from projects.services.invitation_service import InvitationService
 from projects.services.promotion_service import PromotionService
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 from .serializers import (
     AcceptInvitationSerializer,

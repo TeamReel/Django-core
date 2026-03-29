@@ -5,12 +5,13 @@ Tests ViewSet CRUD operations, custom actions, and filtering.
 Target coverage: ≥85% for api/views.py
 """
 
-import pytest
 from datetime import date, datetime, timezone
+
+import pytest
+from activities.models import Activity, Participation, Period
 from django.db import connection
 from rest_framework import status
 from rest_framework.test import APIClient
-from activities.models import Period, Activity, Participation
 
 
 @pytest.fixture
@@ -44,7 +45,7 @@ class TestPeriodViewSet:
 
     def test_filter_by_organisation(self, authenticated_client, organisation, user):
         """GET /api/v1/periods/?organisation_id=X filters by organisation."""
-        from organisations.models import Organisation, Membership
+        from organisations.models import Membership, Organisation
 
         org1 = organisation
         org2 = Organisation.objects.create(

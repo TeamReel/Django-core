@@ -1,6 +1,6 @@
 """Tests for hierarchy serializers."""
 from search.hierarchy.nodes import HierarchyNode
-from search.hierarchy.serializers import HierarchyNodeSerializer, HierarchyAnchorSerializer
+from search.hierarchy.serializers import HierarchyAnchorSerializer, HierarchyNodeSerializer
 
 
 class TestHierarchyNodeSerializer:

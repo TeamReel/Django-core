@@ -57,7 +57,7 @@ class Command(BaseCommand):
                 team_count = teams.count()
 
                 # Count all related data that will be deleted
-                from activities.models import Period, Activity
+                from activities.models import Activity, Period
                 from projects.models import ProjectMembership
 
                 member_count = ProjectMembership.objects.filter(project__in=teams).count()

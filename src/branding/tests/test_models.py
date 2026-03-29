@@ -4,9 +4,8 @@ Target coverage: BrandProfile, DesignToken, BrandAsset, AppBackground.
 """
 
 import pytest
-from django.db import IntegrityError
-
 from branding.models import AppBackground, BrandAsset, BrandProfile, DesignToken
+from django.db import IntegrityError
 
 
 @pytest.mark.django_db

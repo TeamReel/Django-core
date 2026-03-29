@@ -13,7 +13,7 @@ All operations use idempotency keys to prevent duplicate charges.
 
 import logging
 from decimal import Decimal
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from django.contrib.auth import get_user_model
 

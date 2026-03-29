@@ -1,8 +1,9 @@
 import io
 import logging
-import subprocess
 import os
+import subprocess
 from typing import Tuple
+
 from PIL import Image
 
 logger = logging.getLogger(__name__)

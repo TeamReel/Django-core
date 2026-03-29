@@ -4,10 +4,9 @@ import os
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
-
 from search.backend.postgres import PostgresSearchBackend
 from search.registry import search_registry
-from search.tasks import update_search_index, delete_search_index
+from search.tasks import delete_search_index, update_search_index
 
 logger = logging.getLogger(__name__)
 

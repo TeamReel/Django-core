@@ -5,13 +5,11 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, cast
 
-from django.core.management.base import BaseCommand
-
 from accounts.models import User
 from activities.models import Activity, Period
+from django.core.management.base import BaseCommand
 from organisations.models import Organisation
-from projects.models import Project
-from projects.models import ProjectMembership
+from projects.models import Project, ProjectMembership
 from transactions.exceptions import DuplicateIdempotencyKeyError
 from transactions.models import SourceTypeChoices
 from transactions.services import (

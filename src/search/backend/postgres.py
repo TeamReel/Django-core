@@ -1,8 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
-from django.db import transaction, connection
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.db import connection, transaction
 from django.db.models import Q
-from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
-
 from search.models import SearchEntry
 from search.registry import search_registry
 from search.utils import sanitize_query

@@ -4,10 +4,9 @@ import csv
 import json
 from datetime import timedelta
 
+from audit.models import AuditEvent
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
-
-from audit.models import AuditEvent
 
 
 class Command(BaseCommand):

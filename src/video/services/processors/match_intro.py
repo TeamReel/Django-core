@@ -23,10 +23,10 @@ from pathlib import Path
 
 from django.apps import apps
 from django.utils import timezone
-from PIL import Image, ImageDraw
-
 from files.models import FileAsset
 from files.utils import get_storage_backend
+from PIL import Image, ImageDraw
+
 from src.video.models.job import JobStatus
 from src.video.services._common import download_image
 from src.video.services.processors.base import BaseVideoProcessor, JobCancelledError

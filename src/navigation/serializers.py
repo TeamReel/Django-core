@@ -2,9 +2,8 @@
 
 from typing import Any, Dict
 
-from rest_framework import serializers
-
 from navigation.models import UserFavorite, UserRecent
+from rest_framework import serializers
 
 
 class NavigationItemSerializer(serializers.Serializer):

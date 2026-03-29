@@ -8,22 +8,20 @@ All view classes and helpers have been split into focused modules:
 This file re-exports everything for backward compatibility.
 """
 
-from .views_project import (  # noqa: F401
-    ProjectCursorPagination,
-    ProjectViewSet,
-    _safe_check_permission,
+from .views_invite import (  # noqa: F401
+    InvitationAcceptThrottle,
+    ProjectInviteThrottle,
+    ProjectInviteViewSet,
+    ProjectMembershipPromotionViewSet,
 )
-
 from .views_membership import (  # noqa: F401
     ProjectFunctionalRoleViewSet,
     ProjectMembershipReadThrottle,
     ProjectMembershipViewSet,
     ProjectMembershipWriteThrottle,
 )
-
-from .views_invite import (  # noqa: F401
-    InvitationAcceptThrottle,
-    ProjectInviteThrottle,
-    ProjectInviteViewSet,
-    ProjectMembershipPromotionViewSet,
+from .views_project import (  # noqa: F401
+    ProjectCursorPagination,
+    ProjectViewSet,
+    _safe_check_permission,
 )

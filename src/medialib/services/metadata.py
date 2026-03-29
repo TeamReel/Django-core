@@ -7,7 +7,7 @@ import json
 import os
 import subprocess
 import tempfile
-from typing import Dict, Any
+from typing import Any, Dict
 
 from PIL import Image
 from PIL.ExifTags import TAGS

@@ -129,10 +129,9 @@ def list_generation_jobs_view(request: Request) -> Response:
     _project_parent_map: dict[str, str | None] = {}  # project_id → parent project name (club)
     if _project_ids:
         try:
-            from projects.models import Project
-
             # Try matching on id, slug, and canonical UUID variants
             from django.db.models import Q
+            from projects.models import Project
 
             q = Q()
             for pid in _project_ids:
@@ -495,8 +494,9 @@ def review_generation_job_view(request: Request, task_id: str) -> Response:
         {"action": "approve", "variant_index": 0}           — approve specific variant
         {"action": "approve", "variant_indices": [0, 2]}    — approve multiple variants
     """
-    from .models import GenerationJob
     from django.utils import timezone
+
+    from .models import GenerationJob
 
     try:
         job = GenerationJob.objects.get(task_id=task_id)

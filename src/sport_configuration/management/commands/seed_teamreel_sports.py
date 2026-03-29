@@ -18,13 +18,11 @@ This allows a team to participate in different formats within one season:
         - Summer Tournament (Football 7v7)
 """
 
+from activities.models import Period
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
-
-from activities.models import Period
 from projects.models import Project
 from sport_configuration.models import OutfitConfiguration, Sport, SportConfiguration
-
 
 # Top clubs with their official colors - use exact names from DB
 TOP_CLUBS_CONFIG = {

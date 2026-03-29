@@ -6,14 +6,6 @@ Implementation split across:
     serializers_membership.py   — Membership, Invitations, Promotions
 """
 
-from .serializers_project import (  # noqa: F401
-    OrganisationNestedSerializer,
-    ProjectDetailSerializer,
-    ProjectListSerializer,
-    ProjectPublicListSerializer,
-    ProjectUpdateSerializer,
-    UserNestedSerializer,
-)
 from .serializers_membership import (  # noqa: F401
     AcceptInvitationSerializer,
     ProjectFunctionalRoleAssignSerializer,
@@ -21,4 +13,12 @@ from .serializers_membership import (  # noqa: F401
     ProjectMembershipPromotionSerializer,
     ProjectMembershipSerializer,
     UserAvatarNestedSerializer,
+)
+from .serializers_project import (  # noqa: F401
+    OrganisationNestedSerializer,
+    ProjectDetailSerializer,
+    ProjectListSerializer,
+    ProjectPublicListSerializer,
+    ProjectUpdateSerializer,
+    UserNestedSerializer,
 )

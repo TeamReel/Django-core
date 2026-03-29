@@ -1,11 +1,10 @@
 """API tests for branding endpoints."""
 
 import pytest
+from branding.models import AppBackground, BrandProfile
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
-
-from branding.models import AppBackground, BrandProfile
 from sport_configuration.models import Sport
 
 

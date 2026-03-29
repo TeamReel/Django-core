@@ -11,11 +11,12 @@ Matches use real opponents from the database.
 """
 import random
 from datetime import datetime, timedelta
+
+from activities.models import Activity, Period
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from organisations.models import Organisation
 from projects.models import Project, ProjectMembership
-from activities.models import Period, Activity
 
 
 class Command(BaseCommand):

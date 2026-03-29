@@ -8,13 +8,15 @@ Provides generic time-based resource planning with:
 """
 
 import uuid
-from django.db import models
-from django.core.exceptions import ValidationError
+
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.db import models
 from django.utils.text import slugify
 
-from src.common.managers import SoftDeleteManager, AllObjectsManager
+from src.common.managers import AllObjectsManager, SoftDeleteManager
 from src.common.mixins import SoftDeleteMixin
+
 from .managers import PeriodQuerySet, PeriodSoftDeleteManager
 
 User = get_user_model()

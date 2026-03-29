@@ -1,10 +1,11 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from medialib.services.metadata import extract_image_metadata, extract_video_metadata
 from medialib.services.tags import MediaTagService
 from organisations.models import Organisation
 from projects.models import Project
-from django.contrib.auth import get_user_model
 
 
 class MetadataServiceTests(TestCase):

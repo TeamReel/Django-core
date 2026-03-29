@@ -2,9 +2,8 @@
 
 from typing import Dict, List
 
-from django.core.management.base import BaseCommand
-
 from audit.registry import EventTypeMetadata, list_event_types
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):

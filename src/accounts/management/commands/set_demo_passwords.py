@@ -5,9 +5,9 @@ This is ONLY for demo/development environments.
 DO NOT run in production!
 """
 
+from accounts.models import User
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from accounts.models import User
 
 
 class Command(BaseCommand):

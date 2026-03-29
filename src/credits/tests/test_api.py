@@ -3,11 +3,10 @@
 from decimal import Decimal
 
 import pytest
+from credits.models import CreditsBalance, ProjectCreditsBalance, UserCreditsBalance
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
-
-from credits.models import CreditsBalance, ProjectCreditsBalance, UserCreditsBalance
 
 
 @pytest.mark.django_db

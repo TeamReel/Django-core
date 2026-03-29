@@ -12,7 +12,6 @@ class AccountsConfig(AppConfig):
     def ready(self) -> None:
         """Import signal handlers when app is ready."""
         import accounts.signals  # noqa: F401
-
         from audit.registry import register_event_type
 
         register_event_type(

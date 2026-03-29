@@ -4,7 +4,7 @@ This module defines custom Prometheus metrics for monitoring transaction
 writes, balance queries, policy violations, and cache performance.
 """
 
-from prometheus_client import Counter, Histogram, REGISTRY
+from prometheus_client import REGISTRY, Counter, Histogram
 
 
 def _get_or_create_counter(name: str, documentation: str, labelnames: list[str]) -> Counter:

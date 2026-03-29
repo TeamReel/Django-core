@@ -3,7 +3,6 @@
 import logging
 
 from celery import shared_task
-
 from tasks.base import AuditedTask
 
 logger = logging.getLogger(__name__)

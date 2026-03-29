@@ -17,18 +17,18 @@ Usage:
     python manage.py seed_teamreel_production
 """
 
+from decimal import Decimal
+
+from activities.models import Activity, Participation, Period
+from credits.models import CreditsBalance, ProjectCreditsBalance
+from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
 from django.utils import timezone
-from organisations.models import Organisation
-from organisations.models import Membership
+from organisations.models import Membership, Organisation
 from projects.models.project import Project
 from projects.models.project_membership import ProjectMembership
-from activities.models import Period, Activity, Participation
-from credits.models import CreditsBalance, ProjectCreditsBalance
 from transactions.models import SourceTypeChoices, Transaction, WalletScopeChoices
-from decimal import Decimal
 
 User = get_user_model()
 

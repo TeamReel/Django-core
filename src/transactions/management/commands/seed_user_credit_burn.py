@@ -19,9 +19,8 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from django.core.management.base import BaseCommand
-
 from accounts.models import User
+from django.core.management.base import BaseCommand
 from organisations.models import Organisation
 from projects.models import Project
 from transactions.exceptions import (

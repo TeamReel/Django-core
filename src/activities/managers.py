@@ -4,8 +4,9 @@ Implements PostgreSQL recursive CTE for period hierarchy navigation.
 Integrates with SoftDeleteMixin for soft-delete support.
 """
 
-from django.db import models, connection
 import uuid
+
+from django.db import connection, models
 
 from src.common.managers import SoftDeleteQuerySet
 

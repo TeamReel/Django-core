@@ -2,7 +2,7 @@
 
 import pytest
 from accounts.models import User
-from organisations.models import Organisation, Membership
+from organisations.models import Membership, Organisation
 from projects.models import Project
 
 

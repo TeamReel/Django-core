@@ -9,7 +9,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from rest_framework import serializers
-
 from sport_configuration.models import Formation, OutfitConfiguration, Sport, SportConfiguration
 
 if TYPE_CHECKING:

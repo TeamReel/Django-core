@@ -1,9 +1,10 @@
 """
 B35 Smart Asset Library - URL Configuration
 """
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import MediaItemViewSet, MediaTagViewSet, CollectionViewSet
+
+from .views import CollectionViewSet, MediaItemViewSet, MediaTagViewSet
 
 app_name = "medialib35"
 

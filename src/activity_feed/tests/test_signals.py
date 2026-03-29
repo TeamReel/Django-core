@@ -4,9 +4,9 @@ B62: Activity Feed — Signal Tests
 Tests for automatic event logging via Django signals.
 """
 
-import pytest
 from datetime import date, datetime, timezone
 
+import pytest
 from activities.models import Activity, Participation, Period
 from activity_feed.models import ActivityLog
 

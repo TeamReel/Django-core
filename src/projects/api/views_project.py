@@ -5,19 +5,18 @@ import logging
 from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets
-from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied, ValidationError
-from rest_framework.pagination import CursorPagination
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-
 from projects.models import (
     Project,
     ProjectInvite,
     ProjectMembership,
     ProjectMembershipPromotion,
 )
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.pagination import CursorPagination
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from .permissions import IsProjectMemberOrOrgAdmin
 from .serializers import (
@@ -620,7 +619,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if response.status_code == status.HTTP_201_CREATED:
             try:
                 from notifications.services import notify_project_created
-
                 from projects.models import Project
 
                 project_id = getattr(response, "data", {}).get("id")

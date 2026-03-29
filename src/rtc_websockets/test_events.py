@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import asdict
 from unittest.mock import patch
 
-
 from rtc_websockets.events import (
     ActivityCreatedPayload,
     ApprovalDecidedPayload,
@@ -20,7 +19,6 @@ from rtc_websockets.events import (
     build_event,
 )
 from rtc_websockets.services import RealtimeEventPublisher
-
 
 # ── Event Schema Tests ──────────────────────────────────────────────
 

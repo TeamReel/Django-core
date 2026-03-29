@@ -8,12 +8,12 @@ According to TeamReel data structure:
 - Roles: player, coach, staff, admin, viewer
 """
 
+from accounts.models import User
+from activities.models import Period
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from accounts.models import User
-from projects.models import Project, ProjectMembership
 from organisations.models import Organisation
-from activities.models import Period
+from projects.models import Project, ProjectMembership
 
 
 class Command(BaseCommand):

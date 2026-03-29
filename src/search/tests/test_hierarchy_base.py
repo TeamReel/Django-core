@@ -1,8 +1,7 @@
 """Tests for BaseHierarchyResolver."""
 import pytest
-from django.test import RequestFactory
 from django.conf import settings as django_settings
-
+from django.test import RequestFactory
 from search.hierarchy.base import BaseHierarchyResolver
 from search.hierarchy.nodes import HierarchyNode
 

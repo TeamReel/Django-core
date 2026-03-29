@@ -13,7 +13,6 @@ class TrashConfig(AppConfig):
     def ready(self) -> None:
         """Import signal handlers and register audit event types."""
         import trash.signals  # noqa: F401
-
         from audit.registry import register_event_type
 
         # B46: Soft Delete & Trash audit events

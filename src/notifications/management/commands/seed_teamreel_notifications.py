@@ -1,19 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import timedelta
 import random
 from collections import defaultdict
+from dataclasses import dataclass
+from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
-from django.db import connection
-from django.db import transaction
+from django.db import connection, transaction
 from django.utils import timezone
-
 from notifications.models import Notification, NotificationType, RetryPolicy
 from projects.models import Project, ProjectMembership
-
 
 User = get_user_model()
 

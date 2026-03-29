@@ -2,9 +2,8 @@
 Participation serializers for Activities API.
 """
 
-from rest_framework import serializers
-
 from activities.models import Activity, Participation, Period
+from rest_framework import serializers
 
 
 class ParticipationSerializer(serializers.ModelSerializer):

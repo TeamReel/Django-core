@@ -14,10 +14,9 @@ Strategy:
 4. Skip if user already has Org Membership for that organisation
 """
 
+from accounts.models import User
 from django.core.management.base import BaseCommand
 from django.db import transaction
-
-from accounts.models import User
 from organisations.models import Membership
 from projects.models import ProjectMembership
 

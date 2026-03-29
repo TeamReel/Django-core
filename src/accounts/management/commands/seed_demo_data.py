@@ -26,12 +26,11 @@ import time
 from contextlib import contextmanager
 from datetime import timedelta
 
+from accounts.models import User
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from organisations.models import Membership, Organisation
 from projects.models import Project
-
-from accounts.models import User
 
 from ._seed_helpers import (
     ADDITIONAL_USER_DISTRIBUTION,
@@ -194,7 +193,8 @@ class Command(BaseCommand):
 
         # Organisations app signals
         try:
-            from organisations.models import Membership as OrgMembership, Organisation
+            from organisations.models import Membership as OrgMembership
+            from organisations.models import Organisation
             from organisations.signals import (
                 log_membership_change,
                 log_membership_deletion,

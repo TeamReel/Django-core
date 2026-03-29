@@ -3,6 +3,7 @@
 This module implements DRF ViewSets for CRUD operations on brand profiles,
 design tokens, and brand assets, plus the critical token resolution endpoint.
 """
+from accounts.permissions import IsSuperadmin
 from django.db import models
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -10,8 +11,6 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from accounts.permissions import IsSuperadmin
 
 from .models import AppBackground, BrandAsset, BrandProfile, DesignToken
 from .permissions import (

@@ -1,27 +1,28 @@
 """
 B35 Smart Asset Library - API ViewSets
 """
-from rest_framework import viewsets, filters, status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Prefetch
-from .models import MediaItem, MediaTag, Collection, MediaItemRelation
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from .filters import MediaItemFilterSet
+from .models import Collection, MediaItem, MediaItemRelation, MediaTag
+from .pagination import MediaItemCursorPagination
 from .serializers import (
+    CollectionDetailSerializer,
+    CollectionSerializer,
+    MediaItemRelationSerializer,
     MediaItemSerializer,
     MediaTagSerializer,
     MediaThumbnailSerializer,
-    CollectionSerializer,
-    CollectionDetailSerializer,
-    MediaItemRelationSerializer,
 )
-from .filters import MediaItemFilterSet
-from .pagination import MediaItemCursorPagination
-from .tasks import process_media_item
-from .services.tags import MediaTagService
-from .services.relations import MediaItemRelationService
 from .services.collections import CollectionService
+from .services.relations import MediaItemRelationService
+from .services.tags import MediaTagService
+from .tasks import process_media_item
 
 
 class MediaItemViewSet(viewsets.ModelViewSet):
@@ -106,7 +107,8 @@ class MediaItemViewSet(viewsets.ModelViewSet):
                 app_label, model_name = target_type.split(".")
 
                 ct = ContentType.objects.get(app_label=app_label, model=model_name)
-                from django.db.models import Exists, OuterRef as OR2
+                from django.db.models import Exists
+                from django.db.models import OuterRef as OR2
 
                 queryset = queryset.filter(
                     Exists(

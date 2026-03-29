@@ -1,17 +1,18 @@
 """
 B35 Smart Asset Library - API Serializers
 """
+from files.models import FileAsset
+from projects.models import Project
 from rest_framework import serializers
+
 from .models import (
-    MediaItem,
-    MediaTag,
     Collection,
     CollectionMembership,
+    MediaItem,
     MediaItemRelation,
+    MediaTag,
     MediaThumbnail,
 )
-from projects.models import Project
-from files.models import FileAsset
 
 
 class MediaThumbnailSerializer(serializers.ModelSerializer):

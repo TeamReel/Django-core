@@ -21,11 +21,11 @@ Usage:
     python manage.py seed_competition_registrations --all
 """
 
+from activities.models import Period
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from organisations.models import Organisation
 from projects.models import Project, ProjectMembership
-from activities.models import Period
 
 
 class Command(BaseCommand):

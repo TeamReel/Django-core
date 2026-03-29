@@ -3,12 +3,12 @@ STAP 2: Delete organisation-wide Season 2024/2025 + competitions + player member
 Removes ALL data for 2024/2025 before creating team-scoped replacements
 """
 
+from activities.models import Period
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import signals
-from activities.models import Period
-from projects.models import ProjectMembership
 from organisations.models import Organisation
+from projects.models import ProjectMembership
 from search.signals import handle_delete
 
 

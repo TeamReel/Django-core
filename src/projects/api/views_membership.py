@@ -5,13 +5,6 @@ import uuid
 
 from django.db import IntegrityError
 from django.db.models import OuterRef, Q, Subquery
-from rest_framework import status, viewsets
-from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied, ValidationError
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.throttling import UserRateThrottle
-
 from projects.models import (
     Project,
     ProjectFunctionalRoleAssignment,
@@ -19,6 +12,12 @@ from projects.models import (
 )
 from projects.services.membership_service import MembershipService
 from projects.services.promotion_service import PromotionService
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 
 from .serializers import (
     ProjectFunctionalRoleAssignSerializer,

@@ -321,8 +321,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Execute the seed command with lazy imports."""
         # Lazy imports - must use src. prefix for content_generation
-        from src.content_generation.models import ContentTemplate, TemplateType, TemplateSubtype
-        from sport_configuration.models import Sport, SportConfiguration, Formation
+        from sport_configuration.models import Formation, Sport, SportConfiguration
+
+        from src.content_generation.models import ContentTemplate, TemplateSubtype, TemplateType
 
         category = options.get("category", "all")
         dry_run = options.get("dry_run", False)

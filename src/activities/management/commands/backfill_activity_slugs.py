@@ -1,9 +1,8 @@
 from __future__ import annotations
 
+from activities.models import Activity
 from django.core.management.base import BaseCommand
 from django.db import transaction
-
-from activities.models import Activity
 
 
 class Command(BaseCommand):

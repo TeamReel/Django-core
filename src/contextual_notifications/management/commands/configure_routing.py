@@ -1,10 +1,9 @@
 """Management command to configure default routing rules."""
 
+from contextual_notifications.models import RoutingRule
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.utils import OperationalError
-
-from contextual_notifications.models import RoutingRule
 
 
 class Command(BaseCommand):

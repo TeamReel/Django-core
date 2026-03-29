@@ -1,8 +1,7 @@
 import pytest
 from django.contrib.auth import get_user_model
-from organisations.models import Organisation
-
 from files.models import FileAsset
+from organisations.models import Organisation
 
 User = get_user_model()
 

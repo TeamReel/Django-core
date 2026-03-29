@@ -1,8 +1,9 @@
 import logging
-from django.core.management.base import BaseCommand
+
 from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
 from django.db import transaction
-from organisations.models import Organisation, Membership
+from organisations.models import Membership, Organisation
 
 # Reduce logging noise
 logging.getLogger("permissions.registry").setLevel(logging.WARNING)

@@ -167,8 +167,9 @@ def generate_asset(
     # Step 2b: Guest player — generate a silhouette as person_photo if not provided
     is_guest_player = params.get("guest_player", False)
     if is_guest_player and "person_photo" not in processed_images:
-        from src.video.services.header_generator import generate_guest_silhouette
         import io
+
+        from src.video.services.header_generator import generate_guest_silhouette
 
         silhouette_img = generate_guest_silhouette(width=1080, height=1920)
         buf = io.BytesIO()

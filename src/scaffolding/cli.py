@@ -11,7 +11,6 @@ import sys
 from typing import Optional
 
 import click
-
 from scaffolding import __version__
 
 # Exit code constants (CLI contract)

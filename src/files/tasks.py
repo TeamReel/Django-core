@@ -11,7 +11,6 @@ from typing import Optional
 
 from celery import shared_task
 from django.utils import timezone
-
 from files.models import FileAsset
 from files.utils import get_storage_backend
 

@@ -15,7 +15,6 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import yaml
-
 from security_baseline.rules.base import SecurityRuleViolation
 
 logger = logging.getLogger(__name__)

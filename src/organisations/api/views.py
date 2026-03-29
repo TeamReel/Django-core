@@ -10,14 +10,13 @@ from django.db import transaction
 from django.db.models import Count, IntegerField, OuterRef, Subquery, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
+from organisations.metrics import rate_limit_hits
+from organisations.models import Membership, Organisation
+from organisations.ratelimit import check_rate_limit
 from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import Throttled
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-
-from organisations.metrics import rate_limit_hits
-from organisations.models import Membership, Organisation
-from organisations.ratelimit import check_rate_limit
 
 from .serializers import (
     OrganisationCreateSerializer,

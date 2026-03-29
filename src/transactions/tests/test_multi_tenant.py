@@ -12,7 +12,6 @@ import uuid
 from decimal import Decimal
 
 import pytest
-
 from transactions.models import (
     BalancePolicy,
     EnforcementModeChoices,
@@ -158,7 +157,6 @@ class TestMultiTenantIsolation:
         """Test that balance policies are enforced per organization."""
         from accounts.models import User
         from organisations.models import Organisation
-
         from transactions.exceptions import InsufficientBalanceError
 
         # Create second org

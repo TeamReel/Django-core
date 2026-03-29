@@ -1,17 +1,16 @@
 """API views for user-facing in-app notifications."""
 
 from django.utils import timezone
-from rest_framework import status, viewsets
-from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-
 from notifications.models import Notification
 from notifications.serializers import (
     UserNotificationSerializer,
     UserNotificationUpdateSerializer,
 )
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 
 class UserNotificationPagination(PageNumberPagination):

@@ -3,11 +3,12 @@ Management command to seed historical SystemMetric data for demo purposes.
 Creates realistic cache performance data for the last 7 days.
 """
 
+import random
+from datetime import timedelta
+
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from datetime import timedelta
 from observability.models import SystemMetric
-import random
 
 
 class Command(BaseCommand):

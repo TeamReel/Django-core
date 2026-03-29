@@ -1,10 +1,9 @@
 from typing import Optional
 
+from audit.api import audit_log
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import transaction
-
-from audit.api import audit_log
 from notifications.services.notification_service import create_notification
 from organisations.models import Membership as OrganisationMembership
 from projects.models import Project, ProjectMembership

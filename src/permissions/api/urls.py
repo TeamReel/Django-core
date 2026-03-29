@@ -3,9 +3,8 @@ URL configuration for permissions API.
 """
 
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
-
 from permissions.api.views import PermissionsCurrentView, RoleAssignmentViewSet, RoleViewSet
+from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r"roles", RoleViewSet, basename="role")

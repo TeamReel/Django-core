@@ -21,11 +21,10 @@ import random
 from dataclasses import dataclass
 from typing import Optional
 
+from activities.models import Activity, ActivityEvent, Participation, Period
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Q
-
-from activities.models import Activity, ActivityEvent, Participation, Period
 from organisations.models import Organisation
 
 

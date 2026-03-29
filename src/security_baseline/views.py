@@ -10,7 +10,6 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from security_baseline.reports.asvs_coverage import ASVSCoverageCalculator
 from security_baseline.rules.registry import _registry
 

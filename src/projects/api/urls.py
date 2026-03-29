@@ -5,10 +5,10 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (
     ProjectFunctionalRoleViewSet,
-    ProjectMembershipViewSet,
-    ProjectViewSet,
     ProjectInviteViewSet,
     ProjectMembershipPromotionViewSet,
+    ProjectMembershipViewSet,
+    ProjectViewSet,
 )
 
 # Top-level router for /api/projects/ routes

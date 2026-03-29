@@ -1,9 +1,9 @@
+from accounts.models import User
 from django.db.models import CharField
 from django.db.models.functions import Cast
-from search.registry import SearchIndex
-from accounts.models import User
 from organisations.models import Organisation
 from projects.models import Project
+from search.registry import SearchIndex
 
 
 class UserIndex(SearchIndex):

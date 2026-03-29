@@ -1,19 +1,21 @@
-from typing import TypedDict, Literal, List
 import time
+from typing import List, Literal, TypedDict
+
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.utils import timezone
-from projects.models import ProjectMembership, Project
 from organisations.models import Membership as OrganisationMembership
-from settings.models import FeatureFlag
-from .cache_service import CacheService
 from projects.metrics import (
-    permission_resolution_total,
+    emergency_override_total,
     permission_cache_hits_total,
     permission_cache_misses_total,
     permission_resolution_duration_seconds,
-    emergency_override_total,
+    permission_resolution_total,
 )
+from projects.models import Project, ProjectMembership
+from settings.models import FeatureFlag
+
+from .cache_service import CacheService
 
 User = get_user_model()
 

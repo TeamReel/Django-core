@@ -71,16 +71,16 @@ class Command(BaseCommand):
             return
 
         # Synchronous processing (no Celery/Redis needed)
+        # Use S3 directly if AWS credentials are in env (Django settings may not load them)
+        import os
+
         import boto3
         from botocore.config import Config
         from django.core.files.base import ContentFile
+        from files.utils import get_storage_backend
         from PIL import Image as PilImage
 
-        from files.utils import get_storage_backend
         from src.generative.views_asset import HALFBODY_OUTPUT_SIZE, _smart_crop_halfbody
-
-        # Use S3 directly if AWS credentials are in env (Django settings may not load them)
-        import os
 
         aws_key = os.environ.get("AWS_ACCESS_KEY_ID")
         aws_secret = os.environ.get("AWS_SECRET_ACCESS_KEY")

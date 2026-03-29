@@ -3,10 +3,11 @@ Test cases for Period, Activity, and Participation models.
 Target coverage: ≥90% for models.py
 """
 
-import pytest
 from datetime import date, datetime, timezone
+
+import pytest
+from activities.models import Activity, Participation, Period
 from django.db import IntegrityError
-from activities.models import Period, Activity, Participation
 
 
 @pytest.mark.django_db

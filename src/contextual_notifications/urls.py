@@ -3,8 +3,8 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views.preference_views import NotificationPreferenceViewSet
 from .views.org_policy_views import OrganisationNotificationPolicyByOrganisationView
+from .views.preference_views import NotificationPreferenceViewSet
 from .views.routing_logs_views import RoutingDecisionLogViewSet
 from .views.routing_rules_views import RoutingRuleViewSet
 

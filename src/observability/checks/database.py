@@ -3,7 +3,6 @@
 import time
 
 from django.db import connection
-
 from observability.health import HealthCheckResult
 
 

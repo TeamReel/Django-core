@@ -1,8 +1,10 @@
 import os
 import re
-from typing import Tuple, List
+from typing import List, Tuple
+
 from django.db.models import Q, QuerySet
 from django.utils.text import slugify
+
 from ..models import MediaTag
 
 

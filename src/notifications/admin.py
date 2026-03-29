@@ -1,7 +1,6 @@
 """Django admin configuration for notifications app."""
 
 from django.contrib import admin
-
 from notifications.models import (
     DeliveryAttempt,
     Notification,

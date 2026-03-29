@@ -18,11 +18,12 @@ Total: 18 clubs × 4 teams × (1 coach + 1 assistant + ~15 players) = ~1,224 use
 import csv
 import random
 from pathlib import Path
+
+from accounts.models import User
+from activities.models import Period
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from accounts.models import User
 from projects.models import Project, ProjectMembership
-from activities.models import Period
 
 
 class Command(BaseCommand):

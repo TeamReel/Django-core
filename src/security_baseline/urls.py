@@ -1,5 +1,4 @@
 from django.urls import path
-
 from security_baseline.views import SecurityEventsView
 
 urlpatterns = [

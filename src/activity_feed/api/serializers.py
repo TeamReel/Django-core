@@ -5,9 +5,8 @@ Read-only serializers for feed events, plus a write serializer for
 marking feed position (read status).
 """
 
-from rest_framework import serializers
-
 from activity_feed.models import ActivityLog, FeedPosition
+from rest_framework import serializers
 
 
 class ActivityLogSerializer(serializers.ModelSerializer):

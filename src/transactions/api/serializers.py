@@ -3,7 +3,6 @@
 from decimal import Decimal
 
 from rest_framework import serializers
-
 from transactions.models import BalancePolicy, SourceTypeChoices, Transaction, UsageEvent
 
 
@@ -296,7 +295,6 @@ class TransactionSerializer(serializers.ModelSerializer):
         from accounts.models import User
         from organisations.models import Organisation
         from projects.models import Project
-
         from transactions.services import create_transaction_with_routing
 
         # Extract IDs and fetch actual instances

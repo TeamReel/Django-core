@@ -10,7 +10,6 @@ Tests end-to-end flows:
 from decimal import Decimal
 
 import pytest
-
 from transactions.exceptions import InsufficientBalanceError
 from transactions.models import BalancePolicy, EnforcementModeChoices, SourceTypeChoices
 from transactions.services import (

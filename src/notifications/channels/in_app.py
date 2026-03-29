@@ -4,7 +4,6 @@ from typing import Any, Dict
 
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-
 from notifications.channels.base import NotificationChannel
 from notifications.models import Notification
 

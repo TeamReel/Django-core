@@ -1,16 +1,15 @@
 import uuid
 
-from projects.models import Project
-from organisations.models import Organisation
-from rest_framework import permissions, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied, ValidationError
-from rest_framework.response import Response
-
 from files.models import FileAsset
 from files.serializers import FileAssetSerializer, FileUploadSerializer
 from files.tasks import generate_thumbnail
 from files.utils import get_storage_backend
+from organisations.models import Organisation
+from projects.models import Project
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.response import Response
 
 
 class FileViewSet(viewsets.ModelViewSet):

@@ -2,15 +2,15 @@
 Pytest fixtures for B62 Activity Feed tests.
 """
 
-import pytest
-from datetime import date, datetime, timezone, timedelta
-from django.utils import timezone as dj_timezone
+from datetime import date, datetime, timedelta, timezone
 
+import pytest
 from accounts.models import User
-from organisations.models import Organisation, Membership
-from projects.models import Project
-from activities.models import Period, Activity
+from activities.models import Activity, Period
 from activity_feed.models import ActivityLog, FeedPosition
+from django.utils import timezone as dj_timezone
+from organisations.models import Membership, Organisation
+from projects.models import Project
 
 
 @pytest.fixture

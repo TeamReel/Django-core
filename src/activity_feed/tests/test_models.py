@@ -7,9 +7,8 @@ Tests for ActivityLog and FeedPosition models.
 import uuid
 
 import pytest
-from django.utils import timezone
-
 from activity_feed.models import ActivityLog, FeedPosition, VerbChoices
+from django.utils import timezone
 
 
 @pytest.mark.django_db
@@ -53,6 +52,7 @@ class TestActivityLog:
     def test_ordering_newest_first(self, user, organisation):
         """Events are ordered by -created_at (newest first)."""
         from datetime import timedelta
+
         from django.utils import timezone as tz
 
         now = tz.now()

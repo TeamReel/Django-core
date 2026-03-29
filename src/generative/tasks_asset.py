@@ -44,8 +44,10 @@ def _sync_job_status(
     """
     try:
         import uuid
-        from .models import GenerationJob
+
         from django.utils import timezone
+
+        from .models import GenerationJob
 
         try:
             job = GenerationJob.objects.get(task_id=uuid.UUID(job_id))

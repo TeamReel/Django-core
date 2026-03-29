@@ -4,15 +4,14 @@ DRF viewsets for permissions API.
 
 from django.core.cache import cache
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
 from permissions.api.permissions import HasPermission
 from permissions.api.serializers import RoleAssignmentSerializer, RoleSerializer
 from permissions.audit import emit_role_assignment_audit, emit_role_modification_audit
 from permissions.models import Role, RoleAssignment, ScopeChoices
+from rest_framework import filters, viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 
 class RoleViewSet(viewsets.ModelViewSet):

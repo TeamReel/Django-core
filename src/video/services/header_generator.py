@@ -20,6 +20,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 from src.video.services._common import (
     download_image as _common_download_image,
+)
+from src.video.services._common import (
     get_pil_font,
 )
 

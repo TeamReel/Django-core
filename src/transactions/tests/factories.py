@@ -15,7 +15,6 @@ from factory import fuzzy
 from factory.django import DjangoModelFactory
 from organisations.models import Organisation
 from projects.models import Project
-
 from transactions.models import (
     BalancePolicy,
     EnforcementModeChoices,

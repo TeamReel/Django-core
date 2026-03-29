@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from projects.models import Project
-
     from sport_configuration.models import OutfitConfiguration
 
 

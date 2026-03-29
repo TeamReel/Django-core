@@ -4,7 +4,6 @@ import signal
 import sys
 
 from django.core.management.base import BaseCommand
-
 from settings.cache import CACHE_ENABLED, PUBSUB_CHANNEL, invalidate_cache
 
 

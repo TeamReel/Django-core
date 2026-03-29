@@ -11,10 +11,11 @@ Creates realistic Organization and Project memberships for demonstration:
 This completes the Core Hierarchy before Level 7 (Players).
 """
 
+from accounts.models import User
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from accounts.models import User
-from organisations.models import Organisation, Membership as OrgMembership
+from organisations.models import Membership as OrgMembership
+from organisations.models import Organisation
 from projects.models import Project, ProjectMembership
 
 

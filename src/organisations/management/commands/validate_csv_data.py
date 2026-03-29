@@ -5,6 +5,7 @@ Checks federations, clubs, teams before seeding.
 
 import csv
 from pathlib import Path
+
 from django.core.management.base import BaseCommand
 from organisations.models import Organisation
 from projects.models import Project

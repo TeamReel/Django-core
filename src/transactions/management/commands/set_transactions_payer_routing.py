@@ -19,7 +19,6 @@ Example:
 from __future__ import annotations
 
 from django.core.management.base import BaseCommand
-
 from organisations.models import Organisation
 from settings.models import ScopeType, Setting, SettingType
 

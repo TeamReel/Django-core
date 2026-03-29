@@ -5,12 +5,13 @@ Creates 576 new periods (72 teams × 8 periods each):
 - 7 competitions per team (League, Cup, European, League Cup, Play-offs, Friendly, Youth)
 """
 
+from datetime import date
+
+from activities.models import Period
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from datetime import date
-from projects.models import Project
-from activities.models import Period
 from organisations.models import Organisation
+from projects.models import Project
 
 
 class Command(BaseCommand):

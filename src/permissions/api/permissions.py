@@ -42,10 +42,9 @@ Usage Examples:
             # ... implementation
 """
 
+from permissions.audit import evaluate_permission
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
-
-from permissions.audit import evaluate_permission
 
 
 class HasPermission(BasePermission):

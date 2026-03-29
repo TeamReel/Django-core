@@ -2,12 +2,11 @@
 Management command to validate TeamReel hierarchy structure.
 """
 
+from activities.models import Activity, Period
 from django.core.management.base import BaseCommand
 from django.db.models import Count
-
 from organisations.models import Organisation
 from projects.models import Project
-from activities.models import Period, Activity
 
 
 class Command(BaseCommand):

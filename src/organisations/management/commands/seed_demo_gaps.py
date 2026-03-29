@@ -1,21 +1,21 @@
 import random
 from datetime import time
-from django.core.management.base import BaseCommand
+
+from contextual_notifications.models import NotificationPreference, OrganisationNotificationPolicy
+from django.apps import apps as django_apps
+from django.contrib.auth import get_user_model
 from django.core.management import call_command
+from django.core.management.base import BaseCommand
 from django.db.models import Count
 from django.db.models.signals import post_save
 from django.utils import timezone
-from django.apps import apps as django_apps
-from django.contrib.auth import get_user_model
-
 from organisations.models import Organisation
 from projects.models import Project, ProjectInvite, ProjectMembership
-from contextual_notifications.models import OrganisationNotificationPolicy, NotificationPreference
-from transactions.models import BalancePolicy, EnforcementModeChoices
+from search.registry import search_registry
 
 # Import Search Signal Handler to disconnect it
 from search.signals import handle_save
-from search.registry import search_registry
+from transactions.models import BalancePolicy, EnforcementModeChoices
 
 User = get_user_model()
 

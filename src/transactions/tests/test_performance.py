@@ -16,7 +16,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from decimal import Decimal
 
 import pytest
-
 from transactions.models import (
     BalancePolicy,
     EnforcementModeChoices,

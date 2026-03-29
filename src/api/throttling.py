@@ -1,7 +1,8 @@
 import logging
-from rest_framework.throttling import SimpleRateThrottle
-from django_redis.exceptions import ConnectionInterrupted
+
 import redis.exceptions
+from django_redis.exceptions import ConnectionInterrupted
+from rest_framework.throttling import SimpleRateThrottle
 
 logger = logging.getLogger(__name__)
 

@@ -7,6 +7,9 @@ TeamReel (Option A) notes:
 - Match write operations are gated via TeamReel RBAC permissions.
 """
 
+import uuid
+
+from activities.models import Activity, ActivityEvent, Participation, Period
 from api.pagination import BaseAPIPagination
 from django.db import connection
 from django.db.models import Count, OuterRef, Q
@@ -15,10 +18,6 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-
-import uuid
-
-from activities.models import Activity, ActivityEvent, Participation, Period
 
 from .permissions import (
     ActivityEventPermission,
@@ -203,8 +202,8 @@ class PeriodViewSet(viewsets.ModelViewSet):
         # Project memberships table may be absent in some demo DBs.
         # Count members for THIS specific period (season), not all team members.
         if not table_names or "projects_membership" in table_names:
-            from projects.models import ProjectMembership
             from django.db.models import Subquery
+            from projects.models import ProjectMembership
 
             # Subquery to count memberships that belong to this specific period
             members_subquery = Subquery(

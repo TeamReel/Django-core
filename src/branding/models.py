@@ -4,9 +4,9 @@ This module implements centralized brand management with merge inheritance
 pattern for organisations and projects.
 """
 import uuid
-from django.db import models
-from django.conf import settings
 
+from django.conf import settings
+from django.db import models
 
 # Well-known token keys that should always be present in API responses
 WELL_KNOWN_TOKEN_KEYS = [

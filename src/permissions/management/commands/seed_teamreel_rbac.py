@@ -7,9 +7,8 @@ Creates hierarchical RBAC structure for Land/Club/Team Admin and Member roles.
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from projects.models import ProjectMembership
-
 from permissions.models import Permission, Role, RoleAssignment, ScopeChoices
+from projects.models import ProjectMembership
 
 
 class Command(BaseCommand):

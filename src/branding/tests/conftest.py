@@ -2,9 +2,9 @@
 
 import pytest
 from accounts.models import User
-from organisations.models import Organisation, Membership
-from projects.models import Project
 from files.models import FileAsset
+from organisations.models import Membership, Organisation
+from projects.models import Project
 from sport_configuration.models import Sport
 
 

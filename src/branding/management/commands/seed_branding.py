@@ -1,11 +1,9 @@
 """Management command to seed branding data for all organisations."""
 
+from branding.models import BrandProfile, DesignToken
 from django.core.management.base import BaseCommand
 from django.db import transaction
-
-from branding.models import BrandProfile, DesignToken
 from organisations.models import Organisation
-
 
 # Federation brand configurations (official colors)
 FEDERATION_BRANDS = {

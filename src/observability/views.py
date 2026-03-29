@@ -1,11 +1,9 @@
 """Observability API views for UI consumption."""
 
-import logging
-from datetime import timedelta
-
 import builtins as _builtins
-
+import logging
 from builtins import isinstance
+from datetime import timedelta
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.cache import caches
@@ -13,13 +11,12 @@ from django.core.cache.backends.redis import RedisCache
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
+from organisations.models import Organisation
 from prometheus_client import REGISTRY
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
-
-from organisations.models import Organisation
 
 from .models import SystemMetric
 from .serializers import (
@@ -66,6 +63,7 @@ def metrics_summary(request):
     Never returns 500 - missing metrics are returned as null.
     """
     import time
+
     from django.db import connection
     from django.utils import timezone
 
@@ -136,14 +134,14 @@ def demo_health_check(request):
     without exposing sensitive infrastructure details.
     """
     import time
-    from django.db import connection
-    from django.core.cache import cache
-    from django.utils import timezone
-    from django.db.models import Sum
 
     from accounts.models import User
-    from transactions.models import Transaction
     from credits.models import CreditsBalance
+    from django.core.cache import cache
+    from django.db import connection
+    from django.db.models import Sum
+    from django.utils import timezone
+    from transactions.models import Transaction
 
     response_data = {
         "timestamp": timezone.now().isoformat(),

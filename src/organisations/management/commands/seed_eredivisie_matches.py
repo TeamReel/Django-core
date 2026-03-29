@@ -2,14 +2,14 @@
 Management command to generate Eredivisie matches for the 2024/2025 season.
 """
 
+from datetime import datetime, timedelta
+
+from activities.models import Activity, Period
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
-from datetime import datetime, timedelta
-
-from activities.models import Period, Activity
-from projects.models import Project
 from organisations.models import Organisation
+from projects.models import Project
 
 
 class Command(BaseCommand):

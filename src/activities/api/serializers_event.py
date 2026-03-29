@@ -2,9 +2,8 @@
 ActivityEvent serializers for Activities API.
 """
 
-from rest_framework import serializers
-
 from activities.models import ActivityEvent
+from rest_framework import serializers
 
 
 class ActivityEventSerializer(serializers.ModelSerializer):

@@ -3,10 +3,12 @@ Signal handlers for Activities & Period Hierarchy models.
 Integrates with B09 Audit Logging System.
 """
 
-from django.db.models.signals import post_save, post_delete, pre_save
-from django.dispatch import receiver
-from .models import Period, Activity, Participation
 import logging
+
+from django.db.models.signals import post_delete, post_save, pre_save
+from django.dispatch import receiver
+
+from .models import Activity, Participation, Period
 
 logger = logging.getLogger(__name__)
 

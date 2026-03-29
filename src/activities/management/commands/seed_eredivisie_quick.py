@@ -3,11 +3,10 @@
 import random
 from datetime import timedelta
 
+from activities.models import Activity, Period
 from django.core.management.base import BaseCommand
 from django.db import connection
 from django.utils import timezone
-
-from activities.models import Activity, Period
 from organisations.models import Organisation
 from projects.models import Project
 

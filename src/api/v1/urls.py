@@ -1,3 +1,4 @@
+from api.v1.views import api_root
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
@@ -5,8 +6,6 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
-
-from api.v1.views import api_root
 
 # DRF Router for domain viewsets (WP05)
 router = DefaultRouter()

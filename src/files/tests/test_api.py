@@ -1,11 +1,10 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from files.models import FileAsset
 from organisations.models import Membership, Organisation
 from rest_framework import status
 from rest_framework.test import APIClient
-
-from files.models import FileAsset
 
 User = get_user_model()
 

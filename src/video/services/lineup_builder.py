@@ -855,6 +855,8 @@ class LineupSegmentBuilder:
 
                 from src.video.services.asset_processing_specs import (
                     get_best_url as _get_best_url,
+                )
+                from src.video.services.asset_processing_specs import (
                     get_ffmpeg_best_url as _get_ffmpeg_best_url,
                 )
 
@@ -1978,11 +1980,12 @@ class LineupSegmentBuilder:
         Args:
             players: List of dicts with {intro_url, kit_url, x_pct, y_pct}
         """
+        import shutil
         import subprocess
         import tempfile
-        import shutil
         import uuid
         from pathlib import Path
+
         import requests as req
         from files.utils import get_storage_backend
 

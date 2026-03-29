@@ -12,7 +12,6 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import Any
 
-
 # ── Event Type Constants ────────────────────────────────────────────
 # Dotted naming convention: {domain}.{action}
 

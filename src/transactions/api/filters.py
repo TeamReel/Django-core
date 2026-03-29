@@ -1,7 +1,6 @@
 """Django-filter classes for transactions API."""
 
 import django_filters
-
 from transactions.models import SourceTypeChoices, Transaction, UsageEvent
 
 

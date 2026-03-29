@@ -1,7 +1,7 @@
 import json
 from unittest.mock import MagicMock, patch
-from django.test import TestCase
 
+from django.test import TestCase
 from medialib.services.metadata import extract_image_metadata, extract_video_metadata
 
 

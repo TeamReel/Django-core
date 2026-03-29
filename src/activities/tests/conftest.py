@@ -2,12 +2,13 @@
 Pytest fixtures for activities tests.
 """
 
-import pytest
 from datetime import date, datetime, timezone
+
+import pytest
 from accounts.models import User
-from organisations.models import Organisation, Membership
+from activities.models import Activity, Period
+from organisations.models import Membership, Organisation
 from projects.models import Project
-from activities.models import Period, Activity
 
 
 @pytest.fixture

@@ -10,7 +10,6 @@ import logging
 
 from django.db.models.signals import m2m_changed, post_delete, post_save
 from django.dispatch import receiver
-
 from permissions.cache import invalidate_role_cache, invalidate_user_cache
 from permissions.models import Role, RoleAssignment
 

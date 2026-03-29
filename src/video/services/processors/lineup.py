@@ -36,9 +36,9 @@ from urllib.parse import urlparse
 
 import requests
 from django.utils import timezone
-
 from files.models import FileAsset
 from files.utils import get_storage_backend
+
 from src.video.models.job import JobStatus
 from src.video.services.processors.base import BaseVideoProcessor, JobCancelledError
 

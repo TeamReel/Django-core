@@ -1,13 +1,11 @@
 """Observable Celery Task base class for task lifecycle metrics (B15)."""
 
+import builtins as _builtins
 import logging
 import time
-
 from builtins import isinstance
-import builtins as _builtins
 
 from celery import Task, shared_task
-
 from django.core.cache import caches
 from django.core.cache.backends.redis import RedisCache
 

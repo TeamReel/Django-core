@@ -9,10 +9,9 @@ import logging
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from organisations.models import Organisation
 from permissions.models import Role, RoleAssignment
 from projects.models import Project
-
-from organisations.models import Organisation
 
 logger = logging.getLogger(__name__)
 

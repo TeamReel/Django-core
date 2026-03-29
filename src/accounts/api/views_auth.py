@@ -3,6 +3,15 @@ from __future__ import annotations
 
 import logging
 
+from accounts.models import User
+from accounts.serializers import (
+    LoginSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
+    RegistrationSerializer,
+    UserListSerializer,
+)
+from accounts.tokens import email_verification_token
 from audit.api import audit_log
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -23,16 +32,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from accounts.models import User
-from accounts.serializers import (
-    LoginSerializer,
-    PasswordResetConfirmSerializer,
-    PasswordResetRequestSerializer,
-    RegistrationSerializer,
-    UserListSerializer,
-)
-from accounts.tokens import email_verification_token
 
 logger = logging.getLogger(__name__)
 

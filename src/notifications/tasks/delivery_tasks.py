@@ -4,7 +4,6 @@ import logging
 
 from celery import shared_task
 from django.utils import timezone
-
 from notifications.channels.email import EmailChannel
 from notifications.channels.exceptions import PermanentChannelError, TransientChannelError
 from notifications.metrics import (

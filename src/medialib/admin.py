@@ -2,7 +2,8 @@
 B35 Smart Asset Library - Django Admin Configuration
 """
 from django.contrib import admin
-from .models import MediaItem, MediaTag, Collection, CollectionMembership
+
+from .models import Collection, CollectionMembership, MediaItem, MediaTag
 
 
 @admin.register(MediaItem)

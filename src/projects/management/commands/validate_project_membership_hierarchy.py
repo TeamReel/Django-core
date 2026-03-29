@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
-from projects.models import ProjectMembership
 from organisations.models import Membership as OrganisationMembership
+from projects.models import ProjectMembership
 
 
 class Command(BaseCommand):

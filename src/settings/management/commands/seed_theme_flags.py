@@ -10,7 +10,6 @@ Resolution: Organisation setting overrides club setting (highest scope wins).
 """
 from django.core.management.base import BaseCommand
 from django.db import transaction
-
 from organisations.models import Organisation
 from projects.models import Project
 from settings.models import FeatureFlag, ScopeType

@@ -9,7 +9,6 @@ Routes:
 """
 
 from rest_framework.routers import DefaultRouter
-
 from sport_configuration.views import (
     FormationViewSet,
     OutfitConfigurationViewSet,

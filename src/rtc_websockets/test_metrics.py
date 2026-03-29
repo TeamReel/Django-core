@@ -6,7 +6,6 @@ from channels.testing import WebsocketCommunicator
 from django.contrib.auth import get_user_model
 from organisations.models import Membership, Organisation
 from projects.models import Project
-
 from rtc_websockets.consumers import ActivityConsumer
 from rtc_websockets.services import ActivityService
 

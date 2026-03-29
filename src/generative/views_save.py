@@ -59,8 +59,9 @@ def save_asset_view(request: Request) -> Response:
     project = None
 
     if project_id:
-        from projects.models import Project
         import uuid
+
+        from projects.models import Project
 
         # Try to parse as UUID
         is_uuid = False
@@ -165,11 +166,10 @@ def save_asset_view(request: Request) -> Response:
     final_storage_path = storage_path
     if image_bytes and not storage_path:
         try:
-            from django.core.files.base import ContentFile
-            from django.utils import timezone
-
             import uuid as uuid_module
 
+            from django.core.files.base import ContentFile
+            from django.utils import timezone
             from files.utils import get_storage_backend
 
             storage = get_storage_backend()
@@ -450,8 +450,9 @@ def save_asset_view(request: Request) -> Response:
     # ── Auto-approve GenerationJob if task_id provided ────────────────
     if task_id:
         try:
-            from .models import GenerationJob
             from django.utils import timezone as tz
+
+            from .models import GenerationJob
 
             job = GenerationJob.objects.get(task_id=task_id)
             job.approval_status = GenerationJob.ApprovalStatus.APPROVED

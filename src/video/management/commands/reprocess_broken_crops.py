@@ -36,23 +36,23 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         from django.core.files.base import ContentFile
-        from PIL import Image as PilImage
-
         from files.utils import get_storage_backend
+        from PIL import Image as PilImage
         from projects.models import ProjectMembership
+
         from src.generative.views_asset import (
             CLOSEUP_OUTPUT_SIZE,
             HALFBODY_OUTPUT_SIZE,
             _smart_crop_closeup,
             _smart_crop_halfbody,
         )
+        from src.video.services.asset_processing_specs import ProcessingState
+        from src.video.tasks.asset_processing import _update_variant_metadata
         from src.video.utils.asset_metadata import (
             build_s3_asset_path,
             get_variant_value,
             infer_role,
         )
-        from src.video.tasks.asset_processing import _update_variant_metadata
-        from src.video.services.asset_processing_specs import ProcessingState
 
         apply = options["apply"]
         storage = get_storage_backend() if apply else None

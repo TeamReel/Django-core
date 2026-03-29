@@ -3,7 +3,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import Project, ProjectMembership, ProjectInvite, ProjectMembershipPromotion
+from .models import Project, ProjectInvite, ProjectMembership, ProjectMembershipPromotion
 
 
 @admin.register(Project)

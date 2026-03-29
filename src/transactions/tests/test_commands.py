@@ -9,7 +9,6 @@ from django.core.management import call_command
 from django.utils import timezone
 from organisations.models import Organisation
 from projects.models import Project
-
 from transactions.models import Transaction, UsageEvent
 
 

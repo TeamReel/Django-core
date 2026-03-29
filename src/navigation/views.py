@@ -3,16 +3,15 @@
 from typing import Any, Dict
 
 from django.contrib.contenttypes.models import ContentType
-from rest_framework import permissions, viewsets
-from rest_framework.request import Request
-from rest_framework.response import Response
-
 from navigation.models import UserFavorite, UserRecent
 from navigation.serializers import (
     FavoriteCreateSerializer,
     NavigationItemSerializer,
     RecentCreateSerializer,
 )
+from rest_framework import permissions, viewsets
+from rest_framework.request import Request
+from rest_framework.response import Response
 
 
 class IsOwner(permissions.BasePermission):

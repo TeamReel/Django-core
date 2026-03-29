@@ -14,7 +14,6 @@ from decimal import Decimal
 
 import pytest
 from django.db import IntegrityError
-
 from transactions.exceptions import DuplicateIdempotencyKeyError, InsufficientBalanceError
 from transactions.models import (
     BalancePolicy,

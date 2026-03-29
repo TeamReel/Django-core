@@ -1,22 +1,21 @@
 import logging
 import unicodedata
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from django.db import connection
-from django.contrib.postgres.search import SearchHeadline, SearchQuery
+from activities.models import Activity, Period
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.search import SearchHeadline, SearchQuery
+from django.db import connection
 from django.db.models import CharField
 from django.db.models.functions import Cast
-
-from search.backend.postgres import PostgresSearchBackend
-from search.api.serializers import SearchEntrySerializer
-from search.utils import sanitize_query
 from projects.models import Project
-from activities.models import Activity, Period
+from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from search.api.serializers import SearchEntrySerializer
+from search.backend.postgres import PostgresSearchBackend
+from search.utils import sanitize_query
 
 logger = logging.getLogger(__name__)
 
@@ -204,9 +203,9 @@ class SearchAPIView(APIView):
             Tuple of (root_instance, path_to_anchor) where path_to_anchor is
             a list of instance IDs from root to the original anchor.
         """
+        from activities.models import Activity, Period
         from organisations.models import Organisation
         from projects.models import Project, ProjectMembership
-        from activities.models import Period, Activity
 
         path = [str(instance.pk)]
         current = instance
@@ -354,9 +353,9 @@ class SearchAPIView(APIView):
         Returns:
             HierarchyNode or None
         """
-        from search.hierarchy.registry import get_resolver
-        from search.hierarchy.nodes import HierarchyNode
         from django.conf import settings
+        from search.hierarchy.nodes import HierarchyNode
+        from search.hierarchy.registry import get_resolver
 
         max_depth = getattr(settings, "SEARCH_HIERARCHY_MAX_DEPTH", 8)
         if depth > max_depth:
@@ -470,9 +469,10 @@ class SearchAPIView(APIView):
         Returns:
             Dict with 'anchor' and 'tree' keys, or None if hierarchy not requested/failed
         """
-        from django.conf import settings
-        from search.hierarchy.serializers import HierarchyNodeSerializer, HierarchyAnchorSerializer
         import time
+
+        from django.conf import settings
+        from search.hierarchy.serializers import HierarchyAnchorSerializer, HierarchyNodeSerializer
 
         # Check if hierarchy is requested
         include_hierarchy = request.GET.get("hierarchy", "").lower() == "true"

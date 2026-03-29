@@ -6,10 +6,9 @@ are in serializers_membership.py and re-exported for backward compatibility.
 """
 
 from django.contrib.auth import get_user_model
+from organisations.models import Organisation
 from projects.models import ProjectMembership
 from rest_framework import serializers
-
-from organisations.models import Organisation
 
 # Re-export membership serializers for backward compatibility
 from .serializers_membership import (  # noqa: F401

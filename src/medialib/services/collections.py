@@ -1,4 +1,5 @@
-from django.db import transaction, models
+from django.db import models, transaction
+
 from ..models import Collection, CollectionMembership, MediaItem
 
 

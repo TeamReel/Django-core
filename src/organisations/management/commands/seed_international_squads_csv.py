@@ -3,15 +3,15 @@ Management command to seed international squads from CSV (DFB, FIGC, The FA, RBF
 Uses real player data from players_international_2024_25.csv
 """
 
-from django.core.management.base import BaseCommand
-from django.db import transaction
 import csv
 from pathlib import Path
 
 from accounts.models import User
-from projects.models import Project, ProjectMembership
 from activities.models import Period
+from django.core.management.base import BaseCommand
+from django.db import transaction
 from organisations.models import Organisation
+from projects.models import Project, ProjectMembership
 
 
 class Command(BaseCommand):

@@ -219,8 +219,9 @@ def _create_generation_job(
     Silently ignores DB errors to avoid blocking the generation response.
     """
     try:
-        from .models import GenerationJob
         import uuid
+
+        from .models import GenerationJob
 
         GenerationJob.objects.create(
             task_id=uuid.UUID(task_id),
@@ -492,10 +493,11 @@ def _upload_image_bytes_to_storage(
     No BrandAsset / MediaItem creation — that is reserved for the approval→link step.
     """
     try:
-        from files.utils import get_storage_backend
+        import uuid as _uuid
+
         from django.core.files.base import ContentFile
         from django.utils import timezone
-        import uuid as _uuid
+        from files.utils import get_storage_backend
 
         storage = get_storage_backend()
 
@@ -530,8 +532,8 @@ def _upload_image_bytes_to_storage(
         file_asset_id = None
         if organisation_id:
             try:
-                from organisations.models import Organisation as _Org
                 from files.models import FileAsset as _FA
+                from organisations.models import Organisation as _Org
 
                 org = _Org.objects.get(id=organisation_id)
                 fa = _FA.objects.create(
@@ -1267,6 +1269,7 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
     background removal + resize run automatically.
     """
     import re
+
     from django.apps import apps
 
     IMAGE_TEMPLATE_MAP = {
@@ -1412,6 +1415,7 @@ def _propagate_approved_video_to_membership(job) -> None:  # noqa: ANN001
       member_intro_kit_type-{kit_type}_style_variant-{style_variant}_{hash}_{idx}...mp4
     """
     import re
+
     from django.apps import apps
     from django.utils import timezone
 

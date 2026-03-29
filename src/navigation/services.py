@@ -8,7 +8,6 @@ from django.db import models
 
 if TYPE_CHECKING:
     from django.contrib.auth import get_user_model
-
     from navigation.models import UserRecent
 
     User = get_user_model()

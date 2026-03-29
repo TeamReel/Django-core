@@ -8,7 +8,6 @@ from typing import Any, Dict
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.validators import EmailValidator, ValidationError
-
 from notifications.channels.base import NotificationChannel
 from notifications.channels.exceptions import PermanentChannelError, TransientChannelError
 from notifications.models import Notification

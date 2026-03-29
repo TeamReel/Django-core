@@ -2,13 +2,12 @@
 
 import getpass
 
+from accounts.models import User
 from django.contrib.auth.models import Group
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.core.validators import validate_email
-
-from accounts.models import User
 
 
 class Command(BaseCommand):

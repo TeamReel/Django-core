@@ -1,7 +1,7 @@
 from django.db.models import CharField
 from django.db.models.functions import Cast
-from search.registry import SearchIndex
 from projects.models import ProjectMembership
+from search.registry import SearchIndex
 
 
 class ProjectMembershipIndex(SearchIndex):

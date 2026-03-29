@@ -11,12 +11,11 @@ from __future__ import annotations
 import logging
 from datetime import timedelta
 
+from activity_feed.models import ActivityLog, FeedPosition
 from django.utils import timezone
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
-from activity_feed.models import ActivityLog, FeedPosition
 
 from .pagination import ActivityFeedCursorPagination
 from .permissions import ActivityFeedPermission
@@ -44,7 +43,7 @@ def _resolve_organisation(request):
 
     Returns the Organisation instance or None.
     """
-    from organisations.models import Organisation, Membership
+    from organisations.models import Membership, Organisation
 
     org_id = (
         request.query_params.get("organisation_id")

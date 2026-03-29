@@ -7,7 +7,6 @@ from typing import Any, Dict
 import requests
 from django.core.validators import URLValidator, ValidationError
 from django.utils import timezone
-
 from notifications.channels.base import NotificationChannel
 from notifications.channels.exceptions import PermanentChannelError, TransientChannelError
 from notifications.models import Notification

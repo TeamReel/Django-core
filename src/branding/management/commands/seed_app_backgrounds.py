@@ -10,14 +10,12 @@ Usage:
 import io
 import uuid
 
+from branding.models import AppBackground
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from PIL import Image, ImageDraw
-
-from branding.models import AppBackground
 from files.models import FileAsset
+from PIL import Image, ImageDraw
 from sport_configuration.models import Sport
-
 
 # Background definitions: (label, field_color_1, field_color_2, line_color, description)
 FOOTBALL_BACKGROUNDS = [

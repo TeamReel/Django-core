@@ -1,8 +1,7 @@
 """Serializers for notifications API."""
 
-from rest_framework import serializers
-
 from notifications.models import DeliveryAttempt, Notification, NotificationType
+from rest_framework import serializers
 
 
 class DeliveryAttemptSerializer(serializers.ModelSerializer):

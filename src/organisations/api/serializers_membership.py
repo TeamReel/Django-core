@@ -5,9 +5,8 @@ Membership serializers for organisations API.
 import uuid
 
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
-
 from organisations.models import Membership, Organisation
+from rest_framework import serializers
 
 User = get_user_model()
 

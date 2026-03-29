@@ -5,12 +5,11 @@ Tests for the ActivityFeedViewSet: list, filtering, pagination,
 unread count, mark-read, aggregation, and org isolation.
 """
 
-import pytest
 from datetime import timedelta
-from django.utils import timezone
 
+import pytest
 from activity_feed.models import ActivityLog, FeedPosition
-
+from django.utils import timezone
 
 FEED_URL = "/api/v1/activity-feed/"
 UNREAD_URL = "/api/v1/activity-feed/unread-count/"

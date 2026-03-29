@@ -12,9 +12,10 @@ Usage:
     python manage.py retry_failed_requests --days=7
 """
 
+from datetime import timedelta
+
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from datetime import timedelta
 
 from src.generative.models import GenerationRequest, RequestStatus
 from src.generative.tasks import process_generation_request

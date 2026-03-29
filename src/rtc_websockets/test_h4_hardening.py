@@ -26,9 +26,9 @@ class TestCleanupStaleConnections:
     """Tests for the cleanup_stale_connections Celery task."""
 
     def _create_connection(self, user, heartbeat_age_seconds: int = 0):
-        from rtc_websockets.models import WebSocketConnection
-
         import uuid
+
+        from rtc_websockets.models import WebSocketConnection
 
         conn = WebSocketConnection.objects.create(
             user=user,
@@ -107,8 +107,8 @@ class TestEventPublishMetrics:
 
     def _make_event(self):
         from rtc_websockets.events import (
-            EventType,
             ContentStatusPayload,
+            EventType,
             build_event,
         )
 

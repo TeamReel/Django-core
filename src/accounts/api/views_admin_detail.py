@@ -4,6 +4,13 @@ from __future__ import annotations
 
 import logging
 
+from accounts.models import User
+from accounts.permissions import IsAdmin
+from accounts.serializers import (
+    ChangeRoleSerializer,
+    UserDetailSerializer,
+    UserUpdateSerializer,
+)
 from audit.api import audit_log
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
@@ -17,14 +24,6 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-from accounts.models import User
-from accounts.permissions import IsAdmin
-from accounts.serializers import (
-    ChangeRoleSerializer,
-    UserDetailSerializer,
-    UserUpdateSerializer,
-)
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,6 @@
 """Retry policy calculation and enforcement service."""
 
 from django.utils import timezone
-
 from notifications.models import Notification, RetryPolicy
 
 

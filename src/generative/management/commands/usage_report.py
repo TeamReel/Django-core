@@ -13,11 +13,11 @@ Usage:
 """
 
 import json
+from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 from django.db.models import Avg, Count, Max, Min, Q, Sum
 from django.utils import timezone
-from datetime import timedelta
 
 from src.generative.models import GenerationRequest, RequestStatus
 

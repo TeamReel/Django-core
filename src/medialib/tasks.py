@@ -1,14 +1,15 @@
+import logging
+import os
+import tempfile
+
 from celery import shared_task
 from django.core.files.base import ContentFile
-from files.utils import get_storage_backend
 from files.models import FileAsset
+from files.utils import get_storage_backend
+
 from .models import MediaItem, MediaItemState, MediaThumbnail
 from .services.metadata import extract_image_metadata, extract_video_metadata
 from .services.thumbnails import generate_image_thumbnail, generate_video_thumbnail
-
-import logging
-import tempfile
-import os
 
 logger = logging.getLogger(__name__)
 
@@ -201,8 +202,9 @@ def generate_media_thumbnails(self, media_item_id: str):
                     # I should update services to return dimensions.
 
                     # Re-opening bytes to check dimensions is cheap for thumbnails
-                    from PIL import Image as PilImage
                     import io
+
+                    from PIL import Image as PilImage
 
                     with PilImage.open(io.BytesIO(thumb_bytes)) as img:
                         width, height = img.size

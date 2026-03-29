@@ -29,7 +29,7 @@ class AzureBlobStorageBackend(StorageBackend):
 
     def __init__(self):
         try:
-            from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
+            from azure.storage.blob import BlobSasPermissions, BlobServiceClient, generate_blob_sas
         except ImportError:
             raise ImportError(
                 "azure-storage-blob is required for Azure Blob Storage. "

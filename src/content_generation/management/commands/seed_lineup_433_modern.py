@@ -29,12 +29,12 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         """Create the template with proper input requirements."""
-        from src.content_generation.models import ContentTemplate, TemplateType, TemplateSubtype
-        from sport_configuration.models import Sport, SportConfiguration, Formation
-
         # Temporarily disconnect audit signals to avoid Prometheus conflicts
-        from django.db.models.signals import post_save, post_delete
-        from src.content_generation.signals import content_template_saved, content_template_deleted
+        from django.db.models.signals import post_delete, post_save
+        from sport_configuration.models import Formation, Sport, SportConfiguration
+
+        from src.content_generation.models import ContentTemplate, TemplateSubtype, TemplateType
+        from src.content_generation.signals import content_template_deleted, content_template_saved
 
         post_save.disconnect(content_template_saved, sender=ContentTemplate)
         post_delete.disconnect(content_template_deleted, sender=ContentTemplate)

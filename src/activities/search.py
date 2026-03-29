@@ -2,7 +2,6 @@
 
 from django.db.models import CharField
 from django.db.models.functions import Cast
-
 from search.registry import SearchIndex
 
 from .models import Activity, Period

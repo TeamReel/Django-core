@@ -2,11 +2,10 @@
 
 from typing import Optional
 
+from audit.api import audit_log
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
-
-from audit.api import audit_log
 from projects.models import ProjectMembership, ProjectMembershipPromotion
 from settings.api import get_flag
 

@@ -3,15 +3,14 @@ from __future__ import annotations
 
 import logging
 
+from accounts.models import User
+from accounts.serializers import UserListSerializer
 from audit.api import audit_log
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
-from accounts.models import User
-from accounts.serializers import UserListSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -249,8 +248,8 @@ def change_password(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    from django.contrib.auth.password_validation import validate_password
     from django.contrib.auth import update_session_auth_hash
+    from django.contrib.auth.password_validation import validate_password
 
     try:
         validate_password(str(new_password), user=user)

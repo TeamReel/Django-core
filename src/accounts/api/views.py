@@ -10,6 +10,19 @@ This file re-exports everything so existing imports continue to work.
 """
 
 # ── Auth ─────────────────────────────────────────────────────────────
+# ── Admin ────────────────────────────────────────────────────────────
+from .views_admin import (  # noqa: F401
+    UserPagination,
+    admin_update_avatar,
+    admin_user_list,
+)
+from .views_admin_detail import (  # noqa: F401
+    admin_change_role,
+    admin_user_activate,
+    admin_user_deactivate,
+    admin_user_detail,
+    admin_user_reset_password,
+)
 from .views_auth import (  # noqa: F401
     LogoutView,
     login_api,
@@ -33,18 +46,4 @@ from .views_profile import (  # noqa: F401
     set_avatar_from_path,
     update_avatar,
     update_profile,
-)
-
-# ── Admin ────────────────────────────────────────────────────────────
-from .views_admin import (  # noqa: F401
-    UserPagination,
-    admin_update_avatar,
-    admin_user_list,
-)
-from .views_admin_detail import (  # noqa: F401
-    admin_change_role,
-    admin_user_activate,
-    admin_user_deactivate,
-    admin_user_detail,
-    admin_user_reset_password,
 )
