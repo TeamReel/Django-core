@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from projects.models import ProjectMembership
 from rest_framework import serializers
 
-from organisations.models import Membership, Organisation
+from organisations.models import Organisation
 
 # Re-export membership serializers for backward compatibility
 from .serializers_membership import (  # noqa: F401

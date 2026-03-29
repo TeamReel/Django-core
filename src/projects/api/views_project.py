@@ -706,7 +706,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 raise PermissionDenied("Only admins can view membership statistics.")
 
         # Calculate stats — single query with conditional aggregation
-        from django.db.models import Case, Count, Q, Value, When
+        from django.db.models import Count, Q
 
         stats = ProjectMembership.objects.filter(
             project=project, deleted_at__isnull=True

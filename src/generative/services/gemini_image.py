@@ -18,10 +18,7 @@ from django.conf import settings
 
 from .preprocessing import (
     OUTPUT_POSTPROCESSORS,
-    PILLOW_ONLY_TEMPLATES,
-    PREPROCESSORS,
     _crop_gemini_output_upper_body,
-    _strip_checkerboard,
 )
 
 logger = logging.getLogger("generative.services.gemini_image")

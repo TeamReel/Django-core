@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { LayoutGrid, Clock } from 'lucide-react';
-import styles from '../GalleryMatchTimeline.module.css';
+import styles from '../GalleryMatchTimeline.stats.module.css';
 
 interface StatsAndToggleProps {
   totalItems: number;

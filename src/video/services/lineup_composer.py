@@ -17,7 +17,6 @@ FFmpeg compositing produces per-phase clips, then concat demuxer joins them.
 from __future__ import annotations
 
 import logging
-import subprocess
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -33,7 +32,6 @@ from src.video.services._common import (
     SPONSOR_BOX_H,
     SPONSOR_MARGIN,
     SPONSOR_PAD,
-    SPONSOR_W,
     download_file,
     get_ffmpeg_path,
     resolve_brand_color,

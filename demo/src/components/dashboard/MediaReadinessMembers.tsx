@@ -13,6 +13,8 @@ import {
   type MediaReadiness,
 } from './useMediaReadiness';
 import styles from './MediaReadinessCard.module.css';
+import memberStyles from './MediaReadinessCard.member.module.css';
+import assetStyles from './MediaReadinessCard.assets.module.css';
 
 // ─── Helpers (shared with card) ───────────────────────────
 
@@ -38,12 +40,12 @@ export const MembersListView: React.FC<MembersListViewProps> = ({
 
   return (
     <div className={styles.sheetContent}>
-      <div className={styles.summaryBar}>
-        <div className={styles.summaryLabel}>
-          <span className={styles.summaryText}>
+      <div className={assetStyles.summaryBar}>
+        <div className={assetStyles.summaryLabel}>
+          <span className={assetStyles.summaryText}>
             {members.complete}/{members.total} spelers volledig
           </span>
-          <span className={styles.summaryPercent}>{members.percent}%</span>
+          <span className={assetStyles.summaryPercent}>{members.percent}%</span>
         </div>
         <div className={styles.progressTrack}>
           <div
@@ -53,40 +55,40 @@ export const MembersListView: React.FC<MembersListViewProps> = ({
         </div>
       </div>
 
-      <div className={styles.typeGrid}>
+      <div className={assetStyles.typeGrid}>
         {members.list.map(member => {
           const isExpanded = expandedMembers.has(member.id);
           return (
-            <div key={member.id} className={styles.memberAccordion}>
+            <div key={member.id} className={memberStyles.memberAccordion}>
               {/* Accordion header */}
               <div
-                className={`${styles.memberRow} ${isExpanded ? styles.memberRowExpanded : ''}`}
+                className={`${memberStyles.memberRow} ${isExpanded ? memberStyles.memberRowExpanded : ''}`}
                 onClick={() => toggleMember(member.id)}
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleMember(member.id); } }}
                 role="button"
                 tabIndex={0}
                 aria-expanded={isExpanded}
               >
-                <div className={styles.memberAvatar}>
+                <div className={memberStyles.memberAvatar}>
                   {member.avatarUrl ? (
-                    <img src={member.avatarUrl} alt="" className={styles.avatarImg} loading="lazy" />
+                    <img src={member.avatarUrl} alt="" className={memberStyles.avatarImg} loading="lazy" />
                   ) : (
-                    <span className={styles.avatarInitial}>{member.name.charAt(0).toUpperCase()}</span>
+                    <span className={memberStyles.avatarInitial}>{member.name.charAt(0).toUpperCase()}</span>
                   )}
                 </div>
-                <div className={styles.memberInfo}>
-                  <span className={styles.memberName}>{member.name}</span>
-                  <div className={styles.memberProgressTrack}>
+                <div className={memberStyles.memberInfo}>
+                  <span className={memberStyles.memberName}>{member.name}</span>
+                  <div className={memberStyles.memberProgressTrack}>
                     <div
-                      className={`${styles.memberProgressFill} ${member.isComplete ? styles.memberProgressComplete : ''}`}
+                      className={`${memberStyles.memberProgressFill} ${member.isComplete ? memberStyles.memberProgressComplete : ''}`}
                       style={{ width: `${Math.max(4, member.percent)}%` }}
                     />
                   </div>
                 </div>
-                <span className={`${styles.memberMeta} ${member.isComplete ? styles.memberMetaComplete : ''}`}>
+                <span className={`${memberStyles.memberMeta} ${member.isComplete ? memberStyles.memberMetaComplete : ''}`}>
                   {member.isComplete ? <CheckCircle2 size={13} /> : `${member.completedCount}/${MEMBER_MEDIA_TYPES.length}`}
                 </span>
-                <span className={`${styles.accordionChevron} ${isExpanded ? styles.accordionChevronOpen : ''}`}>
+                <span className={`${memberStyles.accordionChevron} ${isExpanded ? memberStyles.accordionChevronOpen : ''}`}>
                   <ChevronDown size={14} />
                 </span>
               </div>
@@ -102,7 +104,7 @@ export const MembersListView: React.FC<MembersListViewProps> = ({
 
       {incompleteCount > 0 && (
         <div
-          className={`${styles.callout} ${styles.calloutAction}`}
+          className={`${assetStyles.callout} ${assetStyles.calloutAction}`}
           onClick={() => {
             closeSheet();
             window.dispatchEvent(
@@ -125,13 +127,13 @@ export const MembersListView: React.FC<MembersListViewProps> = ({
           role="button"
           tabIndex={0}
         >
-          <span className={`${styles.calloutIcon} ${styles.calloutIconAction}`}>
+          <span className={`${assetStyles.calloutIcon} ${assetStyles.calloutIconAction}`}>
             <Sparkles size={14} />
           </span>
-          <span className={styles.calloutText}>
+          <span className={assetStyles.calloutText}>
             {incompleteCount} speler{incompleteCount > 1 ? 's' : ''} hebben ontbrekende media
           </span>
-          <span className={styles.calloutArrow}><ChevronRight size={14} /></span>
+          <span className={assetStyles.calloutArrow}><ChevronRight size={14} /></span>
         </div>
       )}
     </div>
@@ -154,20 +156,20 @@ const MemberAccordionBody: React.FC<{
   }, [closeSheet]);
 
   return (
-    <div className={styles.accordionBody}>
+    <div className={memberStyles.accordionBody}>
       {MEMBER_MEDIA_TYPES.map(type => {
         const done = member.completedTypes.has(type.key);
         return (
-          <div key={type.key} className={styles.accordionAssetRow} data-present={done}>
-            <span className={`${styles.accordionDot} ${done ? styles.accordionDotDone : styles.accordionDotMissing}`}>
+          <div key={type.key} className={memberStyles.accordionAssetRow} data-present={done}>
+            <span className={`${memberStyles.accordionDot} ${done ? memberStyles.accordionDotDone : memberStyles.accordionDotMissing}`}>
               {done ? <CheckCircle2 size={14} /> : <Circle size={14} />}
             </span>
-            <span className={`${styles.accordionLabel} ${done ? '' : styles.accordionLabelMissing}`}>
+            <span className={`${memberStyles.accordionLabel} ${done ? '' : memberStyles.accordionLabelMissing}`}>
               {type.label}
             </span>
             {!done && (
               <button
-                className={styles.assetActionBtn}
+                className={assetStyles.assetActionBtn}
                 onClick={() => handleGenerateType(type.key)}
                 aria-label={`Genereer ${type.label} voor ${member.name}`}
               >
@@ -181,7 +183,7 @@ const MemberAccordionBody: React.FC<{
 
       {!member.isComplete && (
         <button
-          className={styles.accordionGenerateAll}
+          className={memberStyles.accordionGenerateAll}
           onClick={() => {
             closeSheet();
             const firstMissing = MEMBER_MEDIA_TYPES.find(t => !member.completedTypes.has(t.key));
@@ -211,23 +213,23 @@ interface MemberDetailViewProps {
 
 export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, closeSheet }) => (
   <div className={styles.sheetContent}>
-    <div className={styles.memberDetailHeader}>
-      <div className={styles.memberDetailAvatar}>
+    <div className={memberStyles.memberDetailHeader}>
+      <div className={memberStyles.memberDetailAvatar}>
         {member.avatarUrl ? (
-          <img src={member.avatarUrl} alt="" className={styles.memberDetailAvatarImg} />
+          <img src={member.avatarUrl} alt="" className={memberStyles.memberDetailAvatarImg} />
         ) : (
-          <span className={styles.memberDetailInitial}>{member.name.charAt(0).toUpperCase()}</span>
+          <span className={memberStyles.memberDetailInitial}>{member.name.charAt(0).toUpperCase()}</span>
         )}
       </div>
       <div>
-        <div className={styles.memberDetailName}>{member.name}</div>
-        <div className={styles.memberDetailSub}>
+        <div className={memberStyles.memberDetailName}>{member.name}</div>
+        <div className={memberStyles.memberDetailSub}>
           {member.completedCount}/{MEMBER_MEDIA_TYPES.length} media klaar
         </div>
       </div>
     </div>
 
-    <div className={styles.typeGrid}>
+    <div className={assetStyles.typeGrid}>
       {MEMBER_MEDIA_TYPES.map(type => {
         const done = member.completedTypes.has(type.key);
         const handleGenerateType = () => {
@@ -239,21 +241,21 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, clos
           );
         };
         return (
-          <div key={type.key} className={styles.assetRow} data-present={done}>
-            <div className={styles.assetThumb}>
-              <span className={styles.assetThumbPlaceholder}>
+          <div key={type.key} className={assetStyles.assetRow} data-present={done}>
+            <div className={assetStyles.assetThumb}>
+              <span className={assetStyles.assetThumbPlaceholder}>
                 <ImageIcon size={18} />
               </span>
             </div>
-            <div className={styles.assetInfo}>
-              <span className={styles.assetLabel}>{type.label}</span>
-              <span className={styles.assetVariant}>
+            <div className={assetStyles.assetInfo}>
+              <span className={assetStyles.assetLabel}>{type.label}</span>
+              <span className={assetStyles.assetVariant}>
                 {done ? 'Gegenereerd' : 'Niet aanwezig'}
               </span>
             </div>
             {!done ? (
               <button
-                className={styles.assetActionBtn}
+                className={assetStyles.assetActionBtn}
                 onClick={handleGenerateType}
                 aria-label={`Genereer ${type.label}`}
               >
@@ -261,7 +263,7 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, clos
                 <span>Genereer</span>
               </button>
             ) : (
-              <span className={`${styles.assetCheck} ${styles.assetCheckOk}`}>
+              <span className={`${assetStyles.assetCheck} ${assetStyles.assetCheckOk}`}>
                 <CheckCircle2 size={16} />
               </span>
             )}
@@ -284,19 +286,19 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({ member, clos
       };
       return (
         <div
-          className={`${styles.callout} ${styles.calloutAction}`}
+          className={`${assetStyles.callout} ${assetStyles.calloutAction}`}
           onClick={handleGenerate}
           onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleGenerate(); } }}
           role="button"
           tabIndex={0}
         >
-          <span className={`${styles.calloutIcon} ${styles.calloutIconAction}`}>
+          <span className={`${assetStyles.calloutIcon} ${assetStyles.calloutIconAction}`}>
             <Sparkles size={14} />
           </span>
-          <span className={styles.calloutText}>
+          <span className={assetStyles.calloutText}>
             Ontbrekende media genereren
           </span>
-          <span className={styles.calloutArrow}><ChevronRight size={14} /></span>
+          <span className={assetStyles.calloutArrow}><ChevronRight size={14} /></span>
         </div>
       );
     })()}

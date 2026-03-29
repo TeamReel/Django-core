@@ -3,8 +3,6 @@ from __future__ import annotations
 
 import base64
 import logging
-import uuid as uuid_mod
-from typing import Any
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -17,7 +15,6 @@ from ._asset_helpers import (
     _propagate_approved_image_to_brand,
     _propagate_approved_image_to_membership,
     _propagate_approved_video_to_membership,
-    _upload_image_bytes_to_storage,
 )
 
 logger = logging.getLogger("generative.views.asset")

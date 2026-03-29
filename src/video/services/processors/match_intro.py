@@ -15,14 +15,12 @@ Config Schema:
 
 from __future__ import annotations
 
-import io
 import logging
 import os
 import shutil
 import subprocess
 from pathlib import Path
 
-import requests
 from django.apps import apps
 from django.utils import timezone
 from PIL import Image, ImageDraw

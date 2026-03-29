@@ -16,7 +16,6 @@ import logging
 import uuid as uuid_module
 from dataclasses import dataclass
 
-import requests
 from PIL import Image, ImageDraw, ImageFilter
 
 logger = logging.getLogger(__name__)

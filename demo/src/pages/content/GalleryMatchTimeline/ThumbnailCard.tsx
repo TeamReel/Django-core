@@ -4,7 +4,7 @@
 import React from 'react';
 import { getAssetUrl } from '@/hooks/useBrandProfile';
 import { getAssetTypeLabel, getAssetTypeIcon, type ContentItem } from '../contentLibraryTypes';
-import styles from '../GalleryMatchTimeline.module.css';
+import styles from '../GalleryMatchTimeline.cards.module.css';
 
 interface ThumbnailCardProps {
   item: ContentItem;

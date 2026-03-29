@@ -34,7 +34,6 @@ from src.video.services._common import (
     HEADER_HEIGHT,
     SPONSOR_BOX_H,
     SPONSOR_MARGIN,
-    SPONSOR_PAD,
     SPONSOR_W,
     download_file,
     get_ffmpeg_path,

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | ✅ DONE |
 | Bron | Codebase Audit maart 2026 |
 | Impact | 🟢 nice-to-have |
 | Effort | ~2 uur |
@@ -23,7 +23,12 @@ Notabele bestanden:
 - 6 video service files — unused `requests`
 
 ## Checklist
-- [ ] Scan alle src/ bestanden op ongebruikte imports
-- [ ] Verwijder ongebruikte imports
-- [ ] Tests
-- [ ] Verify
+- [x] Scan alle src/ bestanden op ongebruikte imports
+- [x] Verwijder ongebruikte imports (44 automatisch gefixt met ruff)
+- [x] Tests
+- [x] Verify
+
+## Resultaat
+- **47 ongebruikte imports** gevonden door ruff
+- **44 automatisch verwijderd** met `ruff check src/ --select=F401 --fix`
+- **3 false positives** in `src/accounts/serializers.py` — imports in try/except blokken die wel gebruikt worden

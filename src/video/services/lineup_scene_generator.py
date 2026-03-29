@@ -22,7 +22,6 @@ import uuid as uuid_module
 from dataclasses import dataclass
 from pathlib import Path
 
-import requests
 from PIL import Image, ImageDraw, ImageFont
 
 from src.video.services._common import (

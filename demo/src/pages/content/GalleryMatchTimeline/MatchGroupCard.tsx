@@ -7,7 +7,7 @@ import { ThumbnailCard } from './ThumbnailCard';
 import { formatMatchDate } from './utils';
 import type { MatchGroup } from './types';
 import type { ContentItem } from '../contentLibraryTypes';
-import styles from '../GalleryMatchTimeline.module.css';
+import styles from '../GalleryMatchTimeline.match.module.css';
 
 interface MatchGroupCardProps {
   group: MatchGroup;

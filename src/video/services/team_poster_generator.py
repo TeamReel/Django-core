@@ -14,7 +14,6 @@ import logging
 import time
 import uuid as uuid_module
 
-import requests
 from PIL import Image
 
 from src.video.services._common import (

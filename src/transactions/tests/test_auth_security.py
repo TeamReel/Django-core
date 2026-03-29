@@ -4,12 +4,10 @@ Verifies that all endpoints require authentication and
 org-scoping prevents cross-organisation data access.
 """
 
-import uuid
 from decimal import Decimal
 
 import pytest
 from accounts.models import User
-from django.urls import reverse
 from organisations.models import Membership, Organisation
 from projects.models import Project
 from rest_framework import status

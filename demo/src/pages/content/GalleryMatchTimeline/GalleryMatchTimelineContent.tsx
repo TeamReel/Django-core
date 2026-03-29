@@ -7,7 +7,8 @@ import { StatsAndToggle } from './StatsAndToggle';
 import { MatchGroupCard } from './MatchGroupCard';
 import { groupContentByMatch, isToday } from './utils';
 import type { GalleryMatchTimelineProps, MatchGroup } from './types';
-import styles from '../GalleryMatchTimeline.module.css';
+import layoutStyles from '../GalleryMatchTimeline.module.css';
+import cardStyles from '../GalleryMatchTimeline.cards.module.css';
 
 export function GalleryMatchTimelineContent({
   items,
@@ -64,14 +65,14 @@ export function GalleryMatchTimelineContent({
 
   if (items.length === 0) {
     return (
-      <div className={styles.emptyTimeline}>
-        <span className={styles.emptyIcon}></span>
-        <span className={styles.emptyTitle}>Nog geen content</span>
-        <span className={styles.emptySub}>
+      <div className={cardStyles.emptyTimeline}>
+        <span className={cardStyles.emptyIcon}></span>
+        <span className={cardStyles.emptyTitle}>Nog geen content</span>
+        <span className={cardStyles.emptySub}>
           Maak een wedstrijd aan en genereer je eerste content — flyers, line-ups, video's en meer.
         </span>
         {onNavigateToMatches && (
-          <button className={styles.emptyBtn} onClick={onNavigateToMatches}>
+          <button className={cardStyles.emptyBtn} onClick={onNavigateToMatches}>
             Ga naar Wedstrijden
           </button>
         )}
@@ -89,8 +90,8 @@ export function GalleryMatchTimelineContent({
           viewMode={viewMode}
           onViewModeChange={setViewMode}
         />
-        <div className={styles.timeline}>
-          <div className={styles.otherGrid}>
+        <div className={layoutStyles.timeline}>
+          <div className={cardStyles.otherGrid}>
             {items.map(item => (
               <ContentCard
                 key={item.id}
@@ -118,13 +119,13 @@ export function GalleryMatchTimelineContent({
       />
 
       {todayMatch && (
-        <div className={styles.todayBanner}>
-          <span className={styles.todayPulse} />
-          <span className={styles.todayText}>
+        <div className={cardStyles.todayBanner}>
+          <span className={cardStyles.todayPulse} />
+          <span className={cardStyles.todayText}>
             Vandaag: {todayMatch.title}
           </span>
           <button
-            className={styles.todayAction}
+            className={cardStyles.todayAction}
             onClick={() => {
               if (!isExpanded(todayMatch.activityId)) toggleGroup(todayMatch.activityId);
             }}
@@ -134,7 +135,7 @@ export function GalleryMatchTimelineContent({
         </div>
       )}
 
-      <div className={styles.timeline}>
+      <div className={layoutStyles.timeline}>
         {matchGroups.map(group => (
           <MatchGroupCard
             key={group.activityId}
@@ -150,12 +151,12 @@ export function GalleryMatchTimelineContent({
         {/* Other content (not linked to a match) */}
         {otherGroup && otherGroup.items.length > 0 && (
           <>
-            <div className={styles.sectionHeader}>
-              <span className={styles.sectionTitle}>Overige content</span>
-              <span className={styles.sectionLine} />
-              <span className={styles.sectionCount}>{otherGroup.items.length} items</span>
+            <div className={cardStyles.sectionHeader}>
+              <span className={cardStyles.sectionTitle}>Overige content</span>
+              <span className={cardStyles.sectionLine} />
+              <span className={cardStyles.sectionCount}>{otherGroup.items.length} items</span>
             </div>
-            <div className={styles.otherGrid}>
+            <div className={cardStyles.otherGrid}>
               {otherGroup.items.map(item => (
                 <ContentCard
                   key={item.id}

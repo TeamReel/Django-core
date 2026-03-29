@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 import logging
-import time
-from typing import Any
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -13,14 +11,12 @@ from rest_framework.response import Response
 
 from ._asset_helpers import (
     _MODEL_LOOKUP,
-    _auto_dispatch_rvm_processing,
     _get_model_cost_usd,
     _get_task,
     _propagate_approved_guest_avatar_to_project,
     _propagate_approved_image_to_brand,
     _propagate_approved_image_to_membership,
     _propagate_approved_video_to_membership,
-    _set_task,
 )
 
 logger = logging.getLogger("generative.views.asset")

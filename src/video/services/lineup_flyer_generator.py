@@ -9,7 +9,6 @@ adapted to work with S3-backed assets and the LineupData dataclass.
 
 from __future__ import annotations
 
-import io
 import logging
 import subprocess
 import tempfile
@@ -17,7 +16,6 @@ import uuid as uuid_module
 from dataclasses import dataclass
 from pathlib import Path
 
-import requests
 from PIL import Image, ImageDraw, ImageFont
 
 from src.video.services._common import (

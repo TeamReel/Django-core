@@ -24,7 +24,6 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-import requests
 from PIL import Image, ImageDraw
 
 from src.video.services._common import (
@@ -35,7 +34,6 @@ from src.video.services._common import (
     SPONSOR_BOX_H,
     SPONSOR_MARGIN,
     SPONSOR_PAD,
-    SPONSOR_W,
     download_file,
     get_ffmpeg_path,
     resolve_ffmpeg_font_path,

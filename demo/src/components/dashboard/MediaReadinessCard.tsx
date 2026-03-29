@@ -25,6 +25,7 @@ import {
 } from './useMediaReadiness';
 import { MembersListView, MemberDetailView } from './MediaReadinessMembers';
 import styles from './MediaReadinessCard.module.css';
+import assetStyles from './MediaReadinessCard.assets.module.css';
 
 // ─── Sheet view state ─────────────────────────────────────
 
@@ -168,12 +169,12 @@ export const MediaReadinessCard: React.FC = () => {
 
     return (
     <div className={styles.sheetContent}>
-      <div className={styles.summaryBar}>
-        <div className={styles.summaryLabel}>
-          <span className={styles.summaryText}>
+      <div className={assetStyles.summaryBar}>
+        <div className={assetStyles.summaryLabel}>
+          <span className={assetStyles.summaryText}>
             {presentCount} van {assets.length} aanwezig
           </span>
-          <span className={styles.summaryPercent}>{pct}%</span>
+          <span className={assetStyles.summaryPercent}>{pct}%</span>
         </div>
         <div className={styles.progressTrack}>
           <div
@@ -183,30 +184,30 @@ export const MediaReadinessCard: React.FC = () => {
         </div>
       </div>
 
-      <div className={styles.typeGrid}>
+      <div className={assetStyles.typeGrid}>
         {assets.map(asset => (
-          <div key={asset.key} className={styles.assetRow} data-present={asset.present}>
-            <div className={styles.assetThumb}>
+          <div key={asset.key} className={assetStyles.assetRow} data-present={asset.present}>
+            <div className={assetStyles.assetThumb}>
               {asset.thumbnailUrl ? (
-                <img src={asset.thumbnailUrl} alt="" className={styles.assetThumbImg} loading="lazy" />
+                <img src={asset.thumbnailUrl} alt="" className={assetStyles.assetThumbImg} loading="lazy" />
               ) : (
-                <span className={styles.assetThumbPlaceholder}>
+                <span className={assetStyles.assetThumbPlaceholder}>
                   <ImageIcon size={18} />
                 </span>
               )}
             </div>
-            <div className={styles.assetInfo}>
-              <span className={styles.assetLabel}>{asset.label}</span>
+            <div className={assetStyles.assetInfo}>
+              <span className={assetStyles.assetLabel}>{asset.label}</span>
               {asset.present && asset.variantLabel && (
-                <span className={styles.assetVariant}>{asset.variantLabel}</span>
+                <span className={assetStyles.assetVariant}>{asset.variantLabel}</span>
               )}
               {!asset.present && (
-                <span className={styles.assetVariant}>Niet aanwezig</span>
+                <span className={assetStyles.assetVariant}>Niet aanwezig</span>
               )}
             </div>
             {!asset.present ? (
               <button
-                className={styles.assetActionBtn}
+                className={assetStyles.assetActionBtn}
                 onClick={() => setUploadSheetOpen(true)}
                 aria-label={`Upload ${asset.label}`}
               >
@@ -214,7 +215,7 @@ export const MediaReadinessCard: React.FC = () => {
                 <span>Upload</span>
               </button>
             ) : (
-              <span className={`${styles.assetCheck} ${styles.assetCheckOk}`}>
+              <span className={`${assetStyles.assetCheck} ${assetStyles.assetCheckOk}`}>
                 <CheckCircle2 size={16} />
               </span>
             )}
@@ -226,19 +227,19 @@ export const MediaReadinessCard: React.FC = () => {
         const missing = assets.length - presentCount;
         return (
           <div
-            className={`${styles.callout} ${styles.calloutAction}`}
+            className={`${assetStyles.callout} ${assetStyles.calloutAction}`}
             onClick={() => setUploadSheetOpen(true)}
             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setUploadSheetOpen(true); } }}
             role="button"
             tabIndex={0}
           >
-            <span className={`${styles.calloutIcon} ${styles.calloutIconAction}`}>
+            <span className={`${assetStyles.calloutIcon} ${assetStyles.calloutIconAction}`}>
               <Upload size={14} />
             </span>
-            <span className={styles.calloutText}>
+            <span className={assetStyles.calloutText}>
               {missing} asset{missing > 1 ? 's' : ''} uploaden
             </span>
-            <span className={styles.calloutArrow}><ChevronRight size={14} /></span>
+            <span className={assetStyles.calloutArrow}><ChevronRight size={14} /></span>
           </div>
         );
       })()}

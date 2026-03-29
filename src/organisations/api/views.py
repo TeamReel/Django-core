@@ -7,7 +7,7 @@ Provides:
 
 from audit.api import audit_log
 from django.db import transaction
-from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
+from django.db.models import Count, IntegerField, OuterRef, Subquery, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
