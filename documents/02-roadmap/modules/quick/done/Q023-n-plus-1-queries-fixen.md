@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 🔍 REVIEW |
+| Status | ✅ DONE |
 | Bron | Codebase Audit maart 2026 |
 | Impact | 🟡 important |
 | Effort | ~3 uur |
@@ -21,9 +21,9 @@ Ook `navigation/views.py` en `files/views.py` missen `select_related`/`prefetch_
 | `src/notifications/views/user_notification_views.py` | Geen prefetch_related |
 
 ## Checklist
-- [ ] `transactions/api/serializers.py` → verplaats queries naar ViewSet prefetch
-- [ ] `navigation/views.py` → voeg select_related toe
-- [ ] `files/views.py` → voeg select_related toe
-- [ ] `notifications/views/` → voeg prefetch_related toe
-- [ ] Tests
-- [ ] Verify
+- [x] `transactions/api/serializers.py` → ViewSets hadden al select_related, write-path ORM calls zijn OK
+- [x] `navigation/views.py` → select_related("content_type") toegevoegd
+- [x] `files/views.py` → select_related("uploaded_by") toegevoegd
+- [x] `notifications/views/` → select_related("recipient_user") toegevoegd
+- [x] Tests
+- [x] Verify
