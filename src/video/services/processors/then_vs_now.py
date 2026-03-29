@@ -221,8 +221,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 Period = apps.get_model("periods", "Period")  # noqa: N806
                 period = Period.objects.get(id=period_id)
                 season_name = period.name
-            except Exception:
-                logger.exception("Silent exception caught")
+            except Exception as e:
+                logger.info("Failed to fetch related object or presign URL: %s", e)
 
         # ── Background URL (prefer config override, then brand asset) ──
         background_url = (self.job.config or {}).get("background_url")
@@ -326,8 +326,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
 
                         backend = get_storage_backend()
                         url = backend.get_url(url, signed=True, expiry_seconds=3600)
-                    except Exception:
-                        logger.exception("Silent exception caught")
+                    except Exception as e:
+                        logger.info("Failed to fetch related object or presign URL: %s", e)
 
                 if url:
                     name = pm.user.get_full_name() if pm.user else "Unknown"
@@ -382,8 +382,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
 
                         backend = get_storage_backend()
                         url = backend.get_url(url, signed=True, expiry_seconds=3600)
-                    except Exception:
-                        logger.exception("Silent exception caught")
+                    except Exception as e:
+                        logger.info("Failed to fetch related object or presign URL: %s", e)
 
                 if url:
                     name = pm.user.get_full_name() if pm.user else "Unknown"
@@ -437,8 +437,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
 
                             backend = get_storage_backend()
                             return backend.get_url(url, signed=True, expiry_seconds=3600)
-                        except Exception:
-                            logger.exception("Silent exception caught")
+                        except Exception as e:
+                            logger.info("Failed to fetch related object or presign URL: %s", e)
                     return url
 
                 video_url = _presign_if_needed(video_url)
@@ -481,8 +481,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
 
                             backend = get_storage_backend()
                             return backend.get_url(url, signed=True, expiry_seconds=3600)
-                        except Exception:
-                            logger.exception("Silent exception caught")
+                        except Exception as e:
+                            logger.info("Failed to fetch related object or presign URL: %s", e)
                     return url
 
                 video_url = _presign_if_needed(video_url)
@@ -533,8 +533,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
 
                             backend = get_storage_backend()
                             return backend.get_url(url, signed=True, expiry_seconds=3600)
-                        except Exception:
-                            logger.exception("Silent exception caught")
+                        except Exception as e:
+                            logger.info("Failed to fetch related object or presign URL: %s", e)
                     return url
 
                 video_url = _presign_if_needed(video_url)
@@ -613,8 +613,8 @@ class ThenVsNowProcessor(BaseVideoProcessor):
 
                         backend = get_storage_backend()
                         url = backend.get_url(url, signed=True, expiry_seconds=3600)
-                    except Exception:
-                        logger.exception("Silent exception caught")
+                    except Exception as e:
+                        logger.info("Failed to fetch related object or presign URL: %s", e)
 
                 if url:
                     name = pm.user.get_full_name() if pm.user else "Unknown"

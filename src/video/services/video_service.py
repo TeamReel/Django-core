@@ -81,8 +81,8 @@ class VideoService:
                 workflow_template = WorkflowTemplate.objects.filter(
                     name="Video Approval", is_active=True
                 ).first()
-            except Exception:
-                logger.exception("Silent exception caught")
+            except Exception as e:
+                logger.warning("Failed to run workflow or update job status: %s", e)
 
         if workflow_template:
             WorkflowInstance = apps.get_model("workflows", "WorkflowInstance")
@@ -271,8 +271,8 @@ class VideoService:
                     job.status = JobStatus.CANCELLED
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "completed_at", "updated_at"])
-            except Exception:
-                logger.exception("Silent exception caught")
+            except Exception as e:
+                logger.warning("Failed to run workflow or update job status: %s", e)
             return
 
         except Exception as exc:
@@ -283,8 +283,8 @@ class VideoService:
                 job.error_message = str(exc)[:4000]
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "error_message", "completed_at", "updated_at"])
-            except Exception:
-                logger.exception("Silent exception caught")
+            except Exception as e:
+                logger.warning("Failed to run workflow or update job status: %s", e)
         finally:
             close_old_connections()
 
@@ -341,8 +341,8 @@ class VideoService:
                     job.status = JobStatus.CANCELLED
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "completed_at", "updated_at"])
-            except Exception:
-                logger.exception("Silent exception caught")
+            except Exception as e:
+                logger.warning("Failed to run workflow or update job status: %s", e)
             return
 
         except Exception as exc:
@@ -355,8 +355,8 @@ class VideoService:
                 job.error_message = str(exc)[:4000]
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "error_message", "completed_at", "updated_at"])
-            except Exception:
-                logger.exception("Silent exception caught")
+            except Exception as e:
+                logger.warning("Failed to run workflow or update job status: %s", e)
         finally:
             close_old_connections()
 
@@ -410,8 +410,8 @@ class VideoService:
                     job.status = JobStatus.CANCELLED
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "completed_at", "updated_at"])
-            except Exception:
-                logger.exception("Silent exception caught")
+            except Exception as e:
+                logger.warning("Failed to run workflow or update job status: %s", e)
             return
 
         except Exception as exc:
@@ -424,8 +424,8 @@ class VideoService:
                 job.error_message = str(exc)[:4000]
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "error_message", "completed_at", "updated_at"])
-            except Exception:
-                logger.exception("Silent exception caught")
+            except Exception as e:
+                logger.warning("Failed to run workflow or update job status: %s", e)
         finally:
             close_old_connections()
 
@@ -480,8 +480,8 @@ class VideoService:
                     job.status = JobStatus.CANCELLED
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "completed_at", "updated_at"])
-            except Exception:
-                logger.exception("Silent exception caught")
+            except Exception as e:
+                logger.warning("Failed to run workflow or update job status: %s", e)
             return
 
         except Exception as exc:
@@ -494,8 +494,8 @@ class VideoService:
                 job.error_message = str(exc)[:4000]
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "error_message", "completed_at", "updated_at"])
-            except Exception:
-                logger.exception("Silent exception caught")
+            except Exception as e:
+                logger.warning("Failed to run workflow or update job status: %s", e)
         finally:
             close_old_connections()
 

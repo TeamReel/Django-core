@@ -594,8 +594,8 @@ def _run_video_upload(
             from organisations.models import Organisation as Org
 
             v_org = Org.objects.get(id=organisation_id)
-        except Exception:
-            logger.exception("Silent exception caught")
+        except Exception as e:
+            logger.warning("Failed to resolve related object: %s", e)
 
     variants: list[dict[str, Any]] = []
     all_variants = result.get("variants") or []
@@ -612,8 +612,8 @@ def _run_video_upload(
             _mem = Membership.objects.select_related("project__organisation").get(id=membership_id)
             v_org = _mem.project.organisation
             logger.debug("Resolved org from membership %s: %s", membership_id, v_org.id)
-        except Exception:
-            logger.exception("Silent exception caught")
+        except Exception as e:
+            logger.warning("Failed to resolve related object: %s", e)
     if not v_org and storage_context.get("project_id"):
         try:
             from projects.models import Project
@@ -623,8 +623,8 @@ def _run_video_upload(
             )
             v_org = _proj.organisation
             logger.debug("Resolved org from project %s: %s", _proj.id, v_org.id)
-        except Exception:
-            logger.exception("Silent exception caught")
+        except Exception as e:
+            logger.warning("Failed to resolve related object: %s", e)
 
     for i, v_result in enumerate(all_variants):
         variant: dict[str, Any] = {
