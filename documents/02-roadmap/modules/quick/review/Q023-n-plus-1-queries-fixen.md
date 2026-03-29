@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | � DOING |
+| Status | 🔍 REVIEW |
 | Bron | Codebase Audit maart 2026 |
 | Impact | 🟡 important |
 | Effort | ~3 uur |
