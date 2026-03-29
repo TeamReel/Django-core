@@ -207,7 +207,7 @@ class Command(BaseCommand):
 
             # Create 10-20 transactions
             count = random.randint(10, 20)
-            for i in range(count):
+            for _ in range(count):
                 amount = Decimal(random.randint(-500, 1000))
                 # Ensure non-zero
                 if amount == 0:

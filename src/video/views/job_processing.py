@@ -701,7 +701,7 @@ class AssetProcessingMixin:
             tr = meta.get("teamreel_assets", {})
             roles_data = tr.get("roles", {})
 
-            for role_name, role_data in roles_data.items():
+            for _, role_data in roles_data.items():
                 if not isinstance(role_data, dict):
                     continue
 
@@ -743,7 +743,7 @@ class AssetProcessingMixin:
                     for kit_type, kit_data in asset_data.items():
                         if not isinstance(kit_data, dict):
                             continue
-                        for variant_id, val in kit_data.items():
+                        for _, val in kit_data.items():
                             if not isinstance(val, dict):
                                 continue
                             state = val.get("processing_state")

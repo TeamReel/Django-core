@@ -229,7 +229,7 @@ class Command(BaseCommand):
                 selected_opponents = random.sample(opponents, 5)
                 created = 0
 
-                for i, (round_info, opponent) in enumerate(zip(cup_rounds, selected_opponents)):
+                for _, (round_info, opponent) in enumerate(zip(cup_rounds, selected_opponents)):
                     match_date = round_info["date"]
                     match_date += timedelta(days=random.randint(-1, 1))
                     match_time = match_date.replace(hour=20, minute=45)

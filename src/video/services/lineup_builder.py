@@ -1653,7 +1653,7 @@ class LineupSegmentBuilder:
                                 )
 
                     # --- STEP 3: Add this line's players to accumulated closeups ---
-                    for i, p in enumerate(players):
+                    for _, p in enumerate(players):
                         if not p.closeup_url and not p.kit_url:
                             continue
                         closeup_image = p.closeup_url or p.kit_url

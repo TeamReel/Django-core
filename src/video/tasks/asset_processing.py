@@ -722,7 +722,7 @@ def reprocess_stuck_assets_periodic(self, *, stuck_minutes: int = 60) -> dict:
                 for kit_type, kit_data in asset_data.items():
                     if not isinstance(kit_data, dict):
                         continue
-                    for variant_id, variant in kit_data.items():
+                    for _, variant in kit_data.items():
                         if not isinstance(variant, dict):
                             continue
                         state = variant.get("processing_state")
@@ -761,7 +761,7 @@ def reprocess_stuck_assets_periodic(self, *, stuck_minutes: int = 60) -> dict:
                 for kit_type, kit_data in asset_data.items():
                     if not isinstance(kit_data, dict):
                         continue
-                    for variant_id, variant in kit_data.items():
+                    for _, variant in kit_data.items():
                         if not isinstance(variant, dict):
                             continue
                         state = variant.get("processing_state")

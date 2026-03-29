@@ -212,7 +212,7 @@ class Command(BaseCommand):
             project_created = 0
 
             for project in Project.objects.all()[:10]:  # Limit to 10 projects
-                for category, tags in PROJECT_TAG_CATEGORIES.items():
+                for _, tags in PROJECT_TAG_CATEGORIES.items():
                     for tag_name in tags:
                         tag, created = MediaTag.objects.update_or_create(
                             slug=slugify(tag_name),

@@ -1571,7 +1571,7 @@ def _auto_dispatch_rvm_processing(
 
     from src.video.tasks.asset_processing import process_member_asset
 
-    for kit_type, variant_name, composite_key, raw_url in items:
+    for kit_type, variant_name, _composite_key, raw_url in items:
         variant_id = variant_name if variant_name != "default" else None
 
         # Use default args to capture loop variables in the closure

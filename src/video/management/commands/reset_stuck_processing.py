@@ -48,7 +48,7 @@ class Command(BaseCommand):
 
             # Check all roles
             roles_data = tr.get("roles", {}) or {}
-            for role_name, role_data in roles_data.items():
+            for _, role_data in roles_data.items():
                 if not isinstance(role_data, dict):
                     continue
 
@@ -59,7 +59,7 @@ class Command(BaseCommand):
                     for kit_type, kit_data in asset_data.items():
                         if not isinstance(kit_data, dict):
                             continue
-                        for variant_id, variant in kit_data.items():
+                        for _, variant in kit_data.items():
                             if isinstance(variant, dict):
                                 state = variant.get("processing_state")
                                 if state in stuck_states:
@@ -79,7 +79,7 @@ class Command(BaseCommand):
                     for kit_type, kit_data in asset_data.items():
                         if not isinstance(kit_data, dict):
                             continue
-                        for variant_id, variant in kit_data.items():
+                        for _, variant in kit_data.items():
                             if isinstance(variant, dict):
                                 state = variant.get("processing_state")
                                 if state in stuck_states:

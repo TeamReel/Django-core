@@ -285,7 +285,7 @@ class Command(BaseCommand):
 
             membership_changed = False
 
-            for role_name, role_data in roles_data.items():
+            for _, role_data in roles_data.items():
                 if not isinstance(role_data, dict):
                     continue
 

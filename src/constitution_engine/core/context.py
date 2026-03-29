@@ -456,7 +456,7 @@ class RepositoryContextBuilder:
     def _count_total_files(self, repo_path: Path, exclude_patterns: Set[str]) -> int:
         """Count total files in repository (excluding excluded patterns)."""
         count = 0
-        for root, dirs, files in os.walk(repo_path):
+        for _root, dirs, files in os.walk(repo_path):
             dirs[:] = [d for d in dirs if d not in exclude_patterns]
             count += len(files)
         return count

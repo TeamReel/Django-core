@@ -147,7 +147,7 @@ class Command(BaseCommand):
                         for kit_type, kit_data in asset_data.items():
                             if not isinstance(kit_data, dict):
                                 continue
-                            for variant_id, variant in list(kit_data.items()):
+                            for _, variant in list(kit_data.items()):
                                 if not isinstance(variant, dict):
                                     continue
 
@@ -266,7 +266,7 @@ class Command(BaseCommand):
             # ── 2. Create missing closeup/halfbody from processed fullbody ──
             if not stuck_only:
                 roles_data = tr.get("roles", {}) or {}
-                for role_name, role_data in roles_data.items():
+                for _, role_data in roles_data.items():
                     if not isinstance(role_data, dict):
                         continue
                     images = role_data.get("images", {}) or {}

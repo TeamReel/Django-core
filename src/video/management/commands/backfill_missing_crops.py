@@ -35,7 +35,7 @@ class Command(BaseCommand):
         """Return first valid processed (or raw) path from a kit-level dict."""
         if not isinstance(data, dict):
             return None
-        for key, val in data.items():
+        for _, val in data.items():
             if not isinstance(val, dict):
                 continue
             p = val.get("processed") or val.get("raw")
