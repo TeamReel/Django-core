@@ -178,13 +178,16 @@ export function getAssetUrl(storagePath: string | null | undefined): string | nu
  */
 export async function resolvePresignedUrls(
   paths: string[],
+  orgId?: string,
 ): Promise<Record<string, string>> {
   // Filter to only raw S3 keys (not already full URLs)
   const rawPaths = paths.filter((p) => p && !p.startsWith('http'));
   if (rawPaths.length === 0) return {};
 
   try {
-    const data = await api.post<{ urls: Record<string, string> }>('/files/presigned-urls/', { paths: rawPaths });
+    const headers: Record<string, string> = {};
+    if (orgId) headers['X-Organization-ID'] = orgId;
+    const data = await api.post<{ urls: Record<string, string> }>('/files/presigned-urls/', { paths: rawPaths }, { headers });
     return data.urls || {};
   } catch {
     return {};

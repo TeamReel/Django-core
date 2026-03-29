@@ -253,7 +253,9 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                     const urlMap: Record<string, string | null> = {};
                     for (const chunk of chunks) {
                         try {
-                            const presignedJson = await api.post<{ urls?: Record<string, string | null> }>('/files/presigned-urls/', { paths: chunk });
+                            const headers: Record<string, string> = {};
+                            if (orgId) headers['X-Organization-ID'] = orgId;
+                            const presignedJson = await api.post<{ urls?: Record<string, string | null> }>('/files/presigned-urls/', { paths: chunk }, { headers });
                             const chunkMap = presignedJson?.urls || {};
                             Object.assign(urlMap, chunkMap);
                         } catch {

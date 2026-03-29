@@ -46,4 +46,6 @@ export interface GetOptions {
 export interface MutateOptions {
   /** AbortSignal for cancellation. */
   signal?: AbortSignal;
+  /** Extra headers to include in the request. */
+  headers?: Record<string, string>;
 }

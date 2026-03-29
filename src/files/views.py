@@ -279,8 +279,28 @@ class FileViewSet(viewsets.ModelViewSet):
             {"urls": {"path/to/file1.png": "https://...", "path/to/file2.jpg": "https://..."}}
 
         Useful for converting storage paths stored in metadata to displayable URLs.
-        Max 100 paths per request.
+        Max 100 paths per request. Requires X-Organization-ID header for org-scoping.
         """
+        # ── Org-scoping: validate user belongs to the requested org ──
+        org_id = request.headers.get("X-Organization-ID")
+        if not org_id:
+            return Response(
+                {"detail": "X-Organization-ID header is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            organisation = Organisation.objects.get(
+                id=org_id,
+                memberships__user=request.user,
+                memberships__is_active=True,
+            )
+        except (Organisation.DoesNotExist, ValueError, ValidationError):
+            return Response(
+                {"detail": "You do not have access to this organization."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         paths = request.data.get("paths", [])
 
         if not isinstance(paths, list):
@@ -295,16 +315,79 @@ class FileViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Filter to valid string paths
+        valid_paths = [p for p in paths if p and isinstance(p, str)]
+
+        # ── Ownership check: only allow paths belonging to this org ──
+        # 1. Paths with a FileAsset in this org are always allowed
+        owned_paths = set(
+            FileAsset.objects.filter(
+                organization=organisation,
+                storage_path__in=valid_paths,
+                is_deleted=False,
+            ).values_list("storage_path", flat=True)
+        )
+
+        # 2. Paths within the org's structural namespace are allowed
+        #    (video outputs, processed assets stored under clubs/ or members/)
+        org_projects = set(
+            Project.objects.filter(
+                organisation=organisation,
+            ).values_list("id", flat=True)
+        )
+        org_project_prefixes = set()
+        for proj in Project.objects.filter(
+            organisation=organisation,
+        ).values_list("slug", "id", "parent_project__slug", "parent_project__id"):
+            slug, pid, parent_slug, parent_id = proj
+            org_project_prefixes.add(f"clubs/{slug}-{pid}/")
+            if parent_slug and parent_id:
+                org_project_prefixes.add(f"clubs/{parent_slug}-{parent_id}/")
+
+        org_prefixes = [
+            f"uploads/{org_id}/",
+        ]
+        org_prefixes.extend(org_project_prefixes)
+
+        # Also allow member paths for members in the org's projects
+        from projects.models import ProjectMembership
+
+        org_member_ids = set(
+            ProjectMembership.objects.filter(
+                project__organisation=organisation,
+                deleted_at__isnull=True,
+            ).values_list("id", flat=True)
+        )
+
+        for path in valid_paths:
+            if path in owned_paths:
+                continue
+            # Check structural prefixes
+            if any(path.startswith(prefix) for prefix in org_prefixes):
+                owned_paths.add(path)
+                continue
+            # Check member asset paths (members/{uuid}/...)
+            if path.startswith("members/"):
+                parts = path.split("/", 2)
+                if len(parts) >= 2:
+                    try:
+                        member_uuid = uuid.UUID(parts[1])
+                        if member_uuid in org_member_ids:
+                            owned_paths.add(path)
+                            continue
+                    except ValueError:
+                        pass
+
         backend = get_storage_backend()
         urls = {}
 
-        for path in paths:
-            if not path or not isinstance(path, str):
+        for path in valid_paths:
+            if path not in owned_paths:
+                urls[path] = None
                 continue
             try:
                 urls[path] = backend.get_url(path, signed=True)
             except Exception:
-                # Skip paths that fail
                 urls[path] = None
 
         return Response({"urls": urls, "expires_in": 3600})

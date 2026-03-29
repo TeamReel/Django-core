@@ -134,11 +134,11 @@ export function useMemberMediaActions({
     const uniquePaths = [...new Set(paths)].filter(p => !presignedCache[p]);
     if (uniquePaths.length === 0) return;
     let cancelled = false;
-    resolvePresignedUrls(uniquePaths).then(resolved => {
+    resolvePresignedUrls(uniquePaths, org?.id).then(resolved => {
       if (!cancelled) setPresignedCache(prev => ({ ...prev, ...resolved }));
     });
     return () => { cancelled = true; };
-  }, [videoVariants, form]);
+  }, [videoVariants, form, org?.id]);
 
   const resolveDisplayUrl = useCallback((storagePath: string | null | undefined): string | null => {
     if (!storagePath) return null;

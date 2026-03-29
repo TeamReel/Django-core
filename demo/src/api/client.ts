@@ -57,6 +57,7 @@ async function request(
   url: string,
   body?: unknown,
   signal?: AbortSignal,
+  headers?: Record<string, string>,
 ): Promise<unknown> {
   const init: RequestInit = { method, signal };
 
@@ -64,10 +65,13 @@ async function request(
     if (body instanceof FormData) {
       // Let the browser set the Content-Type with boundary
       init.body = body;
-      init.headers = { 'Content-Type': '' }; // will be cleared in apiFetch merge
+      init.headers = { 'Content-Type': '', ...headers };
     } else {
       init.body = JSON.stringify(body);
+      if (headers) init.headers = headers;
     }
+  } else if (headers) {
+    init.headers = headers;
   }
 
   const res = await apiFetch(url, init);
@@ -127,7 +131,7 @@ export const api = {
    */
   async post<T>(path: string, body?: unknown, opts?: MutateOptions): Promise<T> {
     const url = buildUrl(path);
-    const raw = await request('POST', url, body, opts?.signal);
+    const raw = await request('POST', url, body, opts?.signal, opts?.headers);
     return unwrapSingle<T>(raw);
   },
 
@@ -139,7 +143,7 @@ export const api = {
    */
   async patch<T>(path: string, body?: unknown, opts?: MutateOptions): Promise<T> {
     const url = buildUrl(path);
-    const raw = await request('PATCH', url, body, opts?.signal);
+    const raw = await request('PATCH', url, body, opts?.signal, opts?.headers);
     return unwrapSingle<T>(raw);
   },
 
@@ -148,7 +152,7 @@ export const api = {
    */
   async put<T>(path: string, body?: unknown, opts?: MutateOptions): Promise<T> {
     const url = buildUrl(path);
-    const raw = await request('PUT', url, body, opts?.signal);
+    const raw = await request('PUT', url, body, opts?.signal, opts?.headers);
     return unwrapSingle<T>(raw);
   },
 
