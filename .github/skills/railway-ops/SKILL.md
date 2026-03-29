@@ -91,15 +91,38 @@ railway run python manage.py showmigrations --list
 
 ### Viewing Logs
 
-```powershell
-# Get recent logs
-railway logs 2>&1 | Select-Object -First 50
+> **IMPORTANT**: Railway has TWO log streams. You must check BOTH.
+> - `railway logs` = **runtime/access logs** (request URLs + status codes, no tracebacks)
+> - `railway logs -d` = **deploy logs** (build output, startup, Django exceptions, tracebacks)
 
-# Search for errors
-railway logs 2>&1 | Select-String -Pattern "error|exception|traceback|500"
+> **WARNING**: Railway labels most Django log output as `[ERRO]`, even INFO-level access logs.
+> Do NOT trust Railway's log level labels. Filter for actual error patterns instead.
+
+```powershell
+$rw = "C:\Users\brian\AppData\Roaming\npm\railway.cmd"
+
+# Always save to files for reliable analysis:
+cmd /c "$rw logs -d 2>&1" | Out-File railway_deploy.txt -Encoding UTF8
+cmd /c "$rw logs 2>&1" | Out-File railway_runtime.txt -Encoding UTF8
+
+# Filter for REAL errors (not Railway's fake [ERRO]):
+Select-String -Path railway_runtime.txt -Pattern '"[^"]*" 500'
+Select-String -Path railway_deploy.txt -Pattern 'Traceback|Exception|Error:|Internal Server Error|status_code=500'
+
+# Extract formatted tracebacks from deploy logs:
+python -c "
+import re
+with open('railway_deploy.txt', 'r', encoding='utf-8', errors='replace') as f:
+    content = f.read()
+for m in re.finditer(r'exc_info=\"(Traceback[^\"]+)\"', content):
+    tb = m.group(1).replace('\\n', '\n')
+    print('='*60)
+    print(tb)
+    print()
+"
 
 # Search for specific patterns
-railway logs 2>&1 | Select-String "api/v1/branding"
+cmd /c "$rw logs 2>&1" | Select-String "api/v1/branding"
 ```
 
 ### Database Access

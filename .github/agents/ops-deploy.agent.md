@@ -144,61 +144,94 @@ cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd logs 2>&1"
 cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd status 2>&1"
 ```
 
-### MCP Tools — Limited Use
+### MCP Tools — DO NOT USE for logs
 
-MCP tools (`railway/check-railway-status`, `railway/list-projects`) work for:
-- Checking auth status
-- Listing projects and their services/environments
+MCP tools (`railway/get-logs`, etc.) require `railway link` but the MCP server runs
+in a separate process that does NOT share the CLI's link state (`~/.railway/config.json`
+is keyed by cwd). **Always use CLI via `cmd /c` wrapper instead.**
 
-MCP tools **do NOT reliably work** for service-specific operations (logs, deployments, variables) because they require `railway link` and the MCP server process doesn't share the CLI's link state.
+MCP tools that DO work (no link required):
+- `railway/check-railway-status` — auth check
+- `railway/list-projects` — list projects
+
+### ⚠️ Railway Log Gotchas
+
+Railway logs have quirks that make naive analysis fail:
+
+1. **`[ERRO]` ≠ real error** — Railway labels most Django log output as `[ERRO]`,
+   including INFO-level access logs (`"GET /api/v1/..." 200`). Never trust Railway's
+   log level labels alone.
+2. **Runtime logs ≠ deploy logs** — `railway logs` shows access logs (request/response).
+   `railway logs -d` shows deploy logs (build, startup, tracebacks, Django exceptions).
+   **Always check BOTH.**
+3. **Tracebacks are inline** — Deploy logs encode `\n` literally, so a full Python
+   traceback appears as one long line. Use Python to extract and format them.
+4. **Access logs hide errors** — A `500` status code in the access log only tells you
+   WHICH endpoint failed. The actual traceback is in the deploy log stream.
 
 ### Quick Diagnosis Playbook
 
-**Frontend down?**
+> **ALWAYS follow all 4 steps. Never conclude "no errors" after checking only runtime logs.**
+
 ```powershell
-cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd link -p 8e8c99c9-0824-4d56-84c0-9d0a388a6217 -e production -s frontend 2>&1"
-cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd logs -d 2>&1"
-# Check: railway-frontend.json exists? Dockerfile.frontend builds?
+# Shorthand for Railway CLI
+$rw = "C:\Users\brian\AppData\Roaming\npm\railway.cmd"
 ```
 
-**Backend down?**
+**Step 1 — Link to the service:**
 ```powershell
-cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd link -p 8e8c99c9-0824-4d56-84c0-9d0a388a6217 -e production -s backend 2>&1"
-cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd logs -d 2>&1"
-# Check: railway.json exists? Migrations passed? Health endpoint?
+cmd /c "$rw link -p 8e8c99c9-0824-4d56-84c0-9d0a388a6217 -e production -s SERVICE_NAME 2>&1"
 ```
 
-**Worker issues?**
+**Step 2 — Capture BOTH log types to files:**
 ```powershell
-cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd link -p 8e8c99c9-0824-4d56-84c0-9d0a388a6217 -e production -s celery-worker 2>&1"
-cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd logs 2>&1"
+# Deploy logs (tracebacks, startup errors, Django exceptions):
+cmd /c "$rw logs -d 2>&1" | Out-File railway_deploy.txt -Encoding UTF8
+
+# Runtime logs (access logs with status codes):
+cmd /c "$rw logs 2>&1" | Out-File railway_runtime.txt -Encoding UTF8
 ```
 
-### Deployment Status
+**Step 3 — Filter for REAL errors (not Railway's fake [ERRO]):**
 ```powershell
-# Recent logs (link to correct service first!)
-cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd logs 2>&1" | Select-Object -First 50
+# Find HTTP 500s in runtime logs:
+Select-String -Path railway_runtime.txt -Pattern '"[^"]*" 500'
 
-# Deploy logs:
-cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd logs -d 2>&1" | Select-Object -First 50
+# Find tracebacks and exceptions in deploy logs:
+Select-String -Path railway_deploy.txt -Pattern 'Traceback|Exception|Error:|Internal Server Error|status_code=500'
 
-# Environment variables (names only, not values)
-cmd /c "C:\Users\brian\AppData\Roaming\npm\railway.cmd variables 2>&1"
+# Extract and format a full traceback from deploy logs:
+python -c "
+import re
+with open('railway_deploy.txt', 'r', encoding='utf-8', errors='replace') as f:
+    content = f.read()
+# Find all exc_info tracebacks (Railway encodes \n literally)
+for m in re.finditer(r'exc_info=\"(Traceback[^\"]+)\"', content):
+    tb = m.group(1).replace('\\n', '\n')
+    print('='*60)
+    print(tb)
+    print()
+"
 ```
 
-### Log Analysis (PowerShell)
+**Step 4 — Check BOTH services when debugging site-wide issues:**
 ```powershell
-# Search for errors
-railway logs 2>&1 | Select-String -Pattern "error|exception|traceback|500"
+# Backend
+cmd /c "$rw link -p 8e8c99c9-0824-4d56-84c0-9d0a388a6217 -e production -s backend 2>&1"
+cmd /c "$rw logs -d 2>&1" | Out-File railway_backend_deploy.txt -Encoding UTF8
 
-# Get last N lines
-railway logs 2>&1 | Select-Object -Last 100
+# Frontend
+cmd /c "$rw link -p 8e8c99c9-0824-4d56-84c0-9d0a388a6217 -e production -s frontend 2>&1"
+cmd /c "$rw logs -d 2>&1" | Out-File railway_frontend_deploy.txt -Encoding UTF8
 
-# Search for slow queries
-railway logs 2>&1 | Select-String -Pattern "slow|duration|query"
+# Analyze both:
+Select-String -Path railway_backend_deploy.txt -Pattern 'Traceback|Exception|Error:|status_code=500'
+Select-String -Path railway_frontend_deploy.txt -Pattern 'error|Cannot find module|failed|ERR!'
+```
 
-# Search for specific endpoint issues
-railway logs 2>&1 | Select-String "api/v1/endpoint-name"
+### Environment Variables
+```powershell
+cmd /c "$rw variables 2>&1"
 ```
 
 ### Health Checks
@@ -250,32 +283,46 @@ psql "postgresql://postgres:<password>@switchback.proxy.rlwy.net:17304/railway"
 
 ### Diagnosing Frontend vs Backend
 
-| Error type | How to diagnose |
-|------------|----------------|
-| Build error (frontend) | `railway link` → frontend → `railway logs` |
-| TypeScript error | `cd demo && npx tsc --noEmit` locally |
-| Runtime error | Browser console on `demo.teamreel.app` |
-| API 500 | `railway link` → backend → `railway logs` → find traceback |
-| Migration fail | `railway run python manage.py showmigrations` |
+| Symptom | Where to look | What to search for |
+|---------|---------------|-------------------|
+| Build error (frontend) | `frontend` → `logs -d` | `Cannot find module`, `ERR!`, `error TS` |
+| Build error (backend) | `backend` → `logs -d` | `ModuleNotFoundError`, `SyntaxError` |
+| API 500 | `backend` → `logs -d` | `status_code=500`, `Traceback`, `Exception` |
+| Blank page | `frontend` → `logs -d` (build) + browser console | Build failure or missing chunks |
+| Runtime error | `backend` → `logs -d` | `exc_info=`, `Internal Server Error` |
+| Migration fail | `backend` → `logs -d` | `django.db.utils`, `OperationalError` |
+| TypeScript error | local: `cd demo && pnpm exec tsc --noEmit` | Type errors before push |
+
+> **Key insight**: access logs (`railway logs`) only show status codes.
+> Tracebacks and error details are ONLY in deploy logs (`railway logs -d`).
 
 ## Diagnosis Workflow
+
+> **CRITICAL**: A diagnosis is INCOMPLETE until you have checked:
+> 1. Backend deploy logs filtered for errors
+> 2. Frontend deploy logs filtered for errors
+> 3. Runtime logs filtered for 500 status codes
+>
+> Never conclude "no errors found" after checking only ONE of these.
 
 ### Step 1: Identify the Problem
 | Symptom | Check First |
 |---------|------------|
-| 500 errors | `railway logs` → traceback |
-| Slow responses | `railway logs` → query duration |
-| Deploy failed | `railway logs` → build/migration errors |
+| 500 errors | Backend deploy logs → find `exc_info` tracebacks |
+| Slow responses | Backend deploy logs → `slow|duration|query` |
+| Deploy failed | Deploy logs → build errors |
 | Service down | `railway status` → health check |
-| Memory issues | Railway dashboard → metrics |
+| Blank page | Frontend deploy logs → build errors |
 | Static files missing | S3 bucket / `collectstatic` |
 
 ### Step 2: Gather Evidence
-1. Check Railway logs for the timeframe of the issue
-2. Look for error patterns (repeated tracebacks, timeouts)
-3. Check if a recent deploy caused the issue
-4. Verify environment variables are set correctly
-5. Check database connectivity and query performance
+1. Link to the affected service (`cmd /c "$rw link ... -s SERVICE 2>&1"`)
+2. Capture deploy logs to file (`logs -d`) — this is where tracebacks live
+3. Capture runtime logs to file (`logs`) — this shows request status codes
+4. Filter for real errors using the patterns in "Quick Diagnosis Playbook"
+5. Extract and format tracebacks using the Python extraction script
+6. **Repeat for other services** — site-wide issues often span frontend + backend
+7. Check if a recent deploy caused the issue (compare timestamps)
 
 ### Step 3: Diagnose
 - Map the error to a specific Django view/serializer/model
