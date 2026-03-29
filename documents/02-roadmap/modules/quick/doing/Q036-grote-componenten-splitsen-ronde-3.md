@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | � DOING |
 | Bron | Code Review |
 | Impact | 🟡 important |
 | Effort | ~4 uur |

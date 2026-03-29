@@ -1,16 +1,7 @@
-/**
- * useUserDetailData — Orchestrator hook for the UserDetailPage.
- *
- * Composes useUserDetailApi (CRUD + link options) with local UI state
- * (modals, tabs, identity editing, balance), derived membership data,
- * and the relations loading effect.
- *
- * Extracted during Phase 26 refactoring.
- */
+/** useUserDetailData — Orchestrator hook for UserDetailPage. */
 import { useEffect, useMemo, useReducer } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
-import { logger } from '@/utils/logger';
 import { api as apiClient } from '@/api/client';
 import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import { getCsrfToken } from '../../utils/csrf';
@@ -19,14 +10,12 @@ import type { Activity, Period, Project } from '../../types';
 import type { WalletOption } from '../../components/transactions/CreateTransactionModal';
 import type { UserDetailDataReturn } from './userDetailTypes';
 import { useUserDetailApi } from './useUserDetailApi';
+import { useUserDetailDerived } from './useUserDetailDerived';
+import { useUserBalance } from './useUserBalance';
 import udStyles from './useUserDetailData.module.css';
 
 // Re-export so consumers keep the same import path
 export type { UserDetailDataReturn } from './userDetailTypes';
-
-/* ------------------------------------------------------------------ */
-/*  Hook                                                               */
-/* ------------------------------------------------------------------ */
 
 export function useUserDetailData(): UserDetailDataReturn {
     const { userId, orgId } = useParams<{ userId: string; orgId?: string }>();
@@ -35,7 +24,7 @@ export function useUserDetailData(): UserDetailDataReturn {
     const { user: currentUser } = useAuth();
     const apiBaseUrl = getApiV1BaseUrl();
 
-    /* ---------- API sub-hook (CRUD + link options) ---------------- */
+    /* ---------- API sub-hook ------------------------------------- */
     const api = useUserDetailApi({ apiBaseUrl, userId, orgId, navigate });
 
     /* ---------- reducer state -------------------------------------- */
@@ -169,117 +158,15 @@ export function useUserDetailData(): UserDetailDataReturn {
     };
 
     /* ---------- derived data -------------------------------------- */
-    const userOrgs = useMemo(() => {
-        const orgs = api.user?.organisations;
-        return Array.isArray(orgs) ? orgs : [];
-    }, [api.user]);
-
-    const userProjects = useMemo(() => {
-        const projects = api.user?.projects;
-        return Array.isArray(projects) ? projects : [];
-    }, [api.user]);
-
-    const primaryOrgSlug = useMemo(() => {
-        if (orgId) return String(orgId);
-        const first = userOrgs.find((o) => o?.slug) || userOrgs[0];
-        return String(first?.slug || first?.id || '').trim();
-    }, [orgId, userOrgs]);
-
-    const clubMemberships = useMemo(() => userProjects.filter((p) => !p?.parent), [userProjects]);
-
-    const directClubMembershipById = useMemo(() => {
-        const m = new Map<string, Project>();
-        for (const c of clubMemberships) {
-            const id = String(c?.id || '').trim();
-            if (id) m.set(id, c);
-        }
-        return m;
-    }, [clubMemberships]);
-
-    const teamMemberships = useMemo(() => userProjects.filter((p) => Boolean(p?.parent)), [userProjects]);
-
-    const clubsForTab = useMemo(() => {
-        const merged = new Map<string, Project>();
-        for (const c of clubMemberships) {
-            const id = String(c?.id || '').trim();
-            if (id) merged.set(id, c);
-        }
-        for (const t of teamMemberships) {
-            const clubId = String(t?.parent || '').trim();
-            if (!clubId || merged.has(clubId)) continue;
-            const apiClub = s.clubsById.get(clubId);
-            merged.set(clubId, {
-                id: clubId,
-                name: String(apiClub?.name || t?.parent_name || '').trim(),
-                slug: String(apiClub?.slug || '').trim(),
-                role: '', membership_id: null,
-            } as unknown as Project);
-        }
-        return Array.from(merged.values());
-    }, [clubMemberships, teamMemberships, s.clubsById]);
-
-    const clubSlugById = useMemo(() => {
-        const m = new Map<string, string>();
-        for (const c of clubMemberships) {
-            const id = String(c?.id || '').trim();
-            const slug = String(c?.slug || '').trim();
-            if (id && slug) m.set(id, slug);
-        }
-        for (const [id, club] of s.clubsById.entries()) {
-            const slug = String(club?.slug || '').trim();
-            if (id && slug && !m.has(id)) m.set(id, slug);
-        }
-        return m;
-    }, [clubMemberships, s.clubsById]);
-
-    const teamSeasonPairs = useMemo(() => {
-        const pairs: Array<{
-            teamId: string; teamName: string; teamSlug: string;
-            clubId: string; clubName: string; seasonId: string; seasonName: string;
-        }> = [];
-        for (const t of teamMemberships) {
-            const teamId = String(t?.id || '').trim();
-            const teamSlug = String(t?.slug || '').trim();
-            const teamName = String(t?.name || '').trim();
-            const clubId = String(t?.parent || '').trim();
-            const clubName = String(t?.parent_name || '').trim();
-            const seasonId = String(t?.period?.id || '').trim();
-            const seasonName = String(t?.period?.name || '').trim();
-            if (!teamId || !clubId || !seasonId) continue;
-            pairs.push({ teamId, teamName, teamSlug, clubId, clubName, seasonId, seasonName });
-        }
-        const seen = new Set<string>();
-        return pairs.filter((p) => {
-            const k = `${p.teamId}::${p.seasonId}`;
-            if (seen.has(k)) return false;
-            seen.add(k);
-            return true;
-        });
-    }, [teamMemberships]);
-
-    const hierarchyRows = useMemo(() => {
-        const q = s.hierarchySearch.trim().toLowerCase();
-        const rows = teamSeasonPairs.map((p) => {
-            const clubSlug = clubSlugById.get(p.clubId) || '';
-            const teamPath = clubSlug
-                ? `/${primaryOrgSlug}/${clubSlug}/${p.teamSlug || p.teamId}` : '';
-            const seasonPath = clubSlug
-                ? `/${primaryOrgSlug}/${clubSlug}/${p.teamSlug || p.teamId}/${p.seasonId}` : '';
-            return { ...p, clubSlug, teamPath, seasonPath };
-        });
-        if (!q) return rows;
-        return rows.filter((r) =>
-            r.teamName.toLowerCase().includes(q) ||
-            r.clubName.toLowerCase().includes(q) ||
-            r.seasonName.toLowerCase().includes(q),
-        );
-    }, [teamSeasonPairs, s.hierarchySearch, clubSlugById, primaryOrgSlug]);
-
-    const backPath = orgId ? `/organisations/${orgId}/users` : '/users';
-    const userDisplayName = api.user
-        ? `${api.user.first_name || ''} ${api.user.last_name || ''}`.trim() ||
-          String(api.user.email || '') || `User ${userId}`
-        : `User ${userId}`;
+    const {
+        userOrgs, userProjects, primaryOrgSlug,
+        clubMemberships, directClubMembershipById, teamMemberships,
+        clubsForTab, clubSlugById, teamSeasonPairs,
+        hierarchyRows, backPath, userDisplayName,
+    } = useUserDetailDerived({
+        user: api.user, userId, orgId,
+        clubsById: s.clubsById, hierarchySearch: s.hierarchySearch,
+    });
 
     /* ----------------------------------------------------------------
      *  Effects
@@ -305,47 +192,15 @@ export function useUserDetailData(): UserDetailDataReturn {
     }, [s.isLinkModalOpen]);
 
     // Balance
-    useEffect(() => {
-        if (activeTab !== 'balance') return;
-        const orgIdForBalance = getPreferredOrganisationId();
-        const isSelf =
-            Number.isFinite(currentUserIdForTxn) &&
-            Number.isFinite(targetUserIdForTxn) &&
-            Number(currentUserIdForTxn) === Number(targetUserIdForTxn);
-        if (!isSelf) {
-            setUserBalance(null);
-            setUserBalanceError('Balance is only available on your own user page.');
-            setUserBalanceLoading(false);
-            return;
-        }
-        if (!orgIdForBalance) {
-            setUserBalance(null);
-            setUserBalanceError('Select an organisation first (context switcher).');
-            setUserBalanceLoading(false);
-            return;
-        }
-        let cancelled = false;
-        const controller = new AbortController();
-        const run = async () => {
-            try {
-                setUserBalanceLoading(true);
-                setUserBalanceError(null);
-                const data = await apiClient.get<{ current_balance?: number }>(
-                    `/transactions/organizations/${encodeURIComponent(orgIdForBalance)}/balance/me/`,
-                    controller.signal,
-                );
-                const v = data?.current_balance;
-                if (!cancelled) setUserBalance(v != null ? String(v) : null);
-            } catch (e: unknown) {
-              logger.error('Failed to fetch balance', e);
-                if (!cancelled) setUserBalanceError(e instanceof Error ? e.message : 'Failed to fetch balance');
-            } finally {
-                if (!cancelled) setUserBalanceLoading(false);
-            }
-        };
-        run();
-        return () => { cancelled = true; controller.abort(); };
-    }, [activeTab, apiBaseUrl, s.userBalanceReloadToken]);
+    const isSelfForBalance =
+        Number.isFinite(currentUserIdForTxn) &&
+        Number.isFinite(targetUserIdForTxn) &&
+        Number(currentUserIdForTxn) === Number(targetUserIdForTxn);
+    useUserBalance({
+        activeTab, apiBaseUrl, reloadToken: s.userBalanceReloadToken,
+        isSelf: isSelfForBalance, orgId: getPreferredOrganisationId(),
+        setBalance: setUserBalance, setLoading: setUserBalanceLoading, setError: setUserBalanceError,
+    });
 
     // Relations (clubs, competitions, matches)
     useEffect(() => {

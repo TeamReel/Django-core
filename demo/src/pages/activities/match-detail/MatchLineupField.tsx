@@ -1,49 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import { UserPlus, X } from "lucide-react";
 import { FORMATION_LAYOUTS } from "../../identity/content-generation";
-import { type TeamreelAssets } from "../../../utils/assetMetadata";
+import {
+  type SquadMember,
+  getSquadMemberName,
+  getUserKey,
+  sortByName,
+  hasKeeperAsset,
+  hasPlayerAsset,
+} from "./matchLineupUtils";
+import { useGuestPlayers } from "./useGuestPlayers";
 import styles from "./MatchLineupField.module.css";
 
-/** Squad member / participation record */
-interface SquadMemberUser {
-  id?: string;
-  name?: string;
-  user_name?: string;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-}
-
-export interface SquadMember {
-  id: string;
-  isGuest?: boolean;
-  user?: SquadMemberUser;
-  member?: SquadMemberUser;
-  metadata?: { shirt_number?: string; [key: string]: unknown };
-  data?: {
-    jersey_number?: string;
-    functional_role?: string;
-    [key: string]: unknown;
-  };
-  functional_roles?: string[];
-}
-
-const getSquadMemberName = (p: SquadMember): string => {
-  const user = p.user || p.member;
-  if (!user) return "Unknown";
-  if (user.name) return user.name;
-  if (user.user_name) return user.user_name;
-  const full = `${user.first_name || ""} ${user.last_name || ""}`.trim();
-  if (full) return full;
-  if (user.email) return user.email;
-  return "Unknown";
-};
-
-const getUserKey = (p: SquadMember): string => {
-  const user = p.user || p.member;
-  if (user?.id) return String(user.id);
-  return String(p.id);
-};
+export type { SquadMember } from "./matchLineupUtils";
 
 export interface FieldVisualizationProps {
   lineupFormation: string;
@@ -73,102 +42,18 @@ export function FieldVisualization({
   const formationLayout =
     FORMATION_LAYOUTS[lineupFormation] || FORMATION_LAYOUTS["4-3-3"];
 
-  // ── Guest players ──
-  const [guestPlayers, setGuestPlayers] = useState<SquadMember[]>([]);
-  const [showGuestForm, setShowGuestForm] = useState(false);
-  const [guestName, setGuestName] = useState("");
-  const [guestJersey, setGuestJersey] = useState("");
-
-  const addGuestPlayer = () => {
-    const name = guestName.trim();
-    if (!name) return;
-    const guest = {
-      id: `guest-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      isGuest: true,
-      user: { name },
-      metadata: guestJersey.trim() ? { shirt_number: guestJersey.trim() } : {},
-    };
-    setGuestPlayers((prev) => [...prev, guest]);
-    setGuestName("");
-    setGuestJersey("");
-    setShowGuestForm(false);
-  };
-
-  const removeGuestPlayer = (guestId: string) => {
-    setGuestPlayers((prev) => prev.filter((g) => g.id !== guestId));
-    // Also remove from lineup slots if assigned
-    const newGk = (lineupSlots.goalkeeper || []).map((id) =>
-      id === guestId ? "" : id,
-    );
-    const newPl = (lineupSlots.player || []).map((id) =>
-      id === guestId ? "" : id,
-    );
-    setLineupSlots({ ...lineupSlots, goalkeeper: newGk, player: newPl });
-  };
-
-  // ── Sort helper ──
-  const sortByName = (a: SquadMember, b: SquadMember) =>
-    getSquadMemberName(a).localeCompare(getSquadMemberName(b), "nl");
-
-  // ── Asset availability helpers ──
-  // Check if a member has any image asset (fullbody, halfbody, or closeup) for a given role+kit.
-  // Mirrors backend ASSET_TYPES_BY_ROLE which defines fullbody/halfbody/closeup per role.
-  // For keeper: kit = "goalkeeper". For player: kit = "home".
-  const IMAGE_TYPES = ["fullbody", "halfbody", "closeup"] as const;
-
-  const hasLineupAsset = (
-    assets: TeamreelAssets | undefined,
-    role: string,
-    kit: string,
-  ): boolean => {
-    if (!assets) return false;
-    const raw = assets as Record<string, unknown>;
-
-    // 1. New nested: roles.{role}.images.{type}.{kit}
-    const roleImages = assets.roles?.[role]?.images;
-    if (roleImages) {
-      for (const type of IMAGE_TYPES) {
-        const img = roleImages[type] as Record<string, unknown> | undefined;
-        if (img && img[kit]) return true;
-      }
-    }
-
-    // 2. Legacy flat: images.{type}.{kit}
-    const legacyImages = raw.images as
-      | Record<string, Record<string, unknown>>
-      | undefined;
-    if (legacyImages) {
-      for (const type of IMAGE_TYPES) {
-        if (legacyImages[type]?.[kit]) return true;
-      }
-    }
-
-    // 3. Media alias: media.kit (only for player/home — it's always home kit)
-    if (kit === "home") {
-      const media = raw.media as
-        | Record<string, { url?: string }>
-        | undefined;
-      if (media?.kit?.url) return true;
-    }
-
-    return false;
-  };
-
-  const hasKeeperAsset = (p: SquadMember): boolean => {
-    if (p.isGuest) return true;
-    const assets = (p.metadata as Record<string, unknown>)?.teamreel_assets as
-      | TeamreelAssets
-      | undefined;
-    return hasLineupAsset(assets, "keeper", "goalkeeper");
-  };
-
-  const hasPlayerAsset = (p: SquadMember): boolean => {
-    if (p.isGuest) return true;
-    const assets = (p.metadata as Record<string, unknown>)?.teamreel_assets as
-      | TeamreelAssets
-      | undefined;
-    return hasLineupAsset(assets, "player", "home");
-  };
+  // ── Guest players (extracted hook) ──
+  const {
+    guestPlayers,
+    showGuestForm,
+    setShowGuestForm,
+    guestName,
+    setGuestName,
+    guestJersey,
+    setGuestJersey,
+    addGuestPlayer,
+    removeGuestPlayer,
+  } = useGuestPlayers(lineupSlots, setLineupSlots);
 
   // All members pool (deduplicated across role groups)
   const allMembers = [
