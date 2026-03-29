@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | � REVIEW |
 | Bron | Codebase Audit maart 2026 |
 | Impact | 🔴 critical |
 | Effort | ~2 uur |
@@ -23,7 +23,7 @@
 | `WorkflowTemplateViewSet` | `src/workflows/views/templates.py` |
 
 ## Checklist
-- [ ] Voeg `permission_classes = [IsAuthenticated]` toe aan alle 8 ViewSets
-- [ ] Check of sommige ook org-scoping nodig hebben (IsProjectMember, etc.)
-- [ ] Tests
-- [ ] Verify
+- [x] Voeg `permission_classes = [IsAuthenticated]` toe aan alle 8 ViewSets
+- [x] Check of sommige ook org-scoping nodig hebben (IsProjectMember, etc.)
+- [x] Tests
+- [x] Verify
