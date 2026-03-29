@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 🔍 REVIEW |
+| Status | ✅ DONE |
 | Bron | Codebase Audit maart 2026 |
 | Impact | 🔴 critical |
 | Effort | ~30 min |
@@ -18,8 +18,8 @@ Er staan nog `print()` statements in productie-code, waaronder in het permission
 | Overige (≤25 stuks) | Diverse | 🟢 Restjes management commands |
 
 ## Checklist
-- [ ] `permissions/managers.py` → vervang print() door logger.debug()
-- [ ] `tasks/celery.py` → vervang print() door logger
-- [ ] Scan overige print() — verwijder of vervang door logging
-- [ ] Tests
-- [ ] Verify
+- [x] `permissions/managers.py` → vervang print() door logger.debug()
+- [x] `tasks/celery.py` → vervang print() door logger
+- [x] Scan overige print() — verwijder of vervang door logging
+- [x] Tests
+- [x] Verify

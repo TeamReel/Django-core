@@ -5,9 +5,9 @@ import time
 
 import requests
 from celery import shared_task
+from requests.exceptions import RequestException, Timeout
 
 logger = logging.getLogger(__name__)
-from requests.exceptions import RequestException, Timeout
 
 
 @shared_task(
