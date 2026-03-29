@@ -102,7 +102,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
         # 1. Direct Memberships (Organisation level)
         try:
-            from organisations.models import Membership
+            from organisations.models import Membership  # noqa: F401 (used below)
 
             memberships = [m for m in obj.organisation_memberships.all() if m.is_active]
             for m in memberships:
@@ -118,7 +118,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
         # 2. Project Memberships (Team/Project level → infer Organisation)
         try:
-            from projects.models import ProjectMembership
+            from projects.models import ProjectMembership  # noqa: F401
 
             project_memberships = list(obj.project_memberships.all())
 
@@ -141,7 +141,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
         # 3. Role Assignments (Project or Org scope)
         try:
-            from permissions.models import RoleAssignment, ScopeChoices
+            from permissions.models import RoleAssignment, ScopeChoices  # noqa: F401
 
             assignments = list(obj.role_assignments.all())
 

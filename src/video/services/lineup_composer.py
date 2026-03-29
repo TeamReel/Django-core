@@ -17,6 +17,7 @@ FFmpeg compositing produces per-phase clips, then concat demuxer joins them.
 from __future__ import annotations
 
 import logging
+import shutil
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path

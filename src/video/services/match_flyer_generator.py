@@ -18,6 +18,8 @@ from dataclasses import dataclass
 
 from PIL import Image, ImageDraw, ImageFilter
 
+from src.video.services._common import download_image
+
 logger = logging.getLogger(__name__)
 
 # ── Output dimensions (portrait 9:16) ──────────────────────────────────────

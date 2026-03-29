@@ -28,6 +28,7 @@ from PIL import Image, ImageDraw
 from files.models import FileAsset
 from files.utils import get_storage_backend
 from src.video.models.job import JobStatus
+from src.video.services._common import download_image
 from src.video.services.processors.base import BaseVideoProcessor, JobCancelledError
 
 logger = logging.getLogger(__name__)

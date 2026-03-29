@@ -152,18 +152,6 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ["created_at", "updated_at", "status"]
     ordering = ["-created_at"]  # Default: newest first
 
-    def get_queryset(self):
-        """Optimize queries."""
-        queryset = super().get_queryset()
-
-        if self.action in ["list", "retrieve"]:
-            queryset = queryset.select_related("type", "type__retry_policy", "recipient_user")
-
-        if self.action == "retrieve":
-            queryset = queryset.prefetch_related("delivery_attempts")
-
-        return queryset
-
     def get_serializer_class(self):
         """Use lightweight serializer for list, full serializer for detail."""
         if self.action == "list":
