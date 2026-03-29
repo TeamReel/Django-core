@@ -146,9 +146,7 @@ def admin_update_avatar(request, user_id):
         # Set path directly on the ImageField (bypasses local disk write)
         target_user.avatar.name = saved_path
         target_user.save(update_fields=["avatar"])
-    except Exception as exc:
-        import traceback
-
+    except Exception:
         logger.exception(
             "Admin avatar upload failed",
             extra={"user_id": user_id, "admin_id": request.user.id},
@@ -157,10 +155,6 @@ def admin_update_avatar(request, user_id):
             {
                 "error": "server_error",
                 "message": "Failed to save avatar.",
-                "debug": {
-                    "exception": f"{type(exc).__name__}: {exc}",
-                    "traceback": traceback.format_exc(),
-                },
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )

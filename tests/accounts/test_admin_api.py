@@ -1,8 +1,12 @@
 """Tests for admin API endpoints."""
 
+from io import BytesIO
+from unittest.mock import patch
+
 import pytest
 from accounts.models import User
 from django.core import mail
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 
 pytestmark = pytest.mark.django_db  # Apply to all tests in this module
@@ -399,3 +403,71 @@ class TestAdminChangeRoleAPI:
         )
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.api
+class TestAdminAvatarUpload:
+    """Tests for admin avatar upload endpoint — Q031 regression."""
+
+    def _make_image(self) -> SimpleUploadedFile:
+        """Create a minimal valid PNG file for upload."""
+        import struct
+        import zlib
+
+        def _png_chunk(chunk_type: bytes, data: bytes) -> bytes:
+            chunk = chunk_type + data
+            return (
+                struct.pack(">I", len(data))
+                + chunk
+                + struct.pack(">I", zlib.crc32(chunk) & 0xFFFFFFFF)
+            )
+
+        sig = b"\x89PNG\r\n\x1a\n"
+        ihdr = struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0)
+        raw = zlib.compress(b"\x00\x00\x00\x00")
+        png = (
+            sig
+            + _png_chunk(b"IHDR", ihdr)
+            + _png_chunk(b"IDAT", raw)
+            + _png_chunk(b"IEND", b"")
+        )
+        return SimpleUploadedFile("avatar.png", png, content_type="image/png")
+
+    def test_avatar_upload_error_does_not_leak_traceback(self, admin_client, regular_user):
+        """Regression test Q031: server error must not expose traceback or debug info."""
+        avatar = self._make_image()
+        with patch("files.utils.get_storage_backend") as mock_backend:
+            mock_backend.return_value.save.side_effect = RuntimeError("S3 connection failed")
+            response = admin_client.post(
+                f"/api/v1/admin/users/{regular_user.id}/avatar/",
+                {"avatar": avatar},
+                format="multipart",
+            )
+
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.data["error"] == "server_error"
+        assert response.data["message"] == "Failed to save avatar."
+        assert "debug" not in response.data
+        assert "traceback" not in response.data
+        assert "Traceback" not in str(response.data)
+        assert "S3 connection failed" not in str(response.data)
+
+    def test_avatar_upload_success(self, admin_client, regular_user):
+        """Test successful avatar upload returns URL without debug info."""
+        avatar = self._make_image()
+        with patch("files.utils.get_storage_backend") as mock_backend:
+            mock_backend.return_value.save.return_value = "avatars/test/avatar.png"
+            with patch("accounts.utils.sync_avatar_to_memberships"):
+                with patch(
+                    "accounts.utils.get_avatar_url",
+                    return_value="https://cdn.example.com/avatar.png",
+                ):
+                    response = admin_client.post(
+                        f"/api/v1/admin/users/{regular_user.id}/avatar/",
+                        {"avatar": avatar},
+                        format="multipart",
+                    )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["status"] == "success"
+        assert "debug" not in response.data
