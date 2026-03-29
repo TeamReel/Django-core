@@ -1,0 +1,10 @@
+﻿src\accounts\serializers.py:105:46: F401 `organisations.models.Membership` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src\accounts\serializers.py:121:41: F401 `projects.models.ProjectMembership` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src\accounts\serializers.py:144:44: F401 `permissions.models.RoleAssignment` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src\notifications\views\notification_views.py:173:9: F811 Redefinition of unused `get_queryset` from line 155
+src\video\services\goal_celebration_composer.py:171:13: F821 Undefined name `shutil`
+src\video\services\lineup_composer.py:1325:13: F821 Undefined name `shutil`
+src\video\services\lineup_flyer_generator.py:307:9: F821 Undefined name `shutil`
+src\video\services\match_flyer_generator.py:82:12: F821 Undefined name `download_image`
+src\video\services\processors\match_intro.py:77:12: F821 Undefined name `download_image`
+Found 9 errors.

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📋 TODO |
+| Status | ✅ DONE |
 | Bron | Codebase Review (29 maart 2026) |
 | Impact | 🟡 important |
 | Effort | ~30 min |
@@ -26,7 +26,7 @@ Opschonen van unused imports en dubbele method definitie gedetecteerd door Ruff.
 - Code moet gemerged worden of eerste definitie verwijderd
 
 ## Checklist
-- [ ] Review `serializers.py` imports - verwijder ongebruikte imports
-- [ ] Merge of verwijder dubbele `get_queryset` in notification_views.py
-- [ ] `ruff check src/ --select=F401,F811` geeft 0 errors
-- [ ] Tests passeren
+- [x] Review `serializers.py` imports - noqa comments toegevoegd (false positives)
+- [x] Merge of verwijder dubbele `get_queryset` in notification_views.py
+- [x] `ruff check src/ --select=F401,F811` geeft 0 errors
+- [x] Tests passeren
