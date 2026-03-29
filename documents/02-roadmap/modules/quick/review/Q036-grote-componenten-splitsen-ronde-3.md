@@ -21,8 +21,8 @@
 8. `components/dashboard/ContentProgressCard.tsx` — 411
 
 ## Checklist
-- [ ] Identificeer logical splits per component
-- [ ] Extract sub-components met eigen props interfaces
-- [ ] Maximaal 300 regels per component
-- [ ] Tests blijven groen
-- [ ] Verify: `pnpm exec tsc --noEmit` + `pnpm exec vite build`
+- [x] Identificeer logical splits per component
+- [x] Extract sub-components met eigen props interfaces
+- [x] Maximaal 300 regels per component
+- [x] Tests blijven groen
+- [x] Verify: `pnpm exec tsc --noEmit` + `pnpm exec vite build`
