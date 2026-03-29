@@ -4,14 +4,7 @@ from __future__ import annotations
 import logging
 
 from audit.api import audit_log
-from django.conf import settings
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
 from django.utils import timezone
-from django.utils.encoding import force_bytes
-from django.utils.html import strip_tags
-from django.utils.http import urlsafe_base64_encode
 from permissions.evaluator import check_permission
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -20,13 +13,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import User
-from accounts.permissions import IsAdmin
 from accounts.serializers import (
-    ChangeRoleSerializer,
     RegistrationSerializer,
-    UserDetailSerializer,
     UserListSerializer,
-    UserUpdateSerializer,
 )
 
 logger = logging.getLogger(__name__)
