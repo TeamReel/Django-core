@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | � DOING |
+| Status | ✅ DONE |
 | Bron | Code Review |
 | Impact | 🟡 important |
 | Effort | ~3 uur |
@@ -25,4 +25,4 @@ Top chunks die gesplitst moeten worden:
 - [x] Lazy loading voor route-level pagina's (DashboardPage, CreateWizard, CommandPalette, OnboardingWizard, ShortcutGuide)
 - [x] Verify: `pnpm exec vite build` → geen chunk >500 kB warning (index: 624 kB → 270 kB, -57%)
 - [x] Verify: `pnpm exec tsc --noEmit` → 0 errors
-- [ ] Handmatig testen: navigatie werkt, geen flicker
+- [x] Handmatig testen: navigatie werkt, geen flicker
