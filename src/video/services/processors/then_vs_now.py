@@ -222,7 +222,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                 period = Period.objects.get(id=period_id)
                 season_name = period.name
             except Exception:
-                pass
+                logger.exception("Silent exception caught")
 
         # ── Background URL (prefer config override, then brand asset) ──
         background_url = (self.job.config or {}).get("background_url")
@@ -327,7 +327,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                         backend = get_storage_backend()
                         url = backend.get_url(url, signed=True, expiry_seconds=3600)
                     except Exception:
-                        pass
+                        logger.exception("Silent exception caught")
 
                 if url:
                     name = pm.user.get_full_name() if pm.user else "Unknown"
@@ -383,7 +383,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                         backend = get_storage_backend()
                         url = backend.get_url(url, signed=True, expiry_seconds=3600)
                     except Exception:
-                        pass
+                        logger.exception("Silent exception caught")
 
                 if url:
                     name = pm.user.get_full_name() if pm.user else "Unknown"
@@ -438,7 +438,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                             backend = get_storage_backend()
                             return backend.get_url(url, signed=True, expiry_seconds=3600)
                         except Exception:
-                            pass
+                            logger.exception("Silent exception caught")
                     return url
 
                 video_url = _presign_if_needed(video_url)
@@ -482,7 +482,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                             backend = get_storage_backend()
                             return backend.get_url(url, signed=True, expiry_seconds=3600)
                         except Exception:
-                            pass
+                            logger.exception("Silent exception caught")
                     return url
 
                 video_url = _presign_if_needed(video_url)
@@ -534,7 +534,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                             backend = get_storage_backend()
                             return backend.get_url(url, signed=True, expiry_seconds=3600)
                         except Exception:
-                            pass
+                            logger.exception("Silent exception caught")
                     return url
 
                 video_url = _presign_if_needed(video_url)
@@ -614,7 +614,7 @@ class ThenVsNowProcessor(BaseVideoProcessor):
                         backend = get_storage_backend()
                         url = backend.get_url(url, signed=True, expiry_seconds=3600)
                     except Exception:
-                        pass
+                        logger.exception("Silent exception caught")
 
                 if url:
                     name = pm.user.get_full_name() if pm.user else "Unknown"

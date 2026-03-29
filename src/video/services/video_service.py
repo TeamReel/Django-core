@@ -81,8 +81,8 @@ class VideoService:
                 workflow_template = WorkflowTemplate.objects.filter(
                     name="Video Approval", is_active=True
                 ).first()
-            except Exception:  # noqa: S110
-                pass  # Workflow not found — continue without it
+            except Exception:
+                logger.exception("Silent exception caught")
 
         if workflow_template:
             WorkflowInstance = apps.get_model("workflows", "WorkflowInstance")
@@ -272,7 +272,7 @@ class VideoService:
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "completed_at", "updated_at"])
             except Exception:
-                pass
+                logger.exception("Silent exception caught")
             return
 
         except Exception as exc:
@@ -284,7 +284,7 @@ class VideoService:
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "error_message", "completed_at", "updated_at"])
             except Exception:
-                pass
+                logger.exception("Silent exception caught")
         finally:
             close_old_connections()
 
@@ -342,7 +342,7 @@ class VideoService:
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "completed_at", "updated_at"])
             except Exception:
-                pass
+                logger.exception("Silent exception caught")
             return
 
         except Exception as exc:
@@ -356,7 +356,7 @@ class VideoService:
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "error_message", "completed_at", "updated_at"])
             except Exception:
-                pass
+                logger.exception("Silent exception caught")
         finally:
             close_old_connections()
 
@@ -411,7 +411,7 @@ class VideoService:
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "completed_at", "updated_at"])
             except Exception:
-                pass
+                logger.exception("Silent exception caught")
             return
 
         except Exception as exc:
@@ -425,7 +425,7 @@ class VideoService:
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "error_message", "completed_at", "updated_at"])
             except Exception:
-                pass
+                logger.exception("Silent exception caught")
         finally:
             close_old_connections()
 
@@ -481,7 +481,7 @@ class VideoService:
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "completed_at", "updated_at"])
             except Exception:
-                pass
+                logger.exception("Silent exception caught")
             return
 
         except Exception as exc:
@@ -495,7 +495,7 @@ class VideoService:
                 job.completed_at = timezone.now()
                 job.save(update_fields=["status", "error_message", "completed_at", "updated_at"])
             except Exception:
-                pass
+                logger.exception("Silent exception caught")
         finally:
             close_old_connections()
 

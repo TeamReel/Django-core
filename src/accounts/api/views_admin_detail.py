@@ -329,7 +329,7 @@ def admin_user_detail(request, user_id):
                         request=request,
                     )
                 except Exception:
-                    pass
+                    logger.exception("Silent exception caught")
 
             return Response(
                 {"message": f"User removed from {deleted_count} organization(s)."},
@@ -350,7 +350,7 @@ def admin_user_detail(request, user_id):
                 request=request,
             )
         except Exception:
-            pass
+            logger.exception("Silent exception caught")
 
         try:
             from organisations.models import Membership
@@ -372,9 +372,9 @@ def admin_user_detail(request, user_id):
                         request=request,
                     )
                 except Exception:
-                    pass
+                    logger.exception("Silent exception caught")
         except Exception:
-            pass
+            logger.exception("Silent exception caught")
 
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -455,7 +455,7 @@ def admin_user_activate(request, user_id):
             request=request,
         )
     except Exception:
-        pass
+        logger.exception("Silent exception caught")
 
     serializer = UserDetailSerializer(user)
     return Response(serializer.data)
@@ -544,7 +544,7 @@ def admin_user_deactivate(request, user_id):
             request=request,
         )
     except Exception:
-        pass
+        logger.exception("Silent exception caught")
 
     serializer = UserDetailSerializer(user)
     return Response(serializer.data)
@@ -621,7 +621,7 @@ def admin_user_reset_password(request, user_id):
             request=request,
         )
     except Exception:
-        pass
+        logger.exception("Silent exception caught")
 
     return Response({"message": f"Password reset email sent to {user.email}."})
 
@@ -713,7 +713,7 @@ def admin_change_role(request, user_id):
             request=request,
         )
     except Exception:
-        pass
+        logger.exception("Silent exception caught")
 
     serializer = UserDetailSerializer(user)
     return Response(serializer.data)
