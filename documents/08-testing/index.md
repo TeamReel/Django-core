@@ -1,33 +1,28 @@
 # Testing Documentation
 
-**Purpose:** This section contains all testing documentation, including manual test guides, automated test strategies, and quality assurance processes.
+**Purpose:** Testing documentation including manual test guides and quality processes.
 
 ---
 
 ## Contents
 
 ### [Manual Tests](manual-tests/)
-Visual and manual testing guides for all Django Core features, organized by implementation status.
+Visual and manual testing guides for TeamReel features.
 
 **Structure:**
-- **[done/](manual-tests/done/)** - Completed and tested features (35 test guides)
-- **[in-progress/](manual-tests/in-progress/)** - Partially implemented features
-- **[not-started/](manual-tests/not-started/)** - Features ready for testing
-- **[todo/](manual-tests/todo/)** - Test guides awaiting execution
+- **[done/](manual-tests/done/)** — Completed and verified test guides
+- **[todo/](manual-tests/todo/)** — Test guides awaiting execution
 
 **Quick Links:**
-- [Manual Testing README](manual-tests/README.md) - Complete testing workflow and guide
-- [36 Activity Feed Permissions](manual-tests/36-activity-feed-permissions.md) - Specific test case
+- [Manual Testing README](manual-tests/README.md) — Testing workflow and guide
 
 ---
 
-## Testing Philosophy
+## Testing Standards
 
-All testing in Django Core follows these principles:
-
-1. **Test What's Built**: Only test implemented features, not planned ones
-2. **Kanban Workflow**: Move tests through done/in-progress/not-started based on actual status
-3. **Manual First**: Visual testing validates user experience before automation
+1. **Every feature has tests** — pytest for backend, Playwright for critical E2E flows
+2. **Every bugfix has a regression test**
+3. **Verify before merge**: `pytest` (backend), `npx tsc --noEmit` + `npx vite build` (frontend)
 4. **Comprehensive Coverage**: Backend (≥90%), Frontend (visual + functional)
 
 ---
