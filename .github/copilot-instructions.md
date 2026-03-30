@@ -51,6 +51,7 @@ Workflow rules, quality standards, and communication protocol are in `workflow.i
 ```
 src/                    ← Django apps (backend)
 demo/src/               ← React app (frontend)
+packages/               ← Shared monorepo packages (@django-core/*)
 tests/                  ← Backend test suite
 demo/tests/             ← Frontend E2E tests (Playwright)
 docs/                   ← All documentation
@@ -64,13 +65,18 @@ docs/                   ← All documentation
   guides/               ← Getting started, Spec Kitty, testing
   roadmap/              ← Phases, module specs (backlog/ready/active/done/quick/later)
   testing/              ← Manual test scripts
+  teamreel/             ← TeamReel product docs (businessplan, design)
+  coreapp/              ← 80/20 core platform docs
+scripts/                ← Utility scripts, seeds, deploy helpers
+nginx/                  ← Nginx deploy configs
+requirements/           ← Python dependencies
+archive/                ← Inactive/historical files (not for active development)
 .github/
   agents/               ← Agent definitions (.agent.md)
   instructions/         ← File-pattern rules (.instructions.md)
   prompts/              ← Reusable task prompts (.prompt.md)
   skills/               ← Multi-step domain skills (SKILL.md)
   hooks/                ← Lifecycle hooks (format, safety)
-requirements/           ← Python dependencies
 ```
 
 ## Available Agents
