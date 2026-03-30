@@ -83,7 +83,7 @@ archive/                ← Inactive/historical files (not for active developmen
 
 | Agent | Role |
 |-------|------|
-| **Lead Architect** | Spec-kitty orchestrator — drives features from spec to merge via multi-agent workflow |
+| **Lead Architect** | Spec-kitty specialist — transforms backlog into specs, plans, tasks autonomously using project knowledge |
 | **Bouwer** | Build features, fix bugs, refactor, write tests |
 | **Code Review** | Audit code quality, security, a11y, performance |
 | **Planner** | Architecture, roadmap specs, Q-items |
