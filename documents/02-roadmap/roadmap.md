@@ -24,8 +24,9 @@ The roadmap is structured in development phases spanning **83+ modules**.
 - **Fase 14**: Data Foundations Part 1 — 5 modules 📋 **PLANNED**
 - **Fase 15**: Data Foundations Part 2 — 5 modules 📋 **PLANNED**
 - **Fase 16**: ML/AI Platform — 6 modules 📋 **PLANNED**
-- **Fase 17**: Platform Quality Gates — 6 modules 📋 **PLANNED**
+- **Fase 17**: Platform Quality Gates — 5 modules 📋 **PLANNED**
 - **Fase 18**: Integration Ecosystem — 2 modules 📋 **PLANNED**
+- **Fase 19**: Operations & Resilience — 1 module 📋 **PLANNED**
 
 **Key Architecture Decisions:**
 - **Fase 7 Module 029**: F08 reserved for future (placeholder, not F09 Visily.ai)
@@ -142,7 +143,7 @@ The roadmap is structured in development phases spanning **83+ modules**.
 
 **Outcome:** Production-ready demo app with complete seed data and 30+ pages showcasing all modules 001-030.
 
-**Details:** See [phases/done/fase-08-demo-foundation.md](fases/done/fase-08-demo-foundation.md)
+**Details:** See [phase-08-demo-foundation.md](fases/done/phase-08-demo-foundation.md)
 
 ---
 
@@ -160,7 +161,7 @@ The roadmap is structured in development phases spanning **83+ modules**.
 
 **Outcome:** Core backend infrastructure voor files, real-time, search, caching en project access operational.
 
-**Details:** See [phases/done/fase-09-backend-infrastructure.md](fases/done/fase-09-backend-infrastructure.md)
+**Details:** See [phase-09-backend-infrastructure.md](fases/done/phase-09-backend-infrastructure.md)
 
 ---
 
@@ -179,7 +180,7 @@ The roadmap is structured in development phases spanning **83+ modules**.
 
 **Outcome:** Generic event planning, **content generation with approval workflow**, **sport-specific configuration**, brand identity, AI pipelines, and smart media library operational.
 
-**Details:** See [phases/done/fase-10-content-engine.md](fases/done/fase-10-content-engine.md)
+**Details:** See [phase-10-content-engine-core.md](fases/planned/phase-10-content-engine-core.md)
 
 ---
 
@@ -211,7 +212,7 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Visual development workflow operational, data viz ready, rich text editing enabled.
 
-**Details:** See [phases/planned/fase-11-frontend-visual-dev.md](fases/planned/fase-11-frontend-visual-dev.md)
+**Details:** See [phase-11-frontend-and-visual-development.md](fases/planned/phase-11-frontend-and-visual-development.md)
 
 ---
 
@@ -227,7 +228,7 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Payment processing, workflow automation, document generation ready.
 
-**Details:** See [phases/planned/fase-12-workflows-payments.md](fases/planned/fase-12-workflows-payments.md)
+**Details:** See [phase-12-workflows-and-payments.md](fases/planned/phase-12-workflows-and-payments.md)
 
 ---
 
@@ -244,11 +245,11 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Admin panel, ops console, billing UI and advanced forms ready.
 
-**Details:** See [phases/planned/fase-12-advanced-ui.md](fases/planned/fase-12-advanced-ui.md)
+**Details:** See [phase-13-advanced-ui.md](fases/planned/phase-13-advanced-ui.md)
 
 ---
 
-## Fase 13 — Data Foundations Part 1 (5 modules)
+## Fase 14 — Data Foundations Part 1 (5 modules)
 
 **Modules:** D01-D05 (049-053)
 
@@ -262,11 +263,11 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Data storage, ETL, lineage, streaming and versioning infrastructure operational.
 
-**Details:** See [phases/planned/fase-13-data-foundations-1.md](fases/planned/fase-13-data-foundations-1.md)
+**Details:** See [phase-14-data-foundations-part-1.md](fases/planned/phase-14-data-foundations-part-1.md)
 
 ---
 
-## Fase 14 — Data Foundations Part 2 (5 modules)
+## Fase 15 — Data Foundations Part 2 (5 modules)
 
 **Modules:** D06-D10 (054-058)
 
@@ -280,11 +281,11 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Validation, tool logging, experiments, evaluations and annotation tools ready.
 
-**Details:** See [phases/planned/fase-14-data-foundations-2.md](fases/planned/fase-14-data-foundations-2.md)
+**Details:** See [phase-15-data-foundations-part-2.md](fases/planned/phase-15-data-foundations-part-2.md)
 
 ---
 
-## Fase 15 — ML/AI Platform (6 modules)
+## Fase 16 — ML/AI Platform (6 modules)
 
 **Modules:** D11-D16 (059-064)
 
@@ -300,11 +301,11 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Complete ML/AI platform with features, models, prompts, agents, vector search and monitoring.
 
-**Details:** See [phases/planned/fase-15-ml-ai-platform.md](fases/planned/fase-15-ml-ai-platform.md)
+**Details:** See [phase-16-ml-ai-platform.md](fases/planned/phase-16-ml-ai-platform.md)
 
 ---
 
-## Fase 16 — Platform Quality Gates (5 modules) — Lightweight
+## Fase 17 — Platform Quality Gates (5 modules) — Lightweight
 
 **Modules:** P01-P05 (065-069)
 
@@ -318,11 +319,11 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Lightweight quality gates operational, all results visible in F10 dashboard.
 
-**Details:** See [phases/planned/fase-16-quality-gates.md](fases/planned/fase-16-quality-gates.md)
+**Details:** See [phase-17-platform-quality-gates.md](fases/planned/phase-17-platform-quality-gates.md)
 
 ---
 
-## Fase 17 — Integration Ecosystem (2 modules) — Lightweight
+## Fase 18 — Integration Ecosystem (2 modules) — Lightweight
 
 **Modules:** I01-I02 (070-071)
 
@@ -333,11 +334,11 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Connector framework and compliance export templates ready.
 
-**Details:** See [phases/planned/fase-17-integration.md](fases/planned/fase-17-integration.md)
+**Details:** See [phase-18-integration-ecosystem.md](fases/planned/phase-18-integration-ecosystem.md)
 
 ---
 
-## Fase 18 — Operations & Resilience (1 module) — Lightweight
+## Fase 19 — Operations & Resilience (1 module) — Lightweight
 
 **Module:** O01 (072)
 
@@ -348,7 +349,7 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 
 **Outcome:** Complete platform validation, all 72 modules operational, production-ready.
 
-**Details:** See [phases/planned/fase-18-operations.md](fases/planned/fase-18-operations.md)
+**Details:** See [phase-19-operations-and-resilience.md](fases/planned/phase-19-operations-and-resilience.md)
 
 ---
 
@@ -360,7 +361,7 @@ These modules were prioritized ahead of their original phase schedule due to Tea
 3. Follow the SDD workflow until merged
 
 **AI agents should always consider:**
-- Current fase (Fase 1-13)
+- Current fase (Fase 1-19)
 - Current module (B01-B21, F01-F12, P01-P04, D01-D16, I01-I02, O01)
 - Development dashboard status (via F10 when available)
 

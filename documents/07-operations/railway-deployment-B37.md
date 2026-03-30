@@ -181,7 +181,7 @@ Seeding Workflow Templates...
 
 ## Step 7: End-to-End Smoke Test
 
-Follow **[B37-workflow-engine.md](../manual-tests/B37-workflow-engine.md)** manual test file.
+Follow **[B37-workflow-engine.md](../08-testing/manual-tests/B37-workflow-engine.md)** manual test file.
 
 **Quick Smoke Test** (abbreviated):
 

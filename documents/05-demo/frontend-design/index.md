@@ -20,6 +20,9 @@ This documentation defines TeamReel's frontend design system — the tokens, com
 | [Mobile-First Patterns](mobile-patterns.md) | Breakpoints, touch targets, safe areas, gestures, responsive layouts |
 | [Code Conventions & Quality Gates](code-conventions.md) | Rules, review checklist, performance budget, current metrics |
 | [Refactoring Eindstatus](refactoring-status.md) | **6 roadmaps, 69/69 fases compleet** — alle metrieken en architectuur |
+| [UX Flows](ux-flows.md) | User experience flows, navigation paths, key interaction patterns |
+| [Mobile App Blueprint](mobile-app-blueprint.md) | Native mobile app design strategy |
+| [iOS Premium Design Report](ios-premium-design-report.md) | iOS design review and premium UI patterns |
 
 ---
 

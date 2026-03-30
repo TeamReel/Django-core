@@ -2,7 +2,7 @@
 
 **Last Updated:** 2026-02-27
 **Status:** Implemented
-**Related:** [RBAC Config](../archive/teamreel-rbac-config.md) | [RBAC Permissions](rbac-permissions.md) | [Project Hierarchy](project-hierarchy.md)
+**Related:** [RBAC Permissions](rbac-permissions.md) | [Project Hierarchy](project-hierarchy.md)
 
 ---
 

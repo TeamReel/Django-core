@@ -11,6 +11,11 @@ This section details the **"How"** of the platform — architecture, technology,
 *   **[Engineering Constitution](constitution.md)**: Non-negotiable rules for quality, security, and testing.
 *   **[Glossary](glossary.md)**: Definitions of domain terms.
 
+## Visualizations & Maps
+
+*   **[UX Flow Map](ux-flow-map.md)**: Navigation and user flow diagram.
+*   **[System Visualisation](visualisatie.md)**: Visual overview of the system architecture.
+
 ## Architecture Decisions
 
 *   **[ADR Index](adr/index.md)**: History of key architectural decisions with rationale.

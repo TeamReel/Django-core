@@ -187,7 +187,7 @@ See `scripts/sql/` directory for ready-to-use queries:
 ## 📖 Related Documentation
 
 - [railway-setup.md](railway-setup.md) - Railway deployment and configuration
-- [teamreel-data-structure.md](../05-demo/teamreel-data-structure.md) - Database schema and hierarchy
+- [tables.md](../05-demo/data/tables.md) - Database schema and hierarchy
 - [scripts/sql/](../../scripts/sql/) - Ready-to-use SQL queries
 
 ---

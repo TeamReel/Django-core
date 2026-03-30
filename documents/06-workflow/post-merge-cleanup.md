@@ -195,6 +195,5 @@ This is useful when:
 - Comparing with new features
 
 ## Related Documents
-- [Git Worktree Workflow](./git-worktree-workflow.md)
-- [Feature Branch Strategy](./feature-branch-strategy.md)
-- [Spec-Kitty Acceptance Process](./spec-kitty-accept.md)
+- [Spec Kitty Workflow](./spec-kitty.md)
+- [CI/CD](./cicd.md)

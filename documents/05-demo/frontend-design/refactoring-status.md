@@ -247,5 +247,4 @@ Voornamelijk in de API-adapter layer (`as any` bij generieke fetch responses) en
 - [css-architecture.md](css-architecture.md) — Token systeem, utility classes
 - [component-library.md](component-library.md) — UI primitives catalog
 - [mobile-patterns.md](mobile-patterns.md) — Touch targets, responsive patterns
-- [../../02-roadmap/repo-hygiene/index.md](../../02-roadmap/repo-hygiene/index.md) — Laatste roadmap (R1-R5)
-- [../../02-roadmap/frontend-hardening/index.md](../../02-roadmap/frontend-hardening/index.md) — Hardening roadmap (C1-Q2)
+- [../../02-roadmap/modules/quick/](../../02-roadmap/modules/quick/) — Quick items (Q-series)

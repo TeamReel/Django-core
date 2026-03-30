@@ -12,6 +12,9 @@ This section covers the operational aspects of running the Django Core-App in pr
 *   **[Observability](observability.md)**: Monitoring, logging, metrics, health checks, and error tracking.
 *   **[Database Management](database.md)**: Backups, migrations, maintenance, and optimization.
 - **[Production Validation](./production-validation.md)**
+- **[Railway Deployment B37](./railway-deployment-B37.md)**: Workflow Engine deployment specifics.
+- **[VP9 Alpha Railway](./rvm-vp9-alpha-railway.md)**: VP9 video encoding on Railway.
+- **[Seed Plan](./seed-plan.md)**: Database seeding strategy and plan.
 
 ## Deployment Options
 

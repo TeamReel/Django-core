@@ -4,6 +4,8 @@
 
 The Django Core-App includes comprehensive observability features through the **B18 Observability** module.
 
+> **Current status:** Health checks and cache metrics are implemented and active. Sentry, log aggregation, and APM tools are documented as recommended options — not yet configured in production.
+
 ## Health Checks
 
 The platform exposes multiple health check endpoints for monitoring:

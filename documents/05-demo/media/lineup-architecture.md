@@ -469,5 +469,5 @@ AI-modellen (Gemini) renderen soms een zichtbaar schaakbordpatroon in de RGB-pix
 |----------|-------------|
 | [media-architecture.md](media-architecture.md) | 4-laags media opslag model (FileAsset → MediaItem → BrandAsset) |
 | [media-templates.md](media-templates.md) | Template systeem voor alle content types |
-| [../schema/tables.md](../schema/tables.md) | Database tabel structuur |
-| [../glossary.md](../glossary.md) | Domain concepten en naamgeving |
+| [../data/tables.md](../data/tables.md) | Database tabel structuur |
+| [../../03-system/glossary.md](../../03-system/glossary.md) | Domain concepten en naamgeving |

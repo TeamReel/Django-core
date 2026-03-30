@@ -186,7 +186,7 @@ python scripts/generate_demo_docs.py
 
 ## Archive
 
-Archived docs in [archive/](archive/) — implemented plans, superseded data dumps, legacy docs.
+Archived docs in [archive/](../../archive/teamreel-archive-docs/) — original planning documents (pre-development).
 
 ---
 

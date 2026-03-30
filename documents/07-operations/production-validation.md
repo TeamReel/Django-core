@@ -28,7 +28,7 @@ Use a conservative smoke script that:
 - Exercises tiny ORM queries / critical endpoints
 - Avoids destructive actions
 
-Script: [scripts/dev-utils/smoke_production.py](scripts/dev-utils/smoke_production.py)
+Script: [scripts/dev-utils/smoke_production.py](../../scripts/dev-utils/smoke_production.py)
 
 ### Read-only mode (default)
 
@@ -70,7 +70,7 @@ Once the backend has been deployed with this script included, you can run it ins
 
 - `railway ssh python scripts/dev-utils/smoke_production.py --mode read`
 
-Railway setup guide: [documents/06-workflow/railway-setup.md](documents/06-workflow/railway-setup.md)
+Railway setup guide: [railway-setup.md](../06-workflow/railway-setup.md)
 
 ## What differences exist between local and production?
 

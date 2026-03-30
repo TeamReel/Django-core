@@ -2,7 +2,7 @@
 
 > Last updated: 2026-03-12
 > Status: **Active design document** — living reference for all frontend work
-> Roadmap: [02-roadmap/mobile-design/](../../02-roadmap/mobile-design/index.md)
+> Roadmap: See [02-roadmap/modules/](../../02-roadmap/modules/) for planned mobile work
 
 ---
 
