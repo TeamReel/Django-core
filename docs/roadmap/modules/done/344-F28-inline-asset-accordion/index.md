@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Code | F28 |
-| Status | 📐 READY |
+| Status | ✅ DONE |
 | Prioriteit | Hoog |
 | Geschatte effort | ~16 uur |
 | Afhankelijkheden | F26 (done), B70 (done) |
