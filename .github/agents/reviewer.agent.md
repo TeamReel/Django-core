@@ -27,6 +27,7 @@ tools:
     todo
   ]
 agents:
+  - lead-architect
   - developer
   - planner
   - playwright-tester

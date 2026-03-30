@@ -27,6 +27,7 @@ tools:
     todo
   ]
 agents:
+  - lead-architect
   - developer
   - reviewer
   - playwright-tester
@@ -34,6 +35,10 @@ agents:
   - ops-deploy
   - domain-expert
 handoffs:
+  - label: "Start feature via spec-kitty"
+    agent: lead-architect
+    prompt: "Orchestrate this feature using the spec-kitty workflow."
+    send: false
   - label: "Start implementation"
     agent: developer
     prompt: "Implement the plan outlined above."

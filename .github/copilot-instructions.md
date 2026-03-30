@@ -83,9 +83,10 @@ archive/                ← Inactive/historical files (not for active developmen
 
 | Agent | Role |
 |-------|------|
+| **Lead Architect** | Spec-kitty orchestrator — drives features from spec to merge via multi-agent workflow |
 | **Bouwer** | Build features, fix bugs, refactor, write tests |
 | **Code Review** | Audit code quality, security, a11y, performance |
-| **Planner** | Architecture, roadmap specs, implementation plans |
+| **Planner** | Architecture, roadmap specs, Q-items |
 | **Product Expert** | Domain knowledge, data model, UX flows |
 | **Site Tester** | E2E browser testing, visual review, accessibility |
 | **Database** | Query optimization, indexing, schema review |
@@ -103,6 +104,9 @@ archive/                ← Inactive/historical files (not for active developmen
 | `webapp-testing` | Browser-based E2E flow testing |
 | `web-design-reviewer` | Visual/layout review in browser |
 | `roadmap-execution` | Executing a roadmap phase |
+| `spec-kitty-runtime-next` | Advancing the spec-kitty mission control loop |
+| `spec-kitty-mission-system` | Understanding missions, features, WP hierarchy |
+| `spec-kitty-git-workflow` | Git worktrees, auto-commit, merge workflow |
 | `pytest-coverage` | Finding test coverage gaps |
 | `railway-ops` | Railway commands, seeding, deploys |
 | `celery-task` | Background job scaffolding |
@@ -131,8 +135,19 @@ Domain docs mapped in `docs/ai-context-index.md`. Key pointers:
 - Data model: `docs/architecture/data-model.md`
 - Roadmap: `docs/roadmap/`
 
+## Spec-Kitty / Roadmap Integration
+
+| What | Where | Who |
+|------|-------|-----|
+| Technical execution | `kitty-specs/{feature}/` | Lead Architect |
+| Business status | `docs/roadmap/modules/` | Lead Architect (lightweight sync) |
+| Quick fixes (≤4 uur) | `docs/roadmap/modules/quick/` | Planner / Bouwer |
+
+**Rule**: For features using spec-kitty, the roadmap module is a **lightweight index only** (status + link to kitty-spec). Do NOT duplicate specs, plans, or phase files across both systems.
+
 ## Sources of Truth
 
 1. **Codebase** — the implementation
-2. `docs/` — specs, roadmap, architecture
-3. **Railway** — production data state
+2. `kitty-specs/` — technical specs, plans, tasks (spec-kitty workflow)
+3. `docs/` — business docs, roadmap status, architecture
+4. **Railway** — production data state
