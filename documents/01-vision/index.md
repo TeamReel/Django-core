@@ -37,10 +37,9 @@ The core includes:
 ## 4. Detailed Vision
 
 *   **[Full Vision Document](vision.md)**: Complete vision with aspirational targets.
+*   **[Business Context](business.md)**: Market opportunity, target audience, competitive positioning, revenue model.
 *   **[Design Principles](principles.md)**: The 9 rules that guide every decision.
 *   **[Target Users](users.md)**: Who we build for.
 *   **[Governance](governance.md)**: Spec Kitty workflow and quality enforcement.
-*   **[Future](future.md)**: Long-term platform evolution.
-*   **[Constitutional Governance](governance.md)**: How we guarantee quality without relying on individual expertise.
 *   **[Quality Standards](quality.md)**: The specific metrics for the 80% foundation.
 *   **[Long-Term Future](future.md)**: The platform economy vision.

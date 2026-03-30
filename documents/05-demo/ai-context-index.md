@@ -8,6 +8,14 @@ Reference this file when you need to find the right documentation for a task. Ea
 
 ---
 
+## Brand & Product
+
+| Topic | Document | Key Content |
+|-------|----------|-------------|
+| Brand identity | [brand-identity.md](brand-identity.md) | Colors, typography, tone of voice, logo system, design tokens |
+| Functional design | [functional-flows.md](features/functional-flows.md) | User roles, UX flows, match-phase content, AI workflows, data model overview |
+| Business context | [business.md](../01-vision/business.md) | Market opportunity, target audience, competitive positioning, revenue model |
+
 ## Architecture & System Design
 
 | Topic | Document | Key Content |
@@ -52,7 +60,8 @@ Reference this file when you need to find the right documentation for a task. Ea
 
 | Topic | Document | Key Content |
 |-------|----------|-------------|
-| Branding | [branding-tokens.md](features/branding-tokens.md) | BrandProfile, BrandAsset, identity tokens |
+| Brand identity | [brand-identity.md](brand-identity.md) | Colors, typography, tone of voice, logo system |
+| Branding (technical) | [branding-tokens.md](features/branding-tokens.md) | BrandProfile, BrandAsset, identity tokens |
 | Notifications | [notification-routing.md](features/notification-routing.md) | Notification types, delivery channels |
 | Member management | [members-batch-actions.md](features/members-batch-actions.md) | Bulk operations, import/export |
 | Member assets | [member-asset-save-flow.md](features/member-asset-save-flow.md) | Photo upload and processing flow |

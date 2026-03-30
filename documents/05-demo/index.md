@@ -1,17 +1,23 @@
 # TeamReel Web Application — Documentation
 
-**Last Updated:** 2026-03-21
-**Status:** v5.0
+**Last Updated:** 2026-03-30
+**Status:** v5.1
 
 ---
 
 ## Overview
 
-Complete documentation for the TeamReel web application — frontend design system, feature specs, media pipeline, infrastructure, and data reference.
+Complete documentation for the TeamReel web application — brand identity, functional design, frontend design system, feature specs, media pipeline, infrastructure, and data reference.
 
 ---
 
 ## Documentation Map
+
+### Brand & Product
+
+| Document | Purpose |
+|----------|---------|
+| [brand-identity.md](brand-identity.md) | **Brand identity** — colors, typography, tone of voice, logo system, design tokens (verified against code) |
 
 ### Getting Started
 
@@ -43,6 +49,7 @@ Complete documentation for the TeamReel web application — frontend design syst
 
 | Document | Purpose |
 |----------|---------|
+| [features/functional-flows.md](features/functional-flows.md) | **Functional design** — user roles, UX flows, match-phase content, AI integration, data model overview |
 | [features/generation-queue.md](features/generation-queue.md) | AI Generation Queue — GenerationJob lifecycle, Celery pipeline |
 | [features/member-asset-save-flow.md](features/member-asset-save-flow.md) | Asset save flow + stale closure fix pattern |
 | [features/members-batch-actions.md](features/members-batch-actions.md) | Batch operations on members + RBAC mapping |
