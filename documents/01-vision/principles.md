@@ -1,42 +1,45 @@
 # Design Principles
 
-These 9 principles guide every architectural and product decision in the Django Core-App.
+These 8 principles guide every architectural and product decision.
 
 ## 1. 80/20 Architecture
-*   **80% of modern web app needs** are covered by the Core-App foundation.
-*   **20% of unique business logic** is added by downstream products.
-*   Clear boundaries between platform and product.
+*   **80% of modern web app needs** are covered by the core platform.
+*   **20% of unique business logic** is added per product (TeamReel proves this).
+*   Clear boundaries between platform and product code.
 
 ## 2. Complete Modern Web Platform
-*   **Content layer**: Rich text editing, file/media management, document generation.
-*   **Real-time layer**: WebSockets, live updates, presence.
-*   **Intelligence layer**: AI agents, ML operations, vector search (the enhancement, not the foundation).
+*   **Content & media layer**: File management (S3), AI generation, video processing (FFmpeg).
+*   **Real-time layer**: WebSockets, live updates, notifications with preference routing.
+*   **Background processing**: Celery tasks, scheduled jobs, queue management.
 
-## 3. Design-to-Code Workflow
-*   Wireframe-to-component pipeline.
-*   AI-generated designs use F01 design system tokens.
-*   Designer-developer collaboration without friction.
+## 3. Production-First
+*   TeamReel runs in production on this platform today.
+*   Every module is validated through real-world usage, not demos.
+*   Infrastructure proven: Railway (backend), Vercel (frontend), S3 (storage).
 
-## 4. Fully Functional Demo App
-*   The Demo app is NOT a mockup - it's a **production-ready reference implementation**.
-*   It validates the platform quality through real-world usage.
+## 4. Security & Multi-Tenancy by Default
+*   Organisation-scoped querysets on every ViewSet.
+*   RBAC with `permission_classes` on all endpoints.
+*   Audit logging for security events.
+*   No hardcoded secrets — environment-based configuration.
 
-## 5. Security & Multi-Tenancy by Default
-*   OWASP-ASVS baseline, brute-force protection, audit logging.
-*   Strict vs advisory enforcement modes for different maturity stages.
-
-## 6. Constitutional Governance for Non-Programmers
-*   Constitution + Spec-Driven Development (SDD) as normative workflow.
+## 5. Spec-Driven Development
+*   Spec Kitty workflow: specs → AI agents → quality-checked implementation.
 *   Every feature traceable: spec → plan → tasks → implementation → tests.
+*   AI agents (GitHub Copilot, etc.) build under governance rules.
 
-## 7. Modern, Fast, Flexible, High-Quality
-*   **Modern**: Latest patterns (WebSockets, vector search, AI agents, design-to-code).
-*   **Quality**: Development dashboard with live metrics (coverage, security, performance).
+## 6. Quality Without Compromise
+*   Tests for every feature and bugfix (pytest backend, Playwright E2E).
+*   Type safety: TypeScript strict mode (frontend), type hints (Python backend).
+*   `select_related`/`prefetch_related` — no N+1 queries.
+*   WCAG 2.1 AA accessibility baseline.
 
-## 8. Progressive Platform Layers
-*   **Phase 1-5**: Backend core (security, multi-tenancy, APIs).
-*   **Platform maturity 8–13**: Quality gates → data foundations → ML/AI → integration → hardening.
+## 7. Design Tokens Over Hardcoded Values
+*   CSS design tokens for all visual properties.
+*   Mobile-first responsive design.
+*   No hardcoded colors, spacing, or typography values.
 
-## 9. Developer Experience (DX)
-*   Predictable project structure and scaffolding CLI.
-*   Opinionated but not suffocating: “guardrails, not walls”.
+## 8. Developer Experience
+*   Predictable project structure following Django/React conventions.
+*   Monorepo packages for shared frontend functionality.
+*   Convention-based: “guardrails, not walls”.

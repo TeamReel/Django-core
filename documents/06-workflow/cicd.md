@@ -1,20 +1,43 @@
-# CI/CD Pipeline
+# CI/CD & Deployment
 
-## Overview
+## Current Practice
 
-We use GitHub Actions to enforce quality gates and automate deployment.
+### Local Verification (Before Push)
 
-## Quality Gates (On Pull Request)
+```bash
+# Backend
+pytest                              # Run tests
+python manage.py check              # Django system check
+python manage.py makemigrations     # Verify no missing migrations
 
-1.  **Linting**: `ruff` (Python), `eslint` (JS/TS).
-2.  **Type Checking**: `mypy` (Python), `tsc` (TS).
-3.  **Testing**: `pytest` (Backend), `vitest` (Frontend).
-4.  **Security**: `bandit`, `safety` (Dependency scan).
-5.  **Constitution**: `P01` checks (if enabled).
+# Frontend
+cd demo && npx tsc --noEmit         # Type check
+cd demo && npx vite build           # Production build
+```
 
-## Deployment (On Merge to Main)
+### Deployment
 
-1.  **Build**: Docker images for Backend and Frontend.
-2.  **Push**: Push to Container Registry.
-3.  **Deploy**: Trigger update on Railway (Backend) and Vercel (Frontend).
-4.  **Migrate**: Run database migrations.
+| Service | Platform | Trigger |
+|---------|----------|---------|
+| Backend API | Railway | Push to `main` (auto-deploy) |
+| Frontend | Vercel | Push to `main` (auto-deploy) |
+| Celery workers | Railway | Push to `main` (auto-deploy) |
+| Database migrations | Railway | `python manage.py migrate` (manual) |
+
+### Railway Services
+
+| Service | Purpose |
+|---------|---------|
+| `backend` | Django API server |
+| `frontend` | React/Vite (nginx) |
+| `celery-worker` | Async tasks (video, AI, email) |
+| `celery-beat` | Scheduled tasks |
+| `worker-ai` | AI processing |
+| `Postgres` | Database |
+| `Redis` | Cache + Celery broker |
+
+## Planned (Not Yet Implemented)
+
+*   GitHub Actions CI on Pull Request (linting, testing, type checking)
+*   Automated security scanning
+*   Automated accessibility checks

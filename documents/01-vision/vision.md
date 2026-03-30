@@ -1,122 +1,80 @@
-# Django Core-App — Project Vision
+# Project Vision
 
 ## 1. Mission
 
-The Django Core-App is an **80/20 platform foundation** for modern, production-grade web applications built on Django.
+An **80/20 platform foundation** for modern, production-grade web applications built on Django — proven by TeamReel.
 
 ### The 80/20 Principle
 
-**80% reusable foundation** → provided by the Core-App
-**20% custom business logic** → built by downstream products
+**80% reusable foundation** → provided by the core platform
+**20% custom business logic** → built per product
 
-Instead of starting from scratch, the Core-App provides a comprehensive, production-ready foundation where **client-specific applications are built with minimal custom code** on top of a complete platform that already includes:
+The core platform provides a comprehensive, production-ready foundation:
 
 **Core Infrastructure:**
 - **Secure multi-tenant architecture** with users → organisations → projects
-- **Content & media management** with file handling, rich text, document generation
+- **Content & media management** with file handling (S3), processing, and AI generation
 - **Real-time capabilities** with WebSockets, live updates and notifications
-- **Advanced analytics & reporting** with customizable dashboards and queries
+- **Background processing** with Celery tasks, scheduling, and queue management
 
-**Intelligent Capabilities (the cherry on top):**
-- **AI agent runtime** for workflow automation and intelligent assistance
-- **Data governance & ML operations** for data-driven applications
-- **Vector search & RAG** for knowledge-intensive applications
+**Intelligent Capabilities:**
+- **AI content generation** via OpenAI and Google Generative AI
+- **Video processing pipeline** via FFmpeg with platform-specific exports
+- **Workflow orchestration** via LangGraph for multi-step AI tasks
 
 **Quality & Developer Experience:**
-- **Design-to-code workflow** (Visily.ai-style) from wireframes to production components
-- **Constitutional quality enforcement** for safe AI-assisted development
-- **Development dashboard** with real-time insights into platform health and progress
+- **Spec-Driven Development** with AI agents (Spec Kitty workflow)
+- **Type-safe frontend** with TypeScript strict mode and design tokens
+- **Monorepo packages** for shared functionality across frontend apps
 
-The goal: **clone the Core-App, add 20% domain logic, ship a production-grade modern web application.**
+### TeamReel: First Product Implementation
 
-This is not a basic SaaS starter kit—it's a complete platform foundation for any modern web application, from e-commerce to CRM, from content platforms to data-driven tools.
+TeamReel is the first product built on this foundation, proving the 80/20 model works.
 
-### Core as Foundation, Not Product
+**What TeamReel adds (the 20%):**
+- Sport-specific data: members, activities, participations, periods, competitions
+- Brand identity system: club colors, logos, kit images, typography
+- Content templates: match graphics, line-ups, social media posts
+- AI-powered video generation: branded highlight reels, previews
 
-**Core-App Repository Structure:**
-```
-django-core/                    # The 80% foundation
-├── packages/*                  # B01-B24, F01-F09 modules
-├── demo/                       # Living documentation + integration test
-├── examples/                   # Individual module examples
-└── docs/                       # Architecture & API docs
-```
-
-**Your Product (separate repository):**
-```
-your-saas-product/             # Your 20% custom logic
-├── backend/                    # Django + core packages as deps
-├── frontend/                   # React + core packages as deps
-└── custom-logic/               # Domain-specific features
-```
-
-**Key Principles:**
-- **Core stays product-agnostic** — no client-specific code in core repo
-- **Demo is reference & smoke test** — showcases all modules, not a starting template
-- **Examples show individual patterns** — auth flow, CRUD, WebSockets, etc.
-- **Products consume core as dependency** — via npm/pip packages
-- **Multiple products can share same core** — e-commerce, CRM, etc. all use same foundation
-
-**Development Pattern:**
-1. Core-App team maintains `/packages`, `/demo`, `/examples`
-2. Product teams scaffold new project: `django-admin startproject --template=core-app`
-3. Products import core modules: `from django_core.auth import ...` / `import { Button } from '@django-core/design-system'`
-4. Products build 20% domain logic on top
-5. Core updates flow to products via standard dependency updates
-
-This separation ensures:
-- ✅ Core remains reusable across products
-- ✅ Demo stays clean as integration reference
-- ✅ Products get updates without core pollution
-- ✅ Multiple products can coexist using same foundation
+**What the core provides (the 80%):**
+- Multi-tenant organisation/project hierarchy with RBAC
+- File management and S3 storage
+- AI generation request/result pipeline
+- Video job processing infrastructure
+- Notification routing with user preferences
+- Background task execution (Celery)
+- Authentication, permissions, audit trail
 
 ---
 
-## 2. Target Users and Use Cases
+## 2. Target Users
 
-### Primary users
+### TeamReel (current product)
+- **Amateur sports clubs** needing branded content without design skills
+- **Club administrators** managing teams, seasons, and member data
+- **Content coordinators** generating match graphics, line-ups, and video
 
-- **Clients needing custom web applications** (e-commerce, CRM, content platforms, project management, etc.)
-- **AI-assisted builders** (non-programmers) using Spec Kitty, GitHub Copilot and LLMs to build production apps
-- **Agency teams / consultants** delivering diverse client projects faster with 80% pre-built foundation
-- **Designers** using AI design tools (Visily.ai-style) to rapidly prototype and deploy UIs
-- **Technical leads / architects** enforcing quality and governance through the constitutional engine
-
-### Core use cases
-
-- **Building any type of modern SaaS application** with minimal custom code (80/20 principle)
-- **E-commerce platforms** with product catalogs, transactions and real-time inventory
-- **CRM/project management tools** with workflows, reporting and collaboration
-- **Content/media platforms** with rich editing, file management and publishing workflows
-- **Data-driven dashboards** with analytics, reporting and intelligent insights (AI agents as enhancement)
-- **Rapid prototyping** with design-to-code workflow (Visily.ai → Core-App components)
-- **Maintaining quality** without deep programming knowledge through AI agents + constitutional enforcement
+### Future products (80/20 model)
+- **Any SaaS application** needing multi-tenant architecture, media handling, and AI capabilities
+- **AI-assisted builders** using Spec Kitty and GitHub Copilot to build features
+- **Development teams** wanting a production-grade Django+React foundation
 
 ---
 
-## 3. What the Core-App Is and Is Not
+## 3. What the Platform IS and IS NOT
 
-### The Core-App **is**
+### The platform **IS**
+- A **production-grade multi-tenant architecture** with hierarchical access control
+- A **complete content & media platform** with AI generation and video processing
+- A **Spec-Driven Development platform** where AI agents build features under governance
+- **Proven in production** — TeamReel runs on this foundation today
 
-- **An 80/20 platform foundation** where client apps are built with 20% custom code on top of 80% reusable infrastructure
-- A **complete modern SaaS platform** including:
-  - **Content & media**: File management, rich text editing, document generation
-  - **Real-time features**: WebSockets, live updates, collaborative editing capabilities
-  - **Business features**: Workflows, reporting, dashboards, transaction tracking
-  - **Data platform**: Governance, cataloging, lineage, analytics & privacy enforcement
-  - **Intelligent layer**: AI agents, ML operations, vector search (the cherry on top)
-- A **production-grade multi-tenant architecture** with hierarchical access control and constitutional quality enforcement
-- A **design-to-code platform** supporting Visily.ai-style workflows (wireframes → production components)
-- A **Spec-Driven Development (SDD) platform** where AI agents build safely under strict governance rules
-- A **developer-friendly foundation** with real-time development dashboard showing platform health, progress and quality metrics
-
-### The Core-App is **not**
-
-- A basic SaaS starter template—it's a comprehensive 80% foundation for any modern web application
-- A domain-specific product—client apps add their 20% domain logic (e-commerce rules, CRM workflows, etc.) on top
-- An AI/ML-only platform—intelligent capabilities are powerful additions, not the core focus
-- A replacement for cloud infrastructure (Kubernetes, Terraform)—it runs **on** infrastructure
-- A locked-in framework—downstream products customize and extend as needed, but 80% is ready
+### The platform is **NOT**
+- A basic SaaS starter template — it's a comprehensive production foundation
+- A theoretical exercise — everything listed here is built and running
+- A locked-in framework — products extend, not fork
+- A replacement for cloud infrastructure — it runs on Railway/Vercel
 
 ---
 

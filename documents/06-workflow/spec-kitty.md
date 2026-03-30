@@ -1,77 +1,78 @@
-# Spec-Kitty Workflow
+# Spec Kitty Workflow
 
 ## Purpose
 
-This document defines how the Django Core-App uses Spec Kitty and AI agents for **Spec-Driven Development (SDD)**.
+Spec Kitty is the governance workflow for building features with AI agents. It ensures every feature is traceable from spec to implementation to tests.
 
 ---
 
-## Core Workflow
+## Current Practice
 
-The lifecycle for each feature follows this strict sequence:
+### Feature Lifecycle
 
-1.  `/spec-kitty.constitution` (Project setup)
-2.  `/spec-kitty.specify` (Define WHAT)
-3.  `/spec-kitty.plan` (Define HOW)
-4.  `/spec-kitty.tasks` (Breakdown)
-5.  `/spec-kitty.implement` (Code)
-6.  `/spec-kitty.review` (Verify)
-7.  `/spec-kitty.accept` (Validate)
-8.  `/spec-kitty.merge` (Integrate)
+New features and larger modules follow this path:
 
----
+1. **Spec** — Define WHAT to build (in `documents/02-roadmap/modules/`)
+2. **Plan** — Define HOW: architecture, data model, API endpoints, testing strategy
+3. **Build** — AI agents (Bouwer) implement under governance rules (`.github/instructions/`)
+4. **Review** — Code Review agent validates against conventions
+5. **Verify** — `pytest` (backend), `npx tsc --noEmit` + `npx vite build` (frontend)
 
-## Command Reference
+### Quick Items
 
-### 1. `/spec-kitty.specify`
-**Purpose**: Clarify **WHAT** to build.
-**Scope**: Single module (`Bxx` / `Fxx`).
-**Output**: Summary, Goals, Non-goals, User Stories, Constraints.
+Small improvements (1-4 hours, 1-3 files) skip the full spec process:
 
-### 2. `/spec-kitty.plan`
-**Purpose**: Define **HOW** to build it.
-**Input**: Approved Spec.
-**Output**: Architecture, Data Model, API Endpoints, Testing Strategy.
+```
+quick/todo/ → quick/doing/ → quick/review/ → quick/done/
+```
 
-### 3. `/spec-kitty.tasks`
-**Purpose**: Break plan into testable work items.
-**Output**: Work Packages (WP01, WP02...) and Tasks (T001, T002...).
+See the [Quick Module Template](../../.github/instructions/workflow.instructions.md) for the format.
 
-### 4. `/spec-kitty.implement`
-**Purpose**: Guide coding agent.
-**Constraint**: One Work Package at a time.
-**Focus**: TDD, Green CI, Small commits.
+### Bug Fixes
 
-### 5. `/spec-kitty.review`
-**Purpose**: Validate implementation against Spec/Plan.
-**Checks**: Correctness, Readability, Security, Performance.
-
-### 6. `/spec-kitty.accept`
-**Purpose**: Final verification before merge.
-**Checks**: All WPs done, CI green, Docs updated.
+Just implement directly — include a regression test.
 
 ---
 
-## Feature Naming
+## Governance Rules
 
-*   **Backend**: `B01` … `B29`
-*   **Frontend**: `F01` … `F15`
-*   **Data**: `D01` … `D16`
-*   **Platform**: `P01` … `P05`
-*   **Integration**: `I01` … `I02`
-*   **Operations**: `O01`
+Enforced via `.github/instructions/` files (auto-attached by file pattern):
 
-**Pattern**: `feature=<ID>-<kebab-case-slug>`
-**Example**: `feature=B05-core-accounts`
+*   **Security**: Org-scoped querysets, `permission_classes` on all ViewSets.
+*   **Testing**: Every feature has tests, every bugfix has regression test.
+*   **Types**: No `any` in TypeScript, type hints in Python.
+*   **Performance**: `select_related`/`prefetch_related` — no N+1.
+*   **CSS**: Design tokens only, no hardcoded values.
+*   **Migrations**: Safe only — never drop tables.
+*   **Git**: Conventional commits.
 
 ---
 
-## AI Interaction Guidelines
+## Module Naming
 
-*   **Language**: English.
-*   **Context**: Always reference Feature ID and Work Package ID.
-*   **Goal**: One main goal per prompt.
-*   **References**:
-    *   `documents/01-vision/principles.md`
-    *   `documents/02-roadmap/index.md`
-    *   `documents/03-system/constitution.md`
+*   **Backend**: `B01` … `B70` (see [REGISTRY.md](../04-modules/REGISTRY.md))
+*   **Frontend**: `F01` … `F30`
+*   **Quick items**: `Q001` … `Q999`
+
+---
+
+## AI Agents
+
+| Agent | Role |
+|-------|------|
+| **Bouwer** | Build features, fix bugs, write tests |
+| **Code Review** | Audit quality, security, a11y, performance |
+| **Planner** | Architecture, roadmap specs, implementation plans |
+| **Product Expert** | Domain knowledge, data model, UX flows |
+| **Site Tester** | E2E browser testing, visual review |
+| **Database** | Query optimization, indexing, schema review |
+| **Deploy & Logs** | Railway deployments, logs, monitoring |
+
+---
+
+## References
+
+*   Workflow rules: `.github/instructions/workflow.instructions.md`
+*   Agent definitions: `.github/agents/`
+*   Skills: `.github/skills/`
+*   Roadmap specs: `documents/02-roadmap/modules/`

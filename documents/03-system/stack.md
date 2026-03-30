@@ -2,97 +2,85 @@
 
 ## Purpose
 
-This document describes the technical stack and tools used in the Django Core-App project (**72 modules** across **18 development phases**).
+This document describes the technical stack used in the project.
 
 ---
 
 ## 1. Backend Stack
 
-### Core Infrastructure (Phases 1-5)
+### Core Infrastructure
 
 - **Language**: Python 3.12+
 - **Web framework**: Django 5.x
 - **API**: Django REST Framework (DRF)
-- **Database**: PostgreSQL (primary target, SQLite allowed for dev/tests)
-- **Async tasks**: Celery + Redis (or compatible broker)
-- **Caching**: Django cache framework with Redis backend (B25)
-- **Environment configuration**: 12-factor (environment variables as primary interface)
+- **Database**: PostgreSQL (Railway)
+- **Async tasks**: Celery + Redis
+- **Caching**: Django cache framework with Redis backend
+- **Environment configuration**: 12-factor (environment variables)
 
-### Extended Capabilities (Phases 9, 11)
+### Extended Capabilities
 
 **File & Media Management (B22)**
 - Pillow (image processing, thumbnails)
-- Storage adapters: S3 (boto3), Azure Blob Storage, local filesystem
-- Optional: ClamAV integration for virus scanning
+- boto3 (S3 storage)
 
 **Real-time Infrastructure (B23)**
 - Django Channels (WebSocket support, ASGI)
-- Redis Channels layer (or alternative channel layer)
-- Daphne or Uvicorn (ASGI server)
+- Redis Channels layer
 
 **Search (B24)**
 - PostgreSQL full-text search (pg_trgm, GIN indexes)
-- Optional: Elasticsearch adapter (elasticsearch-py)
 
-**Workflows (B28)**
-- django-fsm or custom state machine implementation
+**Workflows (B37)**
+- Custom state machine implementation
 
-**Payments (B27)**
-- Stripe SDK (stripe-python)
-- Optional: PayPal SDK, Braintree adapters
-
-**Document Generation (B29)**
-- WeasyPrint (HTML-to-PDF, CSS Paged Media)
-- ReportLab (programmatic PDF generation)
-- openpyxl or xlsxwriter (Excel generation)
-
-### Data & AI Platform (Phases 13-15)
-
-**Data Processing (D01-D05)**
-- Pandas / Polars (data manipulation)
-- SQLAlchemy (advanced data loading)
-- Apache Arrow (efficient data interchange)
-
-**AI & Agents (D11-D16)**
-- LangChain / LangGraph (agent orchestration)
-- OpenAI SDK / Anthropic SDK (LLM integration)
+**AI / Generative (B34)**
+- OpenAI SDK (image + text generation)
+- Google Generative AI SDK (Gemini)
+- LangGraph SDK (workflow orchestration)
 - Pydantic (structured data validation)
-- Vector DB adapters (pgvector, Pinecone, Weaviate)
+
+**Video Processing (B55)**
+- FFmpeg (transcoding, overlays, exports)
 
 ---
 
 ## 2. Frontend Stack
 
-### Core Infrastructure (Phases 6-7)
+### Core Infrastructure
 
-- **Framework**: React 18+
+- **Framework**: React 18
 - **Build Tool**: Vite
-- **Language**: TypeScript
-- **State Management**: React Query (server state), Zustand/Context (client state)
-- **Routing**: React Router
-- **Styling**: Tailwind CSS + Headless UI / Radix UI
-- **Forms**: React Hook Form + Zod (validation)
+- **Language**: TypeScript (strict mode)
+- **Data Fetching**: @tanstack/react-query
+- **Routing**: react-router-dom
+- **Styling**: CSS Modules (no Tailwind, no CSS-in-JS)
+- **Icons**: lucide-react
+- **Drag & Drop**: @dnd-kit
+- **Virtualization**: react-window
+- **Charts**: recharts
 
-### Visual Development (Phase 10)
+### Internal Packages (monorepo)
 
-- **Design-to-Code**: Visily.ai integration
-- **Component Library**: Storybook
+- `@django-core/design-system` — tokens, UI primitives
+- `@django-core/api-client` — type-safe API wrapper
+- `@django-core/auth-ui` — login/register components
+- `@django-core/context-switcher` — org/project navigation
+- `@django-core/page-templates` — layout templates
+- `@django-core/theme-system` — light/dark theming
 
 ---
 
-## 3. DevOps & Operations
+## 3. Infrastructure & Operations
 
-### Infrastructure (Phase 5, 18)
+- **Hosting**: Railway (backend, Celery workers, PostgreSQL, Redis)
+- **Frontend hosting**: Vercel
+- **Containerization**: Docker & Docker Compose (local dev)
+- **CI/CD**: Manual deploy via Railway CLI (GitHub Actions planned)
 
-- **Containerization**: Docker & Docker Compose
-- **CI/CD**: GitHub Actions
-- **Orchestration**: Kubernetes (optional, via Helm charts) or PaaS (Railway/Render)
+### Observability
 
-### Observability (Phase 5)
-
-- **Logging**: Structured JSON logging
-- **Metrics**: Prometheus / Grafana (optional)
-- **Tracing**: OpenTelemetry (optional)
+- **Logging**: Structured Python logging
 - **Error Tracking**: Sentry (optional)
 
 ---
@@ -101,5 +89,5 @@ This document describes the technical stack and tools used in the Django Core-Ap
 
 - **Backend Testing**: pytest, factory_boy, coverage.py
 - **Frontend Testing**: Vitest, React Testing Library, Playwright (E2E)
-- **Linting/Formatting**: Ruff (Python), ESLint/Prettier (JS/TS)
-- **Security**: Bandit, Safety, OWASP ZAP (Phase 16)
+- **Linting**: Ruff (Python), ESLint + Stylelint (frontend)
+- **Type checking**: mypy (Python), TypeScript `--noEmit` (frontend)

@@ -1,19 +1,19 @@
-# Django Core-App Engineering Constitution
+# Engineering Constitution
 
-**Version**: 2.1.0
-**Last Updated**: 2026-01-05
-**Scope**: All 72 modules across 18 development phases
+**Version**: 3.0.0
+**Scope**: All backend apps (`src/`) and frontend (`demo/src/`)
 
 ---
 
 ## Purpose
 
-This constitution defines **non-negotiable engineering standards** for the Django Core-App platform. These rules ensure quality, security and maintainability even when built by non-programmers using AI agents.
+This constitution defines **non-negotiable engineering standards** for the platform. These rules ensure quality, security and maintainability when building with AI agents.
 
-**Who enforces this?**
-- **P01 Constitutional Enforcement Engine** (Phase 16) validates compliance automatically
-- **CI/CD pipelines** block merges that violate constitutional rules
-- **Development Dashboard** (Phase 10) shows real-time compliance status
+**How is this enforced?**
+- **`.github/instructions/` files** auto-attach rules by file pattern
+- **AI agents** follow these rules during implementation
+- **Code Review agent** validates against these standards
+- **Manual verification**: `pytest`, `npx tsc --noEmit`, `npx vite build`
 
 ---
 
@@ -21,93 +21,78 @@ This constitution defines **non-negotiable engineering standards** for the Djang
 
 ### 1.1 80/20 Architecture
 
-- **MUST**: The Core-App provides 80% reusable infrastructure
-- **MUST**: Downstream products add only 20% domain-specific logic
-- **MUST**: All modules remain domain-agnostic and reusable across use cases
+- **MUST**: The core provides 80% reusable infrastructure
+- **MUST**: Product-specific logic (TeamReel) stays in clearly separated apps
+- **MUST**: All core modules remain reusable across products
 
 ### 1.2 Spec-Driven Development (SDD)
 
-- **MUST**: Every feature starts with a spec, not code
-- **MUST**: Specs follow `/spec-kitty.specify` format
-- **MUST**: Changes reference: feature ID (Bxx/Fxx), spec document, related tasks
-- **MUST**: No feature merges without spec + plan + tasks
+- **MUST**: New features and modules start with a spec in `documents/02-roadmap/modules/`
+- **MUST**: Quick items (≤4 hours) use the Q-item format
+- **MUST**: Bug fixes include a regression test
+- **MUST**: No feature merges without tests
 
-### 1.3 Quality Without Expertise
+### 1.3 Quality Through Governance
 
-- **MUST**: AI agents (GitHub Copilot, ChatGPT, Spec Kitty) can build safely under governance rules
-- **MUST**: Constitutional violations fail CI, not merge review
-- **MUST**: Quality is structurally enforced, not dependent on individual skill
+- **MUST**: AI agents build under rules defined in `.github/instructions/`
+- **MUST**: Quality is structurally enforced via conventions, not individual skill
 
 ---
 
-## Section 2: Backend Standards (B01-B29)
+## Section 2: Backend Standards
 
 ### 2.1 Testing Requirements
 
-- **MUST**: ≥90% test coverage for backend core modules (B01-B21)
-- **MUST**: ≥85% test coverage for backend extension modules (B22-B29)
-- **MUST**: Zero flaky tests in CI (tests must be deterministic)
+- **MUST**: Every feature has tests (pytest)
+- **MUST**: Every bugfix includes a regression test
 - **MUST**: All API endpoints have integration tests
 
 ### 2.2 Security Baseline
 
 - **MUST**: All endpoints require authentication by default (deny-by-default)
-- **MUST**: All data access filtered by Organization/Tenant ID
+- **MUST**: All data access filtered by Organisation (org-scoped querysets)
+- **MUST**: `permission_classes` on every ViewSet
 - **MUST**: No secrets in code (use environment variables)
-- **MUST**: Dependencies scanned for vulnerabilities (Phase 16)
+- **MUST**: Safe migrations only — never drop tables
 
 ### 2.3 Code Quality
 
-- **MUST**: Type hints on all function signatures (Python)
-- **MUST**: Docstrings for all public classes and methods
+- **MUST**: Type hints on all function signatures
+- **MUST**: No `any` types
+- **MUST**: `select_related`/`prefetch_related` on all ViewSets — no N+1 queries
 - **MUST**: No circular imports
-- **MUST**: Max cyclomatic complexity < 10
 
 ---
 
-## Section 3: Frontend Standards (F01-F15)
+## Section 3: Frontend Standards
 
 ### 3.1 Component Design
 
 - **MUST**: Components must be accessible (WCAG 2.1 AA)
-- **MUST**: Components must be responsive (Mobile-first)
-- **MUST**: No hardcoded strings (use i18n keys)
-- **MUST**: Use Design System tokens for colors/spacing (no magic numbers)
+- **MUST**: Components must be responsive (mobile-first)
+- **MUST**: Use design tokens for colors/spacing — no hardcoded values
+- **MUST**: `:focus-visible` on interactive elements
+- **MUST**: Touch targets >= 44x44px
+- **MUST**: `@media (prefers-reduced-motion: reduce)` on animations
 
-### 3.2 State Management
+### 3.2 State & Data
 
-- **MUST**: Server state managed by React Query
-- **MUST**: Client state minimized (Zustand/Context)
-- **MUST**: No prop drilling > 2 levels (use Composition or Context)
-
----
-
-## Section 4: Data & AI Standards (D01-D16)
-
-### 4.1 Data Governance
-
-- **MUST**: All PII data fields explicitly tagged
-- **MUST**: Data retention policies defined for all datasets
-- **MUST**: Schema changes must be backward compatible
-
-### 4.2 AI Safety
-
-- **MUST**: All AI outputs must be traceable to source/prompt
-- **MUST**: Human-in-the-loop capability for critical actions
-- **MUST**: Model versioning for reproducibility
+- **MUST**: Server state managed by `@tanstack/react-query`
+- **MUST**: TypeScript strict mode — no `any`
+- **MUST**: Interfaces for all API responses
 
 ---
 
-## Section 5: Operational Standards (O01)
+## Section 4: Operational Standards
 
-### 5.1 Observability
+### 4.1 Deployment
 
-- **MUST**: Structured logging for all errors and warnings
-- **MUST**: Health checks for all services
-- **MUST**: Zero-downtime deployment capability
+- **MUST**: Backend deploys to Railway via push to `main`
+- **MUST**: Frontend deploys to Vercel via push to `main`
+- **MUST**: Database migrations run manually after deploy
 
-### 5.2 Documentation
+### 4.2 Documentation
 
-- **MUST**: README for every module
-- **MUST**: API documentation (OpenAPI/Swagger) auto-generated
 - **MUST**: Architecture Decision Records (ADRs) for major choices
+- **MUST**: Specs for new features in `documents/02-roadmap/modules/`
+- **MUST**: Conventional commits on `main`

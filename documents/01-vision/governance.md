@@ -1,24 +1,45 @@
-# Constitutional Governance
+# Governance & Quality Enforcement
 
-The Core-App uses **Spec-Driven Development (SDD)** with **constitutional enforcement** to guarantee quality even when built by non-programmers using AI agents.
+The platform uses **Spec-Driven Development (SDD)** with the **Spec Kitty workflow** to maintain quality when building with AI agents.
 
-## The Constitutional Workflow
+## The Spec Kitty Workflow
 
-1.  **Constitution**: Defines non-negotiable quality rules (security, testing, accessibility, performance).
-2.  **Constitutional Enforcement Engine (B02)**: Validates every change against the constitution automatically.
-3.  **Spec-Driven Development**: Every feature starts with a spec, not code.
-4.  **AI Agents Build**: GitHub Copilot, ChatGPT and Spec Kitty implement under strict rules.
-5.  **Quality Gates**: Automated checks prevent merging anything that violates standards.
-6.  **Platform Gates (P01-P04)**: Periodic hardening sprints validate the entire platform.
+1.  **Spec**: Every feature starts with a specification, not code. Specs live in `documents/02-roadmap/modules/`.
+2.  **AI Agents Build**: GitHub Copilot and other AI tools implement under governance rules defined in `.github/instructions/`.
+3.  **Quality Checks**: Tests required for every feature (pytest) and bugfix (regression test).
+4.  **Code Review**: Agent or human reviews against conventions before merge.
+5.  **Verify**: `pytest` (backend), `npx tsc --noEmit` + `npx vite build` (frontend).
 
-## Why This Matters for Non-Programmers
+## Governance Rules (Enforced via Instructions)
 
-**Without constitutional governance:** AI agents can produce working but insecure, untestable or unmaintainable code.
+The `.github/instructions/` files define non-negotiable rules:
 
-**With constitutional governance:**
-*   AI agents cannot bypass security rules (enforced in CI).
-*   Test coverage requirements prevent untested code from merging.
-*   Accessibility and performance standards are validated automatically.
-*   Platform gates catch architectural drift before it becomes technical debt.
+*   **Security**: Org-scoped querysets, `permission_classes` on all ViewSets, no secrets in code.
+*   **Testing**: Every feature has tests, every bugfix has regression test.
+*   **Types**: No `any` in TypeScript, type hints in Python.
+*   **Performance**: `select_related`/`prefetch_related` on all ViewSets — no N+1.
+*   **Accessibility**: WCAG 2.1 AA, `:focus-visible`, touch targets >= 44x44px.
+*   **CSS**: Design tokens only, no hardcoded values.
+*   **Migrations**: Safe migrations only — never drop tables.
 
-**Result:** Quality is structurally guaranteed, not dependent on individual expertise.
+## Why This Matters
+
+**Without governance:** AI agents can produce working but insecure, untestable or unmaintainable code.
+
+**With Spec Kitty governance:**
+*   AI agents follow documented conventions (`.instructions.md` files auto-attached by file pattern).
+*   Quality rules are enforced structurally, not by individual expertise.
+*   Every feature is traceable from spec to implementation to tests.
+
+## Roadmap Structure
+
+Specs and tasks follow a clear lifecycle in `documents/02-roadmap/modules/`:
+
+```
+backlog/ → ready/ → active/ → done/
+```
+
+Quick items (small improvements):
+```
+quick/todo/ → quick/doing/ → quick/review/ → quick/done/
+```

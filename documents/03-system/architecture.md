@@ -1,76 +1,100 @@
 # System Architecture
 
-## 1. The 5-Layer Model
+## 1. Architecture Layers
 
-The Core-App is organized into **5 major layers** spanning **72 modules** across **18 development phases**. This layered approach ensures a clean separation of concerns, where higher layers build upon the stable foundation of lower layers.
+The platform is organized into **4 layers**. Higher layers build on the stable foundation of lower layers.
 
 ### Layer 1: Backend Core (Foundation)
-**Phases 1–5** | *The Invisible Foundation*
+The non-negotiable infrastructure required by every product on this platform.
 
-This layer provides the non-negotiable infrastructure required by every SaaS application. It is "invisible" to the end-user but critical for security, scalability, and operations.
-
-*   **Phase 1: Foundation & Governance**: Project skeleton, CI/CD, Docker.
-*   **Phase 2: Identity & Multi-Tenancy**: Users, Organizations, RBAC.
-*   **Phase 3: Configuration & Audit**: Settings, Audit Logging, Transactions.
-*   **Phase 4: Interfaces & Communication**: API standards, Notifications, Tasks.
-*   **Phase 5: Operationalisation**: Observability, Deployment, Documentation.
+| App | Purpose |
+|-----|---------|
+| `accounts` | User management, authentication |
+| `organisations` | Multi-tenant root, org hierarchy |
+| `projects` | Project/team structure (nested via `parent_project`) |
+| `permissions` | RBAC, role-based access control |
+| `security_baseline` | Security settings, rate limiting |
+| `audit` | Audit logging for security events |
+| `settings` | Configuration management per org/project |
+| `api` | DRF API standards, pagination, versioning |
+| `notifications` | Notification creation and persistence |
+| `contextual_notifications` | Smart routing with user preferences |
+| `tasks` | Celery task management and scheduling |
+| `i18n_preferences` | Internationalization preferences |
+| `config` | Django settings per environment |
 
 ### Layer 2: Frontend Core (UX)
-**Phases 6–7** | *The Visible Interface*
+The React frontend consuming Layer 1 APIs. Monorepo packages for reusability.
 
-This layer provides the visual components and design system that consume Layer 1 APIs. It ensures a consistent, accessible, and brandable user experience.
-
-*   **Phase 6: Frontend Foundations**: Design System, Auth UI, Navigation.
-*   **Phase 7: Frontend Resources**: Usage meters, Alerts, Integration guides.
+| Package / Area | Purpose |
+|----------------|---------|
+| `@django-core/design-system` | Tokens, components, layouts |
+| `@django-core/auth-ui` | Login, registration, password flows |
+| `@django-core/context-switcher` | Org/project switching |
+| `@django-core/page-templates` | Standard page layouts |
+| `@django-core/theme-system` | Brand-aware theming |
+| `@django-core/api-client` | Typed API client with React Query |
 
 ### Layer 3: Extended Capabilities (Application)
-**Phases 8–12** | *The Application Features*
+Rich features beyond basic CRUD — content, media, AI, video, workflows.
 
-This layer adds the rich features expected in modern applications, moving beyond basic CRUD to complex interactions and workflows.
+| App | Purpose |
+|-----|---------|
+| `files` | File management, S3 storage (FileAsset) |
+| `medialib` | Media library with semantic metadata (MediaItem) |
+| `branding` | Brand profiles — colors, logos, kits, tokens |
+| `content_generation` | Content templates with field definitions |
+| `generative` | AI generation pipeline (OpenAI, Gemini, LangGraph) |
+| `video` | FFmpeg video processing and platform exports |
+| `workflows` | State machine workflow engine |
+| `credits` | Credits system for AI generation |
+| `transactions` | Transaction tracking |
+| `search` | Full-text search |
+| `rtc_websockets` | Real-time WebSocket updates |
+| `activity_feed` | Organisation activity feed |
+| `trash` | Soft-delete with restore |
+| `navigation` | Admin navigation configuration |
+| `web_ui` | Server-rendered admin pages |
 
-*   **Phase 8: Demo Foundation**: The "Demo Shell" proving the system works.
-*   **Phase 9: Backend Infrastructure**: Files, Real-time, Search, Caching.
-*   **Phase 10: Frontend & Visual Dev**: Design-to-code pipeline.
-*   **Phase 11: Workflows & Payments**: State machines, Payment adapters.
-*   **Phase 12: Advanced UI**: Admin panels, Reporting, Forms.
+### Layer 4: Product Layer (TeamReel)
+Domain-specific business logic for the first product.
 
-### Layer 4: Data & Intelligence (AI Platform)
-**Phases 13–15** | *The Intelligent Core*
-
-This layer transforms the application from a data-entry system into an intelligent platform capable of processing data, running AI agents, and managing models.
-
-*   **Phase 13: Data Foundations I**: Storage, ETL, Lineage.
-*   **Phase 14: Data Foundations II**: Validation, Logging, Experiments.
-*   **Phase 15: ML/AI Platform**: Feature engineering, Model registry, Agents.
-
-### Layer 5: Quality & Operations (Governance)
-**Phases 16–18** | *The Guardrails*
-
-This layer provides the automated governance, security gates, and integration frameworks that ensure the platform remains stable and secure at scale.
-
-*   **Phase 16: Platform Quality Gates**: Security audits, Governance.
-*   **Phase 17: Integration Ecosystem**: Connectors, Compliance exports.
-*   **Phase 18: Operations & Resilience**: Health validation, Resilience testing.
+| App | Purpose |
+|-----|---------|
+| `activities` | Matches, trainings, events within periods |
+| `sport_configuration` | Sport-specific rules, positions, formations |
+| Members (via `projects`) | Players, coaches, staff linked to projects |
+| Periods (via `projects`) | Seasons → competitions (nested hierarchy) |
 
 ---
 
 ## 2. Module Design Principles
 
-Each module within these layers is designed according to the **Product-Agnostic Principle**:
+1.  **Self-Contained**: Apps manage their own models and logic.
+2.  **Loosely Coupled**: Communication via defined service interfaces.
+3.  **Org-Scoped**: All querysets filtered by organisation — no data leaks.
+4.  **Extensible**: Configurable via settings without forking.
 
-1.  **Self-Contained**: Modules manage their own data models and logic.
-2.  **Loosely Coupled**: Communication between modules happens via defined public interfaces (Service Layer).
-3.  **Extensible**: Behavior can be customized via Settings (B10) or Feature Flags without forking the code.
-4.  **Replaceable**: Interfaces allow swapping implementations (e.g., changing the Email Provider or Storage Backend).
+## 3. Data Flow
 
-## 3. Data Flow Architecture
+```
+Client (React) → API (DRF ViewSet) → Serializer (validation) → Service (business logic) → Model (ORM) → Database
+                                                                  ↓
+                                                          Celery Task (async: email, video, AI)
+                                                                  ↓
+                                                          Audit Log / Notification
+```
 
-The system follows a strict unidirectional data flow:
+## 4. Infrastructure
 
-1.  **Client (Frontend/API)**: Initiates a request.
-2.  **Interface Layer (Views/Serializers)**: Validates input and permissions.
-3.  **Service Layer (Business Logic)**: Orchestrates the operation.
-4.  **Data Layer (Models/ORM)**: Persists state to the database.
-5.  **Event Layer (Signals/Bus)**: Emits side-effects (Audit Logs, Notifications) asynchronously.
+| Service | Technology | Hosting |
+|---------|-----------|---------|
+| Backend API | Django 5 + DRF | Railway |
+| Frontend | React 18 + Vite | Vercel |
+| Database | PostgreSQL | Railway |
+| Cache + Broker | Redis | Railway |
+| Workers | Celery (3 queues) | Railway |
+| Storage | S3 | AWS |
+| Scheduler | Celery Beat | Railway |
 
-See [Stack](stack.md) for the specific technologies implementing this architecture.
+See [Stack](stack.md) for the full technology stack.
