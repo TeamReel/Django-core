@@ -64,7 +64,7 @@ You are the product & domain knowledge expert for TeamReel. You know the entire 
 
 ## Documentation Map
 
-Your primary source of truth: `documents/05-demo/ai-context-index.md`
+Your primary source of truth: `docs/ai-context-index.md`
 
 Always read that file first to find the right document for any topic.
 
@@ -72,29 +72,29 @@ Always read that file first to find the right document for any topic.
 
 | Question about... | Read |
 |-------------------|------|
-| System overview, models, ViewSets | `documents/05-demo/architecture.md` |
-| Data hierarchy (org → project → period → activity) | `documents/05-demo/features/project-hierarchy.md` |
-| Permissions, roles, access control | `documents/05-demo/features/rbac-permissions.md` |
-| UX flows, navigation, app shell | `documents/05-demo/frontend-design/ux-flows.md` |
-| Branding, club identity, tokens | `documents/05-demo/features/branding-tokens.md` |
-| Content templates, fields | `documents/05-demo/features/content-templates.md` |
-| AI generation pipeline | `documents/05-demo/features/generative-pipeline.md` |
-| Video processing, FFmpeg | `documents/05-demo/features/video-processing.md` |
-| Approval workflows | `documents/05-demo/features/workflow-engine.md` |
-| Credits & billing | `documents/05-demo/features/credits-transactions.md` |
-| Notifications | `documents/05-demo/features/notification-routing.md` |
-| Members & batch operations | `documents/05-demo/features/members-batch-actions.md` |
-| API endpoints & patterns | `documents/05-demo/features/api-reference.md` |
-| Celery tasks & queues | `documents/05-demo/features/celery-tasks.md` |
-| Security & permission layers | `documents/05-demo/security/permission-layers.md` |
-| All database tables | `documents/05-demo/data/tables.md` |
-| Frontend components | `documents/05-demo/frontend-design/component-library.md` |
-| CSS tokens & theming | `documents/05-demo/frontend-design/css-architecture.md` |
-| Mobile patterns | `documents/05-demo/frontend-design/mobile-patterns.md` |
-| Media system (files, assets, video) | `documents/05-demo/media/media-architecture.md` |
-| AI models & costs | `documents/05-demo/media/ai-models-pricing.md` |
-| Railway infra | `documents/05-demo/infrastructure/railway-services.md` |
-| Roadmap & modules | `documents/02-roadmap/modules/` |
+| System overview, models, ViewSets | `docs/architecture/overview.md` |
+| Data hierarchy (org → project → period → activity) | `docs/features/project-hierarchy.md` |
+| Permissions, roles, access control | `docs/features/rbac-permissions.md` |
+| UX flows, navigation, app shell | `docs/frontend/ux-flows.md` |
+| Branding, club identity, tokens | `docs/features/branding-tokens.md` |
+| Content templates, fields | `docs/features/content-templates.md` |
+| AI generation pipeline | `docs/features/generative-pipeline.md` |
+| Video processing, FFmpeg | `docs/features/video-processing.md` |
+| Approval workflows | `docs/features/workflow-engine.md` |
+| Credits & billing | `docs/features/credits-transactions.md` |
+| Notifications | `docs/features/notification-routing.md` |
+| Members & batch operations | `docs/features/members-batch-actions.md` |
+| API endpoints & patterns | `docs/features/api-reference.md` |
+| Celery tasks & queues | `docs/features/celery-tasks.md` |
+| Security & permission layers | `docs/security/permission-layers.md` |
+| All database tables | `docs/architecture/data-model.md` |
+| Frontend components | `docs/frontend/component-library.md` |
+| CSS tokens & theming | `docs/frontend/css-architecture.md` |
+| Mobile patterns | `docs/frontend/mobile-patterns.md` |
+| Media system (files, assets, video) | `docs/media/media-architecture.md` |
+| AI models & costs | `docs/media/ai-models-pricing.md` |
+| Railway infra | `docs/infrastructure/railway-services.md` |
+| Roadmap & modules | `docs/roadmap/modules/` |
 
 ## Core Domain Knowledge
 
@@ -137,7 +137,7 @@ Upload → FileAsset (S3) → MediaItem (metadata) → BrandAsset/Relation (sema
 
 ## Roadmap Structuur
 
-Alle specs en taken staan in `documents/02-roadmap/modules/`:
+Alle specs en taken staan in `docs/roadmap/modules/`:
 
 ```
 modules/

@@ -5,7 +5,7 @@ applyTo: "demo/src/**"
 # Frontend Development — TeamReel
 
 ## Domain Context
-For UX flows, component library, and design system docs → read `documents/05-demo/ai-context-index.md`
+For UX flows, component library, and design system docs → read `docs/ai-context-index.md`
 
 ## Stack
 React 18 + TypeScript 5.6 (strict) + Vite. No CSS-in-JS, no Tailwind. Pure CSS Modules + design tokens.
@@ -81,10 +81,10 @@ Stack, Row, Section, SplitView, ResponsiveGrid, Card, Badge, Avatar, DataTable, 
 Interactive cards open `BottomSheet` (mobile) / inline panels. Use `React.lazy` + `Suspense` for sheet components. Cards use `role="button"`, `tabIndex={0}`, `aria-haspopup="dialog"`.
 
 ## Documentation
-- Architecture: `documents/05-demo/architecture.md`
-- Component lib: `documents/05-demo/frontend-design/component-library.md`
-- CSS architecture: `documents/05-demo/frontend-design/css-architecture.md`
-- Code conventions: `documents/05-demo/frontend-design/code-conventions.md`
-- Mobile patterns: `documents/05-demo/frontend-design/mobile-patterns.md`
-- Theming: `documents/05-demo/frontend-design/theming.md`
-- UX flows: `documents/05-demo/frontend-design/ux-flows.md`
+- Architecture: `docs/architecture/overview.md`
+- Component lib: `docs/frontend/component-library.md`
+- CSS architecture: `docs/frontend/css-architecture.md`
+- Code conventions: `docs/frontend/code-conventions.md`
+- Mobile patterns: `docs/frontend/mobile-patterns.md`
+- Theming: `docs/frontend/theming.md`
+- UX flows: `docs/frontend/ux-flows.md`

@@ -17,7 +17,7 @@ Execute a roadmap phase from spec to production-ready code.
 ### Step 1: Read the Spec
 
 Roadmap specs live in:
-- Feature modules: `documents/02-roadmap/modules/ready/{number}-{code}-{name}/index.md` (or `active/` if already started)
+- Feature modules: `docs/roadmap/modules/ready/{number}-{code}-{name}/index.md` (or `active/` if already started)
 - Phase specs: `phases/todo/H{n}_name.md` within the module folder
 
 Each phase has two sections:
@@ -100,7 +100,7 @@ After each phase, update the spec:
 After ALL phases of a module are complete:
 ```powershell
 # Move module from active to done
-git mv documents/02-roadmap/modules/active/{folder}/ documents/02-roadmap/modules/done/
+git mv docs/roadmap/modules/active/{folder}/ docs/roadmap/modules/done/
 git commit -m "docs: move module to done"
 git push
 ```

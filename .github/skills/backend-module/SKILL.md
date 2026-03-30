@@ -9,7 +9,7 @@ metadata:
 
 # Backend Module Builder
 
-Build a complete Django app from a module spec in `documents/02-roadmap/modules/ready/` (or `backlog/` if not yet specced).
+Build a complete Django app from a module spec in `docs/roadmap/modules/ready/` (or `backlog/` if not yet specced).
 
 ## When to use
 - Building a **complete new Django app** from a B-number module spec (multiple models, API, tests, admin)
@@ -54,13 +54,13 @@ User: "build module B62"
 ### 0.1 Load the spec
 ```
 # 1. Find the module spec in ready, active, or backlog
-Find: documents/02-roadmap/modules/ready/*-B{number}-*/index.md
-  OR: documents/02-roadmap/modules/active/*-B{number}-*/index.md
-  OR: documents/02-roadmap/modules/backlog/*-B{number}-*/index.md
+Find: docs/roadmap/modules/ready/*-B{number}-*/index.md
+  OR: docs/roadmap/modules/active/*-B{number}-*/index.md
+  OR: docs/roadmap/modules/backlog/*-B{number}-*/index.md
 Read: .github/instructions/backend.instructions.md
 
 # 2. Move module folder to active/ (from ready/ or backlog/)
-git mv documents/02-roadmap/modules/ready/{folder} documents/02-roadmap/modules/active/{folder}
+git mv docs/roadmap/modules/ready/{folder} docs/roadmap/modules/active/{folder}
 ```
 
 ### 0.2 Ambiguity Scan
@@ -236,7 +236,7 @@ See [references/architecture.md](references/architecture.md#post-build-analysis-
 3. Add implementation notes (files created, test count, decisions made)
 4. Move the module folder from `active/` to `done/`:
 ```bash
-git mv documents/02-roadmap/modules/active/{folder} documents/02-roadmap/modules/done/{folder}
+git mv docs/roadmap/modules/active/{folder} docs/roadmap/modules/done/{folder}
 ```
 
 ---

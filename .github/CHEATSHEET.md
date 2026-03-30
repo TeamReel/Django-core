@@ -105,7 +105,7 @@ Refactoring ──restructure──→ Reviewer ──verify──→ Playwright
 | **component** | Nieuw component | Scaffold met alle conventies |
 | **api-review** | Endpoint auditen | Security, N+1, org-scoping, permissions |
 | **roadmap** | Roadmap fase uitvoeren | 5-stap workflow: spec → research → implement → verify → commit |
-| **domain** | Vraag over architectuur/data | Verwijst naar `documents/05-demo/` kennisbasis |
+| **domain** | Vraag over architectuur/data | Verwijst naar `docs/` kennisbasis |
 | **performance** | Optimalisatie nodig | Bundle size, queries, rendering, lazy loading |
 | **refactor** | Code herstructureren | 5 refactor types, safety protocol, anti-patterns |
 | **migration** | Schema wijziging | Veilige migratie regels, nooit DROP TABLE |
@@ -141,7 +141,7 @@ Refactoring ──restructure──→ Reviewer ──verify──→ Playwright
 ### 🏗️ Nieuwe feature bouwen
 
 ```
-1. Planner        → maakt roadmap spec in documents/02-roadmap/
+1. Planner        → maakt roadmap spec in docs/roadmap/
 2. Developer      → implementeert per fase
    ├─ frontend.instructions.md  (auto-loaded)
    ├─ css.instructions.md       (auto-loaded)
@@ -308,4 +308,4 @@ Refactoring ──restructure──→ Reviewer ──verify──→ Playwright
 7. **Touch targets ≥ 44×44px** — accessibility minimum
 8. **Conventional commits** — `type(scope): description`
 9. **Verify before commit** — `tsc --noEmit` + `vite build` moeten slagen
-10. **Spec-first voor grote changes** — roadmap in `documents/02-roadmap/` voor 5+ bestanden
+10. **Spec-first voor grote changes** — roadmap in `docs/roadmap/` voor 5+ bestanden

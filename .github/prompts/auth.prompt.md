@@ -156,4 +156,4 @@ permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 - Permission classes: `src/permissions/`
 - JWT settings: `config/settings/base.py` → `SIMPLE_JWT`
 - Frontend adapter: `demo/src/adapters/api.ts`
-- RBAC docs: `documents/05-demo/features/rbac-permissions.md`
+- RBAC docs: `docs/features/rbac-permissions.md`

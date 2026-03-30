@@ -32,7 +32,7 @@ TeamReel uses 4 Celery queues across 3 Railway workers:
 | `video_slow` | Heavy FFmpeg work | celery-worker | 1 | Transcode, compose, lineup video, asset processing |
 | `ai_generation` | Rate-limited AI calls | worker-ai | 1 | OpenAI, Gemini, LangGraph, asset generation |
 
-> **Reference**: See `documents/05-demo/features/celery-tasks.md` for the full task inventory (33 production tasks) and beat schedule.
+> **Reference**: See `docs/features/celery-tasks.md` for the full task inventory (33 production tasks) and beat schedule.
 
 ## Task Template
 

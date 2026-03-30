@@ -158,7 +158,7 @@ Write Playwright tests in `demo/tests/`, TypeScript, prefer `data-testid` or rol
 
 ## Roadmap Structuur
 
-Alle specs en taken staan in `documents/02-roadmap/modules/`:
+Alle specs en taken staan in `docs/roadmap/modules/`:
 
 ```
 modules/
@@ -197,5 +197,5 @@ After every test session, **document actionable findings** in the roadmap:
 
 To find the next Q-number:
 ```bash
-Get-ChildItem documents/02-roadmap/modules/quick/ -Filter "Q*.md" | Sort-Object Name | Select-Object -Last 1
+Get-ChildItem docs/roadmap/modules/quick/ -Filter "Q*.md" | Sort-Object Name | Select-Object -Last 1
 ```

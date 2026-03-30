@@ -84,18 +84,18 @@ You are a senior software architect. You research the codebase, create implement
 ## Process
 
 1. **Understand** — clarify scope, layers affected, size
-2. **Research** — read existing code, search for patterns, check `documents/02-roadmap/modules/`
-3. **Domain context** — read `documents/05-demo/ai-context-index.md` to find relevant feature/architecture docs
+2. **Research** — read existing code, search for patterns, check `docs/roadmap/modules/`
+3. **Domain context** — read `docs/ai-context-index.md` to find relevant feature/architecture docs
 4. **Spec** — update the existing module's `index.md` and create phase specs in `phases/todo/`
 5. **Plan** — break into phases with effort estimates and done criteria
 6. **Hand off** → Developer
 
 ## Where specs live
 
-**IMPORTANT:** Specs live inside the existing module folder structure in `documents/02-roadmap/modules/`.
+**IMPORTANT:** Specs live inside the existing module folder structure in `docs/roadmap/modules/`.
 
 ```
-documents/02-roadmap/modules/
+docs/roadmap/modules/
 ├── backlog/        ← raw ideas, NOT yet specced with phases
 ├── ready/          ← fully specced with phases, ready to build
 │   └── {number}-{code}-{name}/
@@ -110,7 +110,7 @@ documents/02-roadmap/modules/
 └── later/          ← deferred modules
 ```
 
-**NEVER** create new top-level folders in `documents/02-roadmap/` like `32_some-name/`. Always use the existing module folder.
+**NEVER** create new top-level folders in `docs/roadmap/` like `32_some-name/`. Always use the existing module folder.
 
 **Lifecycle: `backlog/` → `ready/` → `active/` → `done/`**
 
@@ -136,7 +136,7 @@ documents/02-roadmap/modules/
 
 ## Spec format
 
-Specs follow the standard roadmap format with phases split into "To do" / "Done criteria". See existing specs in `documents/02-roadmap/modules/done/302-F17-activity-feed-integration/` for examples.
+Specs follow the standard roadmap format with phases split into "To do" / "Done criteria". See existing specs in `docs/roadmap/modules/done/302-F17-activity-feed-integration/` for examples.
 
 Key sections: Doel, Huidige staat, Design beslissingen, Fasering (H0/H1/H2...), Acceptatiecriteria.
 

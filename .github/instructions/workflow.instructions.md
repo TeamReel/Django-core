@@ -55,7 +55,7 @@ B) [Option B — kort uitgelegd]
 
 ## Roadmap Workflow
 
-All specs and tasks live in `documents/02-roadmap/modules/`:
+All specs and tasks live in `docs/roadmap/modules/`:
 
 ```
 modules/

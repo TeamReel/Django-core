@@ -19,7 +19,7 @@ You execute frontend roadmap phases from specification to committed code.
 ## Workflow
 
 ### Phase 1: Read the Spec
-1. Read the roadmap spec file from `documents/02-roadmap/`
+1. Read the roadmap spec file from `docs/roadmap/`
 2. Identify all deliverables (files to create, files to modify)
 3. Understand acceptance criteria
 4. Create a todo list with all tasks
@@ -108,4 +108,4 @@ const onKeyDown = (e: React.KeyboardEvent) => {
 - Push to `main` directly (no branches/PRs in current workflow)
 
 ## Documentation Reference
-Find roadmap specs in `documents/02-roadmap/`. Each roadmap has numbered phases (H0, H1, H2...) with clear deliverables and acceptance criteria.
+Find roadmap specs in `docs/roadmap/`. Each roadmap has numbered phases (H0, H1, H2...) with clear deliverables and acceptance criteria.

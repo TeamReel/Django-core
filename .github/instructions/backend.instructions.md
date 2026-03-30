@@ -5,7 +5,7 @@ applyTo: "src/**"
 # Backend Development — TeamReel
 
 ## Domain Context
-For data model, features, and architecture docs → read `documents/05-demo/ai-context-index.md`
+For data model, features, and architecture docs → read `docs/ai-context-index.md`
 
 ## Stack
 Django 5 + Django REST Framework. PostgreSQL. Celery (Redis broker, 4 queues). S3 storage.
@@ -120,11 +120,11 @@ src/<app_name>/
 - Tests: pytest, factory_boy fixtures
 
 ## Documentation
-- Architecture: `documents/05-demo/architecture.md`
-- RBAC: `documents/05-demo/features/rbac-permissions.md`
-- Media architecture: `documents/05-demo/media/media-architecture.md`
-- Video pipeline: `documents/05-demo/features/video-processing.md`
-- Generative: `documents/05-demo/features/generative-pipeline.md`
-- Workflow engine: `documents/05-demo/features/workflow-engine.md`
-- API reference: `documents/05-demo/features/api-reference.md`
-- Celery tasks: `documents/05-demo/features/celery-tasks.md`
+- Architecture: `docs/architecture/overview.md`
+- RBAC: `docs/features/rbac-permissions.md`
+- Media architecture: `docs/media/media-architecture.md`
+- Video pipeline: `docs/features/video-processing.md`
+- Generative: `docs/features/generative-pipeline.md`
+- Workflow engine: `docs/features/workflow-engine.md`
+- API reference: `docs/features/api-reference.md`
+- Celery tasks: `docs/features/celery-tasks.md`

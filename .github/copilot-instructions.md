@@ -53,9 +53,17 @@ src/                    ← Django apps (backend)
 demo/src/               ← React app (frontend)
 tests/                  ← Backend test suite
 demo/tests/             ← Frontend E2E tests (Playwright)
-documents/              ← Specs, roadmap, architecture docs
-  02-roadmap/modules/   ← Feature specs + quick items
-  05-demo/              ← Domain documentation
+docs/                   ← All documentation
+  product/              ← Vision, business, brand
+  architecture/         ← System overview, data model, ADRs
+  features/             ← Feature documentation
+  frontend/             ← Frontend design system, UX flows
+  media/                ← Media & AI pipeline docs
+  security/             ← Permission layers, testing
+  infrastructure/       ← Railway, database, observability
+  guides/               ← Getting started, Spec Kitty, testing
+  roadmap/              ← Phases, module specs (backlog/ready/active/done/quick/later)
+  testing/              ← Manual test scripts
 .github/
   agents/               ← Agent definitions (.agent.md)
   instructions/         ← File-pattern rules (.instructions.md)
@@ -111,14 +119,14 @@ For Railway operations (logs, seeding, debugging), see the `railway-ops` skill.
 
 ## Documentation
 
-Domain docs mapped in `documents/05-demo/ai-context-index.md`. Key pointers:
-- Architecture: `documents/05-demo/architecture.md`
-- Frontend design: `documents/05-demo/frontend-design/`
-- Data tables: `documents/05-demo/data/tables.md`
-- Roadmap: `documents/02-roadmap/`
+Domain docs mapped in `docs/ai-context-index.md`. Key pointers:
+- Architecture: `docs/architecture/overview.md`
+- Frontend design: `docs/frontend/`
+- Data model: `docs/architecture/data-model.md`
+- Roadmap: `docs/roadmap/`
 
 ## Sources of Truth
 
 1. **Codebase** — the implementation
-2. `documents/` — specs, roadmap, architecture
+2. `docs/` — specs, roadmap, architecture
 3. **Railway** — production data state

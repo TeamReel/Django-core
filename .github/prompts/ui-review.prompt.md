@@ -22,7 +22,7 @@ This prompt triggers the UI review workflow.
 4. Use the skill's output format (summary table + issues table + passing items)
 
 ## Reference Documents
-- Component library: `documents/05-demo/frontend-design/component-library.md`
-- CSS architecture: `documents/05-demo/frontend-design/css-architecture.md`
-- Theming: `documents/05-demo/frontend-design/theming.md`
-- Mobile patterns: `documents/05-demo/frontend-design/mobile-patterns.md`
+- Component library: `docs/frontend/component-library.md`
+- CSS architecture: `docs/frontend/css-architecture.md`
+- Theming: `docs/frontend/theming.md`
+- Mobile patterns: `docs/frontend/mobile-patterns.md`

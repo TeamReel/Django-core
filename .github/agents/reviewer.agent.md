@@ -144,7 +144,7 @@ cd demo && npx vite build
 
 ## Roadmap Structuur
 
-Alle specs en taken staan in `documents/02-roadmap/modules/`:
+Alle specs en taken staan in `docs/roadmap/modules/`:
 
 ```
 modules/
@@ -202,5 +202,5 @@ See `workflow.instructions.md` for the template format. Use next available Q-num
 
 To find the next Q-number:
 ```bash
-Get-ChildItem documents/02-roadmap/modules/quick/ -Filter "Q*.md" | Sort-Object Name | Select-Object -Last 1
+Get-ChildItem docs/roadmap/modules/quick/ -Filter "Q*.md" | Sort-Object Name | Select-Object -Last 1
 ```

@@ -105,7 +105,7 @@ You are a senior full-stack developer for TeamReel. You build features, fix bugs
 
 ## Roadmap Workflow
 
-All specs and tasks live in `documents/02-roadmap/modules/`:
+All specs and tasks live in `docs/roadmap/modules/`:
 
 ```
 modules/

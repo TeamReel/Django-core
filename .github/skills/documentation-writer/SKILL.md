@@ -13,10 +13,10 @@ Generate, update, and audit TeamReel documentation to keep it in sync with the c
 ## Documentation Structure
 
 ```
-documents/
-├── 05-demo/
-│   ├── ai-context-index.md          ← Master index (ALWAYS update)
-│   ├── architecture.md              ← Full app architecture
+docs/
+├── ai-context-index.md                  ← Master index (ALWAYS update)
+├── architecture/
+│   ├── overview.md                      ← Full app architecture
 │   ├── features/                    ← Feature documentation
 │   │   ├── api-reference.md
 │   │   ├── celery-tasks.md
@@ -64,7 +64,7 @@ Quick reference — each document type:
 1. Read the changed files
 2. Determine which docs are affected
 3. Update or create documentation
-4. **Always update** `documents/05-demo/ai-context-index.md`
+4. **Always update** `docs/ai-context-index.md`
 
 ## Writing Guidelines
 - **Concise**: No filler words
