@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 title: Image Validation Module
-lane: planned
+lane: "doing"
 dependencies: []
 requirement_refs:
 - FR-001
@@ -9,7 +9,11 @@ requirement_refs:
 planning_base_branch: main
 merge_target_branch: main
 branch_strategy: Create worktree from main, merge back to main when complete
+base_branch: main
+base_commit: ef9e25050d8fe3427d37a430f2fb8ebbe841c153
+created_at: '2026-03-31T14:22:25.408848+00:00'
 subtasks: [T001, T002, T003, T004, T005, T006, T007, T008]
+shell_pid: "61292"
 history:
 - date: '2026-03-31T14:10:25Z'
   event: created
