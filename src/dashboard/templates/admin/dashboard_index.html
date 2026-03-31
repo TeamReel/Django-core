@@ -57,8 +57,16 @@
         font-size: 12px; font-weight: 600;
         background: #28a745; color: #fff;
     }
+    .badge-info {
+        display: inline-block; padding: 2px 8px; border-radius: 4px;
+        font-size: 12px; font-weight: 600;
+        background: #17a2b8; color: #fff;
+    }
     .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
     .stat-row .stat-card { flex: 1; min-width: 120px; }
+    .trend-up { color: #28a745; font-weight: 600; }
+    .trend-down { color: #dc3545; font-weight: 600; }
+    .trend-flat { color: #6c757d; }
 </style>
 
 {# ── Platform Overview ── #}
@@ -209,6 +217,86 @@
             </table>
         </div>
     </div>
+</div>
+{% endif %}
+
+{# ── Credits ── #}
+{% if credits_stats %}
+<div class="dashboard-section">
+    <h2>Credits</h2>
+    <div class="stat-row">
+        <div class="stat-card">
+            <div class="stat-value">{{ credits_stats.total_credits_allocated }}</div>
+            <div class="stat-label">Total Allocated</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ credits_stats.credits_this_month }}</div>
+            <div class="stat-label">This Month</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ credits_stats.credits_last_month }}</div>
+            <div class="stat-label">Last Month</div>
+        </div>
+    </div>
+    {% if credits_stats.top_orgs %}
+    <table class="dashboard-table">
+        <thead><tr><th>Top Organisations</th><th class="num">Balance</th></tr></thead>
+        <tbody>
+        {% for org in credits_stats.top_orgs %}
+        <tr><td>{{ org.name }}</td><td class="num">{{ org.balance }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+{% endif %}
+
+{# ── Growth (Week-over-Week) ── #}
+{% if growth_stats.weeks %}
+<div class="dashboard-section">
+    <h2>Growth — Last 4 Weeks</h2>
+    <table class="dashboard-table">
+        <thead>
+            <tr>
+                <th>Week</th>
+                <th class="num">Orgs</th>
+                <th class="num">Members</th>
+                <th class="num">Content</th>
+                <th class="num">AI Requests</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in growth_stats.weeks %}
+        <tr>
+            <td>{{ row.start_date }}</td>
+            <td class="num">
+                {{ row.organisations }}
+                {% if row.delta_organisations > 0 %}<span class="trend-up"> ↑{{ row.delta_organisations }}</span>
+                {% elif row.delta_organisations < 0 %}<span class="trend-down"> ↓{{ row.delta_organisations }}</span>
+                {% else %}<span class="trend-flat"> —</span>{% endif %}
+            </td>
+            <td class="num">
+                {{ row.members }}
+                {% if row.delta_members > 0 %}<span class="trend-up"> ↑{{ row.delta_members }}</span>
+                {% elif row.delta_members < 0 %}<span class="trend-down"> ↓{{ row.delta_members }}</span>
+                {% else %}<span class="trend-flat"> —</span>{% endif %}
+            </td>
+            <td class="num">
+                {{ row.content_items }}
+                {% if row.delta_content_items > 0 %}<span class="trend-up"> ↑{{ row.delta_content_items }}</span>
+                {% elif row.delta_content_items < 0 %}<span class="trend-down"> ↓{{ row.delta_content_items }}</span>
+                {% else %}<span class="trend-flat"> —</span>{% endif %}
+            </td>
+            <td class="num">
+                {{ row.generation_requests }}
+                {% if row.delta_generation_requests > 0 %}<span class="trend-up"> ↑{{ row.delta_generation_requests }}</span>
+                {% elif row.delta_generation_requests < 0 %}<span class="trend-down"> ↓{{ row.delta_generation_requests }}</span>
+                {% else %}<span class="trend-flat"> —</span>{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endif %}
 

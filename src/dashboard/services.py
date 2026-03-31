@@ -10,7 +10,8 @@ from datetime import timedelta
 from typing import TypedDict
 
 from django.core.cache import cache
-from django.db.models import Avg, Count, F
+from django.db.models import Avg, Count, F, Sum
+from django.db.models.functions import TruncWeek
 from django.utils import timezone
 
 
@@ -54,10 +55,42 @@ class VideoStats(TypedDict):
     stale_jobs_count: int
 
 
+class CreditsStats(TypedDict):
+    """Credits usage statistics."""
+
+    total_credits_allocated: int
+    top_orgs: list[dict[str, int | str]]
+    credits_this_month: int
+    credits_last_month: int
+
+
+class WeekRow(TypedDict):
+    """Single row of weekly growth data."""
+
+    week: str
+    start_date: str
+    organisations: int
+    members: int
+    content_items: int
+    generation_requests: int
+    delta_organisations: int
+    delta_members: int
+    delta_content_items: int
+    delta_generation_requests: int
+
+
+class GrowthStats(TypedDict):
+    """Week-over-week growth statistics."""
+
+    weeks: list[WeekRow]
+
+
 PLATFORM_STATS_CACHE_KEY = "dashboard:platform_stats"
 AI_STATS_CACHE_KEY = "dashboard:ai_stats"
 CONTENT_STATS_CACHE_KEY = "dashboard:content_stats"
 VIDEO_STATS_CACHE_KEY = "dashboard:video_stats"
+CREDITS_STATS_CACHE_KEY = "dashboard:credits_stats"
+GROWTH_STATS_CACHE_KEY = "dashboard:growth_stats"
 CACHE_TTL = 300  # 5 minutes
 
 
@@ -290,3 +323,171 @@ class DashboardStatsService:
     @staticmethod
     def invalidate_video_stats() -> None:
         cache.delete(VIDEO_STATS_CACHE_KEY)
+
+    # ── Credits stats ───────────────────────────────────────────────
+
+    @staticmethod
+    def get_credits_stats(*, use_cache: bool = True) -> CreditsStats:
+        """Return credits usage statistics."""
+        if use_cache:
+            cached = cache.get(CREDITS_STATS_CACHE_KEY)
+            if cached is not None:
+                return cached
+
+        stats = DashboardStatsService._compute_credits_stats()
+        cache.set(CREDITS_STATS_CACHE_KEY, stats, CACHE_TTL)
+        return stats
+
+    @staticmethod
+    def _compute_credits_stats() -> CreditsStats:
+        from credits.models import CreditsBalance
+
+        # Total credits allocated across all orgs
+        total = CreditsBalance.objects.aggregate(
+            total=Sum("current_balance")
+        )["total"] or 0
+
+        # Top 5 orgs by balance
+        top_qs = (
+            CreditsBalance.objects.select_related("organisation")
+            .order_by("-current_balance")[:5]
+        )
+        top_orgs = [
+            {"name": cb.organisation.name, "balance": cb.current_balance}
+            for cb in top_qs
+        ]
+
+        # Credits created this month vs last month (based on CreditsBalance.created_at)
+        now = timezone.now()
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        if month_start.month == 1:
+            prev_month_start = month_start.replace(year=month_start.year - 1, month=12)
+        else:
+            prev_month_start = month_start.replace(month=month_start.month - 1)
+
+        credits_this_month = CreditsBalance.objects.filter(
+            created_at__gte=month_start
+        ).aggregate(total=Sum("current_balance"))["total"] or 0
+
+        credits_last_month = CreditsBalance.objects.filter(
+            created_at__gte=prev_month_start,
+            created_at__lt=month_start,
+        ).aggregate(total=Sum("current_balance"))["total"] or 0
+
+        return CreditsStats(
+            total_credits_allocated=total,
+            top_orgs=top_orgs,
+            credits_this_month=credits_this_month,
+            credits_last_month=credits_last_month,
+        )
+
+    @staticmethod
+    def invalidate_credits_stats() -> None:
+        cache.delete(CREDITS_STATS_CACHE_KEY)
+
+    # ── Growth stats ────────────────────────────────────────────────
+
+    @staticmethod
+    def get_growth_stats(*, use_cache: bool = True) -> GrowthStats:
+        """Return week-over-week growth statistics (last 4 weeks)."""
+        if use_cache:
+            cached = cache.get(GROWTH_STATS_CACHE_KEY)
+            if cached is not None:
+                return cached
+
+        stats = DashboardStatsService._compute_growth_stats()
+        cache.set(GROWTH_STATS_CACHE_KEY, stats, CACHE_TTL)
+        return stats
+
+    @staticmethod
+    def _compute_growth_stats() -> GrowthStats:
+        from organisations.models import Membership, Organisation
+        from src.content_generation.models import ContentItem
+        from src.generative.models import GenerationRequest
+
+        now = timezone.now()
+        # Go back 5 weeks to get 4 weeks + deltas
+        five_weeks_ago = now - timedelta(weeks=5)
+
+        def _weekly_counts(qs, date_field: str) -> dict[str, int]:
+            """Return {iso_week_start_str: count} for last 5 weeks."""
+            rows = (
+                qs.filter(**{f"{date_field}__gte": five_weeks_ago})
+                .annotate(week=TruncWeek(date_field))
+                .values("week")
+                .annotate(count=Count("id"))
+                .order_by("week")
+            )
+            return {
+                row["week"].strftime("%Y-%m-%d"): row["count"]
+                for row in rows
+            }
+
+        org_weeks = _weekly_counts(
+            Organisation.objects.filter(is_active=True), "created_at"
+        )
+        member_weeks = _weekly_counts(
+            Membership.objects.filter(is_active=True), "joined_at"
+        )
+        content_weeks = _weekly_counts(
+            ContentItem.objects.filter(deleted_at__isnull=True), "created_at"
+        )
+        gen_weeks = _weekly_counts(
+            GenerationRequest.objects.all(), "created_at"
+        )
+
+        # Build sorted list of all week keys (last 5 weeks)
+        all_keys = sorted(
+            set(org_weeks) | set(member_weeks) | set(content_weeks) | set(gen_weeks)
+        )
+
+        # Build rows with deltas (skip first week, it's only for delta calc)
+        rows: list[WeekRow] = []
+        for i, key in enumerate(all_keys):
+            orgs = org_weeks.get(key, 0)
+            members = member_weeks.get(key, 0)
+            content = content_weeks.get(key, 0)
+            gen_req = gen_weeks.get(key, 0)
+
+            if i == 0:
+                prev_orgs = prev_members = prev_content = prev_gen = 0
+            else:
+                prev_key = all_keys[i - 1]
+                prev_orgs = org_weeks.get(prev_key, 0)
+                prev_members = member_weeks.get(prev_key, 0)
+                prev_content = content_weeks.get(prev_key, 0)
+                prev_gen = gen_weeks.get(prev_key, 0)
+
+            rows.append(WeekRow(
+                week=key,
+                start_date=key,
+                organisations=orgs,
+                members=members,
+                content_items=content,
+                generation_requests=gen_req,
+                delta_organisations=orgs - prev_orgs,
+                delta_members=members - prev_members,
+                delta_content_items=content - prev_content,
+                delta_generation_requests=gen_req - prev_gen,
+            ))
+
+        # Return last 4 weeks only (drop the oldest delta-seed week)
+        return GrowthStats(weeks=rows[-4:] if len(rows) > 4 else rows)
+
+    @staticmethod
+    def invalidate_growth_stats() -> None:
+        cache.delete(GROWTH_STATS_CACHE_KEY)
+
+    # ── Invalidate all ──────────────────────────────────────────────
+
+    @staticmethod
+    def invalidate_all() -> None:
+        """Clear all dashboard caches."""
+        cache.delete_many([
+            PLATFORM_STATS_CACHE_KEY,
+            AI_STATS_CACHE_KEY,
+            CONTENT_STATS_CACHE_KEY,
+            VIDEO_STATS_CACHE_KEY,
+            CREDITS_STATS_CACHE_KEY,
+            GROWTH_STATS_CACHE_KEY,
+        ])
