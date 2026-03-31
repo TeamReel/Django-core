@@ -1,16 +1,16 @@
 {
-  "event_count": 18,
+  "event_count": 20,
   "feature_slug": "003-structured-output-validation",
-  "last_event_id": "01KN285JCSK3BX1PXR9NYS8DSE",
-  "materialized_at": "2026-03-31T15:28:35.225344+00:00",
+  "last_event_id": "01KN28AXXARW5EQYBDJWXCVFXY",
+  "materialized_at": "2026-03-31T15:31:30.858221+00:00",
   "summary": {
-    "approved": 3,
+    "approved": 4,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
     "for_review": 0,
-    "in_progress": 1,
+    "in_progress": 0,
     "planned": 0
   },
   "work_packages": {
@@ -36,11 +36,11 @@
       "last_transition_at": "2026-03-31T15:02:01.614177+00:00"
     },
     "WP04": {
-      "actor": "Bouwer",
+      "actor": "user",
       "force_count": 2,
-      "lane": "in_progress",
-      "last_event_id": "01KN285JCSK3BX1PXR9NYS8DSE",
-      "last_transition_at": "2026-03-31T15:28:35.225344+00:00"
+      "lane": "approved",
+      "last_event_id": "01KN28AXXARW5EQYBDJWXCVFXY",
+      "last_transition_at": "2026-03-31T15:31:30.858221+00:00"
     }
   }
 }
