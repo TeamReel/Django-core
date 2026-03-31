@@ -147,19 +147,15 @@ CORS_ALLOWED_ORIGINS = env.list(
     default=[
         "http://localhost:3000",  # Local dev
         "http://localhost:5173",  # Vite dev
-        "https://django-core-app-production.up.railway.app",
+        "https://api.teamreel.app",
         "https://demo.teamreel.app",
         "https://teamreel.app",
-        # Add your deployed frontend URLs here:
-        # "https://django-core-demo.vercel.app",
-        # "https://django-core-demo.netlify.app",
     ],
 )
 # Ensure teamreel domains are always allowed for CORS
-if "https://demo.teamreel.app" not in CORS_ALLOWED_ORIGINS:
-    CORS_ALLOWED_ORIGINS.append("https://demo.teamreel.app")
-if "https://teamreel.app" not in CORS_ALLOWED_ORIGINS:
-    CORS_ALLOWED_ORIGINS.append("https://teamreel.app")
+for _origin in ["https://demo.teamreel.app", "https://api.teamreel.app", "https://teamreel.app"]:
+    if _origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(_origin)
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "x-organisation-id",
@@ -171,15 +167,10 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 CSRF_TRUSTED_ORIGINS = env.list(
     "CSRF_TRUSTED_ORIGINS",
     default=[
-        "https://*.onrender.com",
         "https://*.railway.app",
-        "https://django-core-app-production.up.railway.app",
+        "https://api.teamreel.app",
         "https://demo.teamreel.app",
         "https://teamreel.app",
-        "https://api.teamreel.app",
-        # Add your deployed frontend URLs here:
-        # "https://django-core-demo.vercel.app",
-        # "https://django-core-demo.netlify.app",
     ],
 )
 # Ensure teamreel domains are always trusted for CSRF
