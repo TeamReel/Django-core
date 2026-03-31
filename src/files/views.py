@@ -11,6 +11,8 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
+from src.media.validation import ImageValidator
+
 
 class FileViewSet(viewsets.ModelViewSet):
     """
@@ -82,6 +84,18 @@ class FileViewSet(viewsets.ModelViewSet):
 
         file_obj = serializer.validated_data["file"]
         is_public = serializer.validated_data.get("is_public", False)
+
+        # Validate images at entry point (before storage)
+        if file_obj.content_type and file_obj.content_type.startswith("image/"):
+            validation_result = ImageValidator.validate(file_obj.read())
+            file_obj.seek(0)  # Reset for subsequent reads
+
+            if not validation_result.valid:
+                logger.warning(
+                    f"Image validation failed: {validation_result.error} - "
+                    f"{validation_result.message}"
+                )
+                raise ValidationError({"detail": validation_result.message})
 
         # Get optional path prefix from query params (e.g., "kits/home" or "avatars")
         path_prefix = self.request.query_params.get("path_prefix", "").strip("/")
