@@ -244,3 +244,8 @@ The following requirements are intentionally deferred to a future iteration:
 | FR-008 | Health checks: endpoint per provider for monitoring | P2 | Nice-to-have, requires ops integration |
 
 These will be addressed in a follow-up feature when monitoring infrastructure is ready.
+
+<!-- status-model:start -->
+## Canonical Status (Generated)
+- WP01: for_review
+<!-- status-model:end -->
