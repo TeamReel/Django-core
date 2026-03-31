@@ -169,3 +169,8 @@ WP04 (Serializer Validation)  ←── independent, can run in parallel with WP
 | T014 | Tests for validate_preprocessing_config() | WP04 | P1 | Yes |
 | T015 | Implement validate_preprocessing_config() | WP04 | P1 | Yes |
 | T016 | Full regression verification | WP04 | P1 | No |
+
+<!-- status-model:start -->
+## Canonical Status (Generated)
+- WP02: for_review
+<!-- status-model:end -->

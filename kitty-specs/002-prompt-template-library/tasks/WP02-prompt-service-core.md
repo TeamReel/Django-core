@@ -1,7 +1,7 @@
 ---
 work_package_id: WP02
 title: PromptService Core + Cache Infrastructure
-lane: "doing"
+lane: "for_review"
 dependencies: []
 requirement_refs:
 - FR-001
@@ -25,8 +25,8 @@ subtasks:
 - T006
 phase: Phase 1 - Core Service
 assignee: ''
-agent: "bouwer"
-shell_pid: "89732"
+agent: bouwer
+shell_pid: '89732'
 review_status: ''
 reviewed_by: ''
 review_feedback: ''
@@ -365,3 +365,4 @@ pytest tests/generative/ -v  # All generative tests (includes WP01)
 
 - 2026-03-31T06:55:35Z – system – lane=planned – Prompt created.
 - 2026-03-31T07:08:29Z – bouwer – shell_pid=89732 – lane=doing – Assigned agent via workflow command
+- 2026-03-31T09:39:44Z – bouwer – shell_pid=89732 – lane=for_review – Ready for review: PromptService core with cached lookup (get_template/get_active_templates, TTL 300s), resolve_prompt with full PARAM_RESOLVERS migration, signal-based cache invalidation. 25 tests pass, ruff clean, manage.py check clean.
