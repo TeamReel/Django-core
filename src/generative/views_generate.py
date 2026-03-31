@@ -875,6 +875,8 @@ def list_asset_templates_view(request: Request) -> Response:  # noqa: ARG001
 
     GET /api/v1/generative/assets/templates/
     """
+    from django.db import DatabaseError
+
     from src.generative.services.prompt_service import get_active_templates
 
     try:
@@ -892,5 +894,12 @@ def list_asset_templates_view(request: Request) -> Response:  # noqa: ARG001
                 }
             )
         return Response({"templates": templates}, status=status.HTTP_200_OK)
-    except Exception:
+    except DatabaseError:
+        logger.exception("Database error loading asset templates")
+        return Response(
+            {"error": "Failed to load templates"},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+    except Exception:  # noqa: BLE001
+        logger.exception("Unexpected error loading asset templates")
         return Response({"templates": []}, status=status.HTTP_200_OK)

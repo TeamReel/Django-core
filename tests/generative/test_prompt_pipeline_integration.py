@@ -6,8 +6,10 @@ Tests verify that:
 - generate_video() resolves templates from DB (not importlib)
 - list_asset_templates_view() returns DB-backed templates
 - _template_to_legacy_dict() produces correct format for video providers
+- Q049: list_asset_templates_view() logs errors instead of silently swallowing them
 """
 
+import logging
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -295,3 +297,69 @@ class TestListAssetTemplatesView:
         assert set(tpl.keys()) == {"id", "name", "category", "description", "input_requirements", "parameters"}
         assert tpl["input_requirements"] == ["reference_photo", "logo"]
         assert isinstance(tpl["parameters"], dict)
+
+
+# ==============================================================================
+# Q049 — list_asset_templates_view error handling
+# ==============================================================================
+
+
+@pytest.mark.django_db
+class TestListAssetTemplatesViewErrorHandling:
+    """Q049: Verify that errors are logged, not silently swallowed."""
+
+    def test_database_error_returns_503_and_logs(
+        self,
+        image_template: GenerationTemplate,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        from django.test import RequestFactory
+        from rest_framework.test import force_authenticate
+
+        from src.generative.views_generate import list_asset_templates_view
+
+        factory = RequestFactory()
+        request = factory.get("/api/v1/generative/assets/templates/")
+        force_authenticate(request, user=image_template.created_by)
+
+        from django.db import DatabaseError
+
+        with (
+            patch(
+                "src.generative.services.prompt_service.get_active_templates",
+                side_effect=DatabaseError("connection refused"),
+            ),
+            caplog.at_level(logging.ERROR, logger="generative.views.asset"),
+        ):
+            response = list_asset_templates_view(request)
+
+        assert response.status_code == 503
+        assert "error" in response.data
+        assert "Database error loading asset templates" in caplog.text
+
+    def test_unexpected_error_returns_200_empty_and_logs(
+        self,
+        image_template: GenerationTemplate,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        from django.test import RequestFactory
+        from rest_framework.test import force_authenticate
+
+        from src.generative.views_generate import list_asset_templates_view
+
+        factory = RequestFactory()
+        request = factory.get("/api/v1/generative/assets/templates/")
+        force_authenticate(request, user=image_template.created_by)
+
+        with (
+            patch(
+                "src.generative.services.prompt_service.get_active_templates",
+                side_effect=RuntimeError("unexpected"),
+            ),
+            caplog.at_level(logging.ERROR, logger="generative.views.asset"),
+        ):
+            response = list_asset_templates_view(request)
+
+        assert response.status_code == 200
+        assert response.data["templates"] == []
+        assert "Unexpected error loading asset templates" in caplog.text
