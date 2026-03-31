@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 📐 READY |
+| Status | � IN UITVOERING |
 | Categorie | Backend (Internal Tooling) |
 | Impact | 🟡 important |
 | Effort | ~35 uur |
@@ -39,13 +39,13 @@ Lightweight monitoring dashboard in Django Admin waarmee de product owner in é�
 
 ## Fasering
 
-| Fase | Titel | Effort | Wat het oplevert |
-|------|-------|--------|-----------------|
-| H0 | Custom AdminSite + Platform Stats | ~3 uur | Dashboard met totalen: orgs, teams, members, periodes, activiteiten |
-| H1 | AI & Content Pipeline Stats | ~3 uur | Generation requests per status/provider, content items per status, video jobs per type/status |
-| H2 | Credits & Trends | ~2 uur | Credits verbruik per org, growth tabel (afgelopen 4 weken), management command voor cache refresh |
-| H3 | Data Explorer | ~4 uur | Per-app tabel overzicht met record counts, vulgraad badges (🟢/🟡/🔴), klikbare admin links, filter toggle |
-| H4 | Interactive React Dashboard | ~22 uur | Dedicated React pagina met Recharts, auto-refresh (30s), date range selector, drill-down, responsive |
+| Fase | Titel | Effort | Status |
+|------|-------|--------|--------|
+| H0 | Custom AdminSite + Platform Stats | ~3 uur | ✅ DONE |
+| H1 | AI & Content Pipeline Stats | ~3 uur | ✅ DONE |
+| H2 | Credits & Trends | ~2 uur | ✅ DONE |
+| H3 | Data Explorer | ~4 uur | 📋 TODO |
+| H4 | Interactive React Dashboard | ~22 uur | ✅ DONE |
 
 ## Acceptatiecriteria
 
