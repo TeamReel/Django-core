@@ -2,55 +2,211 @@
 {% load i18n %}
 
 {% block content %}
-{% if platform_stats %}
 <style>
-    #dashboard-stats-grid {
+    .dashboard-section { margin-bottom: 24px; }
+    .dashboard-section h2 {
+        margin: 0 0 16px 0; font-size: 18px;
+        color: var(--header-color, #333);
+    }
+    .dashboard-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 12px;
     }
     @media (max-width: 767px) {
-        #dashboard-stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
+        .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
     }
+    .stat-card {
+        background: var(--darkened-bg, #f8f9fa);
+        border: 1px solid var(--hairline-color, #ddd);
+        border-radius: 8px; padding: 16px; text-align: center;
+    }
+    .stat-card .stat-value {
+        font-size: 28px; font-weight: 700;
+        color: var(--link-fg, #417690);
+    }
+    .stat-card .stat-label {
+        font-size: 13px; color: var(--body-quiet-color, #666);
+        margin-top: 4px;
+    }
+    .dashboard-table {
+        width: 100%; border-collapse: collapse;
+        background: var(--darkened-bg, #f8f9fa);
+        border: 1px solid var(--hairline-color, #ddd);
+        border-radius: 8px; overflow: hidden;
+    }
+    .dashboard-table th, .dashboard-table td {
+        padding: 8px 12px; text-align: left; font-size: 13px;
+        border-bottom: 1px solid var(--hairline-color, #ddd);
+    }
+    .dashboard-table th {
+        background: var(--header-bg, #417690);
+        color: var(--header-link-color, #fff);
+        font-weight: 600;
+    }
+    .dashboard-table td { color: var(--body-fg, #333); }
+    .dashboard-table tr:last-child td { border-bottom: none; }
+    .dashboard-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .badge-warning {
+        display: inline-block; padding: 2px 8px; border-radius: 4px;
+        font-size: 12px; font-weight: 600;
+        background: #ffc107; color: #333;
+    }
+    .badge-success {
+        display: inline-block; padding: 2px 8px; border-radius: 4px;
+        font-size: 12px; font-weight: 600;
+        background: #28a745; color: #fff;
+    }
+    .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .stat-row .stat-card { flex: 1; min-width: 120px; }
 </style>
-<div id="dashboard-stats" style="margin-bottom: 24px;">
-    <h2 style="margin: 0 0 16px 0; font-size: 18px; color: var(--header-color, #333);">
-        Platform Overview
-    </h2>
-    <div id="dashboard-stats-grid">
-        <div class="stat-card" style="background: var(--darkened-bg, #f8f9fa); border: 1px solid var(--hairline-color, #ddd); border-radius: 8px; padding: 16px; text-align: center;">
-            <div style="font-size: 28px; font-weight: 700; color: var(--link-fg, #417690);">{{ platform_stats.organisations_count }}</div>
-            <div style="font-size: 13px; color: var(--body-quiet-color, #666); margin-top: 4px;">Organisations</div>
+
+{# ── Platform Overview ── #}
+{% if platform_stats %}
+<div class="dashboard-section">
+    <h2>Platform Overview</h2>
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ platform_stats.organisations_count }}</div>
+            <div class="stat-label">Organisations</div>
         </div>
-        <div class="stat-card" style="background: var(--darkened-bg, #f8f9fa); border: 1px solid var(--hairline-color, #ddd); border-radius: 8px; padding: 16px; text-align: center;">
-            <div style="font-size: 28px; font-weight: 700; color: var(--link-fg, #417690);">{{ platform_stats.projects_count }}</div>
-            <div style="font-size: 13px; color: var(--body-quiet-color, #666); margin-top: 4px;">Projects</div>
+        <div class="stat-card">
+            <div class="stat-value">{{ platform_stats.projects_count }}</div>
+            <div class="stat-label">Projects</div>
         </div>
-        <div class="stat-card" style="background: var(--darkened-bg, #f8f9fa); border: 1px solid var(--hairline-color, #ddd); border-radius: 8px; padding: 16px; text-align: center;">
-            <div style="font-size: 28px; font-weight: 700; color: var(--link-fg, #417690);">{{ platform_stats.members_count }}</div>
-            <div style="font-size: 13px; color: var(--body-quiet-color, #666); margin-top: 4px;">Members</div>
+        <div class="stat-card">
+            <div class="stat-value">{{ platform_stats.members_count }}</div>
+            <div class="stat-label">Members</div>
         </div>
-        <div class="stat-card" style="background: var(--darkened-bg, #f8f9fa); border: 1px solid var(--hairline-color, #ddd); border-radius: 8px; padding: 16px; text-align: center;">
-            <div style="font-size: 28px; font-weight: 700; color: var(--link-fg, #417690);">{{ platform_stats.users_count }}</div>
-            <div style="font-size: 13px; color: var(--body-quiet-color, #666); margin-top: 4px;">Users</div>
+        <div class="stat-card">
+            <div class="stat-value">{{ platform_stats.users_count }}</div>
+            <div class="stat-label">Users</div>
         </div>
-        <div class="stat-card" style="background: var(--darkened-bg, #f8f9fa); border: 1px solid var(--hairline-color, #ddd); border-radius: 8px; padding: 16px; text-align: center;">
-            <div style="font-size: 28px; font-weight: 700; color: var(--link-fg, #417690);">{{ platform_stats.periods_count }}</div>
-            <div style="font-size: 13px; color: var(--body-quiet-color, #666); margin-top: 4px;">Periods</div>
+        <div class="stat-card">
+            <div class="stat-value">{{ platform_stats.periods_count }}</div>
+            <div class="stat-label">Periods</div>
         </div>
-        <div class="stat-card" style="background: var(--darkened-bg, #f8f9fa); border: 1px solid var(--hairline-color, #ddd); border-radius: 8px; padding: 16px; text-align: center;">
-            <div style="font-size: 28px; font-weight: 700; color: var(--link-fg, #417690);">{{ platform_stats.activities_count }}</div>
-            <div style="font-size: 13px; color: var(--body-quiet-color, #666); margin-top: 4px;">Activities</div>
+        <div class="stat-card">
+            <div class="stat-value">{{ platform_stats.activities_count }}</div>
+            <div class="stat-label">Activities</div>
         </div>
-        <div class="stat-card" style="background: var(--darkened-bg, #f8f9fa); border: 1px solid var(--hairline-color, #ddd); border-radius: 8px; padding: 16px; text-align: center;">
-            <div style="font-size: 28px; font-weight: 700; color: var(--link-fg, #417690);">{{ platform_stats.participations_count }}</div>
-            <div style="font-size: 13px; color: var(--body-quiet-color, #666); margin-top: 4px;">Participations</div>
+        <div class="stat-card">
+            <div class="stat-value">{{ platform_stats.participations_count }}</div>
+            <div class="stat-label">Participations</div>
         </div>
-        <div class="stat-card" style="background: var(--darkened-bg, #f8f9fa); border: 1px solid var(--hairline-color, #ddd); border-radius: 8px; padding: 16px; text-align: center;">
-            <div style="font-size: 28px; font-weight: 700; color: var(--link-fg, #417690);">{{ platform_stats.file_assets_count }}</div>
-            <div style="font-size: 13px; color: var(--body-quiet-color, #666); margin-top: 4px;">File Assets</div>
+        <div class="stat-card">
+            <div class="stat-value">{{ platform_stats.file_assets_count }}</div>
+            <div class="stat-label">File Assets</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── AI Generation ── #}
+{% if ai_stats %}
+<div class="dashboard-section">
+    <h2>AI Generation</h2>
+    <div class="stat-row">
+        <div class="stat-card">
+            <div class="stat-value">{{ ai_stats.total_outputs }}</div>
+            <div class="stat-label">Total Outputs</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{% if ai_stats.avg_processing_seconds != None %}{{ ai_stats.avg_processing_seconds|floatformat:1 }}s{% else %}&mdash;{% endif %}</div>
+            <div class="stat-label">Avg Processing</div>
+        </div>
+    </div>
+    <div class="dashboard-grid">
+        <div>
+            <table class="dashboard-table">
+                <thead><tr><th>Status</th><th class="num">Count</th></tr></thead>
+                <tbody>
+                {% for status, count in ai_stats.requests_by_status.items %}
+                <tr><td>{{ status }}</td><td class="num">{{ count }}</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <table class="dashboard-table">
+                <thead><tr><th>Provider</th><th class="num">Count</th></tr></thead>
+                <tbody>
+                {% for provider, count in ai_stats.requests_by_provider.items %}
+                <tr><td>{{ provider }}</td><td class="num">{{ count }}</td></tr>
+                {% empty %}
+                <tr><td colspan="2">No requests yet</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── Content Production ── #}
+{% if content_stats %}
+<div class="dashboard-section">
+    <h2>Content Production</h2>
+    <div class="stat-row">
+        <div class="stat-card">
+            <div class="stat-value">{{ content_stats.templates_active }}</div>
+            <div class="stat-label">Active Templates</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ content_stats.templates_inactive }}</div>
+            <div class="stat-label">Inactive Templates</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">
+                {% if content_stats.approval_rate != None %}
+                    <span class="badge-success">{{ content_stats.approval_rate|floatformat:0 }}%</span>
+                {% else %}&mdash;{% endif %}
+            </div>
+            <div class="stat-label">Approval Rate</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ content_stats.pending_approvals }}</div>
+            <div class="stat-label">Pending Approvals</div>
+        </div>
+    </div>
+    <table class="dashboard-table">
+        <thead><tr><th>Status</th><th class="num">Count</th></tr></thead>
+        <tbody>
+        {% for status, count in content_stats.items_by_status.items %}
+        <tr><td>{{ status }}</td><td class="num">{{ count }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{# ── Video Processing ── #}
+{% if video_stats %}
+<div class="dashboard-section">
+    <h2>Video Processing</h2>
+    {% if video_stats.stale_jobs_count > 0 %}
+    <p><span class="badge-warning">⚠ {{ video_stats.stale_jobs_count }} stale job{{ video_stats.stale_jobs_count|pluralize }}</span> processing &gt; 30 min</p>
+    {% endif %}
+    <div class="dashboard-grid">
+        <div>
+            <table class="dashboard-table">
+                <thead><tr><th>Status</th><th class="num">Count</th></tr></thead>
+                <tbody>
+                {% for status, count in video_stats.jobs_by_status.items %}
+                <tr><td>{{ status }}</td><td class="num">{{ count }}</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <table class="dashboard-table">
+                <thead><tr><th>Job Type</th><th class="num">Count</th></tr></thead>
+                <tbody>
+                {% for jtype, count in video_stats.jobs_by_type.items %}
+                <tr><td>{{ jtype }}</td><td class="num">{{ count }}</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

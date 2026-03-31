@@ -26,7 +26,9 @@ class TeamReelAdminSite(AdminSite):
         extra_context = extra_context or {}
 
         if request.user.is_superuser:
-            stats = DashboardStatsService.get_platform_stats()
-            extra_context["platform_stats"] = stats
+            extra_context["platform_stats"] = DashboardStatsService.get_platform_stats()
+            extra_context["ai_stats"] = DashboardStatsService.get_ai_stats()
+            extra_context["content_stats"] = DashboardStatsService.get_content_stats()
+            extra_context["video_stats"] = DashboardStatsService.get_video_stats()
 
         return super().index(request, extra_context=extra_context)
