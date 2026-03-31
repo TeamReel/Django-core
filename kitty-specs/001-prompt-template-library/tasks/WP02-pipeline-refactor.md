@@ -252,6 +252,7 @@ The existing `resolve_prompt(template_id, params)` in `teamreel_prompts.py` merg
   return template.pipeline_config.get("output_type", "image")
   ```
 - Note: `output_type` is in `pipeline_config` JSONField, not a separate field
+- Note: All 10 current seed templates have no explicit `output_type` in `pipeline_config`, so the `"image"` default is correct for all of them
 
 **Call site 3: `generate_asset`** (asset_pipeline.py, lines 130–170):
 - Remove importlib block
@@ -263,7 +264,7 @@ The existing `resolve_prompt(template_id, params)` in `teamreel_prompts.py` merg
   final_prompt = resolve_prompt(db_template, params)
   ```
 - Update subsequent code to use `db_template` instead of `template` dict
-- Map `input_requirements` from `db_template.preprocessing_config.keys()`
+- Map `input_requirements` from `db_template.preprocessing_config.keys()` (covers preprocessing inputs like `club_logo`, `sponsor_logo`). Non-preprocessing inputs like `person_photo` are derived from `db_template.parameters_schema.get("required", [])` — see T009 for full variable resolution.
 
 **Call site 4: `_load_prompts_module` + `generate_video`** (asset_pipeline.py, lines 375–450):
 - Remove `_load_prompts_module()` function entirely

@@ -84,7 +84,7 @@ Migrate 10 hardcoded prompt templates from `teamreel_prompts.py` (940 lines, arc
 ### VI. Performance and Reliability
 - [x] **No N+1 Queries**: Prompt loaded in single query, cached
 - [x] **Pagination**: Existing ViewSet pagination applies
-- [x] **Explicit Caching**: Django cache framework, `prompt_template:{slug}` keys, post_save invalidation
+- [x] **Explicit Caching**: Django cache framework, `prompt_template:{org_id}:{slug}` keys, post_save invalidation
 - [x] **Structured Logging**: Existing logging infrastructure
 - [x] **Health Checks**: Existing `/api/v1/generative/health/` endpoint
 - [x] **Metrics Hooks**: N/A for this feature
@@ -166,15 +166,18 @@ src/generative/
 ├── views.py             # No changes needed (ViewSet already handles CRUD)
 ├── views_generate.py    # Replace importlib with DB lookup (line ~883)
 ├── services/
-│   └── asset_pipeline.py  # Replace 3 importlib calls (lines ~69, ~132, ~381) with DB lookup
+│   ├── asset_pipeline.py  # Replace 3 importlib calls (lines ~69, ~132, ~381) with DB lookup
+│   └── prompt_service.py  # New: get_prompt_template(), resolve_prompt(), cache invalidation
 ├── _asset_helpers.py    # Update help_text reference (line ~251)
 └── migrations/
     ├── NNNN_add_prompt_fields.py       # Schema migration: 3 new fields
     └── NNNN_seed_prompt_templates.py   # Data migration: 10 templates from archive
 
-tests/
-├── test_prompt_templates.py  # Model tests, serializer tests, cache tests
-└── test_generation_pipeline.py  # Integration: generation uses DB prompts
+tests/generative/
+├── test_wp01_schema_seed.py       # Model + migration tests (WP01, done)
+├── test_wp02_prompt_service.py    # Service + cache tests (WP04)
+├── test_wp03_api_admin.py         # API + admin tests (WP04)
+└── test_wp04_integration.py       # Integration + regression tests (WP04)
 
 archive/legacy-root-cleanup/scripts/
 └── teamreel_prompts.py  # Source for seed migration (read-only, not modified)

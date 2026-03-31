@@ -113,8 +113,6 @@ list_display includes `template_type`. list_filter includes `template_type`.
    ```
 2. Add `validate_preprocessing_config()`:
    ```python
-   VALID_PREPROCESSORS = {"remove_background", "standardize_logo", "resize", "crop_to_square"}
-
    def validate_preprocessing_config(self, value: dict) -> dict:
        """Validate preprocessing_config keys are known processor types."""
        if not isinstance(value, dict):

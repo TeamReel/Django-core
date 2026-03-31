@@ -35,8 +35,8 @@
 | parameters_schema | JSONField | Parameter definitions: `{key: {label, type, options, default}}`. Default=dict |
 | preprocessing_config | JSONField | Preprocessing pipeline per input: `{input_key: "processor_name"}`. Default=dict |
 
-#### Migration Required: Organisation FK
-The `organisation` FK is currently `NOT NULL`. To support global seed templates (`organisation=None`), the schema migration must add `null=True, blank=True` to the `organisation` field. This is **safe and additive** — existing rows keep their organisation FK unchanged.
+#### Migration: Organisation FK (Done — WP01)
+The `organisation` FK is now **nullable** (`null=True, blank=True`) — changed in migration `0009` (WP01, commit `d5b1e9550`). Global seed templates use `organisation=None`. Existing rows keep their FK unchanged.
 
 #### Constraints
 - `unique_together = [("organisation", "slug", "version")]`

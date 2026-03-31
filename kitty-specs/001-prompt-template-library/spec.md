@@ -3,7 +3,7 @@
 
 **Feature Branch**: `001-prompt-template-library`
 **Created**: 2026-03-30
-**Status**: Draft
+**Status**: In Progress
 **Module**: D13 (255-D13-prompt-template-library)
 **Input**: Migrate hardcoded Python prompt templates to database-backed storage by extending the existing GenerationTemplate model with Django Admin UI, variable substitution, and seed migration from existing teamreel_prompts.py (940 lines, 10 templates).
 
@@ -83,7 +83,7 @@ As a frontend developer, I want a read-only API for prompt templates so the AI S
 
 **Why this priority**: Frontend currently hardcodes template options — this enables dynamic rendering.
 
-**Independent Test**: `GET /api/v1/generative/prompt-templates/` returns list of active templates with their parameters JSON.
+**Independent Test**: `GET /api/v1/generative/templates/` returns list of active templates with their parameters JSON.
 
 **Acceptance Scenarios**:
 
@@ -155,7 +155,7 @@ As a frontend developer, I want a read-only API for prompt templates so the AI S
 - [x] Consistent with existing GenerationTemplateViewSet patterns
 
 ### Documentation (Principle XI)
-- [x] Feature documentation in `docs/features/`
+- [x] Feature documentation in `docs/testing/` (manual test script)
 - [x] Admin guide for editing prompts
 
 ### Delivery & Integration (Principle XIII)
