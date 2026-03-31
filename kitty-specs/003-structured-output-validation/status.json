@@ -1,15 +1,15 @@
 {
-  "event_count": 10,
+  "event_count": 12,
   "feature_slug": "003-structured-output-validation",
-  "last_event_id": "01KN25XP802F2EN9J9QSSAY9W2",
-  "materialized_at": "2026-03-31T14:49:19.872393+00:00",
+  "last_event_id": "01KN26F57Z8WGQ4310AXHBBM70",
+  "materialized_at": "2026-03-31T14:58:52.287655+00:00",
   "summary": {
     "approved": 2,
     "blocked": 0,
     "canceled": 0,
     "claimed": 0,
     "done": 0,
-    "for_review": 0,
+    "for_review": 1,
     "in_progress": 0,
     "planned": 0
   },
@@ -27,6 +27,13 @@
       "lane": "approved",
       "last_event_id": "01KN25XP802F2EN9J9QSSAY9W2",
       "last_transition_at": "2026-03-31T14:49:19.872393+00:00"
+    },
+    "WP03": {
+      "actor": "user",
+      "force_count": 1,
+      "lane": "for_review",
+      "last_event_id": "01KN26F57Z8WGQ4310AXHBBM70",
+      "last_transition_at": "2026-03-31T14:58:52.287655+00:00"
     }
   }
 }
