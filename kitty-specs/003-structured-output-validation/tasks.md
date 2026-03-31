@@ -157,11 +157,11 @@
 **Requirements**: FR-005
 
 **Subtasks**:
-- [ ] T020: Create QualityStatus enum
-- [ ] T021: Create VideoQualityResult dataclass
-- [ ] T022: Implement VideoQualityChecker.check() method
-- [ ] T023: Create tests for quality degradation scenarios
-- [ ] T024: Integrate quality checker in minimax_client.py
+- [x] T020: Create QualityStatus enum
+- [x] T021: Create VideoQualityResult dataclass
+- [x] T022: Implement VideoQualityChecker.check() method
+- [x] T023: Create tests for quality degradation scenarios
+- [x] T024: Integrate quality checker in minimax_client.py
 
 **Prompt**: [WP04-output-quality-checker.md](tasks/WP04-output-quality-checker.md)
 
