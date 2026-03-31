@@ -1,108 +1,81 @@
-# Implementation Plan: [FEATURE]
-*Path: [templates/plan-template.md](templates/plan-template.md)*
+# Implementation Plan: Prompt Template Library
 
-
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/kitty-specs/[###-feature-name]/spec.md`
-
-**Note**: This template is filled in by the `/spec-kitty.plan` command. See `src/specify_cli/missions/software-dev/command-templates/plan.md` for the execution workflow.
-
-The planner will not begin until all planning questions have been answered—capture those answers in this document before progressing to later phases.
+**Branch**: `main` | **Date**: 2026-03-31 | **Spec**: [kitty-specs/002-prompt-template-library/spec.md](../spec.md)
+**Input**: Feature specification from `kitty-specs/002-prompt-template-library/spec.md`
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Migreer alle prompt template loading van hardcoded `teamreel_prompts.py` (via importlib) naar database-backed lookups via het bestaande `GenerationTemplate` model. Bouw een `PromptService` met caching (TTL 300s) en signal-based invalidatie. Vervang alle 4 importlib call sites in `views_generate.py` en `asset_pipeline.py`. Voeg serializer validaties toe voor `parameters_schema` en `preprocessing_config`.
+
+**Uitgangspunt**: WP01 (schema+seed) is afgerond — model velden bestaan, 10 templates geseed, admin ingericht, 21 tests slagen.
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
-
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: Python 3.12 (Django 5, DRF)
+**Primary Dependencies**: Django 5, Django REST Framework, django.core.cache
+**Storage**: PostgreSQL (Railway), bestaand `GenerationTemplate` model
+**Testing**: pytest (test-first per constitution), 490+ bestaande tests
+**Target Platform**: Railway (backend), Celery workers
+**Project Type**: Web application (Django backend + React frontend)
+**Performance Goals**: Cache hit rate >90% bij herhaalde template lookups, TTL ≤300s
+**Constraints**: Zero regressies, safe migrations only, org-scoped querysets, API backward compat
+**Scale/Scope**: 10 prompt templates, 4 importlib call sites, 1 nieuwe service module
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+| Gate | Status | Evidence |
+|------|--------|----------|
+| TEST_FIRST paradigm | ✅ Pass | Tests written before service implementation in WP ordering |
+| pytest passes | ✅ Pass | 490+ tests currently pass, zero regressies vereist (NFR-003) |
+| Safe migrations only | ✅ Pass | Geen nieuwe migrations nodig — WP01 al afgerond |
+| Org-scoped querysets | ✅ Pass | Bestaand ViewSet al org-scoped via Membership filter |
+| permission_classes | ✅ Pass | Bestaand ViewSet heeft IsAuthenticated + IsOrgAdmin/IsProjectMember |
+| select_related/prefetch_related | ✅ Pass | Bestaand ViewSet al correct — `select_related("organisation", "created_by", "parent_template")` |
+| No N+1 | ✅ Pass | Template lookup is single query + cache (NFR-004) |
+| ruff clean | ✅ Pass | Feature code volgt bestaande patterns |
+
+**Post-design re-check**: Verified — geen nieuwe violations geïntroduceerd.
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```
-kitty-specs/[###-feature]/
-├── plan.md              # This file (/spec-kitty.plan command output)
-├── research.md          # Phase 0 output (/spec-kitty.plan command)
-├── data-model.md        # Phase 1 output (/spec-kitty.plan command)
-├── quickstart.md        # Phase 1 output (/spec-kitty.plan command)
-├── contracts/           # Phase 1 output (/spec-kitty.plan command)
-└── tasks.md             # Phase 2 output (/spec-kitty.tasks command - NOT created by /spec-kitty.plan)
+kitty-specs/002-prompt-template-library/
+├── spec.md              # Specification (completed)
+├── plan.md              # This file
+├── research.md          # Phase 0: research findings
+├── data-model.md        # Phase 1: entity mapping
+└── tasks/               # Phase 2: work packages (generated by /spec-kitty.tasks)
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+src/generative/
+├── models.py                          # GenerationTemplate (existing, no changes needed)
+├── serializers.py                     # Add validate_parameters_schema, validate_preprocessing_config
+├── views.py                           # GenerationTemplateViewSet (existing, minor tweaks)
+├── views_generate.py                  # Replace importlib in list_asset_templates_view (L878-895)
+├── admin.py                           # GenerationTemplateAdmin (existing, no changes needed)
+├── signals.py                         # NEW: post_save cache invalidation for GenerationTemplate
+├── apps.py                            # Update: register signals in ready()
+├── urls.py                            # No changes needed
+└── services/
+    ├── asset_pipeline.py              # Replace 3 importlib call sites with PromptService
+    └── prompt_service.py              # NEW: PromptService with cache, resolve_prompt, PARAM_RESOLVERS
 
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+tests/generative/
+├── test_wp01_schema_seed.py           # Existing (21 tests, no changes)
+├── test_prompt_service.py             # NEW: PromptService unit tests
+├── test_prompt_pipeline_integration.py # NEW: Pipeline integration tests (importlib → DB)
+└── test_prompt_serializer_validation.py # NEW: Serializer validation tests
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Extend existing `src/generative/` app. Geen nieuw Django app nodig — prompt service is onderdeel van het generative domein. `PromptService` wordt geplaatst in `src/generative/services/prompt_service.py` naast de bestaande `asset_pipeline.py`.
 
 ## Complexity Tracking
 
-*Fill ONLY if Constitution Check has violations that must be justified*
-
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+Geen constitution violations — het plan volgt alle bestaande patterns.
