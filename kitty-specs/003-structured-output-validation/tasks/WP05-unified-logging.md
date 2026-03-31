@@ -1,14 +1,18 @@
 ---
 work_package_id: WP05
 title: Unified Logging
-lane: planned
+lane: "doing"
 dependencies: [WP01, WP02, WP03, WP04]
 requirement_refs:
 - FR-006
 planning_base_branch: main
 merge_target_branch: main
 branch_strategy: Create worktree from main, merge back to main when complete
+base_branch: 003-structured-output-validation-WP04
+base_commit: 4bf43a91801565ab839d8d8eed87291a60e8382d
+created_at: '2026-03-31T15:32:30.421480+00:00'
 subtasks: [T025, T026, T027, T028, T029, T030]
+shell_pid: "101992"
 history:
 - date: '2026-03-31T14:10:25Z'
   event: created
