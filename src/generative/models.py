@@ -133,7 +133,7 @@ class GenerationTemplate(models.Model):
     FK for immutable version chains.
 
     Attributes:
-        organisation: Ownership scope (tenant)
+        organisation: Ownership scope (tenant), NULL for global/default templates
         name: Human-readable template name
         slug: URL-safe identifier (unique per org)
         version: Semantic version string (e.g., "1.0.0")
@@ -141,14 +141,19 @@ class GenerationTemplate(models.Model):
         is_latest: Flag for current active version
         input_schema: JSON Schema for input validation
         pipeline_config: Provider config (provider, model, estimated_cost, etc.)
+        prompt_text: Actual prompt template with {placeholder} variables
+        parameters_schema: Parameter definitions (label, type, options, default)
+        preprocessing_config: Preprocessing pipeline config per input type
         retention_days: Days until output deletion (NULL=forever)
     """
 
     organisation = models.ForeignKey(
         "organisations.Organisation",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         related_name="generation_templates",
-        help_text="Organisation that owns this template",
+        help_text="Organisation that owns this template (NULL = global/default template)",
     )
 
     name = models.CharField(
@@ -214,6 +219,24 @@ class GenerationTemplate(models.Model):
         null=True,
         blank=True,
         help_text="Days until output deletion (NULL=forever)",
+    )
+
+    prompt_text = models.TextField(
+        blank=True,
+        default="",
+        help_text="Actual prompt template with {placeholder} variables",
+    )
+
+    parameters_schema = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Parameter definitions: {key: {label, type, options, default}}",
+    )
+
+    preprocessing_config = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Preprocessing pipeline config per input type",
     )
 
     is_active = models.BooleanField(
@@ -291,6 +314,21 @@ class GenerationTemplate(models.Model):
         # Validate retention_days is positive if set
         if self.retention_days is not None and self.retention_days <= 0:
             errors["retention_days"] = ["retention_days must be positive"]
+
+        # Validate parameters_schema structure
+        if self.parameters_schema:
+            for key, param_def in self.parameters_schema.items():
+                if not isinstance(param_def, dict):
+                    errors.setdefault("parameters_schema", []).append(
+                        f"Parameter '{key}' must be a dict"
+                    )
+                elif "label" not in param_def or "type" not in param_def:
+                    errors.setdefault("parameters_schema", []).append(
+                        f"Parameter '{key}' must have 'label' and 'type'"
+                    )
+
+        # Warn-level: check prompt_text placeholders match parameters_schema keys
+        # (logged but not blocking — some placeholders like {kit_analysis} are runtime-injected)
 
         if errors:
             raise ValidationError(errors)

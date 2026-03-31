@@ -42,6 +42,7 @@ class GenerationTemplateAdmin(admin.ModelAdmin):
         "name",
         "slug",
         "version",
+        "template_type",
         "organisation",
         "provider_display",
         "is_latest",
@@ -52,6 +53,7 @@ class GenerationTemplateAdmin(admin.ModelAdmin):
     list_filter = [
         "is_active",
         "is_latest",
+        "template_type",
         "organisation",
         ("pipeline_config", admin.EmptyFieldListFilter),
     ]
@@ -64,7 +66,22 @@ class GenerationTemplateAdmin(admin.ModelAdmin):
         (
             "Basic Info",
             {
-                "fields": ("organisation", "name", "slug", "version", "description"),
+                "fields": (
+                    "organisation",
+                    "name",
+                    "slug",
+                    "version",
+                    "description",
+                    "template_type",
+                    "template_subtype",
+                ),
+            },
+        ),
+        (
+            "Prompt",
+            {
+                "fields": ("prompt_text", "parameters_schema", "preprocessing_config"),
+                "classes": ("wide",),
             },
         ),
         (
