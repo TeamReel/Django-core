@@ -89,11 +89,11 @@
 **Requirements**: FR-003
 
 **Subtasks**:
-- [ ] T009: Create retry_config.py module
-- [ ] T010: Define GEMINI_RETRY decorator with tenacity
-- [ ] T011: Add retry decorator to gemini_image.py API calls
-- [ ] T012: Add logging for retry attempts
-- [ ] T013: Create tests for retry behavior
+- [x] T009: Create retry_config.py module
+- [x] T010: Define GEMINI_RETRY decorator with tenacity
+- [x] T011: Add retry decorator to gemini_image.py API calls
+- [x] T012: Add logging for retry attempts
+- [x] T013: Create tests for retry behavior
 
 **Prompt**: [WP02-gemini-retry.md](tasks/WP02-gemini-retry.md)
 
