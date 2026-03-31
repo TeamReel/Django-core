@@ -1,0 +1,13 @@
+vcs:
+  type: git
+agents:
+  available:
+  - copilot
+  selection:
+    preferred_implementer: copilot
+    preferred_reviewer: copilot
+  auto_commit: true
+project:
+  uuid: aa36531b-f6d9-4864-9df7-5ebefab385c3
+  slug: django-core
+  node_id: 3d3e7a745165
