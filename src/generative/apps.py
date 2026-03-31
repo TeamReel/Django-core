@@ -11,7 +11,9 @@ class GenerativeConfig(AppConfig):
     verbose_name = "B34 Generative Pipelines"
 
     def ready(self) -> None:
-        """Initialize app: register audit types and health checks."""
+        """Initialize app: register audit types, health checks, and signals."""
+        import src.generative.signals  # noqa: F401
+
         self._register_audit_event_types()
 
     def _register_audit_event_types(self) -> None:
