@@ -1,14 +1,18 @@
 ---
 work_package_id: WP02
 title: Gemini Retry
-lane: planned
+lane: "doing"
 dependencies: []
 requirement_refs:
 - FR-003
 planning_base_branch: main
 merge_target_branch: main
 branch_strategy: Create worktree from main, merge back to main when complete
+base_branch: main
+base_commit: f366e51d20c73aaa3cadaa3a36a7d0d1f2a2d06d
+created_at: '2026-03-31T14:34:57.507427+00:00'
 subtasks: [T009, T010, T011, T012, T013]
+shell_pid: "98592"
 history:
 - date: '2026-03-31T14:10:25Z'
   event: created
