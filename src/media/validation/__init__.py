@@ -1,5 +1,6 @@
 ﻿"""Image and video validation utilities."""
 
+from .ffmpeg_errors import FFmpegError, FFmpegErrorCategory, FFmpegErrorParser
 from .image_validator import (
     ImageValidationError,
     ImageValidationResult,
@@ -13,6 +14,9 @@ from .video_validator import (
 )
 
 __all__ = [
+    "FFmpegError",
+    "FFmpegErrorCategory",
+    "FFmpegErrorParser",
     "GEMINI_RETRY",
     "ImageValidationError",
     "ImageValidationResult",
