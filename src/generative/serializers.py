@@ -133,6 +133,54 @@ class GenerationTemplateSerializer(serializers.ModelSerializer):
 
         return value
 
+    def validate_parameters_schema(self, value: dict[str, Any]) -> dict[str, Any]:
+        """Validate that parameters_schema has correct structure.
+
+        Each value must be a dict with 'label' (str) and 'type' (str).
+        Optional: 'options' (list), 'default'.
+        """
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("parameters_schema must be a dict.")
+
+        for key, param in value.items():
+            if not isinstance(param, dict):
+                raise serializers.ValidationError(
+                    f"Parameter '{key}' must be a dict, got {type(param).__name__}."
+                )
+            if "label" not in param:
+                raise serializers.ValidationError(
+                    f"Parameter '{key}' is missing required field 'label'."
+                )
+            if "type" not in param:
+                raise serializers.ValidationError(
+                    f"Parameter '{key}' is missing required field 'type'."
+                )
+            if not isinstance(param["label"], str):
+                raise serializers.ValidationError(
+                    f"Parameter '{key}': 'label' must be a string."
+                )
+            if not isinstance(param["type"], str):
+                raise serializers.ValidationError(
+                    f"Parameter '{key}': 'type' must be a string."
+                )
+        return value
+
+    def validate_preprocessing_config(self, value: dict[str, Any]) -> dict[str, Any]:
+        """Validate that preprocessing_config has correct structure.
+
+        Each value must be a string (preprocessor function name).
+        """
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("preprocessing_config must be a dict.")
+
+        for key, preprocessor in value.items():
+            if not isinstance(preprocessor, str):
+                raise serializers.ValidationError(
+                    f"Preprocessing '{key}' must be a string (function name), "
+                    f"got {type(preprocessor).__name__}."
+                )
+        return value
+
     def validate_version(self, value: str) -> str:
         """Validate semantic version format."""
         import re
