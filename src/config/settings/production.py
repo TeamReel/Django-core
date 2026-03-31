@@ -33,9 +33,10 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 # SESSION_COOKIE_SAMESITE = "None"  # Allow cross-site cookies for separated frontend/backend
 # CSRF_COOKIE_SAMESITE = "None"
-# ITP Fix: Share cookies across subdomains (api.teamreel.app & demo.teamreel.app)
-SESSION_COOKIE_DOMAIN = ".teamreel.app"
-CSRF_COOKIE_DOMAIN = ".teamreel.app"
+# Cookie domain: set to ".teamreel.app" via env var when using custom domain,
+# default None so cookies work on any domain (including *.railway.app)
+SESSION_COOKIE_DOMAIN = env("SESSION_COOKIE_DOMAIN", default=None) or None
+CSRF_COOKIE_DOMAIN = env("CSRF_COOKIE_DOMAIN", default=None) or None
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
 
