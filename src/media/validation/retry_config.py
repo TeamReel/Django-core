@@ -13,7 +13,15 @@ from tenacity import (
     wait_exponential,
 )
 
+from src.core.logging.media_logger import (
+    MediaLogEntry,
+    MediaLogger,
+    MediaOperation,
+    MediaProvider,
+)
+
 logger = logging.getLogger(__name__)
+_media_logger = MediaLogger.get(__name__)
 
 F = TypeVar("F", bound=Callable[..., Any])
 
@@ -65,6 +73,19 @@ def log_retry_attempt(retry_state: RetryCallState) -> None:
         str(exception)[:200] if exception else "",
         wait_time,
     )
+
+    # Also log via MediaLogger for structured logging
+    entry = MediaLogEntry(
+        job_id=getattr(retry_state.args[0], "job_id", "unknown") if retry_state.args else "unknown",
+        operation=MediaOperation.RETRY,
+        provider=MediaProvider.GEMINI,
+        status="retry",
+        retry_count=attempt,
+        retry_wait_ms=int(wait_time * 1000),
+        error_category=type(exception).__name__ if exception else None,
+        error_message=str(exception)[:200] if exception else None,
+    )
+    _media_logger.log(entry)
 
 
 def create_retry_decorator(

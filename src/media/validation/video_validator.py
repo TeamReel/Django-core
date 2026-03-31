@@ -14,6 +14,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Union
 
+from src.core.logging.media_logger import MediaLogger, MediaOperation, MediaProvider
+
 __all__ = [
     "QualityStatus",
     "VideoQualityResult",
@@ -21,6 +23,7 @@ __all__ = [
 ]
 
 logger = logging.getLogger(__name__)
+_media_logger = MediaLogger.get(__name__)
 
 
 class QualityStatus(str, Enum):
@@ -82,6 +85,7 @@ class VideoQualityChecker:
         video_path: Union[str, Path],
         expected_duration: float | None = None,
         duration_tolerance: float = 2.0,
+        job_id: str | None = None,
     ) -> VideoQualityResult:
         """Check video quality using ffprobe.
 
@@ -89,10 +93,34 @@ class VideoQualityChecker:
             video_path: Path to video file
             expected_duration: Expected duration in seconds (optional)
             duration_tolerance: Allowed deviation from expected duration
+            job_id: Optional job ID for logging correlation
 
         Returns:
             VideoQualityResult with status and details
         """
+        job_id = job_id or _media_logger.generate_job_id()
+
+        with _media_logger.operation(
+            job_id,
+            MediaOperation.QUALITY_CHECK,
+            MediaProvider.INTERNAL,
+        ) as log_entry:
+            result = cls._check_impl(video_path, expected_duration, duration_tolerance)
+            log_entry.resolution = result.resolution
+            log_entry.file_size_bytes = result.file_size_bytes
+            if result.status == QualityStatus.DEGRADED:
+                log_entry.status = "degraded"
+
+        return result
+
+    @classmethod
+    def _check_impl(
+        cls,
+        video_path: Union[str, Path],
+        expected_duration: float | None = None,
+        duration_tolerance: float = 2.0,
+    ) -> VideoQualityResult:
+        """Internal implementation of quality check."""
         video_path = Path(video_path)
         warnings: list[str] = []
 

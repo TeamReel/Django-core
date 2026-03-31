@@ -53,6 +53,7 @@ openai>=1.0.0
 langgraph-sdk>=0.1.0
 google-genai>=1.0.0  # Google Gemini / Imagen (asset generation)
 tenacity>=8.0.0  # Retry with exponential backoff for AI API calls
+structlog>=24.0.0  # Structured logging for media pipeline operations
 minimax-python>=0.2.0  # MiniMax / Hailuo video generation
 runwayml>=1.0.0  # Runway Gen video generation (gen4_turbo, gen4.5)
 fal-client>=0.13.0  # Pika 2.2 video generation via fal.ai

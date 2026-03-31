@@ -13,8 +13,12 @@ from typing import TYPE_CHECKING, BinaryIO, Optional, Union
 
 from PIL import Image
 
+from src.core.logging.media_logger import MediaLogger, MediaOperation, MediaProvider
+
 if TYPE_CHECKING:
     pass
+
+_logger = MediaLogger.get(__name__)
 
 
 class ImageValidationError(str, Enum):
@@ -221,6 +225,7 @@ class ImageValidator:
         max_bytes: int | None = None,
         max_width: int | None = None,
         max_height: int | None = None,
+        job_id: str | None = None,
     ) -> ImageValidationResult:
         """Run all validations in optimal order.
 
@@ -231,6 +236,7 @@ class ImageValidator:
             max_bytes: Maximum allowed size (default 20MB)
             max_width: Maximum allowed width (default 8192)
             max_height: Maximum allowed height (default 8192)
+            job_id: Optional job ID for logging correlation
 
         Returns:
             ImageValidationResult with all metadata on success
@@ -242,28 +248,39 @@ class ImageValidator:
         if max_height is None:
             max_height = cls.MAX_DIMENSION
 
-        # Size check first (cheapest)
-        size_result = cls.validate_size(file, max_bytes)
-        if not size_result.valid:
-            return size_result
+        job_id = job_id or _logger.generate_job_id()
 
-        # Format check (also gets dimensions)
-        format_result = cls.validate_format(file)
-        if not format_result.valid:
-            return format_result
+        with _logger.operation(
+            job_id,
+            MediaOperation.UPLOAD_VALIDATE,
+            MediaProvider.PIL,
+        ) as log_entry:
+            # Size check first (cheapest)
+            size_result = cls.validate_size(file, max_bytes)
+            if not size_result.valid:
+                log_entry.extra["error"] = size_result.error.value
+                return size_result
 
-        # Dimension check
-        if format_result.width > max_width or format_result.height > max_height:
-            return ImageValidationResult.failure(
-                ImageValidationError.TOO_LARGE_DIMS,
-                f"Dimensions {format_result.width}x{format_result.height} exceed "
-                f"{max_width}x{max_height} limit",
+            # Format check (also gets dimensions)
+            format_result = cls.validate_format(file)
+            if not format_result.valid:
+                log_entry.extra["error"] = format_result.error.value
+                return format_result
+
+            # Dimension check
+            if format_result.width > max_width or format_result.height > max_height:
+                log_entry.extra["error"] = ImageValidationError.TOO_LARGE_DIMS.value
+                return ImageValidationResult.failure(
+                    ImageValidationError.TOO_LARGE_DIMS,
+                    f"Dimensions {format_result.width}x{format_result.height} exceed "
+                    f"{max_width}x{max_height} limit",
+                )
+
+            # All passed - return full result
+            log_entry.file_size_bytes = size_result.file_size
+            return ImageValidationResult.success(
+                format=format_result.format,
+                width=format_result.width,
+                height=format_result.height,
+                file_size=size_result.file_size,
             )
-
-        # All passed - return full result
-        return ImageValidationResult.success(
-            format=format_result.format,
-            width=format_result.width,
-            height=format_result.height,
-            file_size=size_result.file_size,
-        )
