@@ -13,6 +13,7 @@ base_commit: 33be400cacfcf9a2a150f351785dc13fed4f54b0
 created_at: '2026-03-31T15:02:44.765839+00:00'
 subtasks: [T020, T021, T022, T023, T024]
 shell_pid: "60880"
+agent: "Bouwer"
 history:
 - date: '2026-03-31T14:10:25Z'
   event: created
@@ -562,3 +563,7 @@ spec-kitty implement WP04 --base WP01
 2. **Check ffprobe handling**: Should handle missing ffprobe gracefully
 3. **Test DEGRADED flow**: Should log warning but not fail
 4. **Verify integration**: Quality result returned to callers for tracking
+
+## Activity Log
+
+- 2026-03-31T15:02:45Z – Bouwer – shell_pid=60880 – lane=doing – Assigned agent via workflow command
