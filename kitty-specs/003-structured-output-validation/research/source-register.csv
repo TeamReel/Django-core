@@ -1,0 +1,12 @@
+source_id,type,location,description,accessed_date
+S001,codebase,src/generative/services/gemini_image.py,Gemini image service - no retry logic at service level,2026-03-31
+S002,codebase,src/generative/services/minimax_client.py,MiniMax video client - good status polling and retry,2026-03-31
+S003,codebase,src/generative/services/asset_pipeline.py,Asset pipeline - Gemini response handling,2026-03-31
+S004,codebase,src/video/services/_common.py,FFmpeg subprocess wrapper - basic stderr capture,2026-03-31
+S005,codebase,src/video/services/rvm_processor.py,RVM video matting - good cancellation support,2026-03-31
+S006,codebase,src/files/services/asset_processor.py,Asset processor with rembg - basic try/except,2026-03-31
+S007,codebase,src/generative/tasks.py,ErrorCategory enum and TRANSIENT_KEYWORDS pattern,2026-03-31
+S008,codebase,requirements/base.txt,Dependencies: tenacity Pillow structlog already present,2026-03-31
+S009,codebase,src/files/views.py,File upload endpoint - size check only via Django settings,2026-03-31
+S010,codebase,src/generative/services/runway_client.py,Runway video client - basic HTTP error handling,2026-03-31
+S011,codebase,src/generative/services/fal_client.py,Pika/fal.ai client - minimal error handling,2026-03-31

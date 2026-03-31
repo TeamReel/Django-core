@@ -2,20 +2,47 @@
 
 **Feature**: 003-structured-output-validation (Media Pipeline Hardening)  
 **Date**: 2026-03-31  
-**Phase**: Plan
+**Phase**: Research
 
 ## Overview
 
 Dit zijn **Python dataclasses en enums** — geen Django modellen. Ze leven in `src/media/validation/` en definiëren validation results, error categories, en quality check output.
 
+## Entity Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Media Validation Layer                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│   ┌─────────────────┐    ┌─────────────────┐                    │
+│   │ ImageValidator  │    │ FFmpegErrorParser│                   │
+│   │                 │    │                  │                    │
+│   │ validate()      │    │ parse()          │                    │
+│   │   ↓             │    │   ↓              │                    │
+│   │ ImageValidation │    │ FFmpegError      │                    │
+│   │ Result          │    │                  │                    │
+│   └─────────────────┘    └─────────────────┘                    │
+│                                                                  │
+│   ┌─────────────────┐    ┌─────────────────┐                    │
+│   │ VideoQuality    │    │ MediaLogger     │                    │
+│   │ Checker         │    │                 │                    │
+│   │                 │    │ log_operation() │                    │
+│   │ check()         │    │   ↓             │                    │
+│   │   ↓             │    │ MediaLogEntry   │                    │
+│   │ VideoQuality    │    │                 │                    │
+│   │ Result          │    └─────────────────┘                    │
+│   └─────────────────┘                                           │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ## Core Types
 
-### FFmpeg Error Categories
+### FFmpegErrorCategory (Enum)
 
 ```python
 # src/media/validation/ffmpeg_errors.py
-from enum import Enum
-
 class FFmpegErrorCategory(str, Enum):
     """Categorized FFmpeg error types for actionable error handling."""
     OOM = "out_of_memory"        # Memory allocation failed
@@ -26,12 +53,9 @@ class FFmpegErrorCategory(str, Enum):
     UNKNOWN = "unknown"          # Unmatched pattern
 ```
 
-### FFmpeg Error Result
+### FFmpegError (Dataclass)
 
 ```python
-# src/media/validation/ffmpeg_errors.py
-from dataclasses import dataclass
-
 @dataclass
 class FFmpegError:
     """Parsed FFmpeg error with category and message."""
@@ -59,13 +83,10 @@ class FFmpegError:
         return messages[self.category]
 ```
 
-### Image Validation Result
+### ImageValidationError (Enum)
 
 ```python
 # src/media/validation/image_validator.py
-from dataclasses import dataclass
-from enum import Enum
-
 class ImageValidationError(str, Enum):
     """Image validation error types."""
     CORRUPT = "corrupt"           # Can't be opened by PIL
@@ -73,8 +94,11 @@ class ImageValidationError(str, Enum):
     TOO_LARGE_BYTES = "too_large" # Exceeds file size limit
     TOO_LARGE_DIMS = "too_large_dims"  # Exceeds dimension limit
     ZERO_SIZE = "zero_size"       # Empty file
+```
 
+### ImageValidationResult (Dataclass)
 
+```python
 @dataclass
 class ImageValidationResult:
     """Result of image validation check."""
@@ -97,20 +121,20 @@ class ImageValidationResult:
         return cls(valid=False, error=error, message=message)
 ```
 
-### Output Quality Result
+### QualityStatus (Enum)
 
 ```python
 # src/media/validation/video_validator.py
-from dataclasses import dataclass
-from enum import Enum
-
 class QualityStatus(str, Enum):
     """Quality check result status."""
     OK = "ok"               # Meets all requirements
     DEGRADED = "degraded"   # Below expected, but usable
     FAILED = "failed"       # Unusable output
+```
 
+### VideoQualityResult (Dataclass)
 
+```python
 @dataclass
 class VideoQualityResult:
     """Result of video output quality check."""
@@ -119,13 +143,7 @@ class VideoQualityResult:
     height: int
     duration_seconds: float
     file_size_bytes: int
-    
-    # Warnings/issues
-    warnings: list[str] = None
-    
-    def __post_init__(self):
-        if self.warnings is None:
-            self.warnings = []
+    warnings: list[str] = field(default_factory=list)
     
     @property
     def resolution(self) -> str:
@@ -134,77 +152,12 @@ class VideoQualityResult:
     @property
     def is_hd(self) -> bool:
         return self.width >= 1280 or self.height >= 720
-
-
-@dataclass
-class ImageQualityResult:
-    """Result of image output quality check."""
-    status: QualityStatus
-    width: int
-    height: int
-    format: str
-    file_size_bytes: int
-    warnings: list[str] = None
-    
-    def __post_init__(self):
-        if self.warnings is None:
-            self.warnings = []
 ```
 
-### Retry Configuration
-
-```python
-# src/media/validation/retry_config.py
-from dataclasses import dataclass
-from typing import Tuple, Type
-
-@dataclass
-class RetryConfig:
-    """Configuration for tenacity retry decorator."""
-    max_attempts: int = 3
-    wait_min: float = 1.0         # Minimum wait between retries
-    wait_max: float = 8.0         # Maximum wait between retries
-    wait_multiplier: float = 2.0  # Exponential multiplier
-    total_timeout: float = 30.0   # Max total time for all retries
-    
-    # Exception types to retry on
-    retry_exceptions: Tuple[Type[Exception], ...] = (
-        ConnectionError,
-        TimeoutError,
-    )
-    
-    # Exception types to NOT retry (fail immediately)
-    no_retry_exceptions: Tuple[Type[Exception], ...] = (
-        ValueError,
-        PermissionError,
-    )
-
-
-# Pre-configured retry profiles
-GEMINI_RETRY_CONFIG = RetryConfig(
-    max_attempts=3,
-    wait_min=1.0,
-    wait_max=8.0,
-    retry_exceptions=(ConnectionError, TimeoutError, Exception),  # Includes rate limit
-)
-
-FFMPEG_RETRY_CONFIG = RetryConfig(
-    max_attempts=2,
-    wait_min=2.0,
-    wait_max=10.0,
-    retry_exceptions=(TimeoutError,),
-)
-```
-
-### Unified Log Entry
+### MediaOperation (Enum)
 
 ```python
 # src/core/logging/media_logger.py
-from dataclasses import dataclass, field
-from datetime import datetime
-from enum import Enum
-from typing import Any
-
 class MediaOperation(str, Enum):
     """Media pipeline operation types."""
     UPLOAD_VALIDATE = "upload_validate"
@@ -215,8 +168,11 @@ class MediaOperation(str, Enum):
     RVM_PROCESS = "rvm_process"
     REMBG_PROCESS = "rembg_process"
     QUALITY_CHECK = "quality_check"
+```
 
+### MediaProvider (Enum)
 
+```python
 class MediaProvider(str, Enum):
     """External service providers."""
     GEMINI = "gemini"
@@ -227,8 +183,11 @@ class MediaProvider(str, Enum):
     RVM = "rvm"
     REMBG = "rembg"
     PIL = "pil"
+```
 
+### MediaLogEntry (Dataclass)
 
+```python
 @dataclass
 class MediaLogEntry:
     """Structured log entry for media operations."""
@@ -265,8 +224,6 @@ class MediaLogEntry:
             "status": self.status,
             "timestamp": self.timestamp.isoformat(),
             "duration_ms": self.duration_ms,
-            "input_file": self.input_file,
-            "output_file": self.output_file,
             "attempt": self.attempt,
             "max_attempts": self.max_attempts,
             "error_category": self.error_category,
@@ -298,162 +255,23 @@ SUPPORTED_VIDEO_FORMATS = {"MP4", "MOV", "WEBM"}
 
 # FFmpeg error patterns
 FFMPEG_ERROR_PATTERNS = {
-    "out_of_memory": [
-        "Cannot allocate memory",
-        "Out of memory",
-        "memory allocation failed",
-    ],
-    "timeout": [
-        "timeout",
-        "killed",
-        "Killed",
-    ],
-    "codec_error": [
-        "Decoder",
-        "decoder",
-        "codec",
-        "Unsupported",
-    ],
-    "io_error": [
-        "No such file",
-        "Permission denied",
-        "Input/output error",
-    ],
-    "corrupt_input": [
-        "Invalid data",
-        "corrupt",
-        "moov atom not found",
-        "Invalid NAL",
-    ],
+    "out_of_memory": ["Cannot allocate memory", "Out of memory"],
+    "timeout": ["timeout", "killed", "Killed"],
+    "codec_error": ["Decoder", "decoder", "codec", "Unsupported"],
+    "io_error": ["No such file", "Permission denied", "Input/output error"],
+    "corrupt_input": ["Invalid data", "corrupt", "moov atom not found"],
 }
 ```
 
-## Usage Examples
+## Relationships
 
-### Image Validation
-
-```python
-from src.media.validation import ImageValidator
-
-validator = ImageValidator()
-result = validator.validate(uploaded_file.read())
-
-if not result.valid:
-    raise ValidationError(result.message)
-
-print(f"Valid {result.format} image: {result.width}x{result.height}")
-```
-
-### FFmpeg Error Parsing
-
-```python
-from src.media.validation import FFmpegErrorParser
-
-parser = FFmpegErrorParser()
-error = parser.parse(stderr_output, exit_code=1)
-
-if error.is_transient:
-    # Schedule retry
-    pass
-else:
-    # Log permanent failure
-    logger.error("FFmpeg failed", **error.to_dict())
-```
-
-### Retry Decorator
-
-```python
-from src.media.validation import gemini_retry
-
-@gemini_retry
-async def call_gemini(prompt: str) -> Response:
-    return await model.generate_content_async(prompt)
-```
-    PROCESSING = "Processing"
-    FAILED = "Failed"
-    QUEUED = "Queueing"
-
-
-@register("minimax_status")
-class MiniMaxStatusSchema(OutputSchema):
-    """Schema for MiniMax video status response."""
-    status: MiniMaxStatus
-    video_url: str | None = None
-    duration: float | None = None
-    error_message: str | None = None
-    
-    @model_validator(mode="after")
-    def validate_success_has_url(self) -> "MiniMaxStatusSchema":
-        if self.status == MiniMaxStatus.SUCCESS and not self.video_url:
-            raise ValueError("Successful video must have video_url")
-        return self
-```
-
-## Type Coercion Rules
-
-Pydantic v2 handles these automatically:
-
-| From | To | Result |
-|------|-----|--------|
-| `"123"` | `int` | `123` (WARNING) |
-| `"45.67"` | `float` | `45.67` (WARNING) |
-| `123` | `str` | `"123"` (WARNING) |
-| `True` | `int` | `1` (WARNING) |
-| `None` | `str` (required) | CRITICAL |
-| `"abc"` | `int` | CRITICAL |
-| `[1,2,3]` | `dict` | CRITICAL |
-
-## Error Category Extension
-
-```python
-# src/generative/tasks.py (modified)
-class ErrorCategory(str, Enum):
-    PROVIDER_ERROR = "provider_error"
-    RATE_LIMIT = "rate_limit"
-    CONTENT_POLICY = "content_policy"
-    VALIDATION_ERROR = "validation_error"  # NEW
-    
-    @classmethod
-    def from_exception(cls, exc: Exception) -> "ErrorCategory":
-        if isinstance(exc, ValidationError):
-            return cls.VALIDATION_ERROR
-        # ... existing logic
-```
-
-## Schema Registry
-
-```python
-# src/generative/validation/registry.py
-from typing import Type
-from pydantic import BaseModel
-
-_registry: dict[str, Type[BaseModel]] = {}
-
-def register(name: str):
-    """Decorator to register a schema by name."""
-    def decorator(cls: Type[BaseModel]) -> Type[BaseModel]:
-        _registry[name] = cls
-        return cls
-    return decorator
-
-def get_schema(name: str) -> Type[BaseModel]:
-    """Get a registered schema by name."""
-    if name not in _registry:
-        raise KeyError(f"Schema '{name}' not registered")
-    return _registry[name]
-
-def list_schemas() -> list[str]:
-    """List all registered schema names."""
-    return list(_registry.keys())
-```
-
-## Relationship to Django Models
-
-| Pydantic Schema | Validates Output From | Stored In |
-|-----------------|----------------------|-----------|
-| `LineupSchema` | Gemini lineup generation | `GenerationOutput.result_data` |
-| `GeminiResponseSchema` | Gemini API response | (intermediate, not stored) |
-| `PhotoCompositeSchema` | Gemini photo placement | `GenerationOutput.result_data` |
-| `MiniMaxStatusSchema` | MiniMax API polling | (intermediate, not stored) |
-
-**Note**: De Pydantic schemas valideren de JSON *voordat* het in `GenerationOutput.result_data` wordt opgeslagen. Ze hebben geen directe relatie met Django models — ze zijn puur voor validatie van AI output format.
+| Entity | Relationship | Entity |
+|--------|--------------|--------|
+| ImageValidator | produces | ImageValidationResult |
+| FFmpegErrorParser | produces | FFmpegError |
+| VideoQualityChecker | produces | VideoQualityResult |
+| MediaLogger | produces | MediaLogEntry |
+| FFmpegError | references | FFmpegErrorCategory |
+| ImageValidationResult | references | ImageValidationError |
+| VideoQualityResult | references | QualityStatus |
+| MediaLogEntry | references | MediaOperation, MediaProvider |

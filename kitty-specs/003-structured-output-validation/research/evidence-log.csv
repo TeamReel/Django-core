@@ -1,0 +1,11 @@
+evidence_id,source_id,finding,impact,recommendation,priority
+E001,S001,Gemini service has no retry at service level - rate limit causes immediate task failure,Batch jobs fail after ~15-20 requests when rate limited,Add tenacity retry decorator with exponential backoff,P0
+E002,S002,MiniMax has good status polling and input validation but no output quality check,Low-res video could be accepted without warning,Add resolution check after video download,P1
+E003,S004,FFmpeg subprocess captures stderr but does not parse it into actionable categories,Error messages are raw and unhelpful for debugging,Create FFmpegErrorParser with pattern matching for OOM/timeout/codec/IO,P1
+E004,S009,File uploads have DATA_UPLOAD_MAX_MEMORY_SIZE but no PIL format or dimension validation,Corrupt or oversized images crash PIL later in pipeline,Add ImageValidator with format/dimension checks before processing,P0
+E005,S006,rembg wrapper has basic try/except but no PIL pre-validation,Corrupt images cause cryptic errors,Integrate ImageValidator before rembg processing,P1
+E006,S007,ErrorCategory enum and TRANSIENT_KEYWORDS pattern works well for retry logic,Existing pattern can be extended for FFmpeg error categorization,Reuse ErrorCategory pattern for new validation,N/A
+E007,S008,tenacity Pillow structlog already in requirements,No new dependencies needed for implementation,Proceed with implementation using existing deps,N/A
+E008,S005,RVM processor has good cancellation support via threading.Event,Good existing pattern for timeout handling,No changes needed for RVM,P2
+E009,S010,Runway client has basic HTTP handling but limited timeout/quality checks,May accept degraded output or hang on slow responses,Add timeout and output quality check,P1
+E010,S011,Pika/fal.ai client has minimal error handling,Failures not categorized properly,Add structured error handling,P2

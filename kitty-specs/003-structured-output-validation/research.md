@@ -1,184 +1,148 @@
 # Research: Media Pipeline Hardening
 
-**Feature**: 003-structured-output-validation (herdefinitie: Media Pipeline Hardening)  
+**Feature**: 003-structured-output-validation (Media Pipeline Hardening)  
 **Date**: 2026-03-31  
 **Phase**: Research
 
+## Executive Summary
+
+Codebase analyse van alle media processing flows identificeert 5 kritieke gaps die preventief gehardened moeten worden. Geen nieuwe dependencies nodig — tenacity, Pillow, structlog al aanwezig.
+
+## Decisions
+
+### D1: Centrale validation module vs per-app modules
+
+**Decision**: Create `src/media/validation/` als shared module.
+
+**Rationale**:
+- Validation logic wordt gebruikt door generative, video, files apps
+- Geen tight coupling aan één app
+- Follows existing pattern: `src/core/` voor shared utilities
+
+**Evidence**: [E006] ErrorCategory pattern in tasks.py werkt goed en is reusable.
+
+### D2: Retry strategy
+
+**Decision**: Tenacity met exponential backoff (1s → 2s → 4s), max 3 attempts, cap 30s total.
+
+**Rationale**:
+- Balanceert recovery kans tegen user wait time
+- Exponential backoff voorkomt cascade failures
+- 30s cap voorkomt infinite blocking
+
+**Evidence**: [E001] Gemini rate limits veroorzaken immediate failures bij batch jobs. [E007] tenacity al in requirements.
+
+### D3: FFmpeg error categorization
+
+**Decision**: Regex pattern matching op stderr naar 5 categorieën: OOM, TIMEOUT, CODEC, IO, CORRUPT.
+
+**Rationale**:
+- Patterns zijn stabiel en well-documented
+- Simpel te maintainen vs ML classifier
+- Direct actionable (OOM → retry, CODEC → fail permanently)
+
+**Evidence**: [E003] Huidige FFmpeg errors zijn raw stderr zonder context.
+
+### D4: Image validation approach
+
+**Decision**: PIL-based validation met magic byte check, dimension limits (8192x8192), file size limits (20MB).
+
+**Rationale**:
+- PIL al in codebase, geen nieuwe dependency
+- Magic byte check robuuster dan extension check
+- 8192x8192 voorkomt memory exhaustion
+
+**Evidence**: [E004] Uploads hebben alleen Django size check, geen format validation.
+
+## Provider Inventory
+
+| Provider | Location | Current State | Gap | Priority |
+|----------|----------|---------------|-----|----------|
+| **Gemini** | S001 | No retry | Add tenacity | P0 |
+| **MiniMax** | S002 | Good retry | Add output quality | P1 |
+| **Runway** | S010 | Basic HTTP | Add timeout + quality | P1 |
+| **Pika/fal.ai** | S011 | Minimal | Add structured errors | P2 |
+| **FFmpeg** | S004 | Basic stderr | Parse to categories | P1 |
+| **RVM** | S005 | Good | No changes | P2 |
+| **rembg** | S006 | Basic | Add PIL pre-validation | P1 |
+| **PIL** | N/A | Per-call | Centralize validation | P0 |
+
 ## Codebase Analysis
 
-### Provider Inventory
+### Verified Gaps
 
-Volledige analyse van alle media processing flows:
+#### Gap 1: Gemini No Retry (P0)
+**Source**: [S001] gemini_image.py  
+**Finding**: [E001] Direct API call without retry wrapper  
+**Impact**: Batch jobs fail after ~15-20 requests when rate limited  
+**Fix**: `@retry(stop=stop_after_attempt(3), wait=wait_exponential(...))`
 
-#### 1. AI Providers
+#### Gap 2: No Upload Validation (P0)
+**Source**: [S009] files/views.py  
+**Finding**: [E004] Only DATA_UPLOAD_MAX_MEMORY_SIZE, no PIL check  
+**Impact**: Corrupt images crash PIL later in pipeline  
+**Fix**: ImageValidator before storage
 
-| Provider | Location | Retry | Validation | Gaps |
-|----------|----------|-------|------------|------|
-| **Gemini** | `gemini_image.py` | ❌ None | Partial (parts check) | No retry, no output quality |
-| **MiniMax** | `minimax_client.py` | ✅ Status polling | Good input validation | No output resolution check |
-| **Runway** | `runway_client.py` | ⚠️ Basic HTTP | Timeout handling | No quality check |
-| **Pika/fal.ai** | `fal_client.py` | ⚠️ HTTP only | Basic | Minimal error handling |
+#### Gap 3: FFmpeg Raw Stderr (P1)
+**Source**: [S004] video/services/_common.py  
+**Finding**: [E003] stderr logged as-is, not parsed  
+**Impact**: "FFmpeg failed" without actionable context  
+**Fix**: FFmpegErrorParser with pattern matching
 
-#### 2. Processing Tools
+#### Gap 4: MiniMax No Quality Check (P1)
+**Source**: [S002] minimax_client.py  
+**Finding**: [E002] Good retry but no resolution verification  
+**Impact**: Low-res video accepted without warning  
+**Fix**: Check dimensions after download, return DEGRADED status
 
-| Tool | Location | Error Handling | Gaps |
-|------|----------|----------------|------|
-| **FFmpeg** | `video/services/_common.py` | subprocess stderr | No parsing, basic logging |
-| **RVM** | `video/services/rvm_processor.py` | Good (cancellation) | No input validation |
-| **rembg** | `files/services/asset_processor.py` | try/except | No PIL pre-validation |
-| **PIL/Pillow** | Throughout | Per-call | No centralized validation |
+## Technology Stack
 
-### Current Validation Gaps (Verified)
+### Dependencies (all pre-existing)
 
-#### 1. Gemini Service (`gemini_image.py`)
+| Package | Version | Use |
+|---------|---------|-----|
+| tenacity | ≥8.0 | Retry decorators |
+| Pillow | ≥10.0 | Image validation |
+| structlog | ≥23.0 | Unified logging |
 
-```python
-# Current: No retry at service level
-response = await model.generate_content_async(contents)
-# Direct call, 429 crashes task immediately
-```
+### Patterns to Reuse
 
-**Gap**: Rate limit op Gemini = immediate task failure  
-**Impact**: Batch jobs falen na ~15-20 requests  
-**Fix**: Tenacity retry met exponential backoff
-
-#### 2. File Uploads (`files/views.py`)
-
-```python
-# Current: Size check only in settings
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
-# No format validation, no dimension check
-```
-
-**Gap**: Corrupt/oversized images kunnen door  
-**Impact**: PIL crash later in pipeline, poor UX  
-**Fix**: ImageValidator met format + dimension checks
-
-#### 3. FFmpeg Subprocess (`video/services/_common.py`)
-
-```python
-# Current: Basic error capture
-result = subprocess.run(cmd, capture_output=True)
-if result.returncode != 0:
-    logger.error(f"FFmpeg error: {result.stderr}")  # Raw stderr
-```
-
-**Gap**: Geen categorisatie van errors  
-**Impact**: "FFmpeg failed" zonder context  
-**Fix**: FFmpegErrorParser met pattern matching
-
-#### 4. MiniMax Output (`minimax_client.py`)
-
-```python
-# Current: Good status polling, no quality check
-video_bytes = await self._download_video(url)
-return video_bytes  # No resolution/duration check
-```
-
-**Gap**: Geen verificatie dat output 720p+ is  
-**Impact**: UI toont low-res video zonder warning  
-**Fix**: OutputQualityChecker na download
-
-### ErrorCategory Enum (Existing)
-
-```python
-# src/generative/tasks.py
-class ErrorCategory(str, Enum):
-    TRANSIENT = "transient"
-    PERMANENT = "permanent"
-    UNKNOWN = "unknown"
-
-TRANSIENT_KEYWORDS = ["rate limit", "timeout", "connection", "503", "429"]
-```
-
-Dit pattern werkt goed — we kunnen het hergebruiken voor FFmpeg error categorisatie.
-
-## Technology Research
-
-### Tenacity voor Retry
-
-**Al in requirements**: ✅ `tenacity>=8.0`
-
-Bewezen pattern uit andere projecten:
-
-```python
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=1, max=8),
-    retry=retry_if_exception_type((RateLimitError, ConnectionError)),
-)
-async def call_gemini(prompt: str) -> Response:
-    ...
-```
-
-### PIL Image Validation
-
-**Al in requirements**: ✅ `Pillow>=10.0`
-
-Validation approach:
-
-```python
-from PIL import Image
-
-def validate_image(file_bytes: bytes) -> tuple[bool, str | None]:
-    try:
-        img = Image.open(io.BytesIO(file_bytes))
-        img.verify()  # Check for corruption
-        
-        # Reopen for dimension check (verify() closes)
-        img = Image.open(io.BytesIO(file_bytes))
-        w, h = img.size
-        if w > 8192 or h > 8192:
-            return False, "Image too large (max 8192x8192)"
-        return True, None
-    except Exception as e:
-        return False, f"Invalid image: {e}"
-```
-
-### FFmpeg Error Patterns
-
-Uit productie logs geëxtraheerd:
-
-```
-# OOM
-"Cannot allocate memory"
-"Out of memory allocating"
-
-# Codec
-"Decoder xxx not found"
-"Unknown decoder 'xxx'"
-"Unsupported codec"
-
-# IO
-"No such file or directory"
-"Permission denied"
-"Input/output error"
-
-# Corrupt input
-"Invalid data found when processing input"
-"moov atom not found"
-"Invalid NAL unit size"
-```
+1. **ErrorCategory enum** (tasks.py) — extend for validation errors
+2. **TRANSIENT_KEYWORDS** (tasks.py) — pattern for FFmpeg error detection
+3. **structlog binding** — existing pattern in services
 
 ## Risk Assessment
 
-| Flow | Risk Level | Reason |
-|------|------------|--------|
-| Gemini calls | 🔴 High | No retry, rate limits common |
-| File uploads | 🔴 High | No validation, crashes PIL |
-| FFmpeg | 🟡 Medium | Works but poor diagnostics |
-| MiniMax | 🟢 Low | Good retry, missing quality only |
-| Runway | 🟡 Medium | Basic handling, needs timeout |
-| RVM | 🟢 Low | Good cancellation support |
+| Risk | Probability | Impact | Mitigation |
+|------|-------------|--------|------------|
+| PIL validation too slow | Low | Medium | Profile p95, lazy validation |
+| Retry causes cascades | Medium | High | Add jitter, cap total time |
+| FFmpeg patterns incomplete | Medium | Low | Log unmatched, iterate |
+| Breaking uploads | Low | High | Feature flag for rollout |
 
-## Decisions Log
+---
 
-| Decision | Rationale | Alternatives |
-|----------|-----------|--------------|
-| Centrale `src/media/validation/` | Shared across apps | Per-app modules (duplication) |
-| Tenacity voor retry | Already in deps, proven | Custom retry (reinvent wheel) |
-| PIL for validation | Already in deps | ImageMagick (external dep) |
-| Regex patterns for FFmpeg | Simple, maintainable | ML classifier (overkill) |
-| Unified logging format | Observability | Per-service formats (inconsistent) |
+## Open Questions
+
+### Q1: Feature flag scope
+Should the feature flag cover all validation or per-component?  
+**Recommendation**: Per-component flags for granular rollout.
+
+### Q2: Unified logging format
+What fields should be mandatory in MediaLogEntry?  
+**Recommendation**: job_id, provider, operation, status, duration_ms, error_category.
+
+### Q3: Circuit breaker threshold
+How many consecutive failures before disabling a provider?  
+**Recommendation**: 5 failures in 5 minutes. P2 priority, can defer.
+
+### Q4: Quality degradation policy
+Should DEGRADED outputs be auto-retried or accepted with warning?  
+**Recommendation**: Accept with warning + log. User can manually retry.
+
+---
+
+## References
+
+See `research/source-register.csv` for full source list.  
+See `research/evidence-log.csv` for detailed findings.
