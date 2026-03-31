@@ -1,40 +1,36 @@
-# Implementation Plan: Structured Output Validation
+# Implementation Plan: Media Pipeline Hardening
 
 **Branch**: `main` | **Date**: 2026-03-31 | **Spec**: [spec.md](spec.md)
 
 ## Summary
 
-Runtime validation layer voor AI-gegenereerde JSON outputs in de generative pipeline. Implementeert Pydantic v2 schemas als submodule van `src/generative/validation/`, met severity-based error handling, type coercion, en `@validate_output` decorator voor Celery tasks.
+Preventieve hardening van de complete media processing pipeline. Voegt input validatie, retry logic, error parsing, output quality checks, en unified logging toe aan alle AI providers (Gemini, MiniMax, Runway, Pika) en processing tools (FFmpeg, RVM, rembg, PIL).
 
 **Primaire integratiepunten**:
-- `asset_pipeline.py` — Gemini image response validatie
-- `gemini_image.py` — Photo composite output parsing
-- `minimax_client.py` — Video status enum validatie
-- `tasks.py` — ErrorCategory uitbreiding voor VALIDATION_ERROR
+- `src/generative/services/gemini_image.py` — Gemini retry toevoegen
+- `src/generative/services/minimax_client.py` — Output quality check
+- `src/video/services/_common.py` — FFmpeg error parsing
+- `src/files/services/` — Upload validation
+- Nieuw: `src/media/validation/` — Centrale validation utilities
 
 ## Technical Context
 
 **Language/Version**: Python 3.11  
-**Primary Dependencies**: pydantic v2 (al in requirements), Django 5, DRF  
-**Storage**: N/A (code-defined schemas, geen database)  
-**Testing**: pytest met factory_boy, parametrize voor edge cases  
+**Primary Dependencies**: tenacity, Pillow, structlog (alle al in requirements)  
+**Testing**: pytest met parametrize voor edge cases  
 **Target Platform**: Linux server (Railway)  
-**Project Type**: Django backend submodule  
-**Performance Goals**: <50ms p95 validatie overhead per AI response  
-**Constraints**: Backwards compatible met bestaande GenerationRequest/GenerationOutput  
-**Scale/Scope**: ~5 integratiepunten in generative pipeline
+**Performance Goals**: <100ms p95 validation overhead per upload  
+**Scale/Scope**: ~8 integratiepunten across generative, video, files apps
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
-
 | Rule | Status | Notes |
 |------|--------|-------|
-| TEST_FIRST | ✅ Pass | Tests first per schema/validator |
-| No `any` types | ✅ Pass | Pydantic enforces strict typing |
+| TEST_FIRST | ✅ Pass | Tests first per validator/retry pattern |
+| No `any` types | ✅ Pass | All functions typed |
 | Type hints | ✅ Pass | All functions typed |
 | Org-scoped querysets | N/A | No database queries |
-| permission_classes | N/A | No API endpoints |
+| permission_classes | N/A | No API endpoints added |
 | select_related/prefetch_related | N/A | No ORM queries |
 
 ## Project Structure
@@ -42,161 +38,174 @@ Runtime validation layer voor AI-gegenereerde JSON outputs in de generative pipe
 ### Source Code (new files)
 
 ```
-src/generative/validation/
-├── __init__.py          # Public exports: validate_output, ValidationResult
-├── schemas.py           # Pydantic BaseModel schemas (LineupSchema, PlayerSchema, etc.)
-├── registry.py          # SchemaRegistry singleton with @register decorator
-├── validators.py        # Core validation logic, type coercion
-├── decorators.py        # @validate_output decorator for tasks/views
-├── errors.py            # ValidationError, CoercionWarning, Severity enum
-└── formatters.py        # Error message formatting with field paths
+src/media/
+├── __init__.py
+└── validation/
+    ├── __init__.py           # Public exports
+    ├── image_validator.py    # PIL-based image validation
+    ├── video_validator.py    # Video output quality checks
+    ├── ffmpeg_errors.py      # FFmpeg stderr parser
+    └── retry_config.py       # Tenacity retry configurations
+
+src/core/
+└── logging/
+    ├── __init__.py
+    └── media_logger.py       # Unified structured logging
 ```
 
 ### Tests (new files)
 
 ```
-tests/generative/validation/
+tests/media/
 ├── __init__.py
-├── test_schemas.py           # Schema definition tests
-├── test_validators.py        # Validation logic tests
-├── test_decorators.py        # @validate_output decorator tests
-├── test_coercion.py          # Type coercion edge cases
-├── test_error_formatting.py  # Field path + message formatting
-└── test_integration.py       # Full pipeline integration tests
+├── test_image_validator.py      # PIL validation tests
+├── test_video_validator.py      # Output quality tests
+├── test_ffmpeg_errors.py        # Error parsing tests
+└── test_retry_config.py         # Retry behavior tests
 ```
 
 ### Modified Files
 
 | File | Change |
 |------|--------|
-| `src/generative/services/asset_pipeline.py` | Add Gemini response validation |
-| `src/generative/services/gemini_image.py` | Add photo composite output validation |
-| `src/generative/services/minimax_client.py` | Add status enum validation |
-| `src/generative/tasks.py` | Add VALIDATION_ERROR to ErrorCategory |
-
-### Documentation (this feature)
-
-```
-kitty-specs/003-structured-output-validation/
-├── spec.md              # Feature specification
-├── plan.md              # This file
-├── research.md          # Phase 0 research findings
-├── data-model.md        # Pydantic schema definitions
-├── checklists/
-│   └── requirements.md  # Specification quality checklist
-└── tasks/               # Work packages (generated by /spec-kitty.tasks)
-```
+| `src/generative/services/gemini_image.py` | Add tenacity retry decorator |
+| `src/generative/services/minimax_client.py` | Add output quality check after download |
+| `src/video/services/_common.py` | Replace basic error handling with FFmpegErrorParser |
+| `src/files/views.py` | Add ImageValidator on upload |
+| `src/files/services/asset_processor.py` | Add ImageValidator before rembg |
 
 ## Engineering Approach
 
-### Architecture Decision: Submodule vs Separate App
+### Architecture Decision: Centrale validation module
 
-**Decision**: Integrate as `src/generative/validation/` submodule.
+**Decision**: Create `src/media/validation/` als shared module.
 
 **Rationale**:
-- Validation is tightly coupled to GenerationTemplate, GenerationRequest, GenerationOutput
-- No separate admin UI needed (code-defined schemas)
-- No new Django models required
-- Follows existing pattern: `src/generative/services/`, `src/generative/tasks.py`
+- Validation logic wordt gebruikt door generative, video, files apps
+- Geen tight coupling aan één app
+- Follows existing pattern: `src/core/` voor shared utilities
 
-### Validation Flow
-
-```
-                        ┌─────────────────────┐
-AI Provider Response → │ @validate_output    │ → ValidationResult
-                        │   decorator         │
-                        └─────────┬───────────┘
-                                  │
-                        ┌─────────▼───────────┐
-                        │ SchemaRegistry      │
-                        │ .get_schema(name)   │
-                        └─────────┬───────────┘
-                                  │
-                        ┌─────────▼───────────┐
-                        │ Pydantic validate   │
-                        │ + type coercion     │
-                        └─────────┬───────────┘
-                                  │
-                    ┌─────────────┼─────────────┐
-                    │             │             │
-             ┌──────▼──────┐ ┌───▼────┐ ┌──────▼──────┐
-             │ CRITICAL    │ │ WARNING│ │ INFO       │
-             │ → raise     │ │ → log  │ │ → continue │
-             │   exception │ │        │ │            │
-             └─────────────┘ └────────┘ └────────────┘
-```
-
-### Severity Classification
-
-| Severity | Example | Action |
-|----------|---------|--------|
-| CRITICAL | Missing required field, wrong type (non-coercible) | Raise ValidationError, trigger retry |
-| WARNING | Type coerced (str→int), field trimmed | Log warning, continue |
-| INFO | Extra field ignored, default applied | Log info, continue |
-
-### Registry Pattern
+### Retry Strategy
 
 ```python
-# src/generative/validation/registry.py
-_schemas: dict[str, type[BaseModel]] = {}
+# src/media/validation/retry_config.py
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
-def register(name: str):
-    def decorator(cls: type[BaseModel]) -> type[BaseModel]:
-        _schemas[name] = cls
-        return cls
-    return decorator
-
-def get_schema(name: str) -> type[BaseModel]:
-    return _schemas[name]
+GEMINI_RETRY = retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=8),
+    retry=retry_if_exception_type((RateLimitError, ConnectionError, TimeoutError)),
+    before_sleep=log_retry_attempt,
+)
 ```
 
-### Decorator Pattern
+### FFmpeg Error Categories
 
 ```python
-# src/generative/validation/decorators.py
-def validate_output(schema_name: str, strict: bool = True):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            result = func(*args, **kwargs)
-            schema = get_schema(schema_name)
-            validated = schema.model_validate(result)
-            return validated.model_dump()
-        return wrapper
-    return decorator
+# src/media/validation/ffmpeg_errors.py
+class FFmpegErrorCategory(str, Enum):
+    OOM = "out_of_memory"
+    TIMEOUT = "timeout"
+    CODEC = "codec_error"
+    IO = "io_error"
+    CORRUPT = "corrupt_input"
+    UNKNOWN = "unknown"
+
+PATTERNS = {
+    FFmpegErrorCategory.OOM: ["Cannot allocate memory", "Out of memory"],
+    FFmpegErrorCategory.TIMEOUT: ["timeout", "killed"],
+    FFmpegErrorCategory.CODEC: ["Decoder", "codec", "Unsupported"],
+    FFmpegErrorCategory.IO: ["No such file", "Permission denied", "Input/output error"],
+    FFmpegErrorCategory.CORRUPT: ["Invalid data", "corrupt", "moov atom not found"],
+}
 ```
 
-## Dependencies
+### Image Validation Flow
 
-### External Dependencies (already in requirements)
+```
+Upload Request
+      │
+      ▼
+┌─────────────────┐
+│ Size Check      │ < 20MB
+│ (fast, no PIL)  │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Format Check    │ Magic bytes
+│ (PIL.Image.open)│
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Dimension Check │ < 8192x8192
+│ (memory safety) │
+└────────┬────────┘
+         │
+         ▼
+    ✅ Proceed
+```
 
-- `pydantic>=2.0` — Schema definition, validation, coercion
-- `structlog` — Logging with field paths
+## Implementation Order (Work Packages)
 
-### Internal Dependencies
+### WP01: Image Validation Module (P0)
+**Effort**: 4h | **Dependencies**: None
 
-- `src/generative/models.py` — GenerationTemplate.input_schema reference
-- `src/generative/services/` — Integration points for validation
-- `src/generative/tasks.py` — ErrorCategory enum extension
+- Create `src/media/validation/image_validator.py`
+- Methods: `validate_format()`, `validate_size()`, `validate_dimensions()`
+- Tests: corrupt images, oversized, wrong format
+- Integration: `src/files/views.py` upload endpoint
 
-## Implementation Order
+### WP02: Gemini Retry (P0)
+**Effort**: 2h | **Dependencies**: None
 
-1. **WP01: Core validation module** — schemas.py, registry.py, validators.py, errors.py
-2. **WP02: Decorator and formatters** — decorators.py, formatters.py
-3. **WP03: Line-up schema definition** — LineupSchema, PlayerSchema with all fields
-4. **WP04: Pipeline integration** — asset_pipeline.py, gemini_image.py integration
-5. **WP05: Error handling integration** — ErrorCategory.VALIDATION_ERROR, retry logic
+- Add `@GEMINI_RETRY` decorator to `gemini_image.py` API calls
+- Create `src/media/validation/retry_config.py`
+- Tests: mock rate limit, verify retry count
+- Logging: retry attempts with backoff duration
+
+### WP03: FFmpeg Error Parser (P1)
+**Effort**: 3h | **Dependencies**: None
+
+- Create `src/media/validation/ffmpeg_errors.py`
+- Pattern matching for OOM, TIMEOUT, CODEC, IO, CORRUPT
+- Integration: `src/video/services/_common.py`
+- Tests: real stderr samples from production logs
+
+### WP04: Output Quality Checker (P1)
+**Effort**: 3h | **Dependencies**: WP01
+
+- Create `src/media/validation/video_validator.py`
+- Check: resolution, duration, file size
+- Integration: `minimax_client.py` after download
+- Tests: mock low-res video, truncated file
+
+### WP05: Unified Logging (P1)
+**Effort**: 2h | **Dependencies**: WP01-04
+
+- Create `src/core/logging/media_logger.py`
+- Fields: job_id, provider, operation, duration_ms, status
+- Retrofit existing log calls to use unified format
+- Tests: verify log structure
 
 ## Risk Assessment
 
-| Risk | Mitigation |
-|------|------------|
-| Performance overhead | Profile p95 during WP01, target <50ms |
-| Breaking existing pipeline | Feature flag for gradual rollout |
-| Schema version mismatch | Include schema_version field for forwards compatibility |
-| AI provider format changes | Centralized schema definitions make updates single-point |
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| PIL validation too slow | Performance | Profile p95, lazy validation |
+| Retry causes cascade failures | Reliability | Add jitter, cap total retry time |
+| FFmpeg patterns miss edge cases | Debugging | Log unmatched errors, iterate |
+| Breaking existing uploads | Regression | Feature flag for gradual rollout |
 
 ## Success Metrics
+
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| Corrupt uploads rejected | 100% | Unit tests |
+| Gemini rate limit recovery | 95% | Retry success rate |
+| FFmpeg errors categorized | 90% | Unknown category < 10% |
+| Unified log compliance | 100% | Log format validation |
 
 - All AI responses validated before storage
 - <50ms p95 validation overhead

@@ -1,192 +1,197 @@
-# Structured Output Validation
+# Media Pipeline Hardening
 
 ## Overview
 
-Runtime validation layer voor AI-gegenereerde content in de generative pipeline. Valideert JSON outputs van LLM providers (Gemini, OpenAI, MiniMax) met Pydantic v2 schemas, severity-based error handling, en gedetailleerde error reporting met field paths.
+Preventieve hardening van de complete media processing pipeline: AI providers (Gemini, MiniMax, Runway, Pika), FFmpeg video compositie, background removal (RVM, rembg), en image processing (PIL). Zorgt voor input validatie, resilience, output quality checks, en unified error handling.
 
-**Primaire focus**: Line-up JSON validatie — de meest structureel complexe output die downstream processen voedt (wedstrijdgraphics, video overlays, social posts).
+**Doel**: Problemen voorkomen voordat ze ontstaan — niet reactief fixen, maar proactief beschermen.
 
 ## Problem Statement
 
-De huidige generative pipeline mist systematische output validatie:
+De media pipeline verwerkt content via meerdere systemen, maar mist samenhangende validatie en error handling:
 
-1. **Silent failures**: Gemini kan lege `parts[]` teruggeven die door lege loops glippen
-2. **Fragile parsing**: Photo validation splitst op `"\n"` en assumeert exacte formatting
-3. **Geen schema enforcement**: AI output wordt niet gevalideerd tegen verwachte structuren
-4. **Inconsistente error handling**: Sommige fouten worden gelogd en doorgegeven, andere masked
+1. **Input validatie gaps**: Geen file size limits, geen PIL format checks op uploads
+2. **Inconsistente retry**: MiniMax heeft goede retry, Gemini geen
+3. **Silent FFmpeg errors**: Subprocess errors worden gelogd maar niet geparsed
+4. **Geen output quality checks**: AI-gegenereerde images worden blind geaccepteerd
+5. **Fragmenteerde logging**: Elke service logt anders, geen unified job tracking
 
-**Impact**: Corrupte JSON kan de hele content pipeline breken. Gebruikers krijgen geen bruikbare foutmeldingen wanneer AI output faalt.
+**Impact**: Incidenten worden pas ontdekt als gebruikers klagen, niet proactief.
 
 ## User Scenarios
 
-### US-001: Content Manager Reviews Line-up
-Een content manager importeert een line-up voor een wedstrijd. De AI genereert een JSON met spelerposities, maar één speler mist een rugnummer.
+### US-001: Upload met corrupt image
+Een content manager uploadt een logo dat technisch gezien een PNG heet maar corrupt is.
 
 **Expected behavior**: 
-- Validatie detecteert het missende veld
-- Content manager ziet: "Speler 'Jan Bakker' mist rugnummer (positie 0.spelers.3.rugnummer)"
-- Line-up wordt niet opgeslagen totdat gecorrigeerd
+- PIL validation detecteert corrupt bestand vóór processing
+- Content manager ziet: "Afbeelding kan niet worden geopend. Upload een geldig PNG of JPEG."
+- Upload wordt geweigerd, geen broken state in database
 
-### US-002: Video Generation with Invalid Timing
-Celery worker genereert video met AI-gegenereerde timing parameters. De AI retourneert een negatieve duration.
-
-**Expected behavior**:
-- Validatie detecteert: `duration: -5` is ongeldig (moet > 0)
-- Task faalt met duidelijke error in GenerationRequest.metadata
-- Retry wordt ingepland met exponential backoff
-
-### US-003: Social Caption with Type Coercion
-AI retourneert een hashtag count als string `"5"` in plaats van integer `5`.
+### US-002: Gemini rate limit tijdens batch
+Tijdens 20 tenue-generaties raakt Gemini rate limited na 15 requests.
 
 **Expected behavior**:
-- Validator coerceert string naar int (compatible types)
-- Log warning: "Type coerced: hashtag_count string→int"
-- Content genereert succesvol
+- Retry met exponential backoff (1s → 2s → 4s)
+- Job 16-20 worden succesvol afgerond na retry
+- Gebruiker ziet: "Verwerking voltooid" (niet "15/20 mislukt")
+
+### US-003: FFmpeg timeout op zware video
+Een lange video compositie (8K assets) duurt langer dan verwacht.
+
+**Expected behavior**:
+- FFmpeg process krijgt timeout warning bij 80% van limit
+- Als daadwerkelijk timeout: duidelijke error "Video te complex, probeer met minder assets"
+- Geen orphaned FFmpeg processes
+
+### US-004: MiniMax retourneert lage kwaliteit
+AI video generatie retourneert video die <720p is.
+
+**Expected behavior**:
+- Output quality check detecteert resolution mismatch
+- Warning gelogd: "MiniMax returned 480p, expected 720p+"
+- Job markeert als DEGRADED, niet SUCCESS
 
 ## Success Criteria
 
-- Alle AI outputs in de generative pipeline worden gevalideerd voordat ze opgeslagen worden
-- Validatiefouten bevatten field path en menselijke beschrijving
-- Type coercion werkt voor compatible types (string↔int, string↔float)
-- Content managers begrijpen validatiefouten zonder technische kennis
-- Geen regressie in bestaande pipeline performance (<50ms overhead per validatie)
+- 100% van uploads gevalideerd op format/size vóór processing
+- Gemini calls hebben retry met tenacity (max 3, exponential backoff)
+- FFmpeg errors geparsed naar actionable categorieën (OOM, timeout, codec)
+- AI output dimensies/format gevalideerd na ontvangst
+- Unified logging met job_id, provider, operation, duration
 
 ---
 
 ## Functional Requirements
 
-| ID | Requirement | Status |
-|----|-------------|--------|
-| FR-001 | Systeem valideert JSON output tegen Pydantic v2 schemas | Draft |
-| FR-002 | Systeem genereert error messages met field path (bijv. `spelers.0.rugnummer`) | Draft |
-| FR-003 | Systeem coerceert compatible types automatisch (string→int, string→float, int→string) | Draft |
-| FR-004 | Systeem registreert schemas via code-defined Pydantic models (geen database config) | Draft |
-| FR-005 | Systeem integreert validatie in `generate_asset` en `generate_video` pipeline | Draft |
-| FR-006 | Systeem valideert Gemini image responses op aanwezigheid van `inline_data` parts | Draft |
-| FR-007 | Systeem valideert MiniMax video status tegen bekende TERMINAL/PENDING statussen | Draft |
-| FR-008 | Systeem past severity-based error handling toe (critical/warning/info) | Draft |
-| FR-009 | Systeem logt validatiefouten naar structured logging met request context | Draft |
-| FR-010 | Systeem biedt `@validate_output` decorator voor Celery tasks en views | Draft |
+| ID | Requirement | Priority |
+|----|-------------|----------|
+| FR-001 | Input validation: PIL format check voor alle uploaded images | P0 |
+| FR-002 | Input validation: File size limits (20MB images, 500MB video) | P0 |
+| FR-003 | Gemini retry: tenacity met exponential backoff, max 3 attempts | P0 |
+| FR-004 | FFmpeg error parsing: categoriseer stderr naar OOM/timeout/codec/IO | P1 |
+| FR-005 | Output quality: verificeer AI image dimensions/format na generatie | P1 |
+| FR-006 | Unified logging: structured logs met job_id, provider, operation | P1 |
+| FR-007 | Circuit breaker: disable provider na 5 consecutive failures | P2 |
+| FR-008 | Health checks: endpoint per provider voor monitoring | P2 |
 
 ## Non-Functional Requirements
 
-| ID | Requirement | Threshold | Status |
-|----|-------------|-----------|--------|
-| NFR-001 | Validatie overhead per AI response | <50ms p95 | Draft |
-| NFR-002 | Schema registry startup time | <100ms | Draft |
-| NFR-003 | Memory footprint van schema registry | <10MB | Draft |
-| NFR-004 | Foutmeldingen zijn i18n-ready (format strings, niet hardcoded NL) | 100% | Draft |
+| ID | Requirement | Threshold |
+|----|-------------|-----------|
+| NFR-001 | Validation overhead per upload | <100ms p95 |
+| NFR-002 | Retry latency (full backoff cycle) | <30s total |
+| NFR-003 | FFmpeg error parse time | <10ms |
+| NFR-004 | Unified log format compliance | 100% |
 
 ## Constraints
 
-| ID | Constraint | Status |
-|----|------------|--------|
-| C-001 | Geen database migrations voor schema storage — schemas zijn code-defined | Accepted |
-| C-002 | Backwards compatible met bestaande GenerationRequest/GenerationOutput models | Accepted |
-| C-003 | Pydantic v2 — geen v1 compatibility layer | Accepted |
-| C-004 | Geen frontend impact — dit is pure backend validatie | Accepted |
+| ID | Constraint |
+|----|------------|
+| C-001 | Backwards compatible met bestaande FileAsset, GenerationRequest models |
+| C-002 | Geen nieuwe Django models — utilities en service layer alleen |
+| C-003 | Geen frontend impact — pure backend hardening |
+| C-004 | Tenacity voor retry (al in requirements) |
 
 ---
 
-## Key Entities
+## Key Components
 
-### OutputSchema (Pydantic BaseModel)
-Abstract base voor alle output schemas. Subclasses definiëren specifieke structures.
+### ImageValidator (nieuw)
+Centrale PIL-based validatie voor image uploads.
 
-```python
-class OutputSchema(BaseModel):
-    model_config = ConfigDict(
-        strict=False,  # Allow coercion
-        extra="forbid",  # No unknown fields
-    )
-```
+**Methods**:
+- `validate_format(file) → bool` — check magic bytes, niet alleen extension
+- `validate_dimensions(file, max_w, max_h) → bool` — prevent memory exhaustion
+- `validate_size(file, max_bytes) → bool` — enforce upload limits
 
-### LineupSchema
-Schema voor line-up JSON output.
+### RetryConfig (tenacity wrapper)
+Gestandaardiseerde retry configuratie voor AI providers.
 
-**Fields**:
-- `team_name: str` — teamnaam
-- `formation: str` — formatie (bijv. "4-3-3")
-- `players: list[PlayerSchema]` — spelerlijst
+**Settings**:
+- `max_attempts: 3`
+- `wait: exponential (1s, 2s, 4s)`
+- `retry_on: (RateLimitError, ConnectionError, TimeoutError)`
+- `stop: after 30s total`
 
-### PlayerSchema
-**Fields**:
-- `name: str` — spelernaam
-- `number: int` — rugnummer (1-99)
-- `position: str` — positie code
+### FFmpegErrorParser (nieuw)
+Parse FFmpeg stderr naar actionable categorieën.
 
-### ValidationResult
-**Fields**:
-- `is_valid: bool`
-- `errors: list[ValidationError]`
-- `coercions: list[CoercionWarning]`
-- `raw_data: dict` — originele input
-- `validated_data: dict | None` — gevalideerde output (indien valid)
+**Categories**:
+- `OOM` — "Cannot allocate memory"
+- `TIMEOUT` — process killed after timeout
+- `CODEC` — "Decoder not found", "Unsupported codec"
+- `IO` — "No such file", "Permission denied"
+- `UNKNOWN` — fallback
 
-### ValidationError
-**Fields**:
-- `field_path: str` — bijv. `players.0.number`
-- `message: str` — menselijke beschrijving
-- `severity: Literal["critical", "warning", "info"]`
-- `code: str` — machineleesbare code (bijv. `MISSING_REQUIRED_FIELD`)
+### OutputQualityChecker (nieuw)
+Verificeer AI-gegenereerde content.
+
+**Checks**:
+- Image: dimensions ≥ minimum, format is expected (PNG/JPEG)
+- Video: resolution ≥ 720p, duration within expected range
+- General: file size > 0, not truncated
 
 ---
 
-## Assumptions
+## Provider Inventory
 
-1. **Pydantic v2 compatibility**: Django 5 + Pydantic v2 werken samen zonder issues (verified in codebase: pydantic al in requirements)
-2. **Schema stability**: AI output schemas veranderen niet vaak; code-defined is acceptabel
-3. **No external schemas**: Geen behoefte om JSON Schema van externe bronnen te laden
-4. **English error codes**: Error codes zijn Engels; messages kunnen i18n krijgen later
+| Provider | Current State | Gap | Priority |
+|----------|---------------|-----|----------|
+| **Gemini** | No retry at service level | Add tenacity | P0 |
+| **MiniMax** | Good retry, status polling | Add output quality check | P1 |
+| **Runway** | Basic error handling | Add timeout, quality check | P1 |
+| **Pika/fal.ai** | HTTP-level retry only | Add structured error handling | P2 |
+| **FFmpeg** | subprocess.run, partial stderr | Parse errors, add timeout | P1 |
+| **RVM** | Good cancellation support | Add input validation | P2 |
+| **rembg** | Basic try/except | Add PIL validation | P1 |
+| **PIL/Pillow** | Used throughout | No central validation | P0 |
+
+---
 
 ## Dependencies
 
-- **pydantic v2**: Al aanwezig in requirements (verified)
-- **src/generative/**: Bestaande pipeline waar validatie integreert
-- **src/generative/services/asset_pipeline.py**: Primaire integratiepunt
-- **src/generative/tasks.py**: ErrorCategory enum voor retry logic
+- **tenacity**: Al in requirements — retry decorator
+- **Pillow**: Al in requirements — image validation
+- **structlog**: Al in requirements — unified logging
+- **src/generative/services/**: Integratiepunten voor hardening
+- **src/files/**: FileAsset upload validation
 
 ## Out of Scope
 
-- Frontend/Zod validatie (apart concern)
-- GraphQL schema validatie
-- Database constraint validatie (Django ORM responsibility)
-- Admin interface voor schema configuratie
-- Historical validation log storage (geen ValidationLog model)
+- Frontend upload validation (apart concern)
+- Database schema changes
+- New admin interfaces
+- Historical error log storage (gebruik existing logging)
 
 ---
 
 ## Acceptance Scenarios
 
-### Scenario 1: Valid Line-up Passes
-**Given** een AI response met complete line-up JSON
-**When** validatie wordt uitgevoerd
-**Then** `is_valid=True`, `errors=[]`, `validated_data` bevat typed dict
+### Scenario 1: Corrupt Image Rejected
+**Given** een upload met corrupt PNG (valid header, broken data)
+**When** ImageValidator.validate_format() wordt aangeroepen
+**Then** ValidationError met message "Image data is corrupt"
 
-### Scenario 2: Missing Required Field Fails
-**Given** een AI response waar `players[0].number` ontbreekt
-**When** validatie wordt uitgevoerd
-**Then** `is_valid=False`, error met `field_path="players.0.number"`, `severity="critical"`
+### Scenario 2: Gemini Retry on Rate Limit
+**Given** Gemini retourneert 429 Too Many Requests
+**When** tenacity retry wrapper is active
+**Then** wait 1s, retry, succeed op attempt 2, log retry_count=1
 
-### Scenario 3: Type Coercion Succeeds with Warning
-**Given** een AI response met `number="7"` (string i.p.v. int)
-**When** validatie wordt uitgevoerd
-**Then** `is_valid=True`, `coercions` bevat warning, `validated_data.number=7` (int)
+### Scenario 3: FFmpeg OOM Detected
+**Given** FFmpeg stderr bevat "Cannot allocate memory"
+**When** FFmpegErrorParser.parse() wordt aangeroepen
+**Then** return FFmpegError(category=OOM, message="Onvoldoende geheugen")
 
-### Scenario 4: Unknown Field Rejected
-**Given** een AI response met extra field `players[0].nickname`
-**When** validatie wordt uitgevoerd met `extra="forbid"`
-**Then** `is_valid=False`, error met `code="EXTRA_FIELD_NOT_ALLOWED"`
+### Scenario 4: Low Quality AI Output Warned
+**Given** MiniMax retourneert 480x270 video
+**When** OutputQualityChecker.check_video() wordt aangeroepen
+**Then** log warning "Resolution below minimum", return DEGRADED status
 
-### Scenario 5: Gemini Empty Parts Detected
-**Given** Gemini response met `candidates[0].content.parts=[]`
-**When** asset_pipeline valideert response
-**Then** Error raised met message "No IMAGE part in Gemini response"
-
-### Scenario 6: MiniMax Unknown Status Warned
-**Given** MiniMax returns `status="Paused"` (niet in bekende statussen)
-**When** minimax_client pollt status
-**Then** Warning logged, polling continueert (geen crash)
+### Scenario 5: Unified Log Format
+**Given** een Gemini image generation request
+**When** request completes (success of failure)
+**Then** log bevat: job_id, provider="gemini", operation="generate_image", duration_ms, status
 
 ---
 

@@ -1,198 +1,184 @@
-# Research: Structured Output Validation
+# Research: Media Pipeline Hardening
 
-**Feature**: 003-structured-output-validation  
+**Feature**: 003-structured-output-validation (herdefinitie: Media Pipeline Hardening)  
 **Date**: 2026-03-31  
-**Phase**: Plan (Phase 0)
+**Phase**: Research
 
 ## Codebase Analysis
 
-### Current Validation Gaps
+### Provider Inventory
 
-Geïdentificeerd via Explore subagent onderzoek van `src/generative/`:
+Volledige analyse van alle media processing flows:
 
-#### 1. Gemini Response Validation (`asset_pipeline.py:270`)
+#### 1. AI Providers
+
+| Provider | Location | Retry | Validation | Gaps |
+|----------|----------|-------|------------|------|
+| **Gemini** | `gemini_image.py` | ❌ None | Partial (parts check) | No retry, no output quality |
+| **MiniMax** | `minimax_client.py` | ✅ Status polling | Good input validation | No output resolution check |
+| **Runway** | `runway_client.py` | ⚠️ Basic HTTP | Timeout handling | No quality check |
+| **Pika/fal.ai** | `fal_client.py` | ⚠️ HTTP only | Basic | Minimal error handling |
+
+#### 2. Processing Tools
+
+| Tool | Location | Error Handling | Gaps |
+|------|----------|----------------|------|
+| **FFmpeg** | `video/services/_common.py` | subprocess stderr | No parsing, basic logging |
+| **RVM** | `video/services/rvm_processor.py` | Good (cancellation) | No input validation |
+| **rembg** | `files/services/asset_processor.py` | try/except | No PIL pre-validation |
+| **PIL/Pillow** | Throughout | Per-call | No centralized validation |
+
+### Current Validation Gaps (Verified)
+
+#### 1. Gemini Service (`gemini_image.py`)
 
 ```python
-# Current: No validation, assumes parts[] exists and is non-empty
+# Current: No retry at service level
 response = await model.generate_content_async(contents)
-text = response.candidates[0].content.parts[0].text
+# Direct call, 429 crashes task immediately
 ```
 
-**Gap**: Geen check voor:
-- `response.candidates` empty/None
-- `parts[]` empty array
-- `text` is niet JSON-parseable
+**Gap**: Rate limit op Gemini = immediate task failure  
+**Impact**: Batch jobs falen na ~15-20 requests  
+**Fix**: Tenacity retry met exponential backoff
 
-**Impact**: Silent failures, corrupt GenerationOutput records
-
-#### 2. Photo Composite Parsing (`gemini_image.py:265-280`)
+#### 2. File Uploads (`files/views.py`)
 
 ```python
-# Current: Fragile string parsing
-lines = text.strip().split('\n')
-for line in lines:
-    parts = line.split('|')  # Assumes exact 4 parts
-    person_id, x, y, scale = parts
+# Current: Size check only in settings
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
+# No format validation, no dimension check
 ```
 
-**Gap**: Geen type validation:
-- `person_id` moet int zijn
-- `x, y, scale` moeten floats zijn
-- Geen bounds checking
+**Gap**: Corrupt/oversized images kunnen door  
+**Impact**: PIL crash later in pipeline, poor UX  
+**Fix**: ImageValidator met format + dimension checks
 
-**Impact**: TypeError crashes in Celery worker
-
-#### 3. MiniMax Status Validation (`minimax_client.py:185-210`)
+#### 3. FFmpeg Subprocess (`video/services/_common.py`)
 
 ```python
-# Current: String comparison without enum validation
-status = response["data"]["status"]
-if status == "Success":
-    ...
-elif status == "Processing":
-    ...
+# Current: Basic error capture
+result = subprocess.run(cmd, capture_output=True)
+if result.returncode != 0:
+    logger.error(f"FFmpeg error: {result.stderr}")  # Raw stderr
 ```
 
-**Gap**: Geen Enum voor valid statuses, geen handling voor unknown status
+**Gap**: Geen categorisatie van errors  
+**Impact**: "FFmpeg failed" zonder context  
+**Fix**: FFmpegErrorParser met pattern matching
 
-**Impact**: Unknown status → unhandled state → job stuck
-
-#### 4. Error Category Classification (`tasks.py`)
+#### 4. MiniMax Output (`minimax_client.py`)
 
 ```python
+# Current: Good status polling, no quality check
+video_bytes = await self._download_video(url)
+return video_bytes  # No resolution/duration check
+```
+
+**Gap**: Geen verificatie dat output 720p+ is  
+**Impact**: UI toont low-res video zonder warning  
+**Fix**: OutputQualityChecker na download
+
+### ErrorCategory Enum (Existing)
+
+```python
+# src/generative/tasks.py
 class ErrorCategory(str, Enum):
-    PROVIDER_ERROR = "provider_error"
-    RATE_LIMIT = "rate_limit"
-    CONTENT_POLICY = "content_policy"
-    # Missing: VALIDATION_ERROR
+    TRANSIENT = "transient"
+    PERMANENT = "permanent"
+    UNKNOWN = "unknown"
+
+TRANSIENT_KEYWORDS = ["rate limit", "timeout", "connection", "503", "429"]
 ```
 
-**Gap**: Geen aparte categorie voor validation failures, nu gecategoriseerd als PROVIDER_ERROR
-
-**Impact**: Kan niet differentiëren tussen provider issues en onze parsing/validation issues
+Dit pattern werkt goed — we kunnen het hergebruiken voor FFmpeg error categorisatie.
 
 ## Technology Research
 
-### Pydantic v2 voor Django
+### Tenacity voor Retry
 
-**Compatibiliteit**: ✅ Volledig compatible met Django 5 en DRF
+**Al in requirements**: ✅ `tenacity>=8.0`
 
-Bewezen pattern in codebase:
-- `requirements/base.txt` bevat al `pydantic>=2.0`
-- Gebruikt in `src/generative/models.py` voor JSON schema validation
-
-**Voordelen Pydantic v2**:
-1. **Type coercion**: `str "123"` → `int 123` automatisch
-2. **Field validators**: Custom validation per field met `@field_validator`
-3. **Model validators**: Cross-field validation met `@model_validator`
-4. **JSON Schema export**: `.model_json_schema()` voor documentatie
-5. **Performance**: 3-5x sneller dan v1 (Rust core)
-
-### Registry Pattern Choice
-
-Onderzocht 3 opties:
-
-| Pattern | Pros | Cons |
-|---------|------|------|
-| **Module-level dict** | Simpel, geen boilerplate | Geen lazy loading |
-| **Class-based singleton** | Full OOP, extensible | Overkill voor use case |
-| **Django settings variable** | Django-native | Tight coupling met settings |
-
-**Keuze**: Module-level dict met `@register` decorator
+Bewezen pattern uit andere projecten:
 
 ```python
-# Simple, explicit, testable
-@register("lineup")
-class LineupSchema(BaseModel):
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=8),
+    retry=retry_if_exception_type((RateLimitError, ConnectionError)),
+)
+async def call_gemini(prompt: str) -> Response:
     ...
 ```
 
-### Error Handling Strategy
+### PIL Image Validation
 
-Onderzocht bestaande patterns in `src/`:
+**Al in requirements**: ✅ `Pillow>=10.0`
 
-1. **DRF ValidationError** — voor API input validation
-2. **Celery retry logic** — voor transient failures
-3. **structlog** — voor structured logging
-
-**Keuze**: Custom `ValidationError` met severity levels die integreert met:
-- Celery retry voor CRITICAL errors
-- structlog voor WARNING/INFO logging
-- DRF-compatible error format voor API responses
-
-## Integration Points
-
-### Entry Points voor Validation
-
-| Location | Trigger | Schema |
-|----------|---------|--------|
-| `asset_pipeline.py` | Gemini API response | `GeminiResponseSchema` |
-| `gemini_image.py` | Photo composite parse | `PhotoCompositeSchema` |
-| `minimax_client.py` | Video status check | `MiniMaxStatusSchema` |
-| `tasks.py` | GenerationOutput save | Per-template schemas (e.g., `LineupSchema`) |
-
-### Decorator Integration
+Validation approach:
 
 ```python
-# Before:
-def process_gemini_response(response: dict) -> dict:
-    # Manual parsing, no validation
-    return response["candidates"][0]["content"]["parts"][0]["text"]
+from PIL import Image
 
-# After:
-@validate_output("gemini_response")
-def process_gemini_response(response: dict) -> dict:
-    return response["candidates"][0]["content"]["parts"][0]["text"]
+def validate_image(file_bytes: bytes) -> tuple[bool, str | None]:
+    try:
+        img = Image.open(io.BytesIO(file_bytes))
+        img.verify()  # Check for corruption
+        
+        # Reopen for dimension check (verify() closes)
+        img = Image.open(io.BytesIO(file_bytes))
+        w, h = img.size
+        if w > 8192 or h > 8192:
+            return False, "Image too large (max 8192x8192)"
+        return True, None
+    except Exception as e:
+        return False, f"Invalid image: {e}"
 ```
 
-## Performance Considerations
+### FFmpeg Error Patterns
 
-### Baseline Measurements (estimated)
+Uit productie logs geëxtraheerd:
 
-| Operation | Current | With Validation |
-|-----------|---------|-----------------|
-| Gemini response parse | ~5ms | ~15ms |
-| Line-up JSON validation | N/A | ~10ms |
-| Photo composite parse | ~2ms | ~8ms |
+```
+# OOM
+"Cannot allocate memory"
+"Out of memory allocating"
 
-**Target**: <50ms p95 voor validation overhead (inclusief error formatting)
+# Codec
+"Decoder xxx not found"
+"Unknown decoder 'xxx'"
+"Unsupported codec"
 
-### Optimization Strategies
+# IO
+"No such file or directory"
+"Permission denied"
+"Input/output error"
 
-1. **Schema caching**: Pydantic models compiled once, reused
-2. **Lazy validation**: Only validate on first access if needed
-3. **Batch validation**: ValidateMany for arrays
-4. **Short-circuit**: Stop on first CRITICAL error
+# Corrupt input
+"Invalid data found when processing input"
+"moov atom not found"
+"Invalid NAL unit size"
+```
 
-## Test Strategy
+## Risk Assessment
 
-### Test Categories
-
-| Category | Focus | Tools |
-|----------|-------|-------|
-| Unit | Individual validators, schemas | pytest, parametrize |
-| Contract | Schema compliance | hypothesis (property-based) |
-| Integration | Full pipeline flow | factory_boy, mock providers |
-
-### Edge Cases Matrix
-
-| Input | Expected | Test Priority |
-|-------|----------|---------------|
-| Empty JSON `{}` | CRITICAL error | High |
-| Missing required field | CRITICAL error | High |
-| Wrong type (non-coercible) | CRITICAL error | High |
-| Wrong type (coercible) | WARNING + coerce | Medium |
-| Extra fields | INFO + ignore | Low |
-| Nested object invalid | CRITICAL with path | High |
-| Array with invalid item | CRITICAL with index path | High |
-| Null vs missing | Schema-dependent | Medium |
+| Flow | Risk Level | Reason |
+|------|------------|--------|
+| Gemini calls | 🔴 High | No retry, rate limits common |
+| File uploads | 🔴 High | No validation, crashes PIL |
+| FFmpeg | 🟡 Medium | Works but poor diagnostics |
+| MiniMax | 🟢 Low | Good retry, missing quality only |
+| Runway | 🟡 Medium | Basic handling, needs timeout |
+| RVM | 🟢 Low | Good cancellation support |
 
 ## Decisions Log
 
-| Decision | Rationale | Alternatives Rejected |
-|----------|-----------|----------------------|
-| Pydantic v2 | Already in deps, type coercion, fast | JSON Schema (no coercion), marshmallow (slower) |
-| Registry pattern | Simple, explicit | Class singleton (overkill), settings (coupling) |
-| Severity enum | Graceful degradation | Fail-fast (too strict), ignore all (too lenient) |
-| Submodule in generative | Tight coupling to pipeline | Separate app (unnecessary isolation) |
-| @validate_output decorator | Non-invasive integration | Manual validation calls (boilerplate) |
+| Decision | Rationale | Alternatives |
+|----------|-----------|--------------|
+| Centrale `src/media/validation/` | Shared across apps | Per-app modules (duplication) |
+| Tenacity voor retry | Already in deps, proven | Custom retry (reinvent wheel) |
+| PIL for validation | Already in deps | ImageMagick (external dep) |
+| Regex patterns for FFmpeg | Simple, maintainable | ML classifier (overkill) |
+| Unified logging format | Observability | Per-service formats (inconsistent) |

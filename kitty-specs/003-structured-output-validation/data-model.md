@@ -1,203 +1,374 @@
-# Data Model: Structured Output Validation
+# Data Model: Media Pipeline Hardening
 
-**Feature**: 003-structured-output-validation  
+**Feature**: 003-structured-output-validation (Media Pipeline Hardening)  
 **Date**: 2026-03-31  
-**Phase**: Plan (Phase 1)
+**Phase**: Plan
 
 ## Overview
 
-Dit zijn **Pydantic schemas** — geen Django modellen. Ze leven in `src/generative/validation/schemas.py` en definiëren de verwachte structuur van AI-gegenereerde outputs.
+Dit zijn **Python dataclasses en enums** — geen Django modellen. Ze leven in `src/media/validation/` en definiëren validation results, error categories, en quality check output.
 
 ## Core Types
 
-### Severity Enum
+### FFmpeg Error Categories
 
 ```python
-# src/generative/validation/errors.py
+# src/media/validation/ffmpeg_errors.py
 from enum import Enum
 
-class Severity(str, Enum):
-    CRITICAL = "critical"   # Must retry or fail
-    WARNING = "warning"     # Log, continue with coerced value
-    INFO = "info"           # Log only
+class FFmpegErrorCategory(str, Enum):
+    """Categorized FFmpeg error types for actionable error handling."""
+    OOM = "out_of_memory"        # Memory allocation failed
+    TIMEOUT = "timeout"          # Process killed due to timeout
+    CODEC = "codec_error"        # Decoder/encoder not found
+    IO = "io_error"              # File not found, permission denied
+    CORRUPT = "corrupt_input"    # Invalid input data
+    UNKNOWN = "unknown"          # Unmatched pattern
 ```
 
-### ValidationError
+### FFmpeg Error Result
 
 ```python
-# src/generative/validation/errors.py
+# src/media/validation/ffmpeg_errors.py
 from dataclasses import dataclass
 
 @dataclass
-class ValidationError:
-    field_path: str          # e.g., "lineup.players[2].position"
-    message: str             # Human-readable
-    severity: Severity
-    raw_value: Any           # Original value
-    coerced_value: Any | None  # If coercion succeeded
+class FFmpegError:
+    """Parsed FFmpeg error with category and message."""
+    category: FFmpegErrorCategory
+    message: str               # Human-readable message
+    raw_stderr: str            # Original stderr for debugging
+    exit_code: int             # Process exit code
+    
+    @property
+    def is_transient(self) -> bool:
+        """Whether this error might succeed on retry."""
+        return self.category in (FFmpegErrorCategory.OOM, FFmpegErrorCategory.TIMEOUT)
+    
+    @property
+    def user_message(self) -> str:
+        """User-friendly message for UI display."""
+        messages = {
+            FFmpegErrorCategory.OOM: "Onvoldoende geheugen voor video verwerking",
+            FFmpegErrorCategory.TIMEOUT: "Video verwerking duurde te lang",
+            FFmpegErrorCategory.CODEC: "Video formaat niet ondersteund",
+            FFmpegErrorCategory.IO: "Bestand kon niet worden gelezen",
+            FFmpegErrorCategory.CORRUPT: "Video bestand is beschadigd",
+            FFmpegErrorCategory.UNKNOWN: "Video verwerking mislukt",
+        }
+        return messages[self.category]
 ```
 
-### ValidationResult
+### Image Validation Result
 
 ```python
-# src/generative/validation/validators.py
+# src/media/validation/image_validator.py
 from dataclasses import dataclass
+from enum import Enum
+
+class ImageValidationError(str, Enum):
+    """Image validation error types."""
+    CORRUPT = "corrupt"           # Can't be opened by PIL
+    FORMAT = "invalid_format"     # Not PNG/JPEG/WEBP
+    TOO_LARGE_BYTES = "too_large" # Exceeds file size limit
+    TOO_LARGE_DIMS = "too_large_dims"  # Exceeds dimension limit
+    ZERO_SIZE = "zero_size"       # Empty file
+
 
 @dataclass
-class ValidationResult:
-    success: bool
-    data: dict | None            # Validated/coerced data
-    errors: list[ValidationError]
+class ImageValidationResult:
+    """Result of image validation check."""
+    valid: bool
+    error: ImageValidationError | None = None
+    message: str | None = None
     
-    @property
-    def has_critical(self) -> bool:
-        return any(e.severity == Severity.CRITICAL for e in self.errors)
+    # Populated on success
+    format: str | None = None      # "PNG", "JPEG", "WEBP"
+    width: int | None = None
+    height: int | None = None
+    file_size: int | None = None
     
-    @property
-    def warnings(self) -> list[ValidationError]:
-        return [e for e in self.errors if e.severity == Severity.WARNING]
+    @classmethod
+    def success(cls, format: str, width: int, height: int, file_size: int) -> "ImageValidationResult":
+        return cls(valid=True, format=format, width=width, height=height, file_size=file_size)
+    
+    @classmethod
+    def failure(cls, error: ImageValidationError, message: str) -> "ImageValidationResult":
+        return cls(valid=False, error=error, message=message)
 ```
 
-## Pydantic Schemas
-
-### Base Output Schema
+### Output Quality Result
 
 ```python
-# src/generative/validation/schemas.py
-from pydantic import BaseModel, ConfigDict
+# src/media/validation/video_validator.py
+from dataclasses import dataclass
+from enum import Enum
 
-class OutputSchema(BaseModel):
-    """Base class for all output schemas."""
-    model_config = ConfigDict(
-        extra="ignore",      # INFO: ignore extra fields
-        str_strip_whitespace=True,
-        coerce_numbers_to_str=False,
+class QualityStatus(str, Enum):
+    """Quality check result status."""
+    OK = "ok"               # Meets all requirements
+    DEGRADED = "degraded"   # Below expected, but usable
+    FAILED = "failed"       # Unusable output
+
+
+@dataclass
+class VideoQualityResult:
+    """Result of video output quality check."""
+    status: QualityStatus
+    width: int
+    height: int
+    duration_seconds: float
+    file_size_bytes: int
+    
+    # Warnings/issues
+    warnings: list[str] = None
+    
+    def __post_init__(self):
+        if self.warnings is None:
+            self.warnings = []
+    
+    @property
+    def resolution(self) -> str:
+        return f"{self.width}x{self.height}"
+    
+    @property
+    def is_hd(self) -> bool:
+        return self.width >= 1280 or self.height >= 720
+
+
+@dataclass
+class ImageQualityResult:
+    """Result of image output quality check."""
+    status: QualityStatus
+    width: int
+    height: int
+    format: str
+    file_size_bytes: int
+    warnings: list[str] = None
+    
+    def __post_init__(self):
+        if self.warnings is None:
+            self.warnings = []
+```
+
+### Retry Configuration
+
+```python
+# src/media/validation/retry_config.py
+from dataclasses import dataclass
+from typing import Tuple, Type
+
+@dataclass
+class RetryConfig:
+    """Configuration for tenacity retry decorator."""
+    max_attempts: int = 3
+    wait_min: float = 1.0         # Minimum wait between retries
+    wait_max: float = 8.0         # Maximum wait between retries
+    wait_multiplier: float = 2.0  # Exponential multiplier
+    total_timeout: float = 30.0   # Max total time for all retries
+    
+    # Exception types to retry on
+    retry_exceptions: Tuple[Type[Exception], ...] = (
+        ConnectionError,
+        TimeoutError,
     )
+    
+    # Exception types to NOT retry (fail immediately)
+    no_retry_exceptions: Tuple[Type[Exception], ...] = (
+        ValueError,
+        PermissionError,
+    )
+
+
+# Pre-configured retry profiles
+GEMINI_RETRY_CONFIG = RetryConfig(
+    max_attempts=3,
+    wait_min=1.0,
+    wait_max=8.0,
+    retry_exceptions=(ConnectionError, TimeoutError, Exception),  # Includes rate limit
+)
+
+FFMPEG_RETRY_CONFIG = RetryConfig(
+    max_attempts=2,
+    wait_min=2.0,
+    wait_max=10.0,
+    retry_exceptions=(TimeoutError,),
+)
 ```
 
-### Lineup Schema (Primary Use Case)
+### Unified Log Entry
 
 ```python
-@register("lineup")
-class PlayerSchema(BaseModel):
-    """Schema for a single player in a lineup."""
-    id: int                          # CRITICAL if missing
-    name: str                        # CRITICAL if missing
-    number: int | None = None        # Optional
-    position: str | None = None      # Optional
-    
-    # Coordinates for visual placement
-    x: float = 0.5                   # Default center
-    y: float = 0.5                   # Default center
-    scale: float = 1.0               # Default 1:1
-    
-    @field_validator("x", "y")
-    @classmethod
-    def validate_coordinates(cls, v: float) -> float:
-        if not 0.0 <= v <= 1.0:
-            raise ValueError(f"Coordinate must be between 0.0 and 1.0, got {v}")
-        return v
-    
-    @field_validator("scale")
-    @classmethod
-    def validate_scale(cls, v: float) -> float:
-        if not 0.1 <= v <= 3.0:
-            raise ValueError(f"Scale must be between 0.1 and 3.0, got {v}")
-        return v
+# src/core/logging/media_logger.py
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any
+
+class MediaOperation(str, Enum):
+    """Media pipeline operation types."""
+    UPLOAD_VALIDATE = "upload_validate"
+    GEMINI_GENERATE = "gemini_generate"
+    MINIMAX_GENERATE = "minimax_generate"
+    RUNWAY_GENERATE = "runway_generate"
+    FFMPEG_COMPOSE = "ffmpeg_compose"
+    RVM_PROCESS = "rvm_process"
+    REMBG_PROCESS = "rembg_process"
+    QUALITY_CHECK = "quality_check"
 
 
-@register("lineup")
-class LineupSchema(OutputSchema):
-    """Schema for complete lineup output."""
-    match_title: str
-    date: str                        # ISO format date
-    home_team: str
-    away_team: str
-    formation: str                   # e.g., "4-3-3"
-    players: list[PlayerSchema]      # Min 11 for full lineup
+class MediaProvider(str, Enum):
+    """External service providers."""
+    GEMINI = "gemini"
+    MINIMAX = "minimax"
+    RUNWAY = "runway"
+    PIKA = "pika"
+    FFMPEG = "ffmpeg"
+    RVM = "rvm"
+    REMBG = "rembg"
+    PIL = "pil"
+
+
+@dataclass
+class MediaLogEntry:
+    """Structured log entry for media operations."""
+    job_id: str
+    operation: MediaOperation
+    provider: MediaProvider
+    status: str               # "started", "success", "failed", "retry"
     
-    @field_validator("formation")
-    @classmethod
-    def validate_formation(cls, v: str) -> str:
-        # Validate formation format: X-X-X(-X)
-        parts = v.split("-")
-        if not (3 <= len(parts) <= 4):
-            raise ValueError(f"Formation must have 3-4 parts, got {len(parts)}")
-        return v
+    # Timing
+    timestamp: datetime = field(default_factory=datetime.utcnow)
+    duration_ms: int | None = None
     
-    @model_validator(mode="after")
-    def validate_player_count(self) -> "LineupSchema":
-        if len(self.players) < 11:
-            # WARNING, not critical — partial lineup allowed
-            pass
-        return self
+    # Context
+    input_file: str | None = None
+    output_file: str | None = None
+    
+    # Retry info
+    attempt: int = 1
+    max_attempts: int = 1
+    
+    # Error info
+    error_category: str | None = None
+    error_message: str | None = None
+    
+    # Extra data
+    extra: dict[str, Any] = field(default_factory=dict)
+    
+    def to_dict(self) -> dict:
+        """Convert to dict for structlog."""
+        return {
+            "job_id": self.job_id,
+            "operation": self.operation.value,
+            "provider": self.provider.value,
+            "status": self.status,
+            "timestamp": self.timestamp.isoformat(),
+            "duration_ms": self.duration_ms,
+            "input_file": self.input_file,
+            "output_file": self.output_file,
+            "attempt": self.attempt,
+            "max_attempts": self.max_attempts,
+            "error_category": self.error_category,
+            "error_message": self.error_message,
+            **self.extra,
+        }
 ```
 
-### Gemini Response Schema
+## Constants
 
 ```python
-@register("gemini_response")
-class GeminiCandidateSchema(BaseModel):
-    """Schema for Gemini API candidate."""
-    content: dict
-    finish_reason: str | None = None
-    
-    @field_validator("content")
-    @classmethod
-    def validate_content_has_parts(cls, v: dict) -> dict:
-        if "parts" not in v or not v["parts"]:
-            raise ValueError("Content must have non-empty parts array")
-        return v
+# src/media/validation/constants.py
 
+# File size limits
+MAX_IMAGE_SIZE_BYTES = 20 * 1024 * 1024      # 20 MB
+MAX_VIDEO_SIZE_BYTES = 500 * 1024 * 1024     # 500 MB
 
-@register("gemini_response")
-class GeminiResponseSchema(OutputSchema):
-    """Schema for Gemini API response."""
-    candidates: list[GeminiCandidateSchema]
-    
-    @field_validator("candidates")
-    @classmethod
-    def validate_has_candidates(cls, v: list) -> list:
-        if not v:
-            raise ValueError("Response must have at least one candidate")
-        return v
+# Dimension limits
+MAX_IMAGE_WIDTH = 8192
+MAX_IMAGE_HEIGHT = 8192
+
+# Quality thresholds
+MIN_VIDEO_WIDTH_HD = 1280
+MIN_VIDEO_HEIGHT_HD = 720
+
+# Supported formats
+SUPPORTED_IMAGE_FORMATS = {"PNG", "JPEG", "WEBP", "GIF"}
+SUPPORTED_VIDEO_FORMATS = {"MP4", "MOV", "WEBM"}
+
+# FFmpeg error patterns
+FFMPEG_ERROR_PATTERNS = {
+    "out_of_memory": [
+        "Cannot allocate memory",
+        "Out of memory",
+        "memory allocation failed",
+    ],
+    "timeout": [
+        "timeout",
+        "killed",
+        "Killed",
+    ],
+    "codec_error": [
+        "Decoder",
+        "decoder",
+        "codec",
+        "Unsupported",
+    ],
+    "io_error": [
+        "No such file",
+        "Permission denied",
+        "Input/output error",
+    ],
+    "corrupt_input": [
+        "Invalid data",
+        "corrupt",
+        "moov atom not found",
+        "Invalid NAL",
+    ],
+}
 ```
 
-### Photo Composite Schema
+## Usage Examples
+
+### Image Validation
 
 ```python
-@register("photo_composite")
-class PhotoPlacementSchema(BaseModel):
-    """Schema for a single photo placement."""
-    person_id: int
-    x: float
-    y: float
-    scale: float = 1.0
-    rotation: float = 0.0
-    
-    @field_validator("x", "y")
-    @classmethod
-    def validate_bounds(cls, v: float) -> float:
-        # Allow some overflow for edge placements
-        if not -0.5 <= v <= 1.5:
-            raise ValueError(f"Position out of reasonable bounds: {v}")
-        return v
+from src.media.validation import ImageValidator
 
+validator = ImageValidator()
+result = validator.validate(uploaded_file.read())
 
-@register("photo_composite")
-class PhotoCompositeSchema(OutputSchema):
-    """Schema for photo composite instructions."""
-    placements: list[PhotoPlacementSchema]
-    background_id: int | None = None
-    template_id: int | None = None
+if not result.valid:
+    raise ValidationError(result.message)
+
+print(f"Valid {result.format} image: {result.width}x{result.height}")
 ```
 
-### MiniMax Status Schema
+### FFmpeg Error Parsing
 
 ```python
-class MiniMaxStatus(str, Enum):
-    """Valid statuses from MiniMax API."""
-    SUCCESS = "Success"
+from src.media.validation import FFmpegErrorParser
+
+parser = FFmpegErrorParser()
+error = parser.parse(stderr_output, exit_code=1)
+
+if error.is_transient:
+    # Schedule retry
+    pass
+else:
+    # Log permanent failure
+    logger.error("FFmpeg failed", **error.to_dict())
+```
+
+### Retry Decorator
+
+```python
+from src.media.validation import gemini_retry
+
+@gemini_retry
+async def call_gemini(prompt: str) -> Response:
+    return await model.generate_content_async(prompt)
+```
     PROCESSING = "Processing"
     FAILED = "Failed"
     QUEUED = "Queueing"
