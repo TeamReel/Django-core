@@ -875,39 +875,22 @@ def list_asset_templates_view(request: Request) -> Response:  # noqa: ARG001
 
     GET /api/v1/generative/assets/templates/
     """
-    import importlib.util
-    import os
-
-    from django.conf import settings
-
-    prompts_path = os.path.join(settings.BASE_DIR, "..", "teamreel_prompts.py")
-    if not os.path.exists(prompts_path):
-        prompts_path = os.path.join(settings.BASE_DIR, "teamreel_prompts.py")
-
-    # If no prompts file exists, return empty templates list
-    # This allows the page to load without errors while templates are being configured
-    if not os.path.exists(prompts_path):
-        return Response({"templates": []}, status=status.HTTP_200_OK)
+    from src.generative.services.prompt_service import get_active_templates
 
     try:
-        spec = importlib.util.spec_from_file_location("teamreel_prompts", prompts_path)
-        prompts_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(prompts_module)
-
+        db_templates = get_active_templates()
         templates = []
-        for _tid, t in prompts_module.TEMPLATES.items():
+        for t in db_templates:
             templates.append(
                 {
-                    "id": t["id"],
-                    "name": t["name"],
-                    "category": t["category"],
-                    "description": t["description"],
-                    "input_requirements": t["input_requirements"],
-                    "parameters": t["parameters"],
+                    "id": t.slug,
+                    "name": t.name,
+                    "category": t.template_subtype,
+                    "description": t.description,
+                    "input_requirements": t.input_schema.get("required", []),
+                    "parameters": t.parameters_schema,
                 }
             )
-
         return Response({"templates": templates}, status=status.HTTP_200_OK)
     except Exception:
-        # If there's any error loading the prompts file, return empty list
         return Response({"templates": []}, status=status.HTTP_200_OK)

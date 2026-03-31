@@ -65,11 +65,12 @@ class GenerationTemplateViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated(), IsProjectMember()]
 
     def get_queryset(self) -> QuerySet[GenerationTemplate]:
-        """Filter by user's organisation and optional project."""
+        """Filter by user's organisation (+ global templates) and optional project."""
         qs = super().get_queryset()
 
-        # Filter by user's organisation (via membership)
+        # Filter by user's organisation (via membership) + global (org=NULL) templates
         if self.request.user and self.request.user.is_authenticated:
+            from django.db.models import Q
             from organisations.models import Membership
 
             membership = (
@@ -79,7 +80,9 @@ class GenerationTemplateViewSet(viewsets.ModelViewSet):
             )
 
             if membership:
-                qs = qs.filter(organisation=membership.organisation)
+                qs = qs.filter(
+                    Q(organisation=membership.organisation) | Q(organisation__isnull=True)
+                )
             else:
                 # User has no active org membership
                 qs = qs.none()

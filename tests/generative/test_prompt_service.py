@@ -437,3 +437,69 @@ class TestConstants:
     def test_param_resolvers_sleeves_values(self) -> None:
         assert PARAM_RESOLVERS["sleeves"]["short"] == "SHORT SLEEVES"
         assert PARAM_RESOLVERS["sleeves"]["long"] == "LONG SLEEVES"
+
+
+# ==============================================================================
+# Q048 — get_template org-priority + post_delete signal
+# ==============================================================================
+
+
+@pytest.mark.django_db
+class TestGetTemplateOrgPriority:
+    """Org-specific templates must take priority over global templates with the same slug."""
+
+    def test_org_specific_wins_over_global(
+        self, db, org, creator, _base_schema, _base_config
+    ) -> None:
+        global_tpl = GenerationTemplate.objects.create(
+            organisation=None,
+            name="Global Shared",
+            slug="shared-tpl",
+            input_schema=_base_schema,
+            pipeline_config=_base_config,
+            is_active=True,
+            created_by=creator,
+        )
+        org_tpl = GenerationTemplate.objects.create(
+            organisation=org,
+            name="Org Override",
+            slug="shared-tpl",
+            input_schema=_base_schema,
+            pipeline_config=_base_config,
+            is_active=True,
+            created_by=creator,
+        )
+        invalidate_template_cache()
+        result = get_template("shared-tpl", organisation_id=org.pk)
+        assert result.pk == org_tpl.pk
+        assert result.organisation_id == org.pk
+
+    def test_fallback_to_global_when_no_org_override(
+        self, db, org, creator, _base_schema, _base_config
+    ) -> None:
+        global_tpl = GenerationTemplate.objects.create(
+            organisation=None,
+            name="Global Only",
+            slug="global-only-tpl",
+            input_schema=_base_schema,
+            pipeline_config=_base_config,
+            is_active=True,
+            created_by=creator,
+        )
+        invalidate_template_cache()
+        result = get_template("global-only-tpl", organisation_id=org.pk)
+        assert result.pk == global_tpl.pk
+
+
+@pytest.mark.django_db
+class TestCacheInvalidationOnDelete:
+    def test_cache_invalidated_on_template_delete(
+        self, active_template: GenerationTemplate
+    ) -> None:
+        from unittest.mock import patch
+
+        with patch(
+            "src.generative.signals.invalidate_template_cache"
+        ) as mock_invalidate:
+            active_template.delete()
+            mock_invalidate.assert_called_once_with(slug="active-tpl")

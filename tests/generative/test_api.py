@@ -38,7 +38,7 @@ class TestTemplateAPI:
     def test_list_templates_filters_by_organisation(
         self, authenticated_client, template, other_user, organisation
     ):
-        """Test templates filtered by user's organisation."""
+        """Test templates filtered by user's organisation (+ global templates)."""
         # Create another organisation
         from organisations.models import Organisation
 
@@ -61,9 +61,9 @@ class TestTemplateAPI:
 
         response = authenticated_client.get("/api/v1/generative/templates/")
         assert response.status_code == status.HTTP_200_OK
-        # Should only see templates from authenticated user's org
+        # Should see templates from user's org + global (org=NULL), not other orgs
         for result in response.data["results"]:
-            assert result["organisation"] == organisation.id
+            assert result["organisation"] in (organisation.id, None)
 
     def test_get_template_detail(self, authenticated_client, template):
         """Test GET /templates/{id}/ returns template details."""

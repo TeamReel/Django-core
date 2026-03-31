@@ -346,8 +346,9 @@ def _generate_photo_composite_gemini(
         _prepare_gemini_composite_image,
     )
 
-    # Import _load_prompts_module from the orchestrator
-    from .asset_pipeline import _load_prompts_module
+    # Import PromptService for template lookup and prompt resolution
+    from .prompt_service import get_template
+    from .prompt_service import resolve_prompt as db_resolve_prompt
 
     tmp_dir = Path(tempfile.mkdtemp(prefix="photo_composite_gemini_"))
     try:
@@ -379,8 +380,8 @@ def _generate_photo_composite_gemini(
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
     # ── Resolve prompt from template ──
-    prompts_module = _load_prompts_module()
-    final_prompt = prompts_module.resolve_prompt("photo_composite_gemini", params)
+    db_template = get_template("photo_composite_gemini")
+    final_prompt = db_resolve_prompt(db_template, params)
 
     # ── Generate via Gemini ──
     client = genai.Client(api_key=api_key)

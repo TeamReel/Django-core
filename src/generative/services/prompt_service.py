@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from django.db.models import Q
+from django.db.models import F, Q
 
 from src.core.cache.decorators import cache_result
 from src.core.cache.services import CacheService
@@ -267,7 +267,8 @@ def get_template(slug: str, organisation_id: int | None = None) -> GenerationTem
     qs = GenerationTemplate.objects.filter(slug=slug, is_active=True)
     if organisation_id is not None:
         qs = qs.filter(Q(organisation_id=organisation_id) | Q(organisation__isnull=True))
-    template = qs.first()
+    # Org-specific templates take priority over global (org=NULL) ones
+    template = qs.order_by(F("organisation").asc(nulls_last=True)).first()
     if template is None:
         raise GenerationTemplateNotFoundError(slug)
     return template

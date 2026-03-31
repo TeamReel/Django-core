@@ -19,9 +19,12 @@ from __future__ import annotations
 import base64
 import logging
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
+
+if TYPE_CHECKING:
+    from src.generative.models import GenerationTemplate
 
 # ── Barrel imports for backward compatibility ──
 # These symbols are imported from sub-modules but re-exported here so that
@@ -51,11 +54,26 @@ from .video_providers import (  # noqa: F401
 logger = logging.getLogger("generative.services.asset_pipeline")
 
 
+def _template_to_legacy_dict(template: GenerationTemplate) -> dict[str, Any]:
+    """Convert a DB GenerationTemplate to the legacy dict format used by video providers."""
+    return {
+        "id": template.slug,
+        "name": template.name,
+        "category": template.template_subtype,
+        "description": template.description,
+        "output_type": template.pipeline_config.get("output_type", "image"),
+        "video_config": template.pipeline_config.get("video_config", {}),
+        "input_requirements": template.input_schema.get("required", []),
+        "parameters": template.parameters_schema,
+        "preprocessing": template.preprocessing_config,
+    }
+
+
 def _get_template_output_type(template_id: str) -> str:
     """Get the output type for a template (image or video).
 
     Args:
-        template_id: Template key from teamreel_prompts.TEMPLATES
+        template_id: Template slug
 
     Returns:
         'image' or 'video'
@@ -63,24 +81,13 @@ def _get_template_output_type(template_id: str) -> str:
     Raises:
         ValueError: If template not found
     """
-    import importlib.util
-    import os
+    from .prompt_service import GenerationTemplateNotFoundError, get_template
 
-    prompts_path = os.path.join(settings.BASE_DIR, "..", "teamreel_prompts.py")
-    if not os.path.exists(prompts_path):
-        prompts_path = os.path.join(settings.BASE_DIR, "teamreel_prompts.py")
-
-    spec = importlib.util.spec_from_file_location("teamreel_prompts", prompts_path)
-    prompts_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(prompts_module)
-
-    TEMPLATES = prompts_module.TEMPLATES
-
-    if template_id not in TEMPLATES:
-        raise ValueError(f"Unknown template: {template_id}")
-
-    template = TEMPLATES[template_id]
-    return template.get("output_type", "image")
+    try:
+        db_template = get_template(template_id)
+    except GenerationTemplateNotFoundError as err:
+        raise ValueError(f"Unknown template: {template_id}") from err
+    return db_template.pipeline_config.get("output_type", "image")
 
 
 # =============================================================================
@@ -101,7 +108,7 @@ def generate_asset(
     compositing.
 
     Args:
-        template_id: Template key from teamreel_prompts.TEMPLATES
+        template_id: Template slug identifier
         params: Parameter values (e.g. {"sleeves": "short", "neck": "round"})
         input_images: Dict of input images as bytes
             (keys: logo, sponsor, reference_photo, person_photo)
@@ -125,32 +132,22 @@ def generate_asset(
     if template_id == "photo_composite_gemini":
         return _generate_photo_composite_gemini(input_images, params, variant_count, model)
 
-    # Import the prompts module (root-level)
-    import importlib.util
-    import os
+    # Load template from database via PromptService
+    from .prompt_service import GenerationTemplateNotFoundError, get_template
+    from .prompt_service import resolve_prompt as db_resolve_prompt
 
-    prompts_path = os.path.join(settings.BASE_DIR, "..", "teamreel_prompts.py")
-    if not os.path.exists(prompts_path):
-        # Try alternate path (when BASE_DIR is project root)
-        prompts_path = os.path.join(settings.BASE_DIR, "teamreel_prompts.py")
+    try:
+        db_template = get_template(template_id)
+    except GenerationTemplateNotFoundError as err:
+        raise ValueError(f"Unknown template: {template_id}") from err
 
-    spec = importlib.util.spec_from_file_location("teamreel_prompts", prompts_path)
-    prompts_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(prompts_module)
-
-    TEMPLATES = prompts_module.TEMPLATES
-    resolve_prompt = prompts_module.resolve_prompt
-    PREPROCESSORS_MAP = prompts_module.TEMPLATES[template_id].get("preprocessing", {})
-
-    if template_id not in TEMPLATES:
-        raise ValueError(f"Unknown template: {template_id}")
-
-    template = TEMPLATES[template_id]
+    template = _template_to_legacy_dict(db_template)
+    preprocessors_map = db_template.preprocessing_config
 
     # Step 1: Preprocess input images
     processed_images = {}
     for img_key, img_bytes in input_images.items():
-        preprocess_fn_name = PREPROCESSORS_MAP.get(img_key)
+        preprocess_fn_name = preprocessors_map.get(img_key)
         if preprocess_fn_name and preprocess_fn_name in PREPROCESSORS:
             processed_images[img_key] = PREPROCESSORS[preprocess_fn_name](img_bytes)
             logger.info("Preprocessed %s with %s", img_key, preprocess_fn_name)
@@ -179,7 +176,7 @@ def generate_asset(
         logger.info("Guest player mode: injected silhouette as person_photo")
 
     # Step 3: Resolve prompt
-    final_prompt = resolve_prompt(template_id, params, kit_analysis)
+    final_prompt = db_resolve_prompt(db_template, params, kit_analysis)
 
     # Append guest-specific instructions to prompt
     if is_guest_player:
@@ -373,21 +370,6 @@ def generate_asset(
 # Video Generation (MiniMax / Hailuo — primary, Google Veo — fallback)
 
 
-def _load_prompts_module():
-    """Helper to load teamreel_prompts.py module dynamically."""
-    import importlib.util
-    import os
-
-    prompts_path = os.path.join(settings.BASE_DIR, "..", "teamreel_prompts.py")
-    if not os.path.exists(prompts_path):
-        prompts_path = os.path.join(settings.BASE_DIR, "teamreel_prompts.py")
-
-    spec = importlib.util.spec_from_file_location("teamreel_prompts", prompts_path)
-    prompts_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(prompts_module)
-    return prompts_module
-
-
 def generate_video(
     template_id: str,
     params: dict[str, str],
@@ -413,7 +395,7 @@ def generate_video(
     If ``provider`` is explicitly set (e.g. ``"runway"``), use that provider directly.
 
     Args:
-        template_id: Template key from teamreel_prompts.TEMPLATES (must have output_type='video')
+        template_id: Template slug (must have output_type='video')
         params: Parameter values (e.g. {"style_variant": "arms_crossed", "kit_type": "home"})
         input_images: Dict of input images as bytes (keys: person_photo, etc.)
         user_id: User ID for file ownership
@@ -429,20 +411,21 @@ def generate_video(
         Dict with keys: {video_bytes, video_url, mime_type, filename,
             file_asset_id, metadata, variants} or {error}
     """
-    prompts_module = _load_prompts_module()
-    TEMPLATES = prompts_module.TEMPLATES
-    resolve_prompt = prompts_module.resolve_prompt
+    from .prompt_service import GenerationTemplateNotFoundError, get_template
+    from .prompt_service import resolve_prompt as db_resolve_prompt
 
-    if template_id not in TEMPLATES:
-        raise ValueError(f"Unknown template: {template_id}")
+    try:
+        db_template = get_template(template_id)
+    except GenerationTemplateNotFoundError as err:
+        raise ValueError(f"Unknown template: {template_id}") from err
 
-    template = TEMPLATES[template_id]
+    template = _template_to_legacy_dict(db_template)
 
     if template.get("output_type") != "video":
         raise ValueError(f"Template {template_id} is not a video template (output_type != 'video')")
 
     # Resolve prompt
-    final_prompt = resolve_prompt(template_id, params)
+    final_prompt = db_resolve_prompt(db_template, params)
     logger.info("Resolved video prompt for %s: %d chars", template_id, len(final_prompt))
 
     # Template-specific preprocessing: composite modes for Then vs Now
