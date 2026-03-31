@@ -13,6 +13,7 @@ base_commit: 4bf43a91801565ab839d8d8eed87291a60e8382d
 created_at: '2026-03-31T15:32:30.421480+00:00'
 subtasks: [T025, T026, T027, T028, T029, T030]
 shell_pid: "101992"
+agent: "Bouwer"
 history:
 - date: '2026-03-31T14:10:25Z'
   event: created
@@ -661,3 +662,7 @@ with logger.operation(
 2. **Verify JSON output**: Should be parseable by log aggregators
 3. **Test context manager**: Both success and failure paths
 4. **Performance**: Profile with large batches
+
+## Activity Log
+
+- 2026-03-31T15:32:31Z – Bouwer – shell_pid=101992 – lane=doing – Assigned agent via workflow command
