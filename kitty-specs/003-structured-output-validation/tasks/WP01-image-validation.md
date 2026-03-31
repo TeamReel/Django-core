@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 title: Image Validation Module
-lane: "for_review"
+lane: "doing"
 dependencies: []
 requirement_refs:
 - FR-001
@@ -13,8 +13,8 @@ base_branch: main
 base_commit: ef9e25050d8fe3427d37a430f2fb8ebbe841c153
 created_at: '2026-03-31T14:22:25.408848+00:00'
 subtasks: [T001, T002, T003, T004, T005, T006, T007, T008]
-agent: Bouwer
-shell_pid: '61292'
+agent: "Code Review"
+shell_pid: "110732"
 history:
 - date: '2026-03-31T14:10:25Z'
   event: created
@@ -603,3 +603,4 @@ spec-kitty implement WP01
 
 - 2026-03-31T14:22:26Z – Bouwer – shell_pid=61292 – lane=doing – Assigned agent via workflow command
 - 2026-03-31T14:27:58Z – Bouwer – shell_pid=61292 – lane=for_review – Ready for review: Image validation module with PIL-based format/size/dimension checks, integrated at upload entry point, 33 tests passing
+- 2026-03-31T14:32:08Z – Code Review – shell_pid=110732 – lane=doing – Started review via workflow command
