@@ -13,6 +13,7 @@ base_commit: f366e51d20c73aaa3cadaa3a36a7d0d1f2a2d06d
 created_at: '2026-03-31T14:34:57.507427+00:00'
 subtasks: [T009, T010, T011, T012, T013]
 shell_pid: "98592"
+agent: "Bouwer"
 history:
 - date: '2026-03-31T14:10:25Z'
   event: created
@@ -440,3 +441,7 @@ spec-kitty implement WP02
 2. **Verify decorator placement**: Only on direct API calls, not wrappers
 3. **Log format**: Should be structured for log aggregation
 4. **Timing**: Run with stopwatch to verify backoff intervals
+
+## Activity Log
+
+- 2026-03-31T14:34:58Z – Bouwer – shell_pid=98592 – lane=doing – Assigned agent via workflow command
