@@ -15,6 +15,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from accounts.models import User
 from django.core.cache import cache as django_cache
+from django.db import DatabaseError
 from organisations.models import Organisation
 
 from src.generative.models import GenerationTemplate, ProviderChoices
@@ -321,8 +322,6 @@ class TestListAssetTemplatesViewErrorHandling:
         factory = RequestFactory()
         request = factory.get("/api/v1/generative/assets/templates/")
         force_authenticate(request, user=image_template.created_by)
-
-        from django.db import DatabaseError
 
         with (
             patch(

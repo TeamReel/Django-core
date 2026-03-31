@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | 🔍 REVIEW |
+| Status | ✅ DONE |
 | Bron | Code Review WP03 |
 | Impact | 🟡 important |
 | Effort | ~1 uur |

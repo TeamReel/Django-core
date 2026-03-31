@@ -316,8 +316,12 @@ class FileViewSet(viewsets.ModelViewSet):
 
         # Filter out path traversal attempts ("..") and ensure strings
         valid_paths = [
-            p for p in paths 
+            p for p in paths
             if p and isinstance(p, str) and ".." not in p
+        ]
+        rejected_paths = [
+            p for p in paths
+            if p and isinstance(p, str) and p not in valid_paths
         ]
 
         # ── Ownership check: only allow paths belonging to this org ──
@@ -391,5 +395,9 @@ class FileViewSet(viewsets.ModelViewSet):
                 urls[path] = backend.get_url(path, signed=True)
             except Exception:
                 urls[path] = None
+
+        # Include rejected paths (traversal attempts) as None
+        for path in rejected_paths:
+            urls[path] = None
 
         return Response({"urls": urls, "expires_in": 3600})
