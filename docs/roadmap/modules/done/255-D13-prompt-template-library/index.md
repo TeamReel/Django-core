@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| Status | 📐 READY |
-| Spec-Kitty | `kitty-specs/001-prompt-template-library/` |
+| Status | ✅ DONE |
+| Spec-Kitty | `kitty-specs/002-prompt-template-library/` |
 | Effort | ~10 uur |
 
 ## Doel
@@ -12,8 +12,8 @@ Migreer 10 hardcoded prompt templates van `teamreel_prompts.py` naar database-op
 
 ## Delivery Checklist
 
-- [ ] Migrations: Applied to Railway
-- [ ] Tests: pytest passes
-- [ ] Admin: GenerationTemplateAdmin bijgewerkt
-- [ ] API: Endpoints getest
-- [ ] Documentation: Updated
+- [x] Migrations: Applied (0009 schema + 0010 seed)
+- [x] Tests: pytest passes (70+ tests WP01-WP04)
+- [x] Admin: GenerationTemplateAdmin met fieldsets voor prompt editing
+- [x] API: ViewSet met CRUD + clone + org-scoping
+- [x] Documentation: generative-pipeline.md, api-reference.md, data-model.md
