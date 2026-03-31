@@ -123,12 +123,12 @@
 **Requirements**: FR-004
 
 **Subtasks**:
-- [ ] T014: Create FFmpegErrorCategory enum
-- [ ] T015: Create FFmpegError dataclass
-- [ ] T016: Implement error pattern matching
-- [ ] T017: Create FFmpegErrorParser.parse() method
-- [ ] T018: Create tests with real stderr samples
-- [ ] T019: Integrate parser in video/services/_common.py
+- [x] T014: Create FFmpegErrorCategory enum
+- [x] T015: Create FFmpegError dataclass
+- [x] T016: Implement error pattern matching
+- [x] T017: Create FFmpegErrorParser.parse() method
+- [x] T018: Create tests with real stderr samples
+- [x] T019: Integrate parser in video/services/_common.py
 
 **Prompt**: [WP03-ffmpeg-error-parser.md](tasks/WP03-ffmpeg-error-parser.md)
 
