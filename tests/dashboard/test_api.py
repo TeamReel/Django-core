@@ -107,7 +107,12 @@ class TestOverviewEndpoint:
         resp = admin_client.get("/api/v1/dashboard/overview/")
         data = resp.json()["data"]
         assert "platform" in data
-        assert "organisations_count" in data["platform"]
+        # Frontend expects short keys (no _count suffix)
+        assert "organisations" in data["platform"]
+        assert "projects" in data["platform"]
+        assert "members" in data["platform"]
+        assert "users" in data["platform"]
+        assert "file_assets" in data["platform"]
 
     def test_response_has_growth_key(self, admin_client):
         resp = admin_client.get("/api/v1/dashboard/overview/")
@@ -139,11 +144,13 @@ class TestPipelinesEndpoint:
         assert "content" in data
         assert "items_by_status" in data["content"]
 
-    def test_response_has_video_key(self, admin_client):
+    def test_response_has_video_with_stale_jobs_array(self, admin_client):
         resp = admin_client.get("/api/v1/dashboard/pipelines/")
         data = resp.json()["data"]
         assert "video" in data
         assert "jobs_by_status" in data["video"]
+        assert "stale_jobs" in data["video"]
+        assert isinstance(data["video"]["stale_jobs"], list)
 
 
 # ── Credits Endpoint ────────────────────────────────────────────────
@@ -160,6 +167,13 @@ class TestCreditsEndpoint:
     def test_response_has_credits_fields(self, admin_client):
         resp = admin_client.get("/api/v1/dashboard/credits/")
         data = resp.json()["data"]
-        assert "total_credits_allocated" in data
+        assert "total_allocated" in data
+        assert "total_used" in data
+        assert "usage_by_day" in data
+        assert isinstance(data["usage_by_day"], list)
         assert "top_orgs" in data
-        assert "credits_this_month" in data
+        assert isinstance(data["top_orgs"], list)
+
+    def test_accepts_range_param(self, admin_client):
+        resp = admin_client.get("/api/v1/dashboard/credits/?range=7d")
+        assert resp.status_code == 200

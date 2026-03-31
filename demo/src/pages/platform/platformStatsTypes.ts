@@ -47,7 +47,7 @@ export interface ContentStats {
 }
 
 export interface StaleJob {
-  id: number;
+  id: string;
   type: string;
   started_at: string;
   minutes_elapsed: number;
