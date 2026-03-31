@@ -1,7 +1,7 @@
 ---
 work_package_id: WP01
 title: Schema Migration + Seed Data
-lane: planned
+lane: done
 dependencies: []
 requirement_refs:
 - FR-001
@@ -18,7 +18,7 @@ subtasks:
 - T005
 phase: H0 - Schema + Seed
 assignee: ''
-agent: ''
+agent: bouwer
 shell_pid: ''
 review_status: ''
 reviewed_by: ''
@@ -28,6 +28,14 @@ history:
   lane: planned
   agent: planner
   action: Prompt generated via plan.md phasing
+- timestamp: '2026-03-31T00:00:00Z'
+  lane: doing
+  agent: bouwer
+  action: WP01 implementation started
+- timestamp: '2026-03-31T00:00:00Z'
+  lane: done
+  agent: bouwer
+  action: WP01 completed — commit d5b1e9550. All 5 subtasks done, 21 tests passing.
 ---
 
 # Work Package Prompt: WP01 – Schema Migration + Seed Data
