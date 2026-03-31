@@ -248,4 +248,5 @@ These will be addressed in a follow-up feature when monitoring infrastructure is
 <!-- status-model:start -->
 ## Canonical Status (Generated)
 - WP01: approved
+- WP02: for_review
 <!-- status-model:end -->
