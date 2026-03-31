@@ -54,14 +54,14 @@
 **Requirements**: FR-001, FR-002
 
 **Subtasks**:
-- [ ] T001: Create src/media/validation/ directory structure
-- [ ] T002: Create ImageValidationError enum
-- [ ] T003: Create ImageValidationResult dataclass
-- [ ] T004: Implement validate_format() with magic byte check
-- [ ] T005: Implement validate_size() with 20MB limit [P]
-- [ ] T006: Implement validate_dimensions() with 8192x8192 limit [P]
-- [ ] T007: Create unit tests for ImageValidator
-- [ ] T008: Integrate ImageValidator in files/views.py
+- [x] T001: Create src/media/validation/ directory structure
+- [x] T002: Create ImageValidationError enum
+- [x] T003: Create ImageValidationResult dataclass
+- [x] T004: Implement validate_format() with magic byte check
+- [x] T005: Implement validate_size() with 20MB limit [P]
+- [x] T006: Implement validate_dimensions() with 8192x8192 limit [P]
+- [x] T007: Create unit tests for ImageValidator
+- [x] T008: Integrate ImageValidator in files/views.py
 
 **Prompt**: [WP01-image-validation.md](tasks/WP01-image-validation.md)
 
@@ -244,3 +244,8 @@ The following requirements are intentionally deferred to a future iteration:
 | FR-008 | Health checks: endpoint per provider for monitoring | P2 | Nice-to-have, requires ops integration |
 
 These will be addressed in a follow-up feature when monitoring infrastructure is ready.
+
+<!-- status-model:start -->
+## Canonical Status (Generated)
+- WP01: approved
+<!-- status-model:end -->
