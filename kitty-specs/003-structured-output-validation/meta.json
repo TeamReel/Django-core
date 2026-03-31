@@ -2,8 +2,10 @@
   "created_at": "2026-03-31T13:24:17.011487+00:00",
   "feature_number": "003",
   "feature_slug": "003-structured-output-validation",
-  "friendly_name": "structured output validation",
+  "friendly_name": "Structured Output Validation",
   "mission": "software-dev",
+  "source_description": "Runtime validation layer voor AI-gegenereerde JSON outputs met Pydantic schemas, severity-based error handling, en pipeline integratie",
   "slug": "003-structured-output-validation",
-  "target_branch": "main"
+  "target_branch": "main",
+  "vcs": "git"
 }
