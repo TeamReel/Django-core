@@ -1,14 +1,18 @@
 ---
 work_package_id: WP04
 title: Output Quality Checker
-lane: planned
+lane: "doing"
 dependencies: [WP01]
 requirement_refs:
 - FR-005
 planning_base_branch: main
 merge_target_branch: main
 branch_strategy: Create worktree from main, merge back to main when complete
+base_branch: 003-structured-output-validation-WP01
+base_commit: 33be400cacfcf9a2a150f351785dc13fed4f54b0
+created_at: '2026-03-31T15:02:44.765839+00:00'
 subtasks: [T020, T021, T022, T023, T024]
+shell_pid: "60880"
 history:
 - date: '2026-03-31T14:10:25Z'
   event: created
