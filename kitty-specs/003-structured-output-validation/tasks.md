@@ -251,5 +251,5 @@ These will be addressed in a follow-up feature when monitoring infrastructure is
 - WP02: approved
 - WP03: approved
 - WP04: approved
-- WP05: for_review
+- WP05: in_progress
 <!-- status-model:end -->
