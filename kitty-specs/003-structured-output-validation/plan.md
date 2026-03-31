@@ -1,108 +1,205 @@
-# Implementation Plan: [FEATURE]
-*Path: [templates/plan-template.md](templates/plan-template.md)*
+# Implementation Plan: Structured Output Validation
 
-
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/kitty-specs/[###-feature-name]/spec.md`
-
-**Note**: This template is filled in by the `/spec-kitty.plan` command. See `src/specify_cli/missions/software-dev/command-templates/plan.md` for the execution workflow.
-
-The planner will not begin until all planning questions have been answered—capture those answers in this document before progressing to later phases.
+**Branch**: `main` | **Date**: 2026-03-31 | **Spec**: [spec.md](spec.md)
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Runtime validation layer voor AI-gegenereerde JSON outputs in de generative pipeline. Implementeert Pydantic v2 schemas als submodule van `src/generative/validation/`, met severity-based error handling, type coercion, en `@validate_output` decorator voor Celery tasks.
+
+**Primaire integratiepunten**:
+- `asset_pipeline.py` — Gemini image response validatie
+- `gemini_image.py` — Photo composite output parsing
+- `minimax_client.py` — Video status enum validatie
+- `tasks.py` — ErrorCategory uitbreiding voor VALIDATION_ERROR
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
-
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: Python 3.11  
+**Primary Dependencies**: pydantic v2 (al in requirements), Django 5, DRF  
+**Storage**: N/A (code-defined schemas, geen database)  
+**Testing**: pytest met factory_boy, parametrize voor edge cases  
+**Target Platform**: Linux server (Railway)  
+**Project Type**: Django backend submodule  
+**Performance Goals**: <50ms p95 validatie overhead per AI response  
+**Constraints**: Backwards compatible met bestaande GenerationRequest/GenerationOutput  
+**Scale/Scope**: ~5 integratiepunten in generative pipeline
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+| Rule | Status | Notes |
+|------|--------|-------|
+| TEST_FIRST | ✅ Pass | Tests first per schema/validator |
+| No `any` types | ✅ Pass | Pydantic enforces strict typing |
+| Type hints | ✅ Pass | All functions typed |
+| Org-scoped querysets | N/A | No database queries |
+| permission_classes | N/A | No API endpoints |
+| select_related/prefetch_related | N/A | No ORM queries |
 
 ## Project Structure
+
+### Source Code (new files)
+
+```
+src/generative/validation/
+├── __init__.py          # Public exports: validate_output, ValidationResult
+├── schemas.py           # Pydantic BaseModel schemas (LineupSchema, PlayerSchema, etc.)
+├── registry.py          # SchemaRegistry singleton with @register decorator
+├── validators.py        # Core validation logic, type coercion
+├── decorators.py        # @validate_output decorator for tasks/views
+├── errors.py            # ValidationError, CoercionWarning, Severity enum
+└── formatters.py        # Error message formatting with field paths
+```
+
+### Tests (new files)
+
+```
+tests/generative/validation/
+├── __init__.py
+├── test_schemas.py           # Schema definition tests
+├── test_validators.py        # Validation logic tests
+├── test_decorators.py        # @validate_output decorator tests
+├── test_coercion.py          # Type coercion edge cases
+├── test_error_formatting.py  # Field path + message formatting
+└── test_integration.py       # Full pipeline integration tests
+```
+
+### Modified Files
+
+| File | Change |
+|------|--------|
+| `src/generative/services/asset_pipeline.py` | Add Gemini response validation |
+| `src/generative/services/gemini_image.py` | Add photo composite output validation |
+| `src/generative/services/minimax_client.py` | Add status enum validation |
+| `src/generative/tasks.py` | Add VALIDATION_ERROR to ErrorCategory |
 
 ### Documentation (this feature)
 
 ```
-kitty-specs/[###-feature]/
-├── plan.md              # This file (/spec-kitty.plan command output)
-├── research.md          # Phase 0 output (/spec-kitty.plan command)
-├── data-model.md        # Phase 1 output (/spec-kitty.plan command)
-├── quickstart.md        # Phase 1 output (/spec-kitty.plan command)
-├── contracts/           # Phase 1 output (/spec-kitty.plan command)
-└── tasks.md             # Phase 2 output (/spec-kitty.tasks command - NOT created by /spec-kitty.plan)
+kitty-specs/003-structured-output-validation/
+├── spec.md              # Feature specification
+├── plan.md              # This file
+├── research.md          # Phase 0 research findings
+├── data-model.md        # Pydantic schema definitions
+├── checklists/
+│   └── requirements.md  # Specification quality checklist
+└── tasks/               # Work packages (generated by /spec-kitty.tasks)
 ```
 
-### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
+## Engineering Approach
+
+### Architecture Decision: Submodule vs Separate App
+
+**Decision**: Integrate as `src/generative/validation/` submodule.
+
+**Rationale**:
+- Validation is tightly coupled to GenerationTemplate, GenerationRequest, GenerationOutput
+- No separate admin UI needed (code-defined schemas)
+- No new Django models required
+- Follows existing pattern: `src/generative/services/`, `src/generative/tasks.py`
+
+### Validation Flow
 
 ```
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+                        ┌─────────────────────┐
+AI Provider Response → │ @validate_output    │ → ValidationResult
+                        │   decorator         │
+                        └─────────┬───────────┘
+                                  │
+                        ┌─────────▼───────────┐
+                        │ SchemaRegistry      │
+                        │ .get_schema(name)   │
+                        └─────────┬───────────┘
+                                  │
+                        ┌─────────▼───────────┐
+                        │ Pydantic validate   │
+                        │ + type coercion     │
+                        └─────────┬───────────┘
+                                  │
+                    ┌─────────────┼─────────────┐
+                    │             │             │
+             ┌──────▼──────┐ ┌───▼────┐ ┌──────▼──────┐
+             │ CRITICAL    │ │ WARNING│ │ INFO       │
+             │ → raise     │ │ → log  │ │ → continue │
+             │   exception │ │        │ │            │
+             └─────────────┘ └────────┘ └────────────┘
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+### Severity Classification
 
-## Complexity Tracking
+| Severity | Example | Action |
+|----------|---------|--------|
+| CRITICAL | Missing required field, wrong type (non-coercible) | Raise ValidationError, trigger retry |
+| WARNING | Type coerced (str→int), field trimmed | Log warning, continue |
+| INFO | Extra field ignored, default applied | Log info, continue |
 
-*Fill ONLY if Constitution Check has violations that must be justified*
+### Registry Pattern
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+```python
+# src/generative/validation/registry.py
+_schemas: dict[str, type[BaseModel]] = {}
+
+def register(name: str):
+    def decorator(cls: type[BaseModel]) -> type[BaseModel]:
+        _schemas[name] = cls
+        return cls
+    return decorator
+
+def get_schema(name: str) -> type[BaseModel]:
+    return _schemas[name]
+```
+
+### Decorator Pattern
+
+```python
+# src/generative/validation/decorators.py
+def validate_output(schema_name: str, strict: bool = True):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+            schema = get_schema(schema_name)
+            validated = schema.model_validate(result)
+            return validated.model_dump()
+        return wrapper
+    return decorator
+```
+
+## Dependencies
+
+### External Dependencies (already in requirements)
+
+- `pydantic>=2.0` — Schema definition, validation, coercion
+- `structlog` — Logging with field paths
+
+### Internal Dependencies
+
+- `src/generative/models.py` — GenerationTemplate.input_schema reference
+- `src/generative/services/` — Integration points for validation
+- `src/generative/tasks.py` — ErrorCategory enum extension
+
+## Implementation Order
+
+1. **WP01: Core validation module** — schemas.py, registry.py, validators.py, errors.py
+2. **WP02: Decorator and formatters** — decorators.py, formatters.py
+3. **WP03: Line-up schema definition** — LineupSchema, PlayerSchema with all fields
+4. **WP04: Pipeline integration** — asset_pipeline.py, gemini_image.py integration
+5. **WP05: Error handling integration** — ErrorCategory.VALIDATION_ERROR, retry logic
+
+## Risk Assessment
+
+| Risk | Mitigation |
+|------|------------|
+| Performance overhead | Profile p95 during WP01, target <50ms |
+| Breaking existing pipeline | Feature flag for gradual rollout |
+| Schema version mismatch | Include schema_version field for forwards compatibility |
+| AI provider format changes | Centralized schema definitions make updates single-point |
+
+## Success Metrics
+
+- All AI responses validated before storage
+- <50ms p95 validation overhead
+- 100% test coverage on validation module
+- Zero N+1 queries (N/A - no database)
+- All existing tests still passing after integration
