@@ -194,7 +194,11 @@ export function useMatchSheet(
   const teamName = match?.project?.club_name || match?.project?.name || 'Team';
   const opponent = match?.opponent_project?.club_name || match?.opponent_project?.name || match?.title?.split(' vs ')?.[1] || 'Tegenstander';
   const isHome = match?.metadata?.is_home !== false;
-  const score = match?.metadata?.score || match?.metadata?.final_score;
+  const rawScore = match?.metadata?.score || match?.metadata?.final_score;
+  const score: string | undefined =
+    rawScore && typeof rawScore === 'object' && 'home' in rawScore && 'away' in rawScore
+      ? `${rawScore.home} – ${rawScore.away}`
+      : rawScore as string | undefined;
 
   const lineupFormation = lineupFormationState || (match?.metadata?.lineup as Record<string, unknown> | undefined)?.formation as string | undefined;
 
