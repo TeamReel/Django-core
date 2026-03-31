@@ -112,3 +112,6 @@ dj-database-url==2.1.0
 # Structured logging for production
 python-json-logger==2.0.7
 uvicorn==0.27.1
+
+# Structured logging for media pipeline operations
+structlog>=24.0.0

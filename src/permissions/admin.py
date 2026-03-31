@@ -137,8 +137,3 @@ class RoleAssignmentAdmin(admin.ModelAdmin):
         if not change:
             obj.assigned_by = request.user
         super().save_model(request, obj, form, change)
-
-
-# Configure admin site headers
-admin.site.site_header = "Django Core Admin"
-admin.site.site_title = "Permissions Management"

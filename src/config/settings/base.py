@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     # B14: Web UI - Must be before accounts for template override
     "web_ui.apps.WebUIConfig",
     "accounts.apps.AccountsConfig",  # Must be before admin
-    "django.contrib.admin",
+    "dashboard.apps.TeamReelAdminConfig",  # F34: Custom admin with monitoring dashboard
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -93,6 +93,8 @@ INSTALLED_APPS = [
     "activity_feed.apps.ActivityFeedConfig",
     # B46: Soft Delete & Trash
     "trash.apps.TrashConfig",
+    # F34: Admin Monitoring Dashboard
+    "dashboard.apps.DashboardConfig",
 ]
 
 MIDDLEWARE = [
