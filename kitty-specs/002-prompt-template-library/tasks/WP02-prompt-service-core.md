@@ -25,7 +25,7 @@ subtasks:
 - T006
 phase: Phase 1 - Core Service
 assignee: ''
-agent: ''
+agent: "bouwer"
 shell_pid: "89732"
 review_status: ''
 reviewed_by: ''
@@ -364,3 +364,4 @@ pytest tests/generative/ -v  # All generative tests (includes WP01)
 ## Activity Log
 
 - 2026-03-31T06:55:35Z – system – lane=planned – Prompt created.
+- 2026-03-31T07:08:29Z – bouwer – shell_pid=89732 – lane=doing – Assigned agent via workflow command
