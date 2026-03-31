@@ -288,13 +288,36 @@ class MiniMaxClient:
         file_id = result.get("file_id", "")
         video_bytes = self.download_video(file_id, output_path=output_path)
 
-        return {
+        output = {
             "task_id": task_id,
             "file_id": file_id,
             "video_bytes": video_bytes,
             "video_width": result.get("video_width", 0),
             "video_height": result.get("video_height", 0),
         }
+
+        # Quality check if saved to disk
+        if output_path:
+            from src.media.validation.video_validator import (
+                QualityStatus,
+                VideoQualityChecker,
+            )
+
+            quality = VideoQualityChecker.check(output_path)
+            output["quality"] = quality.to_dict()
+            logger.info(
+                "MiniMax: quality check — %s (%s)", quality.status.value, quality.resolution
+            )
+
+            if quality.status == QualityStatus.FAILED:
+                raise MiniMaxError(
+                    f"Video quality check failed: {quality.warnings}",
+                )
+            elif quality.status == QualityStatus.DEGRADED:
+                for warning in quality.warnings:
+                    logger.warning("MiniMax: quality warning — %s", warning)
+
+        return output
 
     def close(self):
         self._client.close()

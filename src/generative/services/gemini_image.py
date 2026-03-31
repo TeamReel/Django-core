@@ -16,12 +16,20 @@ from typing import Any
 
 from django.conf import settings
 
+from src.media.validation.retry_config import GEMINI_RETRY
+
 from .preprocessing import (
     OUTPUT_POSTPROCESSORS,
     _crop_gemini_output_upper_body,
 )
 
 logger = logging.getLogger("generative.services.gemini_image")
+
+
+@GEMINI_RETRY
+def _call_gemini(client: Any, **kwargs: Any) -> Any:
+    """Call Gemini API with automatic retry on transient failures."""
+    return client.models.generate_content(**kwargs)
 
 
 # =============================================================================
@@ -69,7 +77,8 @@ Use the format: "Primary: [color]. Secondary: [color]. Pattern: [description]."
         mime_type="image/png",
     )
 
-    response = client.models.generate_content(
+    response = _call_gemini(
+        client,
         model="gemini-2.0-flash",
         contents=[analysis_prompt, image_part],
     )
@@ -246,8 +255,9 @@ def _validate_photo_composite(
             types.Part.from_bytes(data=current_cropped_bytes, mime_type="image/png")
         )
 
-        response = client.models.generate_content(
-            model="models/gemini-2.0-flash",  # Fast model for validation
+        response = _call_gemini(
+            client,
+            model="models/gemini-2.0-flash",
             contents=content_parts,
             config=types.GenerateContentConfig(
                 response_modalities=["TEXT"],
@@ -412,7 +422,8 @@ def _generate_photo_composite_gemini(
                 types.Part.from_bytes(data=ref_composite_bytes, mime_type="image/png")
             )
 
-            response = client.models.generate_content(
+            response = _call_gemini(
+                client,
                 model=image_model,
                 contents=content_parts,
                 config=types.GenerateContentConfig(
@@ -508,7 +519,8 @@ def _generate_photo_composite_gemini(
                                 max_retries,
                             )
 
-                            retry_response = client.models.generate_content(
+                            retry_response = _call_gemini(
+                                client,
                                 model=image_model,
                                 contents=content_parts,
                                 config=types.GenerateContentConfig(
