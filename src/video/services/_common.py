@@ -31,6 +31,8 @@ from pathlib import Path
 import requests
 from PIL import Image, ImageFont
 
+from src.media.validation.ffmpeg_errors import FFmpegErrorCategory, FFmpegErrorParser
+
 logger = logging.getLogger(__name__)
 
 # ── Canvas constants (9:16 portrait) ───────────────────────────────────────
@@ -185,21 +187,48 @@ def download_image_bytes(url: str, timeout: int = 30) -> bytes | None:
 # ── FFmpeg subprocess runner ───────────────────────────────────────────────
 
 
+class FFmpegProcessError(Exception):
+    """FFmpeg processing error with category info."""
+
+    def __init__(
+        self,
+        message: str,
+        category: FFmpegErrorCategory,
+        is_transient: bool,
+    ) -> None:
+        super().__init__(message)
+        self.category = category
+        self.is_transient = is_transient
+
+
 def run_ffmpeg(cmd: list[str], desc: str, timeout: int = 300) -> None:
-    """Run FFmpeg and raise on failure."""
+    """Run FFmpeg and raise on failure with parsed error category."""
     logger.info("FFmpeg: %s", desc)
     try:
         subprocess.run(cmd, check=True, capture_output=True, timeout=timeout)
     except subprocess.CalledProcessError as e:
         stderr = e.stderr.decode(errors="replace") if e.stderr else ""
-        tail = stderr[-2000:] if stderr else ""
-        logger.error("FFmpeg failed (%s): %s", desc, tail)
-        raise RuntimeError(
-            f"FFmpeg failed during {desc}. Return code: {e.returncode}. Stderr tail: {tail}"
+        error = FFmpegErrorParser.parse(stderr, e.returncode)
+        logger.error(
+            "FFmpeg failed (%s): category=%s message=%s is_transient=%s exit_code=%s",
+            desc,
+            error.category.value,
+            error.message,
+            error.is_transient,
+            error.exit_code,
+        )
+        raise FFmpegProcessError(
+            error.user_message,
+            category=error.category,
+            is_transient=error.is_transient,
         ) from e
     except subprocess.TimeoutExpired as e:
         logger.error("FFmpeg timed out (%s)", desc)
-        raise RuntimeError(f"FFmpeg timed out during {desc}.") from e
+        raise FFmpegProcessError(
+            "Video verwerking duurde te lang",
+            category=FFmpegErrorCategory.TIMEOUT,
+            is_transient=True,
+        ) from e
 
 
 # ── Font helpers ───────────────────────────────────────────────────────────
