@@ -57,6 +57,7 @@ export const SidebarPanelA = memo(function SidebarPanelA({
                         path.startsWith('/integration-status') ||
                         path.startsWith('/design-system') ||
                         path.startsWith('/observability') ||
+                        path.startsWith('/platform-stats') ||
                         path.startsWith('/security');
 
                     const sectionIsActive = (() => {
@@ -147,6 +148,7 @@ export const SidebarPanelA = memo(function SidebarPanelA({
                                             curPath.startsWith('/integration-status') ||
                                             curPath.startsWith('/design-system') ||
                                             curPath.startsWith('/observability') ||
+                                            curPath.startsWith('/platform-stats') ||
                                             curPath.startsWith('/security');
 
                                         const isActiveViaItem =

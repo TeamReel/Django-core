@@ -157,6 +157,7 @@ export const routes = {
   constitution: () => '/constitution' as const,
   security: () => '/security' as const,
   observability: () => '/observability' as const,
+  platformStats: () => '/platform-stats' as const,
   apiDocs: () => '/api-docs' as const,
   demoWebsockets: () => '/demo/websockets' as const,
   demoPerformance: () => '/demo/performance' as const,

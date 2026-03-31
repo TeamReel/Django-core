@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard, Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
-  Users, Library, Sparkles, Settings, Activity, Palette,
+  Users, Library, Sparkles, Settings, Activity, Palette, BarChart3,
   BookOpen, Folder, ClipboardCheck, GitBranch,
 } from 'lucide-react';
 import { routes } from '../routes';
@@ -58,6 +58,7 @@ export const NAV_CONFIG: NavSection[] = [
       { path: routes.appBackgrounds(), label: 'Achtergronden', icon: Library, visibility: 'superadmin' },
       { path: routes.permissions(), label: 'Organisatie', icon: Users, visibility: 'superadmin' },
       { path: routes.health(), label: 'Platform', icon: Activity, visibility: 'superadmin' },
+      { path: routes.platformStats(), label: 'Stats Dashboard', icon: BarChart3, visibility: 'superadmin' },
     ],
   },
   {

@@ -1,0 +1,231 @@
+/* PlatformStatsPage.module.css — Interactive dashboard */
+
+.pageWrapper {
+  background-color: var(--app-bg);
+  min-height: 100%;
+}
+
+/* ─── Header row ──────────────────────────────────────── */
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.lastUpdated {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--app-text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ─── KPI grid ────────────────────────────────────────── */
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.kpiCard {
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.kpiLabel {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--app-text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.kpiValue {
+  font-size: var(--font-size-2xl, 1.5rem);
+  font-weight: var(--font-weight-bold, 700);
+  color: var(--app-text);
+}
+
+.kpiDeltaPositive {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-green-500, #22c55e);
+  margin-top: var(--space-1);
+}
+
+.kpiDeltaNegative {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-red-500, #ef4444);
+  margin-top: var(--space-1);
+}
+
+/* ─── Charts ──────────────────────────────────────────── */
+
+.chartCard {
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg, 1.125rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--app-text);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.chartContainer {
+  width: 100%;
+}
+
+.emptyState {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--app-text-muted);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+/* ─── Pipeline grid ───────────────────────────────────── */
+
+.pipelineGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+}
+
+.pipelineColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.miniChart {
+  text-align: center;
+}
+
+.miniChartTitle {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--app-text);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.pipelineStats {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--app-text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.miniBarWrap {
+  width: 100%;
+}
+
+/* ─── Credits ─────────────────────────────────────────── */
+
+.creditsSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.creditsBadges {
+  display: flex;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.creditsAllocated {
+  color: var(--app-text-muted);
+}
+
+.creditsUsed {
+  color: var(--color-amber-500, #f59e0b);
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+.topOrgsTable {
+  margin-top: var(--space-4);
+}
+
+.statsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.statsTable th {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  color: var(--app-text-muted);
+  font-weight: var(--font-weight-medium, 500);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.statsTable td {
+  padding: var(--space-2) var(--space-3);
+  color: var(--app-text);
+  border-bottom: 1px solid var(--app-border);
+}
+
+/* ─── Stale jobs alert ────────────────────────────────── */
+
+.staleAlert {
+  margin-bottom: var(--space-5);
+}
+
+.staleList {
+  margin: var(--space-2) 0 0 var(--space-4);
+  padding: 0;
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+/* ─── Error section ───────────────────────────────────── */
+
+.errorSection {
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+/* ─── Responsive ──────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .kpiGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .pipelineGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pipelineGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .headerRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .creditsSummaryRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kpiCard,
+  .chartCard {
+    transition: none;
+  }
+}

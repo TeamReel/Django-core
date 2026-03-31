@@ -72,6 +72,7 @@ export const ObservabilityPage = lazyWithRetry(() => import('./pages/platform/Ob
 export const ApiDocsPage = lazyWithRetry(() => import('./pages/platform/ApiDocsPage'));
 export const CachePerformancePage = lazyWithRetry(() => import('./pages/platform/CachePerformancePage'));
 export const WebSocketTestPage = lazyWithRetry(() => import('./pages/platform/WebSocketTestPage'));
+export const PlatformStatsPage = lazyWithRetry(() => import('./pages/platform/PlatformStatsPage'));
 
 
 // Frontend pages

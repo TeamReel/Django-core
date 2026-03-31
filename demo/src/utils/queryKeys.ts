@@ -88,4 +88,15 @@ export const queryKeys = {
     job: (jobId: string) =>
       ['videoJobs', 'job', jobId] as const,
   },
+
+  // Platform stats dashboard
+  platformStats: {
+    all: ['platformStats'] as const,
+    overview: (range?: string) =>
+      ['platformStats', 'overview', range] as const,
+    pipelines: (range?: string) =>
+      ['platformStats', 'pipelines', range] as const,
+    credits: (range?: string) =>
+      ['platformStats', 'credits', range] as const,
+  },
 } as const;
