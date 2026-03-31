@@ -14,6 +14,7 @@ base_commit: ef9e25050d8fe3427d37a430f2fb8ebbe841c153
 created_at: '2026-03-31T14:22:25.408848+00:00'
 subtasks: [T001, T002, T003, T004, T005, T006, T007, T008]
 shell_pid: "61292"
+agent: "Bouwer"
 history:
 - date: '2026-03-31T14:10:25Z'
   event: created
@@ -597,3 +598,7 @@ spec-kitty implement WP01
 2. **Verify file pointer reset**: After validation, file should still be readable
 3. **Test edge cases**: Especially truncated images and extension mismatches
 4. **Performance check**: Run with 10MB image, should be <100ms
+
+## Activity Log
+
+- 2026-03-31T14:22:26Z – Bouwer – shell_pid=61292 – lane=doing – Assigned agent via workflow command
