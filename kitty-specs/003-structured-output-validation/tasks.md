@@ -191,12 +191,12 @@
 **Requirements**: FR-006
 
 **Subtasks**:
-- [ ] T025: Create MediaOperation and MediaProvider enums
-- [ ] T026: Create MediaLogEntry dataclass
-- [ ] T027: Create MediaLogger utility class
-- [ ] T028: Add log_operation() with structlog
-- [ ] T029: Create tests for log format compliance
-- [ ] T030: Retrofit existing log calls to MediaLogger
+- [x] T025: Create MediaOperation and MediaProvider enums
+- [x] T026: Create MediaLogEntry dataclass
+- [x] T027: Create MediaLogger utility class
+- [x] T028: Add log_operation() with structlog
+- [x] T029: Create tests for log format compliance
+- [x] T030: Retrofit existing log calls to MediaLogger
 
 **Prompt**: [WP05-unified-logging.md](tasks/WP05-unified-logging.md)
 
