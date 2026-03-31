@@ -21,12 +21,12 @@
 **Requirement Refs**: FR-001, FR-002, FR-003, FR-005, NFR-001, NFR-002
 
 ### Included Subtasks
-- [ ] T001 Create `src/generative/services/prompt_service.py` module skeleton with `GenerationTemplateNotFound` exception and migrate PARAM_RESOLVERS, ROLE_EQUIPMENT, OUTFIT_STYLE_DETAILS constants from legacy `teamreel_prompts.py`
-- [ ] T002 Write unit tests for `get_template()` and `get_active_templates()` — cache hit/miss, not-found exception, org-scoping
-- [ ] T003 Implement `get_template()` and `get_active_templates()` with `@cache_result` decorator (TTL 300s, tag-based invalidation via `prompt_templates` tag)
-- [ ] T004 Write unit tests for `resolve_prompt()` — basic `{placeholder}` substitution, PARAM_RESOLVERS lookup, home-kit override, user_instruction append, edge cases (missing param, empty prompt)
-- [ ] T005 Implement `resolve_prompt()` — template variable substitution using PARAM_RESOLVERS, special cases (home-kit override, user_instruction, guest player)
-- [ ] T006 Create `src/generative/signals.py` with `post_save` cache invalidation for GenerationTemplate, update `src/generative/apps.py:ready()` to register signals, write signal invalidation tests
+- [x] T001 Create `src/generative/services/prompt_service.py` module skeleton with `GenerationTemplateNotFound` exception and migrate PARAM_RESOLVERS, ROLE_EQUIPMENT, OUTFIT_STYLE_DETAILS constants from legacy `teamreel_prompts.py`
+- [x] T002 Write unit tests for `get_template()` and `get_active_templates()` — cache hit/miss, not-found exception, org-scoping
+- [x] T003 Implement `get_template()` and `get_active_templates()` with `@cache_result` decorator (TTL 300s, tag-based invalidation via `prompt_templates` tag)
+- [x] T004 Write unit tests for `resolve_prompt()` — basic `{placeholder}` substitution, PARAM_RESOLVERS lookup, home-kit override, user_instruction append, edge cases (missing param, empty prompt)
+- [x] T005 Implement `resolve_prompt()` — template variable substitution using PARAM_RESOLVERS, special cases (home-kit override, user_instruction, guest player)
+- [x] T006 Create `src/generative/signals.py` with `post_save` cache invalidation for GenerationTemplate, update `src/generative/apps.py:ready()` to register signals, write signal invalidation tests
 
 ### Implementation Notes
 - Follow TEST_FIRST: write tests (T002) before implementation (T003), tests (T004) before implementation (T005).
