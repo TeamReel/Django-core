@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Code | F35 |
-| Status | 📋 ROADMAP |
+| Status | � READY |
 | Prioriteit | Hoog |
 | Geschatte effort | ~40 uur |
 | Afhankelijkheden | B70 (assets per role, done), B55 (video pipeline, done), B39 (activities, done) |
