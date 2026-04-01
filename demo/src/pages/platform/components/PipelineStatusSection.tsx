@@ -104,7 +104,7 @@ export const PipelineStatusSection: React.FC<PipelineStatusSectionProps> = ({
           {ai && (
             <div className={styles.pipelineStats}>
               <div>Outputs: <strong>{ai.total_outputs}</strong></div>
-              <div>Gem. verwerking: <strong>{ai.avg_processing_seconds.toFixed(1)}s</strong></div>
+              <div>Gem. verwerking: <strong>{ai.avg_processing_seconds != null ? `${ai.avg_processing_seconds.toFixed(1)}s` : '—'}</strong></div>
             </div>
           )}
           {ai && Object.keys(ai.requests_by_provider).length > 0 && (
@@ -128,7 +128,7 @@ export const PipelineStatusSection: React.FC<PipelineStatusSectionProps> = ({
           {content && (
             <div className={styles.pipelineStats}>
               <div>Actieve templates: <strong>{content.templates_active}</strong></div>
-              <div>Goedkeuringspercentage: <strong>{content.approval_rate.toFixed(1)}%</strong></div>
+              <div>Goedkeuringspercentage: <strong>{content.approval_rate != null ? `${content.approval_rate.toFixed(1)}%` : '—'}</strong></div>
               {content.pending_approvals > 0 && (
                 <div>
                   Wachtend: <Badge variant="warning">{content.pending_approvals}</Badge>

@@ -36,13 +36,13 @@ export interface AiStats {
   requests_by_status: Record<string, number>;
   requests_by_provider: Record<string, number>;
   total_outputs: number;
-  avg_processing_seconds: number;
+  avg_processing_seconds: number | null;
 }
 
 export interface ContentStats {
   items_by_status: Record<string, number>;
   templates_active: number;
-  approval_rate: number;
+  approval_rate: number | null;
   pending_approvals: number;
 }
 
