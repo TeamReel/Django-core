@@ -1,58 +1,67 @@
-# H1 — Smart Kit Resolution
+# H1 — Tenue-validatie bij lineup
 
-> **Effort:** ~8 uur | **Impact:** Correcte tenue in lineup video's (thuis/uit/derde)
+> **Effort:** ~4 uur | **Impact:** Voorkomt kapotte video's door verkeerde tenue-toewijzing
 
 ## Probleem
 
-`LineupSegmentBuilder` zet `kit_type = "home"` voor alle spelers, ongeacht of het een uit- of thuiswedstrijd is. `Activity.metadata.is_home` wordt gelezen maar alleen voor branding, niet voor kit selectie. Het B70 data model ondersteunt `home/away/third` kits, de frontend uploadt ze, maar de video builder gebruikt ze niet.
+De keeper-positie (GK, slot 1) kan gevuld worden met elke speler, ook als die geen keeper-tenue assets heeft. Omgekeerd: een member met alleen keeper-tenue kan op een veldpositie gezet worden die thuis-tenue vereist. De video toont dan placeholder silhouetten zonder dat de gebruiker het weet.
+
+**Scope:** Alleen thuis-tenue (`home`) en keeper-tenue (`goalkeeper`). Geen uit-tenue.
+
+## Huidige situatie
+
+- `ProjectMembership.metadata.teamreel_assets.roles.{role}.images.fullbody.{kit_type}` bevat de assets
+- `kit_type` is `home`, `goalkeeper`, `away`, of `third`
+- De video builder gebruikt: `goalkeeper` voor GK-slot, `home` voor alle andere slots
+- Er is **geen validatie** dat een member daadwerkelijk de juiste kit assets heeft
 
 ## Aanpak
 
-### Backend: Kit resolution logica
+### Backend: Validatie in LineupSyncService
 
-- [ ] Maak `resolve_kit_type()` in `src/video/utils/asset_metadata.py`
-  - Input: `functional_role`, `is_home`, `kit_preference` (optioneel override)
-  - Logic:
-    - `keeper` → altijd `"goalkeeper"`
-    - `player` + thuiswedstrijd → `"home"`
-    - `player` + uitwedstrijd → `"away"`, fallback naar `"home"` als away ontbreekt
-    - `player` + explicit override → `kit_preference` (voor toekomstige wedstrijd-config)
-  - Return: `kit_type` string
+- [ ] Voeg validatie toe in `LineupSyncService.sync()`:
+  - Voor GK-slot (slot 1): check of member processed `goalkeeper` fullbody asset heeft
+  - Voor veldposities (slots 2-11): check of member processed `home` fullbody asset heeft
+  - Als asset ontbreekt: sync gaat door maar zet `data.asset_warning = "missing_goalkeeper_kit"` of `"missing_home_kit"`
+  - **Niet blokkerend** — lineup kan worden opgeslagen, maar warning wordt meegegeven
 
-- [ ] Update `LineupSegmentBuilder._gather_lineup_from_memberships()` (~line 880):
-  - Vervang `kit_type = "goalkeeper" if ... else "home"` door `resolve_kit_type(role, is_home)`
-  - Pass `is_home` door vanuit `LineupData` naar member resolution
+### Backend: Asset check utility
 
-- [ ] Update `LineupSegmentBuilder._gather_lineup_from_participations()` (~line 745):
-  - Zelfde wijziging: gebruik `resolve_kit_type()` i.p.v. hardcoded
+- [ ] Maak `check_member_kit_readiness()` in `src/video/utils/asset_metadata.py`:
+  ```python
+  def check_member_kit_readiness(pm: ProjectMembership, kit_type: str) -> dict:
+      """Check of member processed assets heeft voor gegeven kit_type."""
+      # Return: {ready: bool, has_fullbody: bool, has_closeup: bool, has_intro: bool}
+  ```
+  - Hergebruik bestaande `resolve_lineup_member_assets()` logica
+  - Return readiness status per asset type
 
-- [ ] Update `resolve_lineup_member_assets()` in `asset_metadata.py`:
-  - Accepteert al `kit_type` parameter → geen interface wijziging nodig
-  - Voeg fallback toe: als `away` kit geen processed asset heeft, probeer `home`
+### Frontend: Squad grouping op basis van tenue
 
-### Frontend: Kit informatie meegeven
+- [ ] Update squad groepering in `useLineupSheet.ts`:
+  - Members zonder keeper-tenue kunnen niet naar GK-slot gesleept worden
+  - Members met alleen keeper-tenue verschijnen in keeper-groep (bestaande logica werkt al via `functional_roles`)
+  - Optioneel: toon ⚠️ badge op member als tenue ontbreekt voor hun slot
 
-- [ ] `contentGenerationVideoApi.ts` → `generateLineupVideo()`:
-  - Stuur `is_home` mee in de API call (uit `matchData.metadata.is_home`)
-  - Backend view `lineup_from_template` accepteert optioneel `is_home` override
+### Frontend: Waarschuwing bij generatie
 
-- [ ] Optioneel: "Tenue" selector in OptionsStep
-  - Dropdown: Thuis / Uit / Derde
-  - Default: automatisch op basis van `is_home`
-  - Override mogelijk voor speciale gevallen
+- [ ] In content generation flow (pre-generate check):
+  - Lees `Participation.data.asset_warning` velden
+  - Toon samenvatting: "2 spelers missen de juiste tenue-assets"
+  - Niet blokkerend — gebruiker kan doorgaan
 
 ### Tests
 
-- [ ] Test: thuiswedstrijd → `kit_type = "home"`
-- [ ] Test: uitwedstrijd → `kit_type = "away"` (met away asset)
-- [ ] Test: uitwedstrijd zonder away asset → fallback naar `"home"`
-- [ ] Test: keeper → altijd `"goalkeeper"` ongeacht thuis/uit
-- [ ] Test: explicit override (`kit_preference = "third"`)
+- [ ] Test: member met goalkeeper kit → mag op GK-slot, readiness = true
+- [ ] Test: member zonder goalkeeper kit → mag op GK-slot, maar warning in data
+- [ ] Test: member met home kit → mag op veldpositie, readiness = true
+- [ ] Test: member zonder home kit → mag op veldpositie, maar warning in data
+- [ ] Test: video builder gebruikt correcte kit_type per slot (ongewijzigd, al correct)
 
 ## Done criteria
 
-- [ ] Uitwedstrijd lineup video's tonen away tenue als beschikbaar
-- [ ] Fallback naar home tenue als away niet geüpload
-- [ ] Keeper tenue ongewijzigd
-- [ ] `is_home` wordt doorgegeven van frontend naar video builder
-- [ ] Bestaande video generatie werkt ongewijzigd (backward compat)
+- [ ] GK-slot Participations bevatten `data.asset_warning` als keeper-tenue ontbreekt
+- [ ] Veldpositie Participations bevatten `data.asset_warning` als thuis-tenue ontbreekt
+- [ ] Frontend toont visuele indicatie bij members met asset warnings
+- [ ] Lineup kan altijd worden opgeslagen (niet blokkerend)
+- [ ] Geen regressie in video generatie
