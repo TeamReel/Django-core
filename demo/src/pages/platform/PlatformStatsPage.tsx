@@ -1,16 +1,17 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Card, Button, Alert } from '@django-core/design-system';
+import { Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
-import { DateRangeSelector } from './components/DateRangeSelector';
 import { StatsOverviewSection } from './components/StatsOverviewSection';
 import { GrowthTrendsChart } from './components/GrowthTrendsChart';
 import { PipelineStatusSection } from './components/PipelineStatusSection';
 import { CreditsUsageChart } from './components/CreditsUsageChart';
 import { StaleJobsAlert } from './components/StaleJobsAlert';
+import { DataExplorerSection } from './components/DataExplorerSection';
 import { useDashboardOverview } from './hooks/useDashboardOverview';
 import { useDashboardPipelines } from './hooks/useDashboardPipelines';
 import { useDashboardCredits } from './hooks/useDashboardCredits';
+import { useDashboardExplorer } from './hooks/useDashboardExplorer';
 import type { DateRange } from './platformStatsTypes';
 import styles from './PlatformStatsPage.module.css';
 
@@ -22,19 +23,13 @@ function parseRange(raw: string | null): DateRange {
 }
 
 export const PlatformStatsPage: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const range = parseRange(searchParams.get('range'));
-
-  const handleRangeChange = useCallback(
-    (newRange: DateRange) => {
-      setSearchParams({ range: newRange }, { replace: true });
-    },
-    [setSearchParams],
-  );
 
   const overview = useDashboardOverview(range);
   const pipelines = useDashboardPipelines(range);
   const credits = useDashboardCredits(range);
+  const explorer = useDashboardExplorer();
 
   const lastUpdated = useMemo(() => {
     const latest = [overview.dataUpdatedAt, pipelines.dataUpdatedAt, credits.dataUpdatedAt]
@@ -57,15 +52,14 @@ export const PlatformStatsPage: React.FC = () => {
         ]}
       />
       <PageContent>
-        {/* Header: date range + last updated */}
-        <div className={styles.headerRow}>
-          <DateRangeSelector value={range} onChange={handleRangeChange} />
-          {lastUpdated && (
+        {/* Last updated indicator */}
+        {lastUpdated && (
+          <div className={styles.headerRow}>
             <span className={styles.lastUpdated}>
               Laatst bijgewerkt: {lastUpdated}
             </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Global error fallback */}
         {hasAnyError && (
@@ -102,6 +96,12 @@ export const PlatformStatsPage: React.FC = () => {
         <CreditsUsageChart
           data={credits.data}
           isLoading={credits.isLoading}
+        />
+
+        {/* Data Explorer — table fill rates */}
+        <DataExplorerSection
+          data={explorer.data}
+          isLoading={explorer.isLoading}
         />
       </PageContent>
     </div>

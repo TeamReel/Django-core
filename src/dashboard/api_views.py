@@ -174,3 +174,11 @@ def credits(request: Request) -> Response:
         },
         status=status.HTTP_200_OK,
     )
+
+
+@api_view(["GET"])
+@permission_classes([IsSuperUser])
+def explorer(request: Request) -> Response:
+    """Data explorer: per-app model counts with fill indicators."""
+    data = DashboardStatsService.get_data_explorer_stats()
+    return Response(data, status=status.HTTP_200_OK)

@@ -177,3 +177,34 @@ class TestCreditsEndpoint:
     def test_accepts_range_param(self, admin_client):
         resp = admin_client.get("/api/v1/dashboard/credits/?range=7d")
         assert resp.status_code == 200
+
+
+# ── Explorer Endpoint ───────────────────────────────────────────────
+
+
+@pytest.mark.django_db
+class TestExplorerEndpoint:
+    """GET /api/v1/dashboard/explorer/"""
+
+    def test_anon_returns_401_or_403(self, anon_client):
+        resp = anon_client.get("/api/v1/dashboard/explorer/")
+        assert resp.status_code in (401, 403)
+
+    def test_regular_user_returns_403(self, user_client):
+        resp = user_client.get("/api/v1/dashboard/explorer/")
+        assert resp.status_code == 403
+
+    def test_returns_200_for_superuser(self, admin_client):
+        resp = admin_client.get("/api/v1/dashboard/explorer/")
+        assert resp.status_code == 200
+
+    def test_response_shape(self, admin_client):
+        resp = admin_client.get("/api/v1/dashboard/explorer/")
+        data = resp.json()["data"]
+        assert "apps" in data
+        assert isinstance(data["apps"], list)
+        assert "total_apps" in data
+        assert "total_models" in data
+        assert "total_records" in data
+        assert "filled_tables_pct" in data
+        assert data["total_apps"] > 0

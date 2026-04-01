@@ -223,9 +223,147 @@
   }
 }
 
+/* ─── Data Explorer ────────────────────────────────────── */
+
+.explorerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.explorerHeader .sectionTitle {
+  margin: 0;
+}
+
+.explorerSummary {
+  display: flex;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--app-text-muted);
+}
+
+.explorerPct {
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-green-500, #22c55e);
+}
+
+.explorerFilter {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.explorerFilterBtn {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-md, 0.375rem);
+  background: transparent;
+  color: var(--app-text-muted);
+  font-size: var(--font-size-sm, 0.875rem);
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.explorerFilterBtn:focus-visible {
+  outline: 2px solid var(--color-focus, #3b82f6);
+  outline-offset: 2px;
+}
+
+.explorerFilterActive {
+  background: var(--color-primary, #3b82f6);
+  color: var(--color-white, #fff);
+  border-color: var(--color-primary, #3b82f6);
+}
+
+.explorerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.explorerApp {
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-md, 0.375rem);
+  overflow: hidden;
+}
+
+.explorerAppHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--app-surface-alt, var(--app-bg));
+  font-weight: var(--font-weight-semibold, 600);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.explorerIndicator {
+  flex-shrink: 0;
+}
+
+.explorerAppName {
+  flex: 1;
+  color: var(--app-text);
+}
+
+.explorerAppCount {
+  color: var(--app-text-muted);
+  font-weight: var(--font-weight-normal, 400);
+  font-variant-numeric: tabular-nums;
+}
+
+.explorerModels {
+  padding: var(--space-2) var(--space-3);
+}
+
+.explorerModel {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-1) 0;
+  font-size: var(--font-size-sm, 0.875rem);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.explorerModel:last-child {
+  border-bottom: none;
+}
+
+.explorerModelName {
+  color: var(--app-text);
+}
+
+.explorerModelCount {
+  color: var(--app-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.explorerModelEmpty {
+  opacity: 0.5;
+}
+
+@media (max-width: 640px) {
+  .explorerHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .explorerGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kpiCard,
   .chartCard {
+    transition: none;
+  }
+
+  .explorerFilterBtn {
     transition: none;
   }
 }

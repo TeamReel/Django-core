@@ -11,6 +11,7 @@ import {
     LineChart, Lock, BookOpen, Scroll, LucideIcon, Folder,
     Bell, CreditCard, UserCircle, Star, Calendar, Film,
     ClipboardCheck, GitBranch, Video,
+    BarChart3, Database,
 } from 'lucide-react';
 import { buildWorkSectionPanelB, type PanelBResult } from './sidebarPanelBWork';
 
@@ -64,10 +65,24 @@ export function buildPanelBConfig(params: PanelBConfigParams): PanelBResult | nu
     else if (path.startsWith('/permissions') || path === '/users') activeSection = 'organisation';
     else if (path.startsWith('/organisation/')) activeSection = 'organisation';
     else if (path.startsWith('/profile') || path.startsWith('/preferences') || path.startsWith('/memberships') || path.startsWith('/billing') || path.startsWith('/notifications')) activeSection = 'preferences';
-    else if (['/health', '/flags', '/audit', '/integration', '/design', '/observability', '/security', '/constitution', '/demo/performance'].some(pfx => path.startsWith(pfx))) activeSection = 'platform';
+    else if (['/health', '/flags', '/audit', '/integration', '/design', '/observability', '/security', '/constitution', '/demo/performance', '/platform-stats'].some(pfx => path.startsWith(pfx))) activeSection = 'platform';
     else if (['/docs'].some(pfx => path.startsWith(pfx))) activeSection = 'help';
 
     /* ── Section items ──────────────────────────────────────────── */
+
+    /* Special case: Stats Dashboard gets its own Panel B with date range tabs */
+    if (path.startsWith('/platform-stats') && isSystemAdmin) {
+        return {
+            title: 'Stats Dashboard',
+            isActive: true,
+            items: [
+                { label: '7 dagen', path: '/platform-stats?range=7d', icon: CalendarDays },
+                { label: '30 dagen', path: '/platform-stats?range=30d', icon: CalendarDays },
+                { label: '90 dagen', path: '/platform-stats?range=90d', icon: CalendarDays },
+                { label: 'Seizoen', path: '/platform-stats?range=season', icon: CalendarDays },
+            ],
+        };
+    }
 
     let title = '';
     let items: { label: string; path: string; icon?: LucideIcon }[] = [];
@@ -199,6 +214,9 @@ export function buildPanelBConfig(params: PanelBConfigParams): PanelBResult | nu
                     { label: 'Observability', path: '/observability', icon: LineChart },
                     { label: 'Security', path: '/security', icon: Lock },
                     { label: 'Constitution', path: '/constitution', icon: Scroll },
+                ] : []),
+                ...(isSystemAdmin ? [
+                    { label: 'Stats Dashboard', path: '/platform-stats', icon: LineChart },
                 ] : []),
             ];
             break;

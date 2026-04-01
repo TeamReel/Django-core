@@ -89,3 +89,27 @@ export interface DashboardCredits {
 // ─── Date range ──────────────────────────────────────────────────────────────
 
 export type DateRange = '7d' | '30d' | '90d' | 'season';
+
+// ─── Data Explorer ───────────────────────────────────────────────────────────
+
+export interface ExplorerModelInfo {
+  name: string;
+  count: number;
+  admin_url: string;
+}
+
+export interface ExplorerAppInfo {
+  label: string;
+  verbose_name: string;
+  models: ExplorerModelInfo[];
+  total_records: number;
+  fill_indicator: string;
+}
+
+export interface DataExplorerStats {
+  apps: ExplorerAppInfo[];
+  total_apps: number;
+  total_models: number;
+  total_records: number;
+  filled_tables_pct: number;
+}

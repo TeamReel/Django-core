@@ -98,5 +98,7 @@ export const queryKeys = {
       ['platformStats', 'pipelines', range] as const,
     credits: (range?: string) =>
       ['platformStats', 'credits', range] as const,
+    explorer: () =>
+      ['platformStats', 'explorer'] as const,
   },
 } as const;
