@@ -67,6 +67,83 @@
     .trend-up { color: #28a745; font-weight: 600; }
     .trend-down { color: #dc3545; font-weight: 600; }
     .trend-flat { color: #6c757d; }
+
+    /* ── Data Explorer ── */
+    .explorer-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    @media (max-width: 767px) {
+        .explorer-summary { grid-template-columns: repeat(2, 1fr); }
+    }
+    .explorer-app {
+        border: 1px solid var(--hairline-color, #ddd);
+        border-radius: 8px;
+        margin-bottom: 8px;
+        background: var(--darkened-bg, #f8f9fa);
+    }
+    .explorer-app summary {
+        padding: 10px 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--body-fg, #333);
+    }
+    .explorer-app summary:hover {
+        background: var(--selected-bg, #e4e4e4);
+    }
+    .explorer-app summary .app-records {
+        margin-left: auto;
+        font-weight: 400;
+        color: var(--body-quiet-color, #666);
+        font-size: 12px;
+    }
+    .explorer-models {
+        padding: 0 14px 10px 14px;
+    }
+    .explorer-models table {
+        width: 100%; border-collapse: collapse; font-size: 13px;
+    }
+    .explorer-models th {
+        text-align: left; padding: 4px 8px;
+        color: var(--body-quiet-color, #666); font-weight: 500;
+        border-bottom: 1px solid var(--hairline-color, #ddd);
+    }
+    .explorer-models td {
+        padding: 4px 8px;
+        border-bottom: 1px solid var(--hairline-color, #eee);
+    }
+    .explorer-models tr:last-child td { border-bottom: none; }
+    .model-empty { color: var(--body-quiet-color, #aaa); }
+    .model-filled a {
+        color: var(--link-fg, #417690);
+        text-decoration: none;
+    }
+    .model-filled a:hover { text-decoration: underline; }
+    .filter-toggle {
+        margin-bottom: 12px;
+        font-size: 13px;
+    }
+    .filter-toggle button {
+        background: var(--darkened-bg, #f8f9fa);
+        border: 1px solid var(--hairline-color, #ddd);
+        border-radius: 4px;
+        padding: 4px 10px;
+        cursor: pointer;
+        font-size: 12px;
+        color: var(--body-fg, #333);
+        margin-right: 4px;
+    }
+    .filter-toggle button.active {
+        background: var(--link-fg, #417690);
+        color: #fff;
+        border-color: var(--link-fg, #417690);
+    }
 </style>
 
 {# ── Platform Overview ── #}
@@ -298,6 +375,91 @@
         </tbody>
     </table>
 </div>
+{% endif %}
+
+{# ── Data Explorer ── #}
+{% if data_explorer %}
+<div class="dashboard-section" id="data-explorer">
+    <h2>Data Explorer</h2>
+
+    {# Summary row #}
+    <div class="explorer-summary">
+        <div class="stat-card">
+            <div class="stat-value">{{ data_explorer.total_apps }}</div>
+            <div class="stat-label">Apps</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ data_explorer.total_models }}</div>
+            <div class="stat-label">Models</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ data_explorer.total_records }}</div>
+            <div class="stat-label">Records</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ data_explorer.filled_tables_pct }}%</div>
+            <div class="stat-label">Gevuld</div>
+        </div>
+    </div>
+
+    {# Filter toggle #}
+    <div class="filter-toggle">
+        <button class="active" onclick="filterExplorer('all', this)">Alles</button>
+        <button onclick="filterExplorer('filled', this)">Gevuld</button>
+        <button onclick="filterExplorer('empty', this)">Leeg</button>
+    </div>
+
+    {# Per-app collapsible sections #}
+    {% for app in data_explorer.apps %}
+    <details class="explorer-app" data-fill="{{ app.fill_indicator }}">
+        <summary>
+            {{ app.fill_indicator }} {{ app.verbose_name }}
+            <span class="app-records">{{ app.total_records }} record{{ app.total_records|pluralize }}</span>
+        </summary>
+        <div class="explorer-models">
+            <table>
+                <thead>
+                    <tr><th>Model</th><th class="num">Count</th></tr>
+                </thead>
+                <tbody>
+                {% for model in app.models %}
+                <tr class="{% if model.count == 0 %}model-empty{% else %}model-filled{% endif %}">
+                    <td>
+                        {% if model.admin_url and model.count > 0 %}
+                        <a href="{{ model.admin_url }}">{{ model.name }}</a>
+                        {% else %}
+                        {{ model.name }}
+                        {% endif %}
+                    </td>
+                    <td class="num">{{ model.count }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </details>
+    {% endfor %}
+</div>
+
+<script>
+function filterExplorer(mode, btn) {
+    var apps = document.querySelectorAll('.explorer-app');
+    for (var i = 0; i < apps.length; i++) {
+        var fill = apps[i].getAttribute('data-fill');
+        if (mode === 'all') {
+            apps[i].style.display = '';
+        } else if (mode === 'filled') {
+            apps[i].style.display = fill === '\uD83D\uDD34' ? 'none' : '';
+        } else if (mode === 'empty') {
+            apps[i].style.display = fill === '\uD83D\uDD34' ? '' : 'none';
+        }
+    }
+    var buttons = btn.parentNode.querySelectorAll('button');
+    for (var j = 0; j < buttons.length; j++) {
+        buttons[j].className = buttons[j] === btn ? 'active' : '';
+    }
+}
+</script>
 {% endif %}
 
 {{ block.super }}

@@ -85,12 +85,41 @@ class GrowthStats(TypedDict):
     weeks: list[WeekRow]
 
 
+class ModelInfo(TypedDict):
+    """Single model info for data explorer."""
+
+    name: str
+    count: int
+    admin_url: str
+
+
+class AppInfo(TypedDict):
+    """Single app info for data explorer."""
+
+    label: str
+    verbose_name: str
+    models: list[ModelInfo]
+    total_records: int
+    fill_indicator: str  # 🟢 / 🟡 / 🔴
+
+
+class DataExplorerStats(TypedDict):
+    """Data explorer statistics."""
+
+    apps: list[AppInfo]
+    total_apps: int
+    total_models: int
+    total_records: int
+    filled_tables_pct: float
+
+
 PLATFORM_STATS_CACHE_KEY = "dashboard:platform_stats"
 AI_STATS_CACHE_KEY = "dashboard:ai_stats"
 CONTENT_STATS_CACHE_KEY = "dashboard:content_stats"
 VIDEO_STATS_CACHE_KEY = "dashboard:video_stats"
 CREDITS_STATS_CACHE_KEY = "dashboard:credits_stats"
 GROWTH_STATS_CACHE_KEY = "dashboard:growth_stats"
+DATA_EXPLORER_CACHE_KEY = "dashboard:data_explorer"
 CACHE_TTL = 300  # 5 minutes
 
 
@@ -402,6 +431,7 @@ class DashboardStatsService:
     @staticmethod
     def _compute_growth_stats() -> GrowthStats:
         from organisations.models import Membership, Organisation
+
         from src.content_generation.models import ContentItem
         from src.generative.models import GenerationRequest
 
@@ -478,6 +508,112 @@ class DashboardStatsService:
     def invalidate_growth_stats() -> None:
         cache.delete(GROWTH_STATS_CACHE_KEY)
 
+    # ── Data Explorer stats ─────────────────────────────────────────
+
+    # Internal Django apps to skip in the data explorer
+    _INTERNAL_APPS = frozenset({
+        "admin", "auth", "contenttypes", "sessions",
+        "token_blacklist", "django_prometheus",
+    })
+
+    @staticmethod
+    def get_data_explorer_stats(*, use_cache: bool = True) -> DataExplorerStats:
+        """Return per-app model counts for the data explorer."""
+        if use_cache:
+            cached = cache.get(DATA_EXPLORER_CACHE_KEY)
+            if cached is not None:
+                return cached
+
+        stats = DashboardStatsService._compute_data_explorer_stats()
+        cache.set(DATA_EXPLORER_CACHE_KEY, stats, CACHE_TTL)
+        return stats
+
+    @staticmethod
+    def _compute_data_explorer_stats() -> DataExplorerStats:
+        from django.apps import apps
+        from django.urls import reverse
+
+        app_list: list[AppInfo] = []
+        total_models = 0
+        total_records = 0
+        filled_tables = 0
+
+        for app_config in apps.get_app_configs():
+            if app_config.label in DashboardStatsService._INTERNAL_APPS:
+                continue
+
+            models = app_config.get_models()
+            model_infos: list[ModelInfo] = []
+
+            for model in models:
+                # Skip proxy models and unmanaged models
+                if model._meta.proxy or not model._meta.managed:
+                    continue
+
+                count = model.objects.count()
+                total_models += 1
+                total_records += count
+                if count > 0:
+                    filled_tables += 1
+
+                # Build admin changelist URL
+                try:
+                    admin_url = reverse(
+                        f"admin:{app_config.label}_{model._meta.model_name}_changelist"
+                    )
+                except Exception:
+                    admin_url = ""
+
+                model_infos.append(ModelInfo(
+                    name=model._meta.verbose_name_plural.title(),
+                    count=count,
+                    admin_url=admin_url,
+                ))
+
+            if not model_infos:
+                continue
+
+            # Sort models: filled first, then alphabetical
+            model_infos.sort(key=lambda m: (-m["count"], m["name"]))
+
+            app_total = sum(m["count"] for m in model_infos)
+            filled_in_app = sum(1 for m in model_infos if m["count"] > 0)
+
+            if filled_in_app == len(model_infos):
+                fill_indicator = "🟢"
+            elif filled_in_app > 0:
+                fill_indicator = "🟡"
+            else:
+                fill_indicator = "🔴"
+
+            app_list.append(AppInfo(
+                label=app_config.label,
+                verbose_name=app_config.verbose_name,
+                models=model_infos,
+                total_records=app_total,
+                fill_indicator=fill_indicator,
+            ))
+
+        # Sort: 🟢 first, then 🟡, then 🔴; within same indicator, by record count desc
+        indicator_order = {"🟢": 0, "🟡": 1, "🔴": 2}
+        app_list.sort(
+            key=lambda a: (indicator_order.get(a["fill_indicator"], 3), -a["total_records"])
+        )
+
+        filled_pct = (filled_tables / total_models * 100) if total_models > 0 else 0.0
+
+        return DataExplorerStats(
+            apps=app_list,
+            total_apps=len(app_list),
+            total_models=total_models,
+            total_records=total_records,
+            filled_tables_pct=round(filled_pct, 1),
+        )
+
+    @staticmethod
+    def invalidate_data_explorer_stats() -> None:
+        cache.delete(DATA_EXPLORER_CACHE_KEY)
+
     # ── Invalidate all ──────────────────────────────────────────────
 
     @staticmethod
@@ -490,4 +626,5 @@ class DashboardStatsService:
             VIDEO_STATS_CACHE_KEY,
             CREDITS_STATS_CACHE_KEY,
             GROWTH_STATS_CACHE_KEY,
+            DATA_EXPLORER_CACHE_KEY,
         ])

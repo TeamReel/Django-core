@@ -32,5 +32,6 @@ class TeamReelAdminSite(AdminSite):
             extra_context["video_stats"] = DashboardStatsService.get_video_stats()
             extra_context["credits_stats"] = DashboardStatsService.get_credits_stats()
             extra_context["growth_stats"] = DashboardStatsService.get_growth_stats()
+            extra_context["data_explorer"] = DashboardStatsService.get_data_explorer_stats()
 
         return super().index(request, extra_context=extra_context)
