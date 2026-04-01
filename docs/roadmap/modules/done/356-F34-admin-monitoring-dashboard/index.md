@@ -44,7 +44,7 @@ Lightweight monitoring dashboard in Django Admin waarmee de product owner in é�
 | H0 | Custom AdminSite + Platform Stats | ~3 uur | ✅ DONE |
 | H1 | AI & Content Pipeline Stats | ~3 uur | ✅ DONE |
 | H2 | Credits & Trends | ~2 uur | ✅ DONE |
-| H3 | Data Explorer | ~4 uur | 📋 TODO |
+| H3 | Data Explorer | ~4 uur | ✅ DONE |
 | H4 | Interactive React Dashboard | ~22 uur | ✅ DONE |
 
 ## Acceptatiecriteria
