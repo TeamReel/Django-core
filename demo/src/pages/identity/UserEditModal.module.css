@@ -1,14 +1,3 @@
-.overlay {
-  background-color: var(--app-overlay);
-}
-
-.modal {
-  width: 860px;
-  max-width: 90%;
-  max-height: 90vh;
-  color: var(--app-text);
-}
-
 .formBody {
   min-height: 0;
 }

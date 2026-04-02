@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Modal } from '@/components/ui/Modal';
 import { organisationsApi, ApiError } from '@/api';
 import { logger } from '@/utils/logger';
 import { getErrorMessage } from '@/utils/errorHelpers';
@@ -62,76 +63,75 @@ if (!selectedOrg?.slug) return;
     }
   };
 
-  if (!opened) return null;
-
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <h2 className={styles.title}>
-          Assign {user?.first_name} {user?.last_name} to Organisation
-        </h2>
-
-        <form onSubmit={handleSubmit}>
-          <div className={styles.formBody}>
-            {error && (
-              <div className={styles.errorAlert}>
-                {error}
-              </div>
-            )}
-
-            <div>
-              <label className={styles.fieldLabel}>
-                Organisation
-              </label>
-              <select
-                value={selectedOrgId}
-                onChange={(e) => setSelectedOrgId(e.target.value)}
-                className={styles.selectInput}
-                required
-              >
-                <option value="">Select Organisation...</option>
-                {organisations.map(org => (
-                  <option key={org.id} value={org.id}>{org.name}</option>
-                ))}
-              </select>
+    <Modal
+      isOpen={opened}
+      onClose={onClose}
+      title={<>Assign {user?.first_name} {user?.last_name} to Organisation</>}
+      size="md"
+      footer={
+        <div className={styles.footer}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className={styles.cancelBtn}
+            data-loading={loading || undefined}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="assign-user-form"
+            disabled={loading || !selectedOrgId}
+            className={styles.submitBtn}
+            data-disabled={loading || !selectedOrgId || undefined}
+          >
+            {loading ? 'Assigning...' : 'Assign'}
+          </button>
+        </div>
+      }
+    >
+      <form id="assign-user-form" onSubmit={handleSubmit}>
+        <div className={styles.formBody}>
+          {error && (
+            <div className={styles.errorAlert}>
+              {error}
             </div>
+          )}
 
-            <div>
-              <label className={styles.fieldLabel}>
-                Role
-              </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as 'admin' | 'member')}
-                className={styles.selectInput}
-              >
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-
-            <div className={styles.footer}>
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={loading}
-                className={styles.cancelBtn}
-                data-loading={loading || undefined}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading || !selectedOrgId}
-                className={styles.submitBtn}
-                data-disabled={loading || !selectedOrgId || undefined}
-              >
-                {loading ? 'Assigning...' : 'Assign'}
-              </button>
-            </div>
+          <div>
+            <label className={styles.fieldLabel}>
+              Organisation
+            </label>
+            <select
+              value={selectedOrgId}
+              onChange={(e) => setSelectedOrgId(e.target.value)}
+              className={styles.selectInput}
+              required
+            >
+              <option value="">Select Organisation...</option>
+              {organisations.map(org => (
+                <option key={org.id} value={org.id}>{org.name}</option>
+              ))}
+            </select>
           </div>
-        </form>
-      </div>
-    </div>
+
+          <div>
+            <label className={styles.fieldLabel}>
+              Role
+            </label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as 'admin' | 'member')}
+              className={styles.selectInput}
+            >
+              <option value="member">Member</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </Modal>
   );
 }

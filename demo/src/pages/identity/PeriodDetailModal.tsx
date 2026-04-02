@@ -1,4 +1,5 @@
 import React from 'react';
+import { Modal } from '@/components/ui/Modal';
 import styles from './PeriodDetailModal.module.css';
 
 export interface PeriodLike {
@@ -25,85 +26,70 @@ interface PeriodDetailModalProps {
 }
 
 export default function PeriodDetailModal({ opened, onClose, period }: PeriodDetailModalProps) {
-  if (!opened || !period) return null;
+  if (!period) return null;
 
   const data = period.data ?? period.metadata ?? {};
   const type = String(data?.type ?? '');
 
   return (
-    <div
-      className={`flex-center ${styles.overlay}`}
-      onClick={onClose}
+    <Modal
+      isOpen={opened}
+      onClose={onClose}
+      title="Period Details"
+      size="md"
+      footer={
+        <button
+          onClick={onClose}
+          className="py-8 px-16 rounded-4 border bg-surface-2 text-primary cursor-pointer"
+        >
+          Close
+        </button>
+      }
     >
-      <div
-        className={`bg-surface p-24 rounded-8 overflow-auto text-primary border ${styles.modal}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={`gap-12 ${styles.headerRow}`}>
-          <h2 className={`mb-12 text-primary ${styles.title}`}>Period Details</h2>
-          <button
-            onClick={onClose}
-            className="bg-transparent border-none fs-18 cursor-pointer text-primary"
-            aria-label="Close"
-          >
-            ×
-          </button>
+      <div className="flex-col gap-10">
+        <div>
+          <div className="fs-12 opacity-80">Name</div>
+          <div className="fw-600">{period.name}</div>
         </div>
 
-        <div className="flex-col gap-10">
+        <div className={`grid gap-10 ${styles.grid2}`}>
           <div>
-            <div className="fs-12 opacity-80">Name</div>
-            <div className="fw-600">{period.name}</div>
+            <div className="fs-12 opacity-80">Start</div>
+            <div>{period.start_date || '—'}</div>
           </div>
-
-          <div className={`grid gap-10 ${styles.grid2}`}>
-            <div>
-              <div className="fs-12 opacity-80">Start</div>
-              <div>{period.start_date || '—'}</div>
-            </div>
-            <div>
-              <div className="fs-12 opacity-80">End</div>
-              <div>{period.end_date || '—'}</div>
-            </div>
-          </div>
-
-          <div className={`grid gap-10 ${styles.grid3}`}>
-            <div>
-              <div className="fs-12 opacity-80">Children</div>
-              <div>{(period.children_count ?? 0).toString()}</div>
-            </div>
-            <div>
-              <div className="fs-12 opacity-80">Matches (direct)</div>
-              <div>{(period.matches_count ?? 0).toString()}</div>
-            </div>
-            <div>
-              <div className="fs-12 opacity-80">Matches (total)</div>
-              <div>{(period.matches_total_count ?? period.matches_count ?? 0).toString()}</div>
-            </div>
-          </div>
-
           <div>
-            <div className="fs-12 opacity-80">Type</div>
-            <div>{type || '—'}</div>
-          </div>
-
-          {period.description ? (
-            <div>
-              <div className="fs-12 opacity-80">Description</div>
-              <div className={styles.descriptionText}>{period.description}</div>
-            </div>
-          ) : null}
-
-          <div className={`mt-12 ${styles.footer}`}>
-            <button
-              onClick={onClose}
-              className={`rounded-6 border bg-surface-2 text-primary cursor-pointer ${styles.closeButton}`}
-            >
-              Close
-            </button>
+            <div className="fs-12 opacity-80">End</div>
+            <div>{period.end_date || '—'}</div>
           </div>
         </div>
+
+        <div className={`grid gap-10 ${styles.grid3}`}>
+          <div>
+            <div className="fs-12 opacity-80">Children</div>
+            <div>{(period.children_count ?? 0).toString()}</div>
+          </div>
+          <div>
+            <div className="fs-12 opacity-80">Matches (direct)</div>
+            <div>{(period.matches_count ?? 0).toString()}</div>
+          </div>
+          <div>
+            <div className="fs-12 opacity-80">Matches (total)</div>
+            <div>{(period.matches_total_count ?? period.matches_count ?? 0).toString()}</div>
+          </div>
+        </div>
+
+        <div>
+          <div className="fs-12 opacity-80">Type</div>
+          <div>{type || '—'}</div>
+        </div>
+
+        {period.description ? (
+          <div>
+            <div className="fs-12 opacity-80">Description</div>
+            <div className={styles.descriptionText}>{period.description}</div>
+          </div>
+        ) : null}
       </div>
-    </div>
+    </Modal>
   );
 }

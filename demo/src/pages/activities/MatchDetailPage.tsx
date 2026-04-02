@@ -7,16 +7,13 @@ import { ShareButton } from '../../components/ShareButton';
 import { ReadinessRing } from '../../components/dashboard/ReadinessRing';
 import { calculateMatchReadiness } from '../../utils/matchReadiness';
 import { MatchOverviewTab, MatchContentTab, MatchLineupTab } from './match-detail';
-import MatchDetailModal from '../identity/MatchDetailModal';
-import MatchEditModal from '../identity/MatchEditModal';
-import ContentGenerationModal from '../identity/ContentGenerationModal';
+import { MatchDetailPageModals } from './MatchDetailPageModals';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import MobileTabBar from '../../components/MobileTabBar';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { useMatchDetailData } from './useMatchDetailData';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { routes } from '../../routes';
-import { ContentPreviewModal, SavedAssetPreviewModal, ToastNotifications } from './MatchDetailModals';
 import styles from './MatchDetailPage.module.css';
 
 export default function HierarchyMatchDetailPage() {
@@ -186,47 +183,7 @@ export default function HierarchyMatchDetailPage() {
           </div>
         </div>
 
-        <MatchDetailModal
-          opened={d.isMatchDetailModalOpen}
-          onClose={() => d.setIsMatchDetailModalOpen(false)}
-          match={match}
-        />
-
-        <MatchEditModal
-          opened={d.isMatchEditModalOpen}
-          onClose={() => d.setIsMatchEditModalOpen(false)}
-          match={match}
-          onSave={async (payload) => {
-            await d.saveMatchEdits(match, payload);
-          }}
-        />
-
-        <ContentGenerationModal
-          isOpen={d.isContentModalOpen}
-          onClose={d.closeContentModal}
-          onGenerated={d.handleContentGenerated}
-          matchData={match}
-          season={d.season}
-          organisationSport={d.org?.sport}
-          organisationId={d.org?.id || d.orgSlugOrId}
-          template={d.selectedTemplate}
-          contentTypeLabel={d.selectedContentTypeLabel}
-          homeLogoUrl={d.homeLogoUrl}
-          awayLogoUrl={d.awayLogoUrl}
-          homeTeamName={d.homeTeamName}
-          awayTeamName={d.awayTeamName}
-        />
-
-        <ContentPreviewModal
-          isOpen={d.isContentPreviewOpen}
-          selectedContentItem={d.selectedContentItem}
-          onClose={d.closeContentPreview}
-        />
-
-        <SavedAssetPreviewModal
-          preview={d.savedAssetPreview}
-          onClose={() => d.setSavedAssetPreview(null)}
-        />
+        <MatchDetailPageModals d={d} match={match} />
 
         {/* Mobile Tab Bar */}
         {/* RBAC: Supporter (Overview), Member (+ Lineup), Admin (all 4) */}
@@ -326,8 +283,6 @@ export default function HierarchyMatchDetailPage() {
           )}
         </div>
       </div>
-
-      <ToastNotifications toasts={d.toasts} onDismiss={d.dismissToast} />
     </>
   );
 }

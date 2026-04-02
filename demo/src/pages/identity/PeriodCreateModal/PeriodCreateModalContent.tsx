@@ -2,6 +2,7 @@
  * PeriodCreateModalContent - Modal content with form
  */
 import React from 'react';
+import { Modal } from '@/components/ui/Modal';
 import { FieldSelect, FieldInput, FieldTextarea } from './FormFields';
 import { usePeriodCreateData } from './usePeriodCreateData';
 import type { PeriodCreateModalProps } from './types';
@@ -15,32 +16,29 @@ export function PeriodCreateModalContent(props: PeriodCreateModalContentProps) {
   const { title, onClose, opened } = props;
   const data = usePeriodCreateData(props);
 
-  if (!opened) return null;
-
   return (
-    <div
-      className={`flex-center ${styles.overlay}`}
-      onClick={() => { if (!data.saving) onClose(); }}
-    >
-      <div
-        className={`p-24 rounded-8 text-primary border bg-surface ${styles.modal}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex-between gap-12">
-          <h2 className={`mb-12 text-primary ${styles.title}`}>{title}</h2>
+    <Modal
+      isOpen={opened}
+      onClose={onClose}
+      title={title}
+      size="md"
+      preventClose={data.saving}
+      footer={
+        <div className={styles.actions}>
           <button
-            type="button"
-            onClick={onClose}
+            type="submit"
+            form="period-create-form"
             disabled={data.saving}
-            className={`rounded-4 border bg-surface-2 text-primary ${styles.closeButton}`}
+            className={`py-8 px-12 rounded-6 fw-600 ${styles.submitButton}`}
             data-saving={data.saving || undefined}
           >
-            Close
+            {data.saving ? 'Creating…' : 'Create'}
           </button>
         </div>
-
-        <form onSubmit={data.handleSubmit}>
-          <div className={`grid ${styles.formGrid}`}>
+      }
+    >
+      <form id="period-create-form" onSubmit={data.handleSubmit}>
+        <div className={`grid ${styles.formGrid}`}>
             {data.hasOrgSelect && (
               <FieldSelect
                 id="period-create-org"
@@ -149,20 +147,8 @@ export function PeriodCreateModalContent(props: PeriodCreateModalContentProps) {
             )}
           </div>
 
-          {data.error && <div className="mt-12 text-danger">{data.error}</div>}
-
-          <div className={`mt-16 gap-10 ${styles.actions}`}>
-            <button
-              type="submit"
-              disabled={data.saving}
-              className={`py-8 px-12 rounded-6 fw-600 ${styles.submitButton}`}
-              data-saving={data.saving || undefined}
-            >
-              {data.saving ? 'Creating…' : 'Create'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        {data.error && <div className="mt-12 text-danger">{data.error}</div>}
+      </form>
+    </Modal>
   );
 }

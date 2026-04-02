@@ -19,7 +19,7 @@ import { periodPathKey } from '../../utils/periodPath';
 import { routes } from '../../routes';
 
 import { useSquadPageData } from './useSquadPageData';
-import { MembershipEditModal, readFunctionalRolesFromMembership } from './MembershipEditModal';
+import { MemberRoleEditModal, readFunctionalRoles } from '@/components/MemberRoleEditModal';
 import styles from './ProjectSeasonSquadPage.module.css';
 
 export default function ProjectSeasonSquadPage() {
@@ -182,7 +182,7 @@ export default function ProjectSeasonSquadPage() {
                             return 'viewer';
                           };
 
-                          const functionalRoles = readFunctionalRolesFromMembership(m);
+                          const functionalRoles = readFunctionalRoles(m);
                           const role = normalizeAccessRole(m.role || 'viewer');
                           const position = String(m.metadata?.position || '—');
                           const shirtNumber = String(m.metadata?.shirt_number ?? '');
@@ -249,9 +249,9 @@ export default function ProjectSeasonSquadPage() {
           onSave={d.savePeriodEdit}
         />
 
-        <MembershipEditModal
+        <MemberRoleEditModal
           opened={d.isMembershipEditModalOpen}
-          membership={d.selectedMembership}
+          member={d.selectedMembership}
           onClose={() => { d.setIsMembershipEditModalOpen(false); d.setSelectedMembership(null); }}
           onSave={d.saveMembershipEdit}
         />

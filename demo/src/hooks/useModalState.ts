@@ -1,3 +1,35 @@
+/**
+ * Modal state management — TeamReel unified pattern.
+ *
+ * ## Convention
+ *
+ * Every page with modals should follow this structure:
+ *
+ * 1. **State** — use `useModalState()` or `useCrudModals()` from this file.
+ * 2. **Orchestrator** — render all modals in a `<PageModals>` barrel component.
+ * 3. **Props** — orchestrator receives hook output, no prop-drilling through the page tree.
+ * 4. **Naming** — `{PageName}Modals.tsx` + `use{PageName}Modals.ts` (when custom state is needed).
+ *
+ * ### Examples
+ *
+ * Simple CRUD page:
+ * ```tsx
+ * const { detail, edit, create } = useCrudModals<Item>();
+ * // detail.open(item), detail.close(), detail.isOpen, detail.item
+ * ```
+ *
+ * Page with extra modals beyond CRUD:
+ * ```tsx
+ * const crud = useCrudModals<Item>();
+ * const confirmDelete = useModalState<Item>();
+ * ```
+ *
+ * Orchestrator component:
+ * ```tsx
+ * // ItemPageModals.tsx
+ * export function ItemPageModals({ detail, edit, create, confirmDelete }) { ... }
+ * ```
+ */
 import { useState, useCallback } from 'react';
 
 // ────────────────────────────────────────────────────────────────

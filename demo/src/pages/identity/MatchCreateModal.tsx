@@ -1,3 +1,4 @@
+import { Modal } from '@/components/ui/Modal';
 import type { MatchCreateModalProps } from './matchCreateTypes';
 export type { MatchCreatePayload } from './matchCreateTypes';
 import { useMatchCreateData } from './useMatchCreateData';
@@ -12,32 +13,28 @@ export default function MatchCreateModal({
 }: MatchCreateModalProps) {
   const d = useMatchCreateData({ opened, onClose, submitText, ...restProps });
 
-  if (!opened) return null;
-
   return (
-    <div
-      className={`modal-backdrop ${styles.backdrop}`}
-      onClick={() => { if (!d.isSaving) onClose(); }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className={`bg-surface p-24 rounded-8 text-primary border shadow-lg ${styles.container}`}
-      >
-        <div className="flex-between gap-12">
-          <h2 className="mb-12 mt-0">{headerText || 'Create Match'}</h2>
+    <Modal
+      isOpen={opened}
+      onClose={onClose}
+      title={headerText || 'Create Match'}
+      size="lg"
+      preventClose={d.isSaving}
+      footer={
+        <div className="flex-row justify-end gap-10">
           <button
-            type="button"
-            onClick={onClose}
+            type="submit"
+            form="match-create-form"
             disabled={d.isSaving}
-            className={`btn-modal btn-modal-secondary ${styles.closeButton}`}
-            data-saving={d.isSaving}
+            className="btn-modal btn-modal-primary"
           >
-            Close
+            {d.isSaving ? (submitText ? `${submitText}…` : 'Creating…') : submitText || 'Create'}
           </button>
         </div>
-
-        <form onSubmit={d.handleCreate}>
-          <div className={`grid ${styles.formGrid}`}>
+      }
+    >
+      <form id="match-create-form" onSubmit={d.handleCreate}>
+        <div className={`grid ${styles.formGrid}`}>
             <label className="fw-600" htmlFor="match-create-title">
               Title
             </label>
@@ -371,18 +368,7 @@ export default function MatchCreateModal({
           </div>
 
           {d.error && <div className="mt-12 text-danger">{d.error}</div>}
-
-          <div className="mt-16 gap-10 flex-row justify-end">
-            <button
-              type="submit"
-              disabled={d.isSaving}
-              className="btn-modal btn-modal-primary"
-            >
-              {d.isSaving ? (submitText ? `${submitText}…` : 'Creating…') : submitText || 'Create'}
-            </button>
-          </div>
         </form>
-      </div>
-    </div>
+      </Modal>
   );
 }

@@ -1,10 +1,4 @@
-/* LinkUserModal – CSS Module */
-
-.modalContent {
-  width: 560px;
-  max-width: 95%;
-  color: var(--app-text);
-}
+/* LinkUserModal — content styles (modal chrome handled by shared Modal) */
 
 .functionalRolesGrid {
   display: grid;

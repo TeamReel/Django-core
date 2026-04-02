@@ -23,11 +23,11 @@ import { useTopNavbarData } from './useTopNavbarData';
 import { CREATE_MENU_ITEMS, type TopNavbarProps } from './topNavbarHelpers';
 import { useBackNavigation } from '../providers/BackNavigationProvider';
 import {
-  NavbarPhotoCompositeFollowUpModal,
   NavbarQuickReviewModal,
   NavbarNotificationsModal,
   NavbarCreditsModal,
 } from './NavbarModals';
+import { PhotoCompositeFollowUpModal } from './FollowUpModals';
 import { MobileSearchOverlay, NAV_INLINE_STYLES } from './TopNavbarMobile';
 
 const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, onOpenSearchRef }: TopNavbarProps) {
@@ -307,7 +307,7 @@ const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMo
       )}
 
       {d.photoCompositeFollowUp && (
-        <NavbarPhotoCompositeFollowUpModal
+        <PhotoCompositeFollowUpModal
           info={d.photoCompositeFollowUp}
           onClose={() => d.setPhotoCompositeFollowUp(null)}
           onSubmitted={() => d.refreshAiJobs()}

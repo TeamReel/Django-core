@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Modal } from '@/components/ui/Modal';
 import styles from './SeasonPickerModal.module.css';
 
 type Season = {
@@ -64,54 +65,13 @@ export default function SeasonPickerModal({ open, mode, seasons, member, project
   const teamLabel = String(projectName || '').trim();
 
   return (
-    <div
-      className={styles.overlay}
-      role="dialog"
-      aria-modal="true"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className={styles.modal} onMouseDown={(e) => e.stopPropagation()}>
-        <div className={styles.header}>
-          <div className={styles.headerInfo}>
-            <div className={styles.headerTitle}>{title}</div>
-            {email ? <div className={styles.headerSubtext}>{email}</div> : null}
-            {teamLabel ? <div className={styles.headerSubtext}>Team: {teamLabel}</div> : null}
-          </div>
-          <button
-            type="button"
-            className={`app-action-button ${styles.closeButton}`}
-            onClick={onClose}
-          >
-            Close
-          </button>
-        </div>
-
-        <div className={styles.body}>
-          {availableSeasons.length ? (
-            <label className={styles.seasonLabel}>
-              <div className={styles.seasonLabelText}>Season</div>
-              <select
-                value={selectedSeasonId}
-                onChange={(e) => setSelectedSeasonId(e.target.value)}
-                className={styles.seasonSelect}
-              >
-                <option value="">Select…</option>
-                {availableSeasons.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {teamLabel ? `${teamLabel} · ${seasonLabel(s)}` : seasonLabel(s)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : (
-            <div className={styles.noSeasonsText}>
-              {mode === 'assign' ? 'No assignable seasons for this user.' : 'No season assignments found for this user.'}
-            </div>
-          )}
-        </div>
-
+    <Modal
+      isOpen={open}
+      onClose={onClose}
+      title={title}
+      subtitle={[email, teamLabel ? `Team: ${teamLabel}` : ''].filter(Boolean).join(' · ') || undefined}
+      size="sm"
+      footer={
         <div className={styles.footer}>
           <button
             type="button"
@@ -142,7 +102,31 @@ export default function SeasonPickerModal({ open, mode, seasons, member, project
             {mode === 'assign' ? 'Assign' : 'Unassign'}
           </button>
         </div>
+      }
+    >
+      <div className={styles.body}>
+        {availableSeasons.length ? (
+          <label className={styles.seasonLabel}>
+            <div className={styles.seasonLabelText}>Season</div>
+            <select
+              value={selectedSeasonId}
+              onChange={(e) => setSelectedSeasonId(e.target.value)}
+              className={styles.seasonSelect}
+            >
+              <option value="">Select…</option>
+              {availableSeasons.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {teamLabel ? `${teamLabel} · ${seasonLabel(s)}` : seasonLabel(s)}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <div className={styles.noSeasonsText}>
+            {mode === 'assign' ? 'No assignable seasons for this user.' : 'No season assignments found for this user.'}
+          </div>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 }

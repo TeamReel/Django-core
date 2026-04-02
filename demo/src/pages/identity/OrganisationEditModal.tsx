@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Modal } from '@/components/ui/Modal';
 import { useSports } from '../../hooks/useSports';
 import { logger } from '@/utils/logger';
 import type { Organisation } from '../../types';
@@ -41,96 +42,99 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
     }
   };
 
-  if (!opened || !organisation) return null;
+  if (!organisation) return null;
 
   return (
-    <div className={`flex-center ${styles.overlay}`}>
-      <div className={`bg-surface p-24 rounded-8 text-primary border ${styles.modal}`}>
-        <h2 className={`text-primary ${styles.heading}`}>Edit Organisation</h2>
-
-        <form onSubmit={handleSubmit}>
-          <div className="flex-col gap-16">
-            <div>
-              <label className="field-label text-primary">Name</label>
-              <input
-                type="text"
-                value={formData.name || ''}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className={`w-full p-8 rounded-4 border text-primary ${styles.formInput}`}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="field-label text-primary">Slug</label>
-              <input
-                type="text"
-                value={formData.slug || ''}
-                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                className={`w-full p-8 rounded-4 border text-primary ${styles.formInput}`}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="field-label text-primary">Description</label>
-              <textarea
-                value={formData.description || ''}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className={`w-full p-8 rounded-4 border text-primary ${styles.formTextarea}`}
-              />
-            </div>
-
-            <div>
-              <label className="flex-row gap-8 text-primary">
-                <input
-                  type="checkbox"
-                  checked={formData.is_active ?? true}
-                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                />
-                Active
-              </label>
-            </div>
-
-            <div>
-              <label className="field-label text-primary">Sport</label>
-              <select
-                value={formData.sport_id || ''}
-                onChange={(e) => setFormData({ ...formData, sport_id: e.target.value || null })}
-                disabled={sportsLoading}
-                className={`w-full p-8 rounded-4 border text-primary ${styles.formInput}`}
-              >
-                <option value="">— No sport selected —</option>
-                {categories.map((sport) => (
-                  <option key={sport.id} value={sport.id}>
-                    {sport.sport_icon} {sport.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+    <Modal
+      isOpen={opened}
+      onClose={onClose}
+      title="Edit Organisation"
+      size="md"
+      footer={
+        <div className={styles.buttonRow}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className={`py-8 px-16 rounded-4 border bg-surface-2 text-primary ${styles.cancelBtn}`}
+            data-saving={saving || undefined}
+          >
+            Annuleren
+          </button>
+          <button
+            type="submit"
+            form="org-edit-form"
+            disabled={saving}
+            className={`py-8 px-16 rounded-4 border-none ${styles.submitBtn}`}
+            data-saving={saving || undefined}
+          >
+            {saving ? 'Opslaan...' : 'Wijzigingen opslaan'}
+          </button>
+        </div>
+      }
+    >
+      <form id="org-edit-form" onSubmit={handleSubmit}>
+        <div className="flex-col gap-16">
+          <div>
+            <label className="field-label text-primary">Name</label>
+            <input
+              type="text"
+              value={formData.name || ''}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className={`w-full p-8 rounded-4 border text-primary ${styles.formInput}`}
+              required
+            />
           </div>
 
-          <div className={`gap-12 mt-24 ${styles.buttonRow}`}>
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={saving}
-              className={`py-8 px-16 rounded-4 border bg-surface-2 text-primary ${styles.cancelBtn}`}
-              data-saving={saving || undefined}
-            >
-              Annuleren
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className={`py-8 px-16 rounded-4 border-none ${styles.submitBtn}`}
-              data-saving={saving || undefined}
-            >
-              {saving ? 'Opslaan...' : 'Wijzigingen opslaan'}
-            </button>
+          <div>
+            <label className="field-label text-primary">Slug</label>
+            <input
+              type="text"
+              value={formData.slug || ''}
+              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+              className={`w-full p-8 rounded-4 border text-primary ${styles.formInput}`}
+              required
+            />
           </div>
-        </form>
-      </div>
-    </div>
+
+          <div>
+            <label className="field-label text-primary">Description</label>
+            <textarea
+              value={formData.description || ''}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className={`w-full p-8 rounded-4 border text-primary ${styles.formTextarea}`}
+            />
+          </div>
+
+          <div>
+            <label className="flex-row gap-8 text-primary">
+              <input
+                type="checkbox"
+                checked={formData.is_active ?? true}
+                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+              />
+              Active
+            </label>
+          </div>
+
+          <div>
+            <label className="field-label text-primary">Sport</label>
+            <select
+              value={formData.sport_id || ''}
+              onChange={(e) => setFormData({ ...formData, sport_id: e.target.value || null })}
+              disabled={sportsLoading}
+              className={`w-full p-8 rounded-4 border text-primary ${styles.formInput}`}
+            >
+              <option value="">— No sport selected —</option>
+              {categories.map((sport) => (
+                <option key={sport.id} value={sport.id}>
+                  {sport.sport_icon} {sport.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </form>
+    </Modal>
   );
 }

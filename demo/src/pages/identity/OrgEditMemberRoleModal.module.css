@@ -1,18 +1,4 @@
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--app-overlay);
-  z-index: var(--z-toast);
-}
-
-.modal {
-  width: 520px;
-  max-width: 95%;
-  box-shadow: var(--shadow-md);
-}
+/* OrgEditMemberRoleModal — content styles (modal chrome handled by shared Modal) */
 
 .errorBox {
   padding: var(--space-3) var(--space-3);
@@ -31,5 +17,5 @@
 .footer {
   display: flex;
   justify-content: flex-end;
-  margin-top: 18px;
+  gap: var(--space-2);
 }

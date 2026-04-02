@@ -2,7 +2,7 @@
  * ApprovalsModals - All modal components for the approvals page
  */
 import React from 'react';
-import { VideoFollowUpModal, PhotoCompositeFollowUpModal } from '../FollowUpModals';
+import { VideoFollowUpModal, PhotoCompositeFollowUpModal } from '@/components/FollowUpModals';
 import { ReviewModal, VideoReviewModal } from '../ReviewModals';
 import type { GenerationJob } from '../../hooks/useGenerationJobs';
 import type { VideoJob } from '../../hooks/useVideoJobs';

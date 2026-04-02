@@ -1,3 +1,4 @@
+import { Modal } from '@/components/ui/Modal';
 import styles from './MatchDetailModal.module.css';
 
 interface MatchActivity {
@@ -18,45 +19,26 @@ interface MatchDetailModalProps {
 }
 
 export default function MatchDetailModal({ opened, onClose, match }: MatchDetailModalProps) {
-  if (!opened || !match) return null;
+  if (!match) return null;
 
   return (
-    <div
-      className={styles.overlay}
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className={styles.modal}
-      >
-        <div className={styles.header}>
-          <h2 className={styles.title}>Match</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className={styles.closeBtn}
-          >
-            Close
-          </button>
-        </div>
+    <Modal isOpen={opened} onClose={onClose} title="Match" size="sm">
+      <div className={styles.detailGrid}>
+        <div className={styles.label}>Title</div>
+        <div>{match.title}</div>
 
-        <div className={styles.detailGrid}>
-          <div className={styles.label}>Title</div>
-          <div>{match.title}</div>
+        <div className={styles.label}>Start</div>
+        <div>{match.start_time || '-'}</div>
 
-          <div className={styles.label}>Start</div>
-          <div>{match.start_time || '-'}</div>
+        <div className={styles.label}>End</div>
+        <div>{match.end_time || '-'}</div>
 
-          <div className={styles.label}>End</div>
-          <div>{match.end_time || '-'}</div>
+        <div className={styles.label}>Location</div>
+        <div>{match.location || '-'}</div>
 
-          <div className={styles.label}>Location</div>
-          <div>{match.location || '-'}</div>
-
-          <div className={styles.label}>Description</div>
-          <div className={styles.descriptionValue}>{match.description || '-'}</div>
-        </div>
+        <div className={styles.label}>Description</div>
+        <div className={styles.descriptionValue}>{match.description || '-'}</div>
       </div>
-    </div>
+    </Modal>
   );
 }

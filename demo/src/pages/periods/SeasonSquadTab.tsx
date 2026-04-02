@@ -1,7 +1,9 @@
 import React from 'react';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import { normalizeAccessRole } from './seasonDetailUtils';
-import EditMemberModal from './EditMemberModal';
+import { MemberRoleEditModal } from '@/components/MemberRoleEditModal';
+import type { FunctionalRoleOption } from '@/components/MemberRoleEditModal';
+import { projectsApi } from '@/api';
 import EligibleMembersCard from './EligibleMembersCard';
 import SquadMemberTable from './SquadMemberTable';
 import SquadMemberMobileList from './SquadMemberMobileList';
@@ -10,6 +12,13 @@ import type { SquadMember, SeasonSquadTabProps } from './squadTabTypes';
 import st from './SeasonSquadTab.module.css';
 
 export type { SquadMember, SeasonSquadTabProps } from './squadTabTypes';
+
+const SEASON_SQUAD_ROLES: FunctionalRoleOption[] = [
+  { value: 'goalkeeper', label: 'Goalkeeper' },
+  { value: 'player', label: 'Player' },
+  { value: 'coach', label: 'Coach' },
+  { value: 'assistant', label: 'Assistant' },
+];
 
 const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
   members,
@@ -225,23 +234,25 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
       </div>
 
       {/* Edit Member Modal — co-located with squad tab */}
-      {isEditMemberModalOpen && selectedEditMember && (
-        <EditMemberModal
-          member={selectedEditMember}
-          editAccessRole={editAccessRole}
-          accessRoleOptions={accessRoleOptions}
-          apiBaseUrl={apiBaseUrl}
-          projectId={projectId}
-          onAccessRoleChange={setEditAccessRole}
-          onMemberChange={setSelectedEditMember}
-          onSaved={(membershipId, role, functionalRoles) => {
-            onMemberUpdated(membershipId, role, functionalRoles);
-            setIsEditMemberModalOpen(false);
-            setSelectedEditMember(null);
-          }}
-          onClose={() => setIsEditMemberModalOpen(false)}
-        />
-      )}
+      <MemberRoleEditModal
+        opened={!!selectedEditMember}
+        onClose={() => { setIsEditMemberModalOpen(false); setSelectedEditMember(null); }}
+        member={selectedEditMember}
+        functionalRoleOptions={SEASON_SQUAD_ROLES}
+        onSave={async ({ role, functional_roles }) => {
+          const membershipId = String(selectedEditMember?.id || '').trim();
+          if (!membershipId || !projectId) return;
+          await projectsApi.updateMember(projectId, membershipId, {
+            role,
+            metadata: {
+              ...(selectedEditMember?.metadata || {}),
+              functional_roles,
+            },
+          } as Record<string, unknown>);
+          onMemberUpdated(membershipId, role, functional_roles);
+          setSelectedEditMember(null);
+        }}
+      />
     </div>
   );
 };

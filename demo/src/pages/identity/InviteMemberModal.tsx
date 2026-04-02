@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import {
   Button,
   Input,
-  Modal,
 } from '@django-core/design-system';
+import { Modal } from '@/components/ui/Modal';
 import { organisationsApi, ApiError } from '@/api';
 import { logger } from '@/utils/logger';
 import { getErrorMessage } from '@/utils/errorHelpers';
@@ -52,53 +52,53 @@ export default function InviteMemberModal({ opened, onClose, orgSlug, onInviteSu
     }
   };
 
-  if (!opened) return null;
-
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <h2 className={styles.heading}>Add Member</h2>
+    <Modal
+      isOpen={opened}
+      onClose={onClose}
+      title="Add Member"
+      size="sm"
+      footer={
+        <div className={styles.buttonRow}>
+          <Button variant="secondary" onClick={onClose} type="button">
+            Cancel
+          </Button>
+          <Button type="submit" form="invite-member-form" loading={loading}>
+            Add Member
+          </Button>
+        </div>
+      }
+    >
+      {error && (
+        <div className={styles.errorBox}>
+          {error}
+        </div>
+      )}
 
-        {error && (
-          <div className={styles.errorBox}>
-            {error}
-          </div>
-        )}
+      <form id="invite-member-form" onSubmit={handleSubmit}>
+        <div className={styles.formField}>
+          <label className={styles.fieldLabel}>Email Address</label>
+          <Input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="user@example.com"
+            required
+            type="email"
+          />
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className={styles.formField}>
-            <label className={styles.fieldLabel}>Email Address</label>
-            <Input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="user@example.com"
-              required
-              type="email"
-            />
-          </div>
-
-          <div className={styles.formFieldLarge}>
-            <label className={styles.fieldLabel}>Role</label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value as 'admin' | 'member')}
-              className={styles.selectInput}
-            >
-              <option value="member">Member</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-
-          <div className={styles.buttonRow}>
-            <Button variant="secondary" onClick={onClose} type="button">
-              Cancel
-            </Button>
-            <Button type="submit" loading={loading}>
-              Add Member
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className={styles.formFieldLarge}>
+          <label className={styles.fieldLabel}>Role</label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as 'admin' | 'member')}
+            className={styles.selectInput}
+          >
+            <option value="member">Member</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </form>
+    </Modal>
   );
 }

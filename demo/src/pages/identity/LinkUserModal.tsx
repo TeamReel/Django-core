@@ -1,4 +1,5 @@
 import React from 'react';
+import { Modal } from '@/components/ui/Modal';
 import { useLinkUserModal } from './useLinkUserModal';
 import { accessRoleOptions, functionalRoleOptions } from './linkUserModalTypes';
 import type { LinkUserModalProps } from './linkUserModalTypes';
@@ -34,25 +35,41 @@ export default function LinkUserModal(props: LinkUserModalProps) {
   const { opened, onClose } = props;
   const d = useLinkUserModal(props);
 
-  if (!opened) return null;
-
   return (
-    <div
-      className="modal-backdrop"
-      onClick={onClose}
-    >
-      <div
-        className={`bg-surface p-24 rounded-8 border shadow-lg ${styles.modalContent}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="mb-12 text-primary m-0">
-          Link {d.userDisplayName}
-        </h2>
-        <div className="mb-16 text-muted fs-13">
-          Link this user to a Federation (organisation) and optionally to a Club/Team.
+    <Modal
+      isOpen={opened}
+      onClose={onClose}
+      title={<>Link {d.userDisplayName}</>}
+      subtitle="Link this user to a Federation (organisation) and optionally to a Club/Team."
+      size="md"
+      footer={
+        <div className="flex-row justify-end gap-12">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={d.saving}
+            className="btn-modal btn-modal-secondary fs-14"
+            style={{ cursor: d.saving ? 'not-allowed' : 'pointer' }}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="link-user-form"
+            disabled={d.saving || !d.canSubmit}
+            className="btn-modal btn-modal-primary fs-14"
+            style={{
+              cursor: d.saving || !d.canSubmit ? 'not-allowed' : 'pointer',
+              opacity: d.saving || !d.canSubmit ? 0.65 : 1,
+            }}
+          >
+            {d.saving ? 'Linking…' : 'Link'}
+          </button>
         </div>
+      }
+    >
 
-        <form onSubmit={d.onSubmit}>
+      <form id="link-user-form" onSubmit={d.onSubmit}>
           <div className="flex-col gap-12">
             {d.error && (
               <div className="callout-error fs-14">
@@ -211,31 +228,8 @@ export default function LinkUserModal(props: LinkUserModalProps) {
             </div>
 
             {/* ── Actions ───────────────────────────── */}
-            <div className="flex-row justify-end gap-12 mt-8">
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={d.saving}
-                className="btn-modal btn-modal-secondary fs-14"
-                style={{ cursor: d.saving ? 'not-allowed' : 'pointer' }}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={d.saving || !d.canSubmit}
-                className="btn-modal btn-modal-primary fs-14"
-                style={{
-                  cursor: d.saving || !d.canSubmit ? 'not-allowed' : 'pointer',
-                  opacity: d.saving || !d.canSubmit ? 0.65 : 1,
-                }}
-              >
-                {d.saving ? 'Linking…' : 'Link'}
-              </button>
-            </div>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 }

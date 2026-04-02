@@ -20,6 +20,7 @@ export interface PhotoCompositeFollowUpInfo {
   projectId: string;
   approvedImageUrl: string;
   memberName: string;
+  backgroundUrl?: string;
 }
 
 export interface TopNavbarProps {

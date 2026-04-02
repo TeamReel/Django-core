@@ -3,33 +3,16 @@
  * Extracted from inline styles + memberBatchAction.styles.ts
  */
 
-/* ── Overlay (root — hosts color tokens for children) ── */
-
-.overlay {
+/* ── Color tokens (scoped to this module's elements) ── */
+.memberChip,
+.radioOption,
+.card {
     --batch-error-border: var(--app-error-ring);
     --batch-error-bg: var(--app-error-bg);
     --batch-info-border: var(--app-info-ring);
     --batch-selected-bg: var(--app-info-bg);
     --batch-chip-bg: var(--app-info-ring);
     --batch-chip-overflow-bg: var(--app-surface-glass);
-
-    z-index: 9000;
-    background: var(--app-overlay-backdrop);
-}
-
-/* ── Modal ── */
-
-.modal {
-    background: var(--app-surface, var(--color-neutral-900));
-    max-width: 720px;
-    max-height: 90vh;
-    box-shadow: 0 20px 60px var(--app-overlay);
-}
-
-/* ── Close button ── */
-
-.closeButton {
-    line-height: var(--leading-tight);
 }
 
 /* ── Member chips ── */

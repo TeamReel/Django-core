@@ -15,7 +15,7 @@ import { api } from '@/api';
 import type { MediaItem } from '@/types/api/media';
 import type { ContentItem } from '@/types/api/content';
 import { periodPathKey } from '../../utils/periodPath';
-import { CONTENT_TYPES } from '../../components/matchWizardTypes';
+import { CONTENT_TYPES } from '../../components/MatchWizardV2/types';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import MatchCard from './MatchCard';
 import styles from './SeasonMatchesTab.module.css';

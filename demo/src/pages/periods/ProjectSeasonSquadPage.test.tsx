@@ -61,9 +61,9 @@ vi.mock('./useSquadPageData', () => ({
   }),
 }));
 
-vi.mock('./MembershipEditModal', () => ({
-  MembershipEditModal: () => null,
-  readFunctionalRolesFromMembership: () => [],
+vi.mock('@/components/MemberRoleEditModal', () => ({
+  MemberRoleEditModal: () => null,
+  readFunctionalRoles: () => [],
 }));
 
 describe('ProjectSeasonSquadPage', () => {

@@ -7,7 +7,7 @@ import {
   ChevronRight, ChevronDown, Users, Clapperboard,
   MapPin, CheckCircle2, Circle, Loader2, Zap, Eye, Star,
 } from 'lucide-react';
-import { CONTENT_TYPES } from '../../components/matchWizardTypes';
+import { CONTENT_TYPES } from '../../components/MatchWizardV2/types';
 import styles from './SeasonMatchesTab.module.css';
 
 /** Minimal match shape consumed by MatchCard — compatible with MatchRecord and Activity. */

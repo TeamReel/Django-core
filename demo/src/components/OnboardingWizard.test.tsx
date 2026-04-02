@@ -1,10 +1,10 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import OnboardingWizard, { resetOnboarding, isOnboardingCompleted } from './OnboardingWizard';
 
-// Mock BottomSheet from design system
+// Mock BottomSheet from design system (used by WizardShell internally)
 vi.mock('@django-core/design-system', () => ({
-  BottomSheet: ({ isOpen, onClose, children }: { isOpen: boolean; onClose: () => void; children: React.ReactNode }) =>
-    isOpen ? <div data-testid="bottom-sheet">{children}</div> : null,
+  BottomSheet: ({ isOpen, onClose, children, footer }: { isOpen: boolean; onClose: () => void; children: React.ReactNode; footer?: React.ReactNode }) =>
+    isOpen ? <div data-testid="bottom-sheet">{children}{footer}</div> : null,
   Button: ({ children, onClick, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
     <button onClick={onClick} {...rest}>{children}</button>
   ),
@@ -108,11 +108,8 @@ describe('OnboardingWizard', () => {
     expect(isOnboardingCompleted()).toBe(true);
   });
 
-  it('shows step indicators', () => {
+  it('shows progress bar', () => {
     render(<OnboardingWizard forceShow />);
-    // 4 steps = 4 dot elements
-    const dots = document.querySelectorAll('[data-active]');
-    expect(dots.length).toBe(4);
-    expect(dots[0].getAttribute('data-active')).toBe('true');
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 });

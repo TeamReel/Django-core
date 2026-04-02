@@ -1,35 +1,4 @@
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--app-overlay);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal {
-  --input-border: var(--app-border);
-  --submit-bg: var(--color-blue-600);
-
-  background-color: var(--color-white, var(--color-white));
-  padding: var(--space-6);
-  border-radius: var(--radius-md);
-  width: 480px;
-  max-width: 90%;
-  box-shadow: 0 4px 12px var(--alpha-black-15);
-  color: var(--app-text);
-  border: 1px solid var(--app-border);
-}
-
-.title {
-  margin-top: 0;
-  margin-bottom: var(--space-5);
-  color: var(--app-text);
-}
+/* ProjectEditModal — content styles (modal chrome handled by shared Modal) */
 
 .errorWrapper {
   margin-bottom: var(--space-4);
@@ -51,14 +20,14 @@
   width: 100%;
   padding: var(--space-2);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--input-border);
+  border: 1px solid var(--app-border);
 }
 
 .textarea {
   width: 100%;
   padding: var(--space-2);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--input-border);
+  border: 1px solid var(--app-border);
   min-height: 80px;
 }
 
@@ -71,7 +40,6 @@
 .actions {
   display: flex;
   gap: var(--space-3);
-  margin-top: var(--space-6);
   justify-content: flex-end;
 }
 
@@ -92,7 +60,7 @@
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
   border: none;
-  background-color: var(--submit-bg);
+  background-color: var(--color-blue-600);
   color: var(--color-white, var(--color-white));
   cursor: pointer;
   opacity: 1;

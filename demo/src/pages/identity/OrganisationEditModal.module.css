@@ -1,25 +1,4 @@
-/* OrganisationEditModal — extracted inline styles */
-
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--app-overlay);
-  z-index: 1000;
-}
-
-.modal {
-  width: 480px;
-  max-width: 90%;
-  box-shadow: 0 4px 12px var(--alpha-black-15);
-}
-
-.heading {
-  margin-top: 0;
-  margin-bottom: var(--space-5);
-}
+/* OrganisationEditModal — content styles (modal chrome handled by shared Modal) */
 
 .formInput {
   background-color: var(--app-input-bg);
@@ -33,6 +12,7 @@
 .buttonRow {
   display: flex;
   justify-content: flex-end;
+  gap: var(--space-3);
 }
 
 .cancelBtn {

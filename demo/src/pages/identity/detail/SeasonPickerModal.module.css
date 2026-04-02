@@ -1,55 +1,6 @@
 /* SeasonPickerModal — CSS Module */
 
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--alpha-black-45);
-  z-index: 60;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-4);
-}
-
-.modal {
-  width: min(560px, 96vw);
-  background: var(--color-neutral-900);
-  color: var(--color-white, var(--color-white));
-  border-radius: var(--radius-lg);
-  box-shadow: 0 20px 60px var(--alpha-black-35);
-  border: 1px solid var(--alpha-white-12);
-}
-
-.header {
-  padding: var(--space-4) var(--space-4);
-  border-bottom: 1px solid var(--alpha-white-10);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-.headerInfo {
-  display: grid;
-  gap: var(--space-1);
-}
-
-.headerTitle {
-  font-weight: var(--font-bold);
-}
-
-.headerSubtext {
-  font-size: var(--text-xs);
-  opacity: 0.85;
-}
-
-.closeButton {
-  background: var(--app-surface-glass-hover);
-  border: 1px solid var(--alpha-white-14);
-}
-
 .body {
-  padding: var(--space-4);
   display: grid;
   gap: var(--space-3);
 }
@@ -79,8 +30,6 @@
 }
 
 .footer {
-  padding: var(--space-4);
-  border-top: 1px solid var(--alpha-white-10);
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);

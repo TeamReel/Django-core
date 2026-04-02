@@ -4,11 +4,6 @@
  */
 
 export {
-  NavbarPhotoCompositeFollowUpModal,
-  type NavbarPhotoCompositeFollowUpModalProps,
-} from './NavbarPhotoCompositeFollowUpModal';
-
-export {
   NavbarQuickReviewModal,
   type QuickReviewModalProps,
 } from './NavbarQuickReviewModal';

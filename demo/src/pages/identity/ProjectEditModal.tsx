@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert } from '@django-core/design-system';
+import { Modal } from '@/components/ui/Modal';
 import { logger } from '@/utils/logger';
 import styles from './ProjectEditModal.module.css';
 import type { Project } from '../../types';
@@ -43,74 +44,77 @@ export default function ProjectEditModal({ opened, onClose, project, onSave }: P
     }
   };
 
-  if (!opened || !project) return null;
+  if (!project) return null;
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <h2 className={styles.title}>Edit Project</h2>
+    <Modal
+      isOpen={opened}
+      onClose={onClose}
+      title="Edit Project"
+      size="md"
+      footer={
+        <div className={styles.actions}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className={styles.cancelButton}
+            data-disabled={saving}
+          >
+            Annuleren
+          </button>
+          <button
+            type="submit"
+            form="project-edit-form"
+            disabled={saving}
+            className={styles.submitButton}
+            data-disabled={saving}
+          >
+            {saving ? 'Opslaan...' : 'Wijzigingen opslaan'}
+          </button>
+        </div>
+      }
+    >
+      {error && (
+        <div className={styles.errorWrapper}>
+          <Alert variant="error">{error}</Alert>
+        </div>
+      )}
 
-        {error && (
-          <div className={styles.errorWrapper}>
-            <Alert variant="error">{error}</Alert>
+      <form id="project-edit-form" onSubmit={handleSubmit}>
+        <div className={styles.fieldGroup}>
+          <div>
+            <label className={styles.label}>Name</label>
+            <input
+              type="text"
+              value={formData.name || ''}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className={styles.input}
+              required
+            />
           </div>
-        )}
 
-        <form onSubmit={handleSubmit}>
-          <div className={styles.fieldGroup}>
-            <div>
-              <label className={styles.label}>Name</label>
+          <div>
+            <label className={styles.label}>Description</label>
+            <textarea
+              value={formData.description || ''}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className={styles.textarea}
+            />
+          </div>
+
+          <div>
+            <label className={styles.checkboxLabel}>
               <input
-                type="text"
-                value={formData.name || ''}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className={styles.input}
-                required
+                type="checkbox"
+                checked={formData.is_active ?? true}
+                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
               />
-            </div>
-
-            <div>
-              <label className={styles.label}>Description</label>
-              <textarea
-                value={formData.description || ''}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className={styles.textarea}
-              />
-            </div>
-
-            <div>
-              <label className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={formData.is_active ?? true}
-                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                />
-                Active
-              </label>
-            </div>
+              Active
+            </label>
           </div>
-
-          <div className={styles.actions}>
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={saving}
-              className={styles.cancelButton}
-              data-disabled={saving}
-            >
-              Annuleren
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className={styles.submitButton}
-              data-disabled={saving}
-            >
-              {saving ? 'Opslaan...' : 'Wijzigingen opslaan'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        </div>
+      </form>
+    </Modal>
   );
 }

@@ -11,11 +11,11 @@
 import React from 'react';
 import { Zap, CheckCircle2, Lock, Users, Trash2, AlertTriangle } from 'lucide-react';
 import { Badge, Button } from '@django-core/design-system';
+import { Modal } from '@/components/ui/Modal';
 import { getMemberName } from './memberBatchAction.types';
 import type { MemberBatchActionModalProps } from './memberBatchAction.types';
 import { useMemberBatchAction } from './useMemberBatchAction';
 import styles from './MemberBatchActionModal.module.css';
-import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export type { BatchMemberEntry } from './memberBatchAction.types';
 
@@ -33,51 +33,22 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
     const d = useMemberBatchAction({
         isOpen, members, contextLevel, clubProjectId, teamProjectId, orgSlug, teams, onComplete,
     });
-    useEscapeKey(isOpen && d.step !== 'running' ? onClose : undefined);
 
-    if (!isOpen) return null;
+    const headerTitle = d.step === 'configure'
+        ? <><Zap size={16} /> Batch Actie</>
+        : d.step === 'running'
+            ? 'Bezig...'
+            : <><CheckCircle2 size={16} /> Voltooid</>;
 
     return (
-        <div className={`fixed inset-0 flex-center p-20 ${styles.overlay}`} onClick={() => d.step !== 'running' && onClose()} role="presentation">
-            <div className={`w-full flex-col rounded-12 border ${styles.modal}`} onClick={(e) => e.stopPropagation()} role="dialog">
-                {/* ── Header ── */}
-                <div className="flex-between border-bottom py-20 px-24">
-                    <div className="flex-row gap-12">
-                        <h2 className="m-0 fs-18 fw-600">
-                            {d.step === 'configure' && <><Zap size={16} /> Batch Actie</>}
-                            {d.step === 'running' && 'Bezig...'}
-                            {d.step === 'done' && <><CheckCircle2 size={16} /> Voltooid</>}
-                        </h2>
-                        <Badge variant="default">{members.length} member{members.length !== 1 ? 's' : ''}</Badge>
-                    </div>
-                    {d.step !== 'running' && (
-                        <button
-                            onClick={onClose}
-                            className={`border-none bg-transparent cursor-pointer fs-20 p-4 text-muted ${styles.closeButton}`}
-                            title="Sluiten"
-                        >
-                            ✕
-                        </button>
-                    )}
-                </div>
-
-                {/* ── Body ── */}
-                <div className="p-24 overflow-y-auto flex-1">
-                    {d.step === 'configure' && (
-                        <ConfigureStep d={d} members={members} />
-                    )}
-
-                    {d.step === 'running' && (
-                        <RunningStep progress={d.progress} progressPercent={d.progressPercent} />
-                    )}
-
-                    {d.step === 'done' && (
-                        <DoneStep progress={d.progress} errors={d.errors} />
-                    )}
-                </div>
-
-                {/* ── Footer ── */}
-                <div className="flex-between border-top gap-12 py-16 px-24">
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={headerTitle}
+            size="lg"
+            preventClose={d.step === 'running'}
+            footer={
+                <div className="flex-between gap-12">
                     {d.step === 'configure' && (
                         <>
                             <Button variant="secondary" onClick={onClose}>Annuleren</Button>
@@ -101,8 +72,22 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                         <Button variant="primary" onClick={onClose} className="ml-auto">Sluiten</Button>
                     )}
                 </div>
-            </div>
-        </div>
+            }
+        >
+            <Badge variant="default" className="mb-12">{members.length} member{members.length !== 1 ? 's' : ''}</Badge>
+
+            {d.step === 'configure' && (
+                <ConfigureStep d={d} members={members} />
+            )}
+
+            {d.step === 'running' && (
+                <RunningStep progress={d.progress} progressPercent={d.progressPercent} />
+            )}
+
+            {d.step === 'done' && (
+                <DoneStep progress={d.progress} errors={d.errors} />
+            )}
+        </Modal>
     );
 };
 

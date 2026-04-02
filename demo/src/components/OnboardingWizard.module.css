@@ -1,25 +1,13 @@
 .content {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  min-height: 400px;
-}
-
-.closeButton {
-  top: 16px;
-  right: 16px;
-  color: var(--color-text-muted);
-}
-
-.stepDot {
-  width: 8px;
-  height: 8px;
-  background-color: var(--color-border);
-}
-
-.stepDot[data-active="true"] {
-  background-color: var(--color-primary);
+  text-align: center;
+  padding: var(--space-6);
 }
 
 .iconWrapper {
+  margin-bottom: var(--space-6);
   animation: pulse 2s infinite;
 }
 
@@ -39,22 +27,24 @@
   color: var(--color-info);
 }
 
-.title {
-  font-size: var(--text-xl);
-  color: var(--color-text);
-}
-
 .description {
   font-size: var(--text-base);
   line-height: var(--leading-relaxed);
   color: var(--color-text-muted);
-  margin-bottom: var(--space-8);
   max-width: 320px;
 }
 
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
 .navigation {
-  max-width: 320px;
-  margin-top: auto;
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
 }
 
 .nextButton {
@@ -66,12 +56,26 @@
 }
 
 .skipButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
   color: var(--color-text-muted);
   font-size: var(--text-sm);
   text-decoration: underline;
 }
 
+.skipButton:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iconWrapper {
+    animation: none;
+  }
 }

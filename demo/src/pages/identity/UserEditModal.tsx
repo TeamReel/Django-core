@@ -6,6 +6,7 @@
  * Access tab: UserEditAccessTab
  */
 import { type FormEvent } from 'react';
+import { Modal } from '@/components/ui/Modal';
 import { logger } from '@/utils/logger';
 import type { UserEditModalProps } from './userEditTypes';
 import { useUserEditData } from './useUserEditData';
@@ -40,27 +41,31 @@ export default function UserEditModal({
   const isBusy = d.saving || d.addingToOrg || d.addingToProject;
 
   return (
-    <div className={`flex-center fixed inset-0 z-1000 ${styles.overlay}`}>
-      <div className={`flex-col rounded-8 bg-surface border shadow-lg ${styles.modal}`}>
-
-        {/* Header + tabs */}
-        <div className="border-bottom px-16 py-16">
-          <div className="flex-between gap-12">
-            <div>
-              <div className="fs-16 fw-800">Edit user</div>
-              <div className="fs-12 text-muted mt-4">{user.email}</div>
-            </div>
-            <button type="button" onClick={onClose} className="btn-modal btn-modal-secondary rounded-8 px-8 py-4" aria-label="Close">✕</button>
-          </div>
-          <div className="flex-row gap-8 mt-12 flex-wrap">
-            <button type="button" onClick={() => d.setActiveTab('personal')} className={`tab-pill ${d.activeTab === 'personal' ? 'tab-pill-active' : ''}`}>Personal</button>
-            <button type="button" onClick={() => d.setActiveTab('access')} className={`tab-pill ${d.activeTab === 'access' ? 'tab-pill-active' : ''}`}>Access & roles</button>
-            <button type="button" onClick={() => d.setActiveTab('link')} className={`tab-pill ${d.activeTab === 'link' ? 'tab-pill-active' : ''}`}>Add to club/team</button>
-          </div>
+    <Modal
+      isOpen={opened}
+      onClose={onClose}
+      title="Edit user"
+      subtitle={user.email}
+      size="lg"
+      preventClose={isBusy}
+      footer={
+        <div className={`flex-row gap-12 ${styles.justifyEnd}`}>
+          <button type="button" onClick={onClose} disabled={isBusy} className="btn-modal btn-modal-secondary">Annuleren</button>
+          <button type="submit" form="user-edit-form" disabled={isBusy} className="btn-modal btn-modal-primary">
+            {d.saving ? 'Opslaan…' : 'Wijzigingen opslaan'}
+          </button>
         </div>
+      }
+    >
+      {/* Tabs */}
+      <div className="flex-row gap-8 mb-12 flex-wrap">
+        <button type="button" onClick={() => d.setActiveTab('personal')} className={`tab-pill ${d.activeTab === 'personal' ? 'tab-pill-active' : ''}`}>Personal</button>
+        <button type="button" onClick={() => d.setActiveTab('access')} className={`tab-pill ${d.activeTab === 'access' ? 'tab-pill-active' : ''}`}>Access & roles</button>
+        <button type="button" onClick={() => d.setActiveTab('link')} className={`tab-pill ${d.activeTab === 'link' ? 'tab-pill-active' : ''}`}>Add to club/team</button>
+      </div>
 
-        <form onSubmit={handleSubmit} className={`flex-col flex-1 ${styles.formBody}`}>
-          <div className={`overflow-y-auto flex-1 p-16 ${styles.scrollArea}`}>
+      <form id="user-edit-form" onSubmit={handleSubmit} className={`flex-col flex-1 ${styles.formBody}`}>
+        <div className={`overflow-y-auto flex-1 ${styles.scrollArea}`}>
 
             {/* ── Personal tab ── */}
             {d.activeTab === 'personal' ? (
@@ -216,16 +221,7 @@ export default function UserEditModal({
               <div className="callout-error mt-12">{d.extraError}</div>
             )}
           </div>
-
-          {/* Footer */}
-          <div className={`border-top flex-row gap-12 px-16 py-12 ${styles.justifyEnd}`}>
-            <button type="button" onClick={onClose} disabled={isBusy} className="btn-modal btn-modal-secondary">Annuleren</button>
-            <button type="submit" disabled={isBusy} className="btn-modal btn-modal-primary">
-              {d.saving ? 'Opslaan…' : 'Wijzigingen opslaan'}
-            </button>
-          </div>
         </form>
-      </div>
-    </div>
+      </Modal>
   );
 }

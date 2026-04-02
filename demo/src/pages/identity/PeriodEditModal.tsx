@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Modal } from '@/components/ui/Modal';
 import { useSports } from '../../hooks/useSports';
 import styles from './PeriodEditModal.module.css';
 import { logger } from '@/utils/logger';
@@ -232,37 +233,46 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
   }
 
   return (
-    <div
-      className={`flex-center ${styles.overlay}`}
-      onClick={onClose}
-    >
-      <div
-        className={`p-24 rounded-8 bg-surface text-primary border ${styles.modal}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex-between gap-12">
-          <h2 className="m-0 mb-12 text-primary">Edit Period</h2>
+    <Modal
+      isOpen={opened}
+      onClose={onClose}
+      title="Edit Period"
+      size="md"
+      footer={
+        <div className={styles.footer}>
           <button
+            type="button"
             onClick={onClose}
-            className="bg-transparent border-none fs-18 cursor-pointer text-primary"
-            aria-label="Close"
+            disabled={saving}
+            className={`rounded-6 border bg-surface-2 text-primary cursor-pointer ${styles.cancelBtn}`}
+            data-saving={saving || undefined}
           >
-            ×
+            Annuleren
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className={`rounded-6 cursor-pointer ${styles.saveBtn}`}
+            data-saving={saving || undefined}
+          >
+            {saving ? 'Opslaan…' : 'Opslaan'}
           </button>
         </div>
-
-        <div className="flex-col gap-12">
-          <div className="flex-col gap-6">
-            <label className="fw-600" htmlFor="period-name">
-              Name
-            </label>
-            <input
-              id="period-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={`rounded-6 border bg-surface-2 text-primary ${styles.input}`}
-            />
-          </div>
+      }
+    >
+      <div className="flex-col gap-12">
+        <div className="flex-col gap-6">
+          <label className="fw-600" htmlFor="period-name">
+            Name
+          </label>
+          <input
+            id="period-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={`rounded-6 border bg-surface-2 text-primary ${styles.input}`}
+          />
+        </div>
 
           {showDates && (
             <div className={styles.dateGrid}>
@@ -343,29 +353,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
           </div>
 
           {error && <div className="text-danger">{error}</div>}
-
-          <div className={styles.footer}>
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={saving}
-              className={`rounded-6 border bg-surface-2 text-primary cursor-pointer ${styles.cancelBtn}`}
-              data-saving={saving || undefined}
-            >
-              Annuleren
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className={`rounded-6 cursor-pointer ${styles.saveBtn}`}
-              data-saving={saving || undefined}
-            >
-              {saving ? 'Opslaan…' : 'Opslaan'}
-            </button>
-          </div>
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

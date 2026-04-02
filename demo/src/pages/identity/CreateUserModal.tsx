@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import {
   Button,
   Input,
-  Modal,
 } from '@django-core/design-system';
+import { Modal } from '@/components/ui/Modal';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { api, ApiError } from '@/api';
 import { logger } from '@/utils/logger';
@@ -70,79 +70,79 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
     }
   };
 
-  if (!opened) return null;
-
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <h2 className={styles.title}>Create New User</h2>
+    <Modal
+      isOpen={opened}
+      onClose={onClose}
+      title="Create New User"
+      size="md"
+      footer={
+        <div className={styles.actions}>
+          <Button variant="secondary" onClick={onClose} type="button">
+            Cancel
+          </Button>
+          <Button type="submit" form="create-user-form" loading={loading}>
+            Create User
+          </Button>
+        </div>
+      }
+    >
+      {error && (
+        <div className={styles.errorBox}>
+          {error}
+        </div>
+      )}
 
-        {error && (
-          <div className={styles.errorBox}>
-            {error}
+      <form id="create-user-form" onSubmit={handleSubmit}>
+        <div className={styles.nameRow}>
+          <div className={styles.nameField}>
+              <label className={styles.label}>First Name</label>
+              <Input
+                value={formData.first_name}
+                onChange={(e) => setFormData({...formData, first_name: e.target.value})}
+                placeholder="John"
+              />
           </div>
-        )}
+          <div className={styles.nameField}>
+              <label className={styles.label}>Last Name</label>
+              <Input
+                value={formData.last_name}
+                onChange={(e) => setFormData({...formData, last_name: e.target.value})}
+                placeholder="Doe"
+              />
+          </div>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className={styles.nameRow}>
-            <div className={styles.nameField}>
-                <label className={styles.label}>First Name</label>
-                <Input
-                  value={formData.first_name}
-                  onChange={(e) => setFormData({...formData, first_name: e.target.value})}
-                  placeholder="John"
-                />
-            </div>
-            <div className={styles.nameField}>
-                <label className={styles.label}>Last Name</label>
-                <Input
-                  value={formData.last_name}
-                  onChange={(e) => setFormData({...formData, last_name: e.target.value})}
-                  placeholder="Doe"
-                />
-            </div>
-          </div>
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Email Address</label>
+          <Input
+            value={formData.email}
+            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            placeholder="user@example.com"
+            required
+            type="email"
+          />
+        </div>
 
-          <div className={styles.fieldGroup}>
-            <label className={styles.label}>Email Address</label>
-            <Input
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              placeholder="user@example.com"
-              required
-              type="email"
-            />
-          </div>
-
-          <div className={styles.fieldGroupLarge}>
-            <label className={styles.label}>Password</label>
-            <Input
-              value={formData.password}
-              onChange={(e) => {
-                const nextPassword = e.target.value;
-                setFormData({
-                  ...formData,
-                  password: nextPassword,
-                  // Keep confirm in sync by default (no extra field in UI).
-                  password_confirm: nextPassword,
-                });
-              }}
-              placeholder="********"
-              required
-              type="password"
-            />
-          </div>
-
-          <div className={styles.actions}>
-            <Button variant="secondary" onClick={onClose} type="button">
-              Cancel
-            </Button>
-            <Button type="submit" loading={loading}>
-              Create User
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className={styles.fieldGroupLarge}>
+          <label className={styles.label}>Password</label>
+          <Input
+            value={formData.password}
+            onChange={(e) => {
+              const nextPassword = e.target.value;
+              setFormData({
+                ...formData,
+                password: nextPassword,
+                // Keep confirm in sync by default (no extra field in UI).
+                password_confirm: nextPassword,
+              });
+            }}
+            placeholder="********"
+            required
+            type="password"
+          />
+        </div>
+      </form>
+    </Modal>
   );
 }

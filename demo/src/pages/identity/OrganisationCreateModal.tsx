@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Modal } from '@/components/ui/Modal';
 import { useSports } from '../../hooks/useSports';
 import { logger } from '@/utils/logger';
 import styles from './OrganisationCreateModal.module.css';
@@ -36,84 +37,83 @@ export default function OrganisationCreateModal({
     }
   };
 
-  if (!opened) return null;
-
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <h2 className={styles.title}>
-          Create Organisation
-        </h2>
-
-        <form onSubmit={handleSubmit}>
-          <div className={styles.fieldGroup}>
-            <div>
-              <label className={styles.label}>
-                Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={styles.input}
-                required
-                disabled={saving}
-              />
-            </div>
-
-            <div>
-              <label className={styles.label}>
-                Description
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className={styles.textarea}
-                disabled={saving}
-              />
-            </div>
-
-            <div>
-              <label className={styles.label}>
-                Sport
-              </label>
-              <select
-                value={sportId || ''}
-                onChange={(e) => setSportId(e.target.value || null)}
-                disabled={saving || sportsLoading}
-                className={styles.input}
-              >
-                <option value="">— Select sport —</option>
-                {categories.map((sport) => (
-                  <option key={sport.id} value={sport.id}>
-                    {sport.sport_icon} {sport.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+    <Modal
+      isOpen={opened}
+      onClose={onClose}
+      title="Create Organisation"
+      size="md"
+      footer={
+        <div className={styles.actions}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className={styles.cancelButton}
+            data-saving={String(saving)}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="org-create-form"
+            disabled={saving}
+            className={styles.submitButton}
+            data-saving={String(saving)}
+          >
+            {saving ? 'Creating...' : 'Create'}
+          </button>
+        </div>
+      }
+    >
+      <form id="org-create-form" onSubmit={handleSubmit}>
+        <div className={styles.fieldGroup}>
+          <div>
+            <label className={styles.label}>
+              Name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={styles.input}
+              required
+              disabled={saving}
+            />
           </div>
 
-          <div className={styles.actions}>
-            <button
-              type="button"
-              onClick={onClose}
+          <div>
+            <label className={styles.label}>
+              Description
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className={styles.textarea}
               disabled={saving}
-              className={styles.cancelButton}
-              data-saving={String(saving)}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className={styles.submitButton}
-              data-saving={String(saving)}
-            >
-              {saving ? 'Creating...' : 'Create'}
-            </button>
+            />
           </div>
-        </form>
-      </div>
-    </div>
+
+          <div>
+            <label className={styles.label}>
+              Sport
+            </label>
+            <select
+              value={sportId || ''}
+              onChange={(e) => setSportId(e.target.value || null)}
+              disabled={saving || sportsLoading}
+              className={styles.input}
+            >
+              <option value="">— Select sport —</option>
+              {categories.map((sport) => (
+                <option key={sport.id} value={sport.id}>
+                  {sport.sport_icon} {sport.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </form>
+    </Modal>
   );
 }
