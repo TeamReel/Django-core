@@ -207,6 +207,14 @@ class Activity(SoftDeleteMixin, models.Model):
     end_time = models.DateTimeField(help_text="Activity end (timezone-aware)")
     location = models.CharField(max_length=200, blank=True, default="")
     description = models.TextField(blank=True, default="")
+    formation = models.ForeignKey(
+        "sport_configuration.Formation",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="activities",
+        help_text="Formation/tactiek gebruikt voor deze wedstrijd",
+    )
     metadata = models.JSONField(
         default=dict, blank=True, help_text="Flexible storage (opponent, score, is_home, etc.)"
     )
@@ -340,6 +348,14 @@ class Participation(SoftDeleteMixin, models.Model):
         on_delete=models.CASCADE,
         related_name="participations",
         help_text="Organisation membership (not User)",
+    )
+    project_membership = models.ForeignKey(
+        "projects.ProjectMembership",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="participations",
+        help_text="Project membership (team + seizoen) for lineup resolution",
     )
     role = models.CharField(
         max_length=50,

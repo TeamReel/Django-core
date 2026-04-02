@@ -98,6 +98,8 @@ urlpatterns = [
     path("api/v1/", include("activity_feed.api.urls")),
     # B46: Soft Delete & Trash API
     path("api/v1/trash/", include("trash.api.urls")),
+    # B67: Bulk Content Generation API
+    path("api/v1/bulk-generate/", include("src.bulk_generation.urls")),
     # F34-H4: Dashboard Stats API (superuser only)
     path("api/v1/dashboard/", include("dashboard.api_urls")),
     # Security Baseline API

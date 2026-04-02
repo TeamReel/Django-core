@@ -183,7 +183,7 @@ class FormationListSerializer(serializers.ModelSerializer):
     """
     Lightweight serializer for Formation listing.
 
-    Used in dropdowns and selection lists.
+    Includes positions for field visualization in frontend.
     """
 
     sport_name = serializers.CharField(source="sport_config.sport.name", read_only=True)
@@ -194,6 +194,7 @@ class FormationListSerializer(serializers.ModelSerializer):
             "id",
             "code",
             "name",
+            "positions",
             "sport_name",
             "is_default",
             "is_active",

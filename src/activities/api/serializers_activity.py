@@ -4,6 +4,8 @@ Activity serializers for Activities API.
 
 import logging
 
+from django.db import transaction
+
 from activities.models import Activity, Period
 from rest_framework import serializers
 
@@ -26,6 +28,7 @@ class ActivitySerializer(serializers.ModelSerializer):
     period = serializers.SerializerMethodField()
     created_by = serializers.SerializerMethodField()
     opponent_project = serializers.SerializerMethodField()
+    formation = serializers.SerializerMethodField()
 
     # Annotated fields
     participations_count = serializers.IntegerField(read_only=True, default=0)
@@ -47,6 +50,7 @@ class ActivitySerializer(serializers.ModelSerializer):
             "period_id",
             "opponent_project",
             "opponent_project_id",
+            "formation",
             "title",
             "activity_type",
             "start_time",
@@ -190,6 +194,16 @@ class ActivitySerializer(serializers.ModelSerializer):
             }
         return None
 
+    def get_formation(self, obj):
+        """Return nested formation representation."""
+        if obj.formation:
+            return {
+                "id": str(obj.formation.id) if hasattr(obj.formation, "id") else None,
+                "code": obj.formation.code,
+                "name": obj.formation.name,
+            }
+        return None
+
     def validate(self, data):
         """
         Validate:
@@ -244,16 +258,35 @@ class ActivitySerializer(serializers.ModelSerializer):
         return activity
 
     def update(self, instance, validated_data):
-        """Update activity (FK fields are immutable after creation)"""
+        """Update activity (FK fields are immutable after creation).
+
+        After save, syncs metadata.lineup → Participation records via LineupSyncService.
+        """
         # Remove write-only FK fields (don't allow changing FKs after creation)
         validated_data.pop("project_id", None)
         validated_data.pop("period_id", None)
+
+        # Detect lineup change
+        new_metadata = validated_data.get("metadata")
+        had_lineup_before = bool((instance.metadata or {}).get("lineup"))
+        has_lineup_now = bool((new_metadata or {}).get("lineup")) if new_metadata else had_lineup_before
 
         # Update mutable fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
-        instance.save()
+        # Transactional: save + sync roll back together on failure
+        with transaction.atomic():
+            instance.save()
+
+            # Sync lineup → Participation records when lineup data is present
+            if has_lineup_now:
+                from activities.services.lineup_sync import LineupSyncService
+
+                service = LineupSyncService(instance)
+                count = service.sync()
+                logger.info("Synced %d participations for activity %s", count, instance.pk)
+
         return instance
 
 

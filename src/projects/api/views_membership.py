@@ -747,6 +747,111 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
 
         return Response({"removed": removed_count, "errors": errors}, status=status.HTTP_200_OK)
 
+    @action(detail=False, methods=["get"], url_path="squad-readiness")
+    def squad_readiness(self, request, project_pk=None):
+        """Per-member asset readiness for video generation.
+
+        Returns which members have the required assets (fullbody, closeup, intro)
+        and an aggregate readiness percentage.
+
+        Query params:
+            kit_type: Kit to check (default: ``home``). Options: home, away, third, goalkeeper.
+
+        Response::
+
+            {
+                "total_members": 15,
+                "ready_members": 11,
+                "readiness_percent": 73,
+                "kit_type": "home",
+                "members": [
+                    {
+                        "id": "uuid",
+                        "name": "Jan de Vries",
+                        "functional_role": "player",
+                        "shirt_number": "10",
+                        "has_fullbody": true,
+                        "has_closeup": true,
+                        "has_intro": false,
+                        "ready": true
+                    }
+                ]
+            }
+        """
+        project = self._get_project()
+        self._check_can_view_members(project)
+        kit_type = request.query_params.get("kit_type", "home").strip().lower()
+        allowed_kits = {"home", "away", "third", "goalkeeper"}
+        if kit_type not in allowed_kits:
+            kit_type = "home"
+
+        from src.video.utils.asset_metadata import check_member_kit_readiness
+
+        memberships = (
+            ProjectMembership.objects.filter(
+                project=project,
+                deleted_at__isnull=True,
+            )
+            .select_related("user")
+            .only("id", "user_id", "user__first_name", "user__last_name", "metadata")
+            .order_by("user__last_name", "user__first_name")
+        )
+
+        members_out: list[dict] = []
+        ready_count = 0
+
+        for m in memberships:
+            meta = m.metadata or {}
+            fr_list = meta.get("functional_roles", [])
+            functional_role = "player"
+            if isinstance(fr_list, list):
+                for r in fr_list:
+                    if str(r).lower() in ("keeper", "goalkeeper", "doelman"):
+                        functional_role = "keeper"
+                        break
+                    if str(r).lower() == "coach":
+                        functional_role = "coach"
+
+            # Coaches don't need kit assets
+            if functional_role == "coach":
+                continue
+
+            member_kit = "goalkeeper" if functional_role == "keeper" else kit_type
+            readiness = check_member_kit_readiness(meta, member_kit)
+
+            first = getattr(m.user, "first_name", "") or ""
+            last = getattr(m.user, "last_name", "") or ""
+            name = f"{first} {last}".strip() or "Onbekend"
+
+            shirt_number = meta.get("shirt_number")
+            if shirt_number is not None:
+                shirt_number = str(shirt_number)
+
+            if readiness["ready"]:
+                ready_count += 1
+
+            members_out.append({
+                "id": str(m.id),
+                "name": name,
+                "functional_role": functional_role,
+                "shirt_number": shirt_number,
+                "has_fullbody": readiness["has_fullbody"],
+                "has_closeup": readiness["has_closeup"],
+                "has_intro": readiness["has_intro"],
+                "ready": readiness["ready"],
+            })
+
+        total = len(members_out)
+        percent = round(ready_count / total * 100) if total > 0 else 0
+
+        return Response({
+            "total_members": total,
+            "ready_members": ready_count,
+            "readiness_percent": percent,
+            "kit_type": kit_type,
+            "members": members_out,
+        })
+
 
 class ProjectFunctionalRoleViewSet(viewsets.ViewSet):
     """Manage functional (domain) roles for users on a team project.

@@ -93,6 +93,8 @@ INSTALLED_APPS = [
     "activity_feed.apps.ActivityFeedConfig",
     # B46: Soft Delete & Trash
     "trash.apps.TrashConfig",
+    # B67: Bulk Content Generation
+    "src.bulk_generation.apps.BulkGenerationConfig",
     # F34: Admin Monitoring Dashboard
     "dashboard.apps.DashboardConfig",
 ]

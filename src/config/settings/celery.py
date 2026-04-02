@@ -78,6 +78,10 @@ CELERY_TASK_ROUTES = {
     "src.video.tasks.match_intro.process_match_intro_video": {"queue": "video_slow"},
     # ai_generation: rate-limited AI API calls (Gemini/MiniMax/Veo)
     "generative.tasks.generate_asset_task": {"queue": "ai_generation"},
+    # B67: Bulk generation orchestration (lightweight, default queue)
+    "src.bulk_generation.tasks.process_bulk_generation_job": {"queue": "default"},
+    "src.bulk_generation.tasks.process_bulk_flyer_item": {"queue": "video_slow"},
+    "src.bulk_generation.tasks.on_bulk_item_video_completed": {"queue": "default"},
 }
 
 # Periodic Task Scheduling (celery-beat)

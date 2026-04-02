@@ -385,6 +385,8 @@ class ActivityViewSet(viewsets.ModelViewSet):
         "opponent_project",
         "opponent_project__parent_project",
         "period",
+        "period__parent_period",
+        "formation",
         "created_by",
     ).order_by("-start_time")
     serializer_class = ActivitySerializer
@@ -438,6 +440,7 @@ class ActivityViewSet(viewsets.ModelViewSet):
             queryset = queryset.prefetch_related(
                 "participations",
                 "participations__member__user",
+                "participations__project_membership",
                 "events",
                 "events__member",
                 "events__member__user",

@@ -1,6 +1,7 @@
 import pytest
 from django.urls import reverse
 from rest_framework import status
+from activities.models import Period
 from projects.models import ProjectMembership
 
 
@@ -335,3 +336,324 @@ class TestProjectMembershipAPI:
         # Should only return alice
         assert "alice@example.com" in user_emails
         assert "bob@example.com" not in user_emails
+
+
+@pytest.mark.django_db
+class TestSquadReadinessAPI:
+    """Test the squad-readiness action on ProjectMembershipViewSet."""
+
+    def _url(self, project_pk: str, **params: str) -> str:
+        url = reverse(
+            "api_v1:project-members-squad-readiness",
+            kwargs={"project_pk": project_pk},
+        )
+        if params:
+            qs = "&".join(f"{k}={v}" for k, v in params.items())
+            url = f"{url}?{qs}"
+        return url
+
+    @staticmethod
+    def _make_metadata(
+        *,
+        role: str = "player",
+        kit_type: str = "home",
+        has_fullbody: bool = False,
+        has_closeup: bool = False,
+        shirt_number: int | None = None,
+        functional_roles: list[str] | None = None,
+    ) -> dict:
+        """Build a realistic ProjectMembership.metadata dict."""
+        meta: dict = {}
+        if functional_roles is not None:
+            meta["functional_roles"] = functional_roles
+        if shirt_number is not None:
+            meta["shirt_number"] = shirt_number
+
+        role_key = "keeper" if role == "keeper" else "player"
+        images: dict = {}
+        if has_fullbody:
+            images["fullbody"] = {
+                kit_type: {"default": {"processed": "https://cdn.example.com/fb.png"}}
+            }
+        if has_closeup:
+            images["closeup"] = {
+                kit_type: {"default": {"processed": "https://cdn.example.com/cl.png"}}
+            }
+
+        if images:
+            meta["teamreel_assets"] = {"roles": {role_key: {"images": images}}}
+
+        return meta
+
+    def test_empty_squad(self, authenticated_client, project, project_membership):
+        """Only the admin membership exists; admin has no functional_roles so is counted as player."""
+        url = self._url(str(project.id))
+        response = authenticated_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        data = response.data
+        # Admin membership is counted (no functional_roles → player)
+        assert data["total_members"] >= 1
+        assert data["readiness_percent"] == 0
+        assert data["kit_type"] == "home"
+
+    def test_ready_members(self, authenticated_client, project, project_membership, user_factory):
+        """Members with fullbody asset are marked ready."""
+        ready_user = user_factory(first_name="Klaas", last_name="Janssen")
+        ProjectMembership.objects.create(
+            project=project,
+            user=ready_user,
+            role=ProjectMembership.Role.VIEWER,
+            metadata=self._make_metadata(
+                has_fullbody=True,
+                shirt_number=10,
+                functional_roles=["player"],
+            ),
+        )
+
+        not_ready_user = user_factory(first_name="Piet", last_name="Bakker")
+        ProjectMembership.objects.create(
+            project=project,
+            user=not_ready_user,
+            role=ProjectMembership.Role.VIEWER,
+            metadata=self._make_metadata(
+                has_fullbody=False,
+                functional_roles=["player"],
+            ),
+        )
+
+        url = self._url(str(project.id))
+        response = authenticated_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        data = response.data
+
+        members_by_name = {m["name"]: m for m in data["members"]}
+        assert members_by_name["Klaas Janssen"]["ready"] is True
+        assert members_by_name["Klaas Janssen"]["has_fullbody"] is True
+        assert members_by_name["Klaas Janssen"]["shirt_number"] == "10"
+        assert members_by_name["Piet Bakker"]["ready"] is False
+        assert data["ready_members"] >= 1
+
+    def test_coaches_excluded(self, authenticated_client, project, project_membership, user_factory):
+        """Coaches should not appear in squad readiness."""
+        coach = user_factory(first_name="Coach", last_name="Henk")
+        ProjectMembership.objects.create(
+            project=project,
+            user=coach,
+            role=ProjectMembership.Role.VIEWER,
+            metadata=self._make_metadata(functional_roles=["coach"]),
+        )
+
+        url = self._url(str(project.id))
+        response = authenticated_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        member_names = [m["name"] for m in response.data["members"]]
+        assert "Coach Henk" not in member_names
+
+    def test_keeper_uses_goalkeeper_kit(
+        self, authenticated_client, project, project_membership, user_factory
+    ):
+        """Keepers should be checked against the goalkeeper kit regardless of requested kit_type."""
+        keeper = user_factory(first_name="Tim", last_name="Krul")
+        ProjectMembership.objects.create(
+            project=project,
+            user=keeper,
+            role=ProjectMembership.Role.VIEWER,
+            metadata=self._make_metadata(
+                role="keeper",
+                kit_type="goalkeeper",
+                has_fullbody=True,
+                functional_roles=["keeper"],
+            ),
+        )
+
+        # Request home kit — keeper should still check goalkeeper kit
+        url = self._url(str(project.id), kit_type="home")
+        response = authenticated_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        members_by_name = {m["name"]: m for m in response.data["members"]}
+        assert members_by_name["Tim Krul"]["ready"] is True
+        assert members_by_name["Tim Krul"]["functional_role"] == "keeper"
+
+    def test_kit_type_parameter(
+        self, authenticated_client, project, project_membership, user_factory
+    ):
+        """Different kit_type checks different asset slots."""
+        player = user_factory(first_name="Frenkie", last_name="de Jong")
+        ProjectMembership.objects.create(
+            project=project,
+            user=player,
+            role=ProjectMembership.Role.VIEWER,
+            metadata=self._make_metadata(
+                kit_type="home",
+                has_fullbody=True,
+                functional_roles=["player"],
+            ),
+        )
+
+        # Home kit — should be ready
+        url = self._url(str(project.id), kit_type="home")
+        response = authenticated_client.get(url)
+        members_by_name = {m["name"]: m for m in response.data["members"]}
+        assert members_by_name["Frenkie de Jong"]["ready"] is True
+
+        # Away kit — no away assets uploaded
+        url = self._url(str(project.id), kit_type="away")
+        response = authenticated_client.get(url)
+        members_by_name = {m["name"]: m for m in response.data["members"]}
+        assert members_by_name["Frenkie de Jong"]["ready"] is False
+
+    def test_invalid_kit_type_defaults_to_home(
+        self, authenticated_client, project, project_membership
+    ):
+        """Invalid kit_type falls back to 'home'."""
+        url = self._url(str(project.id), kit_type="invalid")
+        response = authenticated_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["kit_type"] == "home"
+
+    def test_deleted_members_excluded(
+        self, authenticated_client, project, project_membership, user_factory
+    ):
+        """Soft-deleted members should not appear."""
+        from django.utils import timezone
+
+        deleted_user = user_factory(first_name="Deleted", last_name="Player")
+        ProjectMembership.objects.create(
+            project=project,
+            user=deleted_user,
+            role=ProjectMembership.Role.VIEWER,
+            metadata=self._make_metadata(
+                has_fullbody=True,
+                functional_roles=["player"],
+            ),
+            deleted_at=timezone.now(),
+        )
+
+        url = self._url(str(project.id))
+        response = authenticated_client.get(url)
+        member_names = [m["name"] for m in response.data["members"]]
+        assert "Deleted Player" not in member_names
+
+    def test_unauthenticated_access_denied(self, api_client, project):
+        """Unauthenticated requests should be rejected."""
+        url = self._url(str(project.id))
+        response = api_client.get(url)
+        assert response.status_code in (
+            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_403_FORBIDDEN,
+        )
+
+
+@pytest.mark.django_db
+class TestMembershipPeriodFilter:
+    """Test period/season filtering on the members list endpoint."""
+
+    def _list_url(self, project_pk: str, **params: str) -> str:
+        url = reverse(
+            "api_v1:project-members-list",
+            kwargs={"project_pk": project_pk},
+        )
+        if params:
+            qs = "&".join(f"{k}={v}" for k, v in params.items())
+            url = f"{url}?{qs}"
+        return url
+
+    def _get_results(self, response_data: dict | list) -> list:
+        if isinstance(response_data, dict):
+            return response_data.get("results", response_data.get("data", []))
+        return response_data
+
+    def test_filter_by_period(
+        self, authenticated_client, project, project_membership, user_factory, organisation
+    ):
+        """Members with a specific period should be returned when filtering by period."""
+        season = Period.objects.create(
+            name="Season 2025-2026",
+            organisation=organisation,
+            start_date="2025-08-01",
+            end_date="2026-06-30",
+        )
+
+        season_user = user_factory(first_name="Season", last_name="Player")
+        ProjectMembership.objects.create(
+            project=project,
+            user=season_user,
+            role=ProjectMembership.Role.VIEWER,
+            period=season,
+        )
+
+        # Filter by period — should only return the season member
+        url = self._list_url(str(project.id), period=str(season.id))
+        response = authenticated_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        results = self._get_results(response.data)
+        user_names = [
+            m["user"].get("full_name", "") or f'{m["user"].get("first_name", "")} {m["user"].get("last_name", "")}'.strip()
+            for m in results
+        ]
+        assert any("Season" in n for n in user_names)
+
+        # The admin_user membership (no period) should NOT appear
+        user_ids = [str(m["user"]["id"]) for m in results]
+        assert str(project_membership.user.id) not in user_ids
+
+    def test_no_period_returns_all(
+        self, authenticated_client, project, project_membership, user_factory, organisation
+    ):
+        """Without period filter, all members are returned."""
+        season = Period.objects.create(
+            name="Season 2025-2026",
+            organisation=organisation,
+            start_date="2025-08-01",
+            end_date="2026-06-30",
+        )
+
+        season_user = user_factory(first_name="Season", last_name="Player")
+        ProjectMembership.objects.create(
+            project=project,
+            user=season_user,
+            role=ProjectMembership.Role.VIEWER,
+            period=season,
+        )
+
+        # No period filter — should return both members
+        url = self._list_url(str(project.id))
+        response = authenticated_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        results = self._get_results(response.data)
+        # At least 2: admin + season player
+        assert len(results) >= 2
+
+    def test_invalid_period_uuid_rejected(
+        self, authenticated_client, project, project_membership
+    ):
+        """Invalid period UUID should return a validation error."""
+        url = self._list_url(str(project.id), period="not-a-uuid")
+        response = authenticated_client.get(url)
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_general_members_without_period_not_in_season_filter(
+        self, authenticated_client, project, project_membership, user_factory, organisation
+    ):
+        """General members (period=None) should NOT appear when filtering by a specific period.
+        This is the expected behavior — the frontend handles the fallback by retrying without filter."""
+        season = Period.objects.create(
+            name="Season 2025-2026",
+            organisation=organisation,
+            start_date="2025-08-01",
+            end_date="2026-06-30",
+        )
+
+        # admin_user has no period
+        url = self._list_url(str(project.id), period=str(season.id))
+        response = authenticated_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+        results = self._get_results(response.data)
+        # Only period-scoped members — admin has no period so excluded
+        user_ids = [str(m["user"]["id"]) for m in results]
+        assert str(project_membership.user.id) not in user_ids
