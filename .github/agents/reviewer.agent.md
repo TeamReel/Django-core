@@ -145,32 +145,33 @@ cd demo && npx vite build
 
 ## Roadmap Structuur
 
-Alle specs en taken staan in `docs/roadmap/modules/`:
+Alle taken staan in `docs/roadmap/backlog/` onder 8 themafases:
 
 ```
-modules/
-├── backlog/    ← ruwe ideeën, nog niet uitgewerkt
-├── ready/      ← uitgewerkt met fases, klaar om te bouwen
-├── active/     ← wordt nu aan gebouwd
-├── quick/      ← kleine fixes (Q-items)
-│   ├── todo/       ← Q-items klaar om opgepakt te worden
-│   ├── doing/      ← Q-item waar nu aan gewerkt wordt (max 1)
-│   ├── review/     ← Q-item klaar, wacht op code review ← JIJ PAKT HIER OP
-│   └── done/       ← Q-item afgerond en geverifieerd
-├── done/       ← afgerond
-└── later/      ← uitgesteld
+backlog/
+├── 01-content-pipeline/    ← Video/media generatie & verwerking
+├── 02-infra-tooling/       ← Refactoring, cleanup, AI tooling
+├── 03-admin-analytics/     ← Dashboard, monitoring, analytics
+├── 04-club-experience/     ← Ledenportaal, onboarding, sponsor
+├── 05-social-publishing/   ← Delen, publiceren, public feed
+├── 06-automation/          ← Match day automation, calendar, scraping
+├── 07-commerce/            ← Betaling, abonnementen, marketplace
+└── 08-platform-scaling/    ← Whitelabel, multi-taal, PWA
 ```
 
-## Q-item Review Workflow
+Elke fase heeft 3 mappen: `todo/`, `review/`, `done/`.
+Items gebruiken prefix: `BE-`, `FE-`, `FULL-`, `INFRA-`, `AI-`.
 
-Wanneer een Q-item in `quick/review/` staat, review je het als volgt:
+## Item Review Workflow
 
-1. **Lees het Q-bestand** — begrijp de checklist en wat er gebouwd moest worden
+Wanneer een item in `{fase}/review/` staat, review je het als volgt:
+
+1. **Lees het spec-bestand** — begrijp de checklist en wat er gebouwd moest worden
 2. **Review de code** — check alle gewijzigde bestanden tegen de 6 review dimensies
 3. **Beoordeel**:
-   - **✅ Goed** → zet Status op `✅ DONE`, verplaats naar `quick/done/`, vink checklist af
-   - **⚠️ Kleine issues** (≤15 min fix) → fix zelf, commit, zet op `✅ DONE`, verplaats naar `quick/done/`
-   - **🔴 Grote problemen** → schrijf feedback in het Q-bestand onder `## Review feedback`, verplaats terug naar `quick/todo/`
+   - **✅ Goed** → zet Status op `✅ DONE`, verplaats van `review/` → `done/`, vink checklist af
+   - **⚠️ Kleine issues** (≤15 min fix) → fix zelf, commit, zet op `✅ DONE`, verplaats naar `done/`
+   - **🔴 Grote problemen** → schrijf feedback in het spec-bestand onder `## Review feedback`, verplaats terug naar `todo/`
 
 ## Findings → Roadmap
 
@@ -180,28 +181,19 @@ After every review, **document actionable findings** in the roadmap:
 
 | Signal | Type | Waar |
 |--------|------|------|
-| ≤4 uur, 1-3 bestanden, fix/verbetering | **Quick** | `modules/quick/todo/Q{NNN}-{name}.md` |
-| >4 uur, meerdere lagen, nieuw model/pagina | **Feature** | `modules/backlog/` (Planner werkt het uit → `ready/`) |
+| ≤4 uur, 1-3 bestanden, fix/verbetering | **Small item** | `{juiste fase}/todo/{PREFIX}-{naam}.md` |
+| >4 uur, meerdere lagen, nieuw model/pagina | **Feature** | `{juiste fase}/todo/` als folder met `index.md` |
 | Voldoet aan standaarden | **Geen** | Geen roadmap item nodig |
 
 ### Workflow
 
 1. Complete the review using the standard output format above
-2. For each issue that needs work, classify as Quick or Feature
-3. **Create the roadmap item(s)**:
-   - Quick items → `modules/quick/Q{NNN}-{name}.md`
-   - Feature items → `modules/backlog/{number}-{code}-{name}/index.md`
+2. For each issue that needs work, classify as small item or feature
+3. **Create the roadmap item(s)** in `docs/roadmap/backlog/{juiste fase}/todo/`
 4. Present a summary to the user:
    - Wat er goed is
    - Wat er moet gebeuren (met impact-uitleg in business-taal)
-   - Welke roadmap items je hebt aangemaakt (quick vs feature)
+   - Welke roadmap items je hebt aangemaakt
 5. Ask: "Wil je dat ik hiermee aan de slag ga, of eerst iets anders oppakken?"
 
-### Quick module template
-
-See `workflow.instructions.md` for the template format. Use next available Q-number.
-
-To find the next Q-number:
-```bash
-Get-ChildItem docs/roadmap/modules/quick/ -Filter "Q*.md" | Sort-Object Name | Select-Object -Last 1
-```
+> Lees `docs/roadmap/README.md` voor de volledige structuur en naamgeving.

@@ -29,8 +29,7 @@ De agent pakt het op, leest de spec, scant op onduidelijkheden, checkt conventie
 Jij: "build module B62"
   │
   ├─ Gate 0: Discovery
-  │   ├─ Leest de spec uit docs/roadmap/modules/ready/ (of active/)
-  │   ├─ Verplaatst module folder naar active/
+  │   ├─ Leest de spec uit docs/roadmap/backlog/{fase}/todo/
   │   ├─ Scant op onduidelijkheden (models, relaties, endpoints, permissies...)
   │   └─ Stelt 1-5 vragen in één keer (met defaults die je kunt bevestigen)
   │
@@ -244,7 +243,7 @@ De agent stelt automatisch de volgende stap voor:
 
 | Probleem | Oplossing |
 |---------|----------|
-| "Spec niet gevonden" | Check of de folder in `docs/roadmap/modules/ready/` of `active/` staat |
+| "Spec niet gevonden" | Check of het item in `docs/roadmap/backlog/{fase}/todo/` staat |
 | "Gate 1 faalt" | Spec voldoet niet aan conventies — agent stelt fixes voor |
 | "Tests falen" | Agent fixt automatisch, of vraagt jou om input bij onduidelijkheden |
 | "Import error" | App niet geregistreerd in INSTALLED_APPS — wire-up fase overgeslagen? |

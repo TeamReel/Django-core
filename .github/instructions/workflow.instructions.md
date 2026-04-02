@@ -55,44 +55,53 @@ B) [Option B — kort uitgelegd]
 
 ## Roadmap Workflow
 
-All specs and tasks live in `docs/roadmap/modules/`:
+All specs and tasks live in `docs/roadmap/backlog/`, organized by theme:
 
 ```
-modules/
-├── backlog/    ← ideas, not yet specced
-├── ready/      ← specced with phases, ready to build
-├── active/     ← currently building (max 1-2)
-├── quick/      ← small improvements (Q-series)
-│   ├── todo/       ← ready to pick up
-│   ├── doing/      ← being built (max 1)
-│   ├── review/     ← built, awaiting code review
-│   └── done/       ← completed and verified
-├── done/       ← fully completed
-└── later/      ← deferred
+docs/roadmap/
+├── backlog/                         ← DE WERKMAP
+│   ├── 01-content-pipeline/         ← Video/media generatie & verwerking
+│   ├── 02-infra-tooling/            ← Refactoring, cleanup, AI tooling
+│   ├── 03-admin-analytics/          ← Dashboard, monitoring, analytics
+│   ├── 04-club-experience/          ← Ledenportaal, onboarding, sponsor
+│   ├── 05-social-publishing/        ← Delen, publiceren, public feed
+│   ├── 06-automation/               ← Match day automation, calendar, scraping
+│   ├── 07-commerce/                 ← Betaling, abonnementen, marketplace
+│   └── 08-platform-scaling/         ← Whitelabel, multi-taal, PWA
+├── archive/                         ← Afgerond werk (niet meer actief)
+└── icebox/                          ← Verre toekomst
 ```
 
-### Feature lifecycle
-`backlog/` → `ready/` → `active/` → `done/`
+Each phase has 3 folders: `todo/`, `review/`, `done/`.
 
-### Quick lifecycle
-`todo/` → `doing/` → `review/` → `done/`
+### Item naming
 
-**Bouwer** picks from `todo/` → builds → moves to `review/`.
-**Reviewer** picks from `review/` → approves or fixes small issues → moves to `done/`. If large problems: back to `todo/` with feedback.
+Items get a layer prefix: `BE-`, `FE-`, `FULL-`, `INFRA-`, or `AI-`.
+Items can be a single `.md` file or a folder with `index.md` + sub-phases (for large features).
+
+### Lifecycle
+
+`todo/` → `review/` → `done/`
+
+| Agent | Picks from | Delivers to |
+|-------|-----------|-------------|
+| **Planner** | — | `todo/` (creates specs) |
+| **Bouwer** | `todo/` | `review/` |
+| **Reviewer** | `review/` | `done/` or back to `todo/` |
 
 ### When to create a spec
-- New page, feature, model + API, or refactor 5+ files → **Feature** (in `backlog/`, Planner specs it)
-- ≤4 uur, 1-3 files → **Quick** (in `quick/todo/`)
-- Bug fix or small tweak → just implement
+- New page, feature, model + API, or refactor 5+ files → **Feature spec** (folder with `index.md` + phases)
+- ≤4 uur, 1-3 files → **Single spec file** in the appropriate phase's `todo/`
+- Bug fix or small tweak → just implement, no spec needed
 
-## Quick Module Template
+## Module Template
 
 ```markdown
-# Q{NNN} — {Naam}
+# {Prefix}-{naam}
 
 | | |
 |---|---|
-| Status | 📋 TODO |   <!-- 📋 TODO → 🚧 DOING → 🔍 REVIEW → ✅ DONE -->
+| Status | 📋 TODO |   <!-- 📋 TODO → 🔍 REVIEW → ✅ DONE -->
 | Bron | {UI Review / Code Review / E2E Test / ...} |
 | Impact | {🔴 critical / 🟡 important / 🟢 nice-to-have} |
 | Effort | ~{n} uur |

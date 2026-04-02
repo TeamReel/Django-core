@@ -63,7 +63,7 @@ docs/                   ← All documentation
   security/             ← Permission layers, testing
   infrastructure/       ← Railway, database, observability
   guides/               ← Getting started, Spec Kitty, testing
-  roadmap/              ← Phases, module specs (backlog/ready/active/done/quick/later)
+  roadmap/              ← Backlog phases, archive, icebox (see roadmap/README.md)
   testing/              ← Manual test scripts
   teamreel/             ← TeamReel product docs (businessplan, design)
   coreapp/              ← 80/20 core platform docs
@@ -135,15 +135,24 @@ Domain docs mapped in `docs/ai-context-index.md`. Key pointers:
 - Data model: `docs/architecture/data-model.md`
 - Roadmap: `docs/roadmap/`
 
-## Spec-Kitty / Roadmap Integration
+## Roadmap Structure
 
-| What | Where | Who |
-|------|-------|-----|
-| Technical execution | `kitty-specs/{feature}/` | Lead Architect |
-| Business status | `docs/roadmap/modules/` | Lead Architect (lightweight sync) |
-| Quick fixes (≤4 uur) | `docs/roadmap/modules/quick/` | Planner / Bouwer |
+All work lives in `docs/roadmap/backlog/` organized by 8 build-order phases:
 
-**Rule**: For features using spec-kitty, the roadmap module is a **lightweight index only** (status + link to kitty-spec). Do NOT duplicate specs, plans, or phase files across both systems.
+| Phase | Focus |
+|-------|-------|
+| `01-content-pipeline/` | Video/media generatie & verwerking |
+| `02-infra-tooling/` | Refactoring, cleanup, AI tooling |
+| `03-admin-analytics/` | Dashboard, monitoring, analytics |
+| `04-club-experience/` | Ledenportaal, onboarding, sponsor |
+| `05-social-publishing/` | Delen, publiceren, public feed |
+| `06-automation/` | Match day automation, calendar, scraping |
+| `07-commerce/` | Betaling, abonnementen, marketplace |
+| `08-platform-scaling/` | Whitelabel, multi-taal, PWA |
+
+Each phase has `todo/`, `review/`, `done/`. Items use prefix `BE-`, `FE-`, `FULL-`, `INFRA-`, or `AI-`.
+
+See `docs/roadmap/README.md` for full details.
 
 ## Sources of Truth
 

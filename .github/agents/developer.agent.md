@@ -106,40 +106,37 @@ You are a senior full-stack developer for TeamReel. You build features, fix bugs
 
 ## Roadmap Workflow
 
-All specs and tasks live in `docs/roadmap/modules/`:
+Alle taken staan in `docs/roadmap/backlog/` onder 8 themafases:
 
 ```
-modules/
-├── backlog/    ← ruwe ideeën (Planner werkt ze uit)
-├── ready/      ← uitgewerkt met fases, klaar om te bouwen ← JIJ PAKT HIER OP
-├── active/     ← waar je nu aan bouwt (max 1-2)
-├── quick/      ← kleine fixes zonder fases (Q-items) ← OOK OPPAKKEN
-├── done/       ← afgerond
-└── later/      ← uitgesteld
+backlog/
+├── 01-content-pipeline/    ← Video/media generatie & verwerking
+├── 02-infra-tooling/       ← Refactoring, cleanup, AI tooling
+├── 03-admin-analytics/     ← Dashboard, monitoring, analytics
+├── 04-club-experience/     ← Ledenportaal, onboarding, sponsor
+├── 05-social-publishing/   ← Delen, publiceren, public feed
+├── 06-automation/          ← Match day automation, calendar, scraping
+├── 07-commerce/            ← Betaling, abonnementen, marketplace
+└── 08-platform-scaling/    ← Whitelabel, multi-taal, PWA
 ```
 
-### Hoe je een module bouwt
+Elke fase heeft 3 mappen: `todo/`, `review/`, `done/`.
+Items gebruiken prefix: `BE-`, `FE-`, `FULL-`, `INFRA-`, `AI-`.
 
-1. **Oppakken** — kies een module uit `ready/` of item uit `quick/todo/`
-2. **Start** — verplaats de map van `ready/` → `active/`, zet Status op `🚧 IN UITVOERING`
-3. **Bouw fase voor fase** — werk elke `phases/todo/H{n}_*.md` af
-4. **Fase klaar** — verplaats van `phases/todo/` → `phases/done/`
-5. **Module klaar** — alle fases done → verplaats map naar `done/`, Status `✅ DONE`
+### Hoe je een item bouwt
 
-### Hoe je een Q-item bouwt
+1. **Oppakken** — kies een item uit `{fase}/todo/`
+2. **Bouw** — implementeer de checklist, run tests, verify
+3. **Naar review** — verplaats het item van `todo/` → `review/`, zet Status op `🔍 REVIEW`
+4. **Doe NIET zelf de review** — hand off naar **Reviewer**
 
-1. **Oppakken** — kies een Q-item uit `quick/todo/`
-2. **Start** — verplaats naar `quick/doing/`, zet Status op `🚧 DOING`
-3. **Bouw** — implementeer de checklist, run tests, verify
-4. **Commit & push**
-5. **Naar review** — verplaats naar `quick/review/`, zet Status op `🔍 REVIEW`
-6. **Doe NIET zelf de review** — hand off naar **Reviewer**
+> Items kunnen een enkel `.md` bestand zijn of een folder met `index.md` + sub-fases.
+> Lees `docs/roadmap/README.md` voor de volledige structuur.
 
 ## After Implementation
 
 When your work is done, recommend the right follow-up:
-- Q-item gebouwd → hand off to **Reviewer** (verplicht voor alle Q-items)
-- Feature code needs review → hand off to **Reviewer**
+- Item gebouwd → hand off to **Reviewer** (verplicht voor alle items)
 - Feature needs browser testing → hand off to **Playwright Tester**
 - Database changes involved → hand off to **PostgreSQL DBA**
 - Ready for production → hand off to **Ops & Deploy**

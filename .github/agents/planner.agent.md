@@ -74,93 +74,62 @@ You are a senior software architect. You research the codebase, create implement
 
 | Type | When | Where | Format |
 |------|------|-------|--------|
-| **Feature** | >4 uur, meerdere lagen, nieuw model/pagina | `modules/backlog/` | `index.md` + `phases/todo/H{n}_name.md` |
-| **Quick** | ≤4 uur, 1-3 bestanden, fix/verbetering | `modules/quick/Q{NNN}-{name}.md` | Eén bestand met checklist |
+| **Feature** | >4 uur, meerdere lagen, nieuw model/pagina | `backlog/{fase}/todo/` | Folder met `index.md` + sub-fases |
+| **Small item** | ≤4 uur, 1-3 bestanden, fix/verbetering | `backlog/{fase}/todo/` | Eén `.md` bestand met checklist |
 
-**Feature specs (backlog):**
-- New page or major UI feature → always
-- New model + API endpoint → always
-- Multi-file refactor (5+ files) → always
+Kies de juiste fase op basis van het onderwerp:
 
-**Quick modules:**
-- Bug fix, styling fix, small improvement → `modules/quick/`
-- Review findings that need ≤4 hours → `modules/quick/`
+| Fase | Onderwerp |
+|------|-----------|
+| `01-content-pipeline` | Video, media, generatie, verwerking |
+| `02-infra-tooling` | Refactoring, cleanup, AI tooling |
+| `03-admin-analytics` | Dashboard, monitoring, analytics |
+| `04-club-experience` | Ledenportaal, onboarding, sponsor |
+| `05-social-publishing` | Delen, publiceren, public feed |
+| `06-automation` | Match day automation, calendar, scraping |
+| `07-commerce` | Betaling, abonnementen, marketplace |
+| `08-platform-scaling` | Whitelabel, multi-taal, PWA |
 
 ## Process
 
 1. **Understand** — clarify scope, layers affected, size
-2. **Research** — read existing code, search for patterns, check `docs/roadmap/modules/`
+2. **Research** — read existing code, search for patterns, check `docs/roadmap/backlog/`
 3. **Domain context** — read `docs/ai-context-index.md` to find relevant feature/architecture docs
-4. **Spec** — update the existing module's `index.md` and create phase specs in `phases/todo/`
+4. **Spec** — create spec in `backlog/{juiste fase}/todo/` with proper prefix (`BE-`, `FE-`, `FULL-`, `INFRA-`, `AI-`)
 5. **Plan** — break into phases with effort estimates and done criteria
-6. **Hand off** → Developer
+6. **Hand off** → Bouwer
 
 ## Where specs live
 
-**IMPORTANT:** Specs live inside the existing module folder structure in `docs/roadmap/modules/`.
+**IMPORTANT:** Specs live in `docs/roadmap/backlog/{fase}/todo/`.
 
 ```
-docs/roadmap/modules/
-├── backlog/        ← raw ideas, NOT yet specced with phases
-├── ready/          ← fully specced with phases, ready to build
-│   └── {number}-{code}-{name}/
-│       ├── index.md          ← main spec (Status: 📐 READY)
-│       └── phases/
-│           ├── todo/         ← H0_name.md, H1_name.md, ...
-│           └── done/         ← completed phase specs
-├── active/         ← currently being built (max 1-2)
-├── quick/          ← short improvements without phases (Q-series)
-│   └── Q{NNN}-{kebab-name}.md   ← one file per item
-├── done/           ← fully completed (all types)
-└── later/          ← deferred modules
+docs/roadmap/backlog/
+├── 01-content-pipeline/
+│   ├── todo/       ← JIJ MAAKT SPECS HIER
+│   ├── review/     ← Bouwer levert hier af
+│   └── done/       ← Reviewer keurt hier goed
+├── 02-infra-tooling/
+│   ├── todo/ / review/ / done/
+├── ... (8 fases totaal)
+archive/                ← Afgerond werk
+icebox/                 ← Verre toekomst
 ```
 
-**NEVER** create new top-level folders in `docs/roadmap/` like `32_some-name/`. Always use the existing module folder.
+**Lifecycle: Planner → `todo/` → Bouwer → `review/` → Reviewer → `done/`**
 
-**Lifecycle: `backlog/` → `ready/` → `active/` → `done/`**
+| Agent | Pakt op uit | Levert af in |
+|-------|-------------|-------------|
+| **Planner** | — | `{fase}/todo/` (specs schrijven) |
+| **Bouwer** | `{fase}/todo/` | `{fase}/review/` |
+| **Reviewer** | `{fase}/review/` | `{fase}/done/` of terug naar `{fase}/todo/` |
 
-| Status | Map | Wie |
-|--------|-----|-----|
-| `📋 ROADMAP` | `backlog/` | — |
-| `📐 READY` | `ready/` | Planner |
-| `🚧 IN UITVOERING` | `active/` | Developer |
-| `✅ DONE` | `done/` | Developer |
-
-**Your job (Planner) — spec and move to ready:**
-1. Find the existing folder in `backlog/` (e.g., `313-B46-soft-delete-and-trash/`)
-2. Update `index.md` with: Huidige staat, Design beslissingen, Fasering table, Acceptatiecriteria
-3. Create individual phase specs in `phases/todo/` (e.g., `H0_foundation.md`, `H1_core-feature.md`)
-4. Change Status to `📐 READY`
-5. Move folder from `backlog/` to `ready/`
+**Your job (Planner) — spec and place in todo:**
+1. Determine the right phase for the feature/item
+2. Create the spec with proper prefix naming (`BE-`, `FE-`, `FULL-`, `INFRA-`, `AI-`)
+3. For large features: create a folder with `index.md` + sub-phases
+4. For small items: create a single `.md` file
+5. Place in `backlog/{fase}/todo/`
 6. Show the spec to the user for confirmation
 
-**After handoff to Developer:**
-- Developer moves from `ready/` to `active/` when starting
-- Developer moves phase files from `phases/todo/` to `phases/done/` as completed
-- Developer moves folder to `done/` when all phases complete
-
-## Spec format
-
-Specs follow the standard roadmap format with phases split into "To do" / "Done criteria". See existing specs in `docs/roadmap/modules/done/302-F17-activity-feed-integration/` for examples.
-
-Key sections: Doel, Huidige staat, Design beslissingen, Fasering (H0/H1/H2...), Acceptatiecriteria.
-
-## Phase spec format
-
-Each phase file in `phases/todo/`:
-
-```markdown
-# H{n} — {Title}
-
-> **Effort:** ~{n} uur | **Impact:** {what it unlocks}
-
-## To do
-
-- [ ] {task 1}
-- [ ] {task 2}
-
-## Done criteria
-
-- [ ] {criterion 1}
-- [ ] {criterion 2}
-```
+> Lees `docs/roadmap/README.md` voor naamgeving-conventie en volledige structuur.

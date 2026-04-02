@@ -9,7 +9,7 @@ metadata:
 
 # Backend Module Builder
 
-Build a complete Django app from a module spec in `docs/roadmap/modules/ready/` (or `backlog/` if not yet specced).
+Build a complete Django app from a module spec in `docs/roadmap/backlog/{fase}/todo/`.
 
 ## When to use
 - Building a **complete new Django app** from a B-number module spec (multiple models, API, tests, admin)
@@ -23,14 +23,16 @@ Build a complete Django app from a module spec in `docs/roadmap/modules/ready/` 
 ### Module Lifecycle
 
 ```
-backlog/  →  ready/  →  active/  →  done/
-(idea)       (specced)   (building)  (complete)
+todo/  →  review/  →  done/
+(build)   (review)    (complete)
 ```
 
-- **backlog/**: Raw module idea, `index.md` without detailed phases
-- **ready/**: Fully specced with `index.md` + `phases/todo/H{n}_*.md` — ready to build
-- **active/**: When work starts (Gate 0), move the folder here. Phase files move from `phases/todo/` to `phases/done/` as completed.
-- **done/**: After Gate 4, move the folder here.
+All items live in `docs/roadmap/backlog/{fase}/`:
+- **todo/**: Items ready to be built — pick from here
+- **review/**: After implementation, move item here for code review
+- **done/**: After review approval, item moves here
+
+Fases: `01-content-pipeline`, `02-infra-tooling`, `03-admin-analytics`, `04-club-experience`, `05-social-publishing`, `06-automation`, `07-commerce`, `08-platform-scaling`.
 
 ---
 
@@ -53,14 +55,10 @@ User: "build module B62"
 
 ### 0.1 Load the spec
 ```
-# 1. Find the module spec in ready, active, or backlog
-Find: docs/roadmap/modules/ready/*-B{number}-*/index.md
-  OR: docs/roadmap/modules/active/*-B{number}-*/index.md
-  OR: docs/roadmap/modules/backlog/*-B{number}-*/index.md
+# 1. Find the module spec in the backlog
+Find: docs/roadmap/backlog/{fase}/todo/{PREFIX}-{name}.md
+  OR: docs/roadmap/backlog/{fase}/todo/{PREFIX}-{name}/index.md
 Read: .github/instructions/backend.instructions.md
-
-# 2. Move module folder to active/ (from ready/ or backlog/)
-git mv docs/roadmap/modules/ready/{folder} docs/roadmap/modules/active/{folder}
 ```
 
 ### 0.2 Ambiguity Scan
@@ -234,9 +232,9 @@ See [references/architecture.md](references/architecture.md#post-build-analysis-
 1. Update the spec `index.md`: Status `📋 ROADMAP` → `✅ IMPLEMENTED`
 2. Check all delivery checklist items
 3. Add implementation notes (files created, test count, decisions made)
-4. Move the module folder from `active/` to `done/`:
+4. Move the item from `todo/` to `review/`:
 ```bash
-git mv docs/roadmap/modules/active/{folder} docs/roadmap/modules/done/{folder}
+Move-Item docs/roadmap/backlog/{fase}/todo/{item} docs/roadmap/backlog/{fase}/review/
 ```
 
 ---

@@ -94,7 +94,7 @@ Always read that file first to find the right document for any topic.
 | Media system (files, assets, video) | `docs/media/media-architecture.md` |
 | AI models & costs | `docs/media/ai-models-pricing.md` |
 | Railway infra | `docs/infrastructure/railway-services.md` |
-| Roadmap & modules | `docs/roadmap/modules/` |
+| Roadmap & modules | `docs/roadmap/backlog/` |
 
 ## Core Domain Knowledge
 
@@ -137,20 +137,25 @@ Upload → FileAsset (S3) → MediaItem (metadata) → BrandAsset/Relation (sema
 
 ## Roadmap Structuur
 
-Alle specs en taken staan in `docs/roadmap/modules/`:
+Alle taken staan in `docs/roadmap/backlog/` onder 8 themafases:
 
 ```
-modules/
-├── backlog/    ← ruwe ideeën, nog niet uitgewerkt
-├── ready/      ← uitgewerkt met fases, klaar om te bouwen
-├── active/     ← wordt nu aan gebouwd (max 1-2)
-├── quick/      ← kleine fixes zonder fases (Q-items)
-├── done/       ← afgerond
-└── later/      ← uitgesteld
+backlog/
+├── 01-content-pipeline/    ← Video/media generatie & verwerking
+├── 02-infra-tooling/       ← Refactoring, cleanup, AI tooling
+├── 03-admin-analytics/     ← Dashboard, monitoring, analytics
+├── 04-club-experience/     ← Ledenportaal, onboarding, sponsor
+├── 05-social-publishing/   ← Delen, publiceren, public feed
+├── 06-automation/          ← Match day automation, calendar, scraping
+├── 07-commerce/            ← Betaling, abonnementen, marketplace
+└── 08-platform-scaling/    ← Whitelabel, multi-taal, PWA
 ```
 
-Bij vragen over "wat staat er op de planning?" → check `ready/` + `active/` + `quick/`.
-Bij vragen over "wat is er al gedaan?" → check `done/`.
+Elke fase heeft 3 mappen: `todo/`, `review/`, `done/`.
+Items gebruiken prefix: `BE-`, `FE-`, `FULL-`, `INFRA-`, `AI-`.
+
+Bij vragen over "wat staat er op de planning?" → check `todo/` in de relevante fase.
+Bij vragen over "wat is er al gedaan?" → check `done/` of `docs/roadmap/archive/`.
 
 ## How to Answer Questions
 
@@ -158,5 +163,5 @@ Bij vragen over "wat is er al gedaan?" → check `done/`.
 2. **Read the specific doc** to get accurate details
 3. **Cross-reference with code** if the docs might be outdated (`src/` for backend, `demo/src/` for frontend)
 4. **Answer in product terms** — what it does for the user, not how it's coded
-5. If something doesn't exist yet, check `modules/backlog/` and `ready/` for planned work
-6. For roadmap status questions, check all 6 folders in `modules/`
+5. If something doesn't exist yet, check `docs/roadmap/backlog/` for planned work
+6. For roadmap status questions, check all 8 phases in `backlog/` (each has `todo/`, `review/`, `done/`)

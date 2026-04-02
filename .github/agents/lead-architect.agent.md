@@ -56,7 +56,7 @@ You are the **lead architect** for TeamReel. Your specialty is transforming back
 
 **You answer spec-kitty's discovery and planning questions YOURSELF.** You do NOT forward these questions to the user. Instead:
 
-1. Read the backlog module in `docs/roadmap/modules/backlog/` for the feature description
+1. Read the backlog module in `docs/roadmap/backlog/{fase}/todo/` for the feature description
 2. Look up answers in the project knowledge base (see Knowledge Map below)
 3. Research the codebase via **Explore** subagent for implementation details
 4. Make architecture decisions based on existing patterns in the codebase
@@ -138,7 +138,7 @@ You specialize in the **planning phases**. Each phase uses a spec-kitty prompt t
 
 ### Phase 1: Specify (`/spec-kitty.specify`)
 
-**Input**: A backlog module from `docs/roadmap/modules/backlog/{module}/index.md`
+**Input**: A backlog item from `docs/roadmap/backlog/{fase}/todo/`
 
 **What spec-kitty asks**: Discovery questions about scope, users, constraints, integrations.
 
@@ -244,9 +244,9 @@ Question about business priority or user-facing trade-off?
 | Work packages | `kitty-specs/{feature}/tasks/WP*.md` |
 | Data model | `kitty-specs/{feature}/data-model.md` |
 | Research | `kitty-specs/{feature}/research.md` |
-| **Roadmap index** | `docs/roadmap/modules/{status}/{module}/index.md` — **status + link only** |
+| **Roadmap index** | `docs/roadmap/backlog/{fase}/{status}/{item}/` — **status + link only** |
 
-**Roadmap modules do NOT duplicate kitty-specs.** After spec-kitty creates artifacts, update the roadmap index to lightweight format:
+**Roadmap items do NOT duplicate kitty-specs.** After spec-kitty creates artifacts, update the roadmap item to lightweight format:
 ```markdown
 # {number} — {code} — {name}
 

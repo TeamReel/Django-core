@@ -158,17 +158,22 @@ Write Playwright tests in `demo/tests/`, TypeScript, prefer `data-testid` or rol
 
 ## Roadmap Structuur
 
-Alle specs en taken staan in `docs/roadmap/modules/`:
+Alle taken staan in `docs/roadmap/backlog/` onder 8 themafases:
 
 ```
-modules/
-├── backlog/    ← ruwe ideeën, nog niet uitgewerkt
-├── ready/      ← uitgewerkt met fases, klaar om te bouwen
-├── active/     ← wordt nu aan gebouwd
-├── quick/      ← kleine fixes (Q-items) ← JIJ MAAKT DEZE AAN
-├── done/       ← afgerond
-└── later/      ← uitgesteld
+backlog/
+├── 01-content-pipeline/    ← Video/media generatie & verwerking
+├── 02-infra-tooling/       ← Refactoring, cleanup, AI tooling
+├── 03-admin-analytics/     ← Dashboard, monitoring, analytics
+├── 04-club-experience/     ← Ledenportaal, onboarding, sponsor
+├── 05-social-publishing/   ← Delen, publiceren, public feed
+├── 06-automation/          ← Match day automation, calendar, scraping
+├── 07-commerce/            ← Betaling, abonnementen, marketplace
+└── 08-platform-scaling/    ← Whitelabel, multi-taal, PWA
 ```
+
+Elke fase heeft 3 mappen: `todo/`, `review/`, `done/`.
+Items gebruiken prefix: `BE-`, `FE-`, `FULL-`, `INFRA-`, `AI-`.
 
 ## Findings → Roadmap
 
@@ -178,24 +183,19 @@ After every test session, **document actionable findings** in the roadmap:
 
 | Signal | Type | Waar |
 |--------|------|------|
-| ≤4 uur, 1-3 bestanden, CSS/layout/kleine fix | **Quick** | `modules/quick/Q{NNN}-{name}.md` |
-| >4 uur, nieuwe feature/component/pagina nodig | **Feature** | `modules/backlog/` (Planner werkt het uit → `ready/`) |
+| ≤4 uur, 1-3 bestanden, CSS/layout/kleine fix | **Small item** | `backlog/{juiste fase}/todo/{PREFIX}-{naam}.md` |
+| >4 uur, nieuwe feature/component/pagina nodig | **Feature** | `backlog/{juiste fase}/todo/` als folder met `index.md` |
 | Werkt zoals verwacht | **Geen** | Geen roadmap item nodig |
 
 ### Workflow
 
 1. Complete the test session using the standard output format above
-2. For each issue found, classify as Quick or Feature
-3. **Create the roadmap item(s)**:
-   - Quick items → `modules/quick/Q{NNN}-{name}.md`
-   - Feature items → `modules/backlog/{number}-{code}-{name}/index.md`
+2. For each issue found, classify as small item or feature
+3. **Create the roadmap item(s)** in `docs/roadmap/backlog/{juiste fase}/todo/`
 4. Present a summary to the user:
    - Wat er goed werkt
    - Wat er niet werkt of beter kan (met screenshots)
-   - Welke roadmap items je hebt aangemaakt (quick vs feature)
+   - Welke roadmap items je hebt aangemaakt
 5. Ask: "Wil je dat ik hiermee aan de slag ga, of eerst iets anders oppakken?"
 
-To find the next Q-number:
-```bash
-Get-ChildItem docs/roadmap/modules/quick/ -Filter "Q*.md" | Sort-Object Name | Select-Object -Last 1
-```
+> Lees `docs/roadmap/README.md` voor de volledige structuur en naamgeving.
