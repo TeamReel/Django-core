@@ -10,19 +10,15 @@ Uses PIL/Pillow for image composition.
 
 from __future__ import annotations
 
-import io
 import logging
-import tempfile
-import uuid as uuid_module
-from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
 from src.video.services._common import (
     download_image as _common_download_image,
-)
-from src.video.services._common import (
     get_pil_font,
+    hex_to_rgba,
+    upload_image_to_storage,
 )
 
 logger = logging.getLogger(__name__)
@@ -87,38 +83,8 @@ def generate_guest_silhouette(
 
 
 def _upload_and_get_url(img: Image.Image, prefix: str = "lineup") -> str:
-    """Upload image to storage and return presigned URL.
-
-    Falls back to local file path if storage upload fails.
-    """
-    try:
-        from files.utils import get_storage_backend
-
-        # Save to bytes
-        img_bytes = io.BytesIO()
-        img.save(img_bytes, "PNG")
-        img_bytes.seek(0)
-
-        # Generate storage path
-        storage_path = f"generated/{prefix}/{uuid_module.uuid4().hex}.png"
-
-        # Upload to storage
-        backend = get_storage_backend()
-        backend.save(storage_path, img_bytes)
-
-        # Get presigned URL (1 hour expiry)
-        url = backend.get_url(storage_path, signed=True, expiry_seconds=3600)
-        logger.info("Uploaded %s image to storage: %s", prefix, storage_path)
-        return url
-
-    except Exception as e:
-        logger.warning("Failed to upload %s image to storage: %s, using local file", prefix, e)
-        # Fallback to local file (works for local dev, not production)
-        temp_dir = Path(tempfile.gettempdir()) / f"lineup_{prefix}s"
-        temp_dir.mkdir(exist_ok=True)
-        output_path = temp_dir / f"{prefix}_{uuid_module.uuid4().hex}.png"
-        img.save(str(output_path), "PNG")
-        return f"file://{output_path}"
+    """Upload image to storage and return presigned URL."""
+    return upload_image_to_storage(img, prefix=prefix)
 
 
 # Default colors (can be overridden by brand colors)
@@ -136,7 +102,7 @@ def download_image(url: str) -> Image.Image | None:
     return _common_download_image(url, timeout=30)
 
 
-def _clean_logo_alpha(img: Image.Image) -> Image.Image:
+def clean_logo_alpha(img: Image.Image) -> Image.Image:
     """Remove checkerboard artifacts from AI-generated logo PNGs.
 
     Uses block-level pattern detection (imported from asset_pipeline) so
@@ -160,23 +126,16 @@ def _clean_logo_alpha(img: Image.Image) -> Image.Image:
     return img
 
 
+# Backward-compatible alias
+_clean_logo_alpha = clean_logo_alpha
+
+
 def get_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
     """Get a font, falling back to default if custom fonts not available."""
     return get_pil_font(size, bold=bold)
 
 
-def _hex_to_rgba(hex_color: str) -> tuple[int, int, int, int]:
-    """Convert hex color to RGBA tuple."""
-    hex_color = hex_color.lstrip("#")
-    if len(hex_color) == 3:
-        hex_color = "".join(c * 2 for c in hex_color)
-    r = int(hex_color[0:2], 16)
-    g = int(hex_color[2:4], 16)
-    b = int(hex_color[4:6], 16)
-    return (r, g, b, 255)
-
-
-def _draw_centered_text(
+def draw_centered_text(
     draw: ImageDraw.ImageDraw,
     text: str,
     cx: int,
@@ -198,6 +157,10 @@ def _draw_centered_text(
         )
     else:
         draw.text((x, y), text, font=font, fill=fill)
+
+
+# Backward-compatible alias
+_draw_centered_text = draw_centered_text
 
 
 def generate_header_image(  # noqa: PLR0913
@@ -277,7 +240,7 @@ def render_header_pil(  # noqa: PLR0913
     """
     # Colors
     white = (255, 255, 255, 255)
-    brand_primary = _hex_to_rgba(background_color) if background_color else (210, 18, 46, 255)
+    brand_primary = hex_to_rgba(background_color) if background_color else (210, 18, 46, 255)
 
     # Create base with light tint of brand color for logo panels
     brand_rgb = brand_primary[:3]
@@ -317,8 +280,14 @@ def render_header_pil(  # noqa: PLR0913
     # Match title: "Home - Away" (e.g., "Ajax - Heracles Almelo")
     home_name = own_team_name if is_home else opponent_name
     away_name = opponent_name if is_home else own_team_name
-    match_title = f"{home_name} - {away_name}"
-    _draw_centered_text(draw, match_title.upper(), cx, int(height * 0.38), fonts["match"], white)
+    if home_name and away_name:
+        match_title = f"{home_name} - {away_name}"
+    else:
+        match_title = home_name or away_name or ""
+    if match_title:
+        _draw_centered_text(
+            draw, match_title.upper(), cx, int(height * 0.38), fonts["match"], white
+        )
 
     # Competition name (larger font)
     if competition_name:

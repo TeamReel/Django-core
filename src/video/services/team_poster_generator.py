@@ -19,6 +19,7 @@ from PIL import Image
 from src.video.services._common import (
     CANVAS_HEIGHT,
     CANVAS_WIDTH,
+    DEFAULT_PRIMARY_COLOR,
     download_image_bytes,
 )
 
@@ -30,21 +31,13 @@ HEIGHT = CANVAS_HEIGHT
 
 
 # ──────────────────────────────────────────────────────────────────────────
-# Download helper
-# ──────────────────────────────────────────────────────────────────────────
-
-
-_download_image_bytes = download_image_bytes
-
-
-# ──────────────────────────────────────────────────────────────────────────
 # Gemini call
 # ──────────────────────────────────────────────────────────────────────────
 
 
 def _generate_team_photo(
     player_images: list[tuple[str, bytes]],
-    brand_primary: str = "#D2122E",
+    brand_primary: str = DEFAULT_PRIMARY_COLOR,
 ) -> bytes | None:
     """Call Gemini to generate a team photo from individual player images.
 
@@ -139,19 +132,11 @@ def _generate_team_photo(
 
 def _upload_poster(image_bytes: bytes, activity_id: str) -> str:
     """Upload generated poster to S3 and return presigned URL."""
-    try:
-        from files.utils import get_storage_backend
+    from src.video.services._common import upload_generated_image
 
-        storage_path = f"generated/posters/{activity_id}/{uuid_module.uuid4().hex}.png"
-        backend = get_storage_backend()
-        backend.save(storage_path, io.BytesIO(image_bytes))
-        url = backend.get_url(storage_path, signed=True, expiry_seconds=3600)
-        logger.info("Uploaded team poster to S3: %s", storage_path)
-        return url
-
-    except Exception as exc:
-        logger.warning("Failed to upload poster to S3: %s", exc)
-        raise
+    return upload_generated_image(
+        image_bytes, "generated/posters", activity_id=activity_id
+    )
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -194,8 +179,8 @@ def build_team_poster(
     )
     lineup_data = builder._gather_lineup_data()
 
-    # 2. Resolve brand colour
-    brand_primary = _resolve_brand_color(activity_id) or "#D2122E"
+    # 2. Resolve brand colour (from builder data)
+    brand_primary = lineup_data.brand_primary or DEFAULT_PRIMARY_COLOR
 
     # 3. Collect ordered players: keeper → defenders → midfielders → attackers
     ordered_players = []
@@ -217,7 +202,7 @@ def build_team_poster(
         if not url:
             logger.warning("Player %s has no fullbody/closeup image — skipping", p.member_name)
             continue
-        img_bytes = _download_image_bytes(url)
+        img_bytes = download_image_bytes(url)
         if img_bytes:
             player_images.append((p.member_name, img_bytes))
         else:
@@ -256,10 +241,3 @@ def build_team_poster(
 
     # 7. Upload to S3
     return _upload_poster(image_bytes, activity_id)
-
-
-def _resolve_brand_color(activity_id: str) -> str | None:
-    """Look up brand primary color from the project's BrandProfile."""
-    from src.video.services._common import resolve_brand_color
-
-    return resolve_brand_color(activity_id)

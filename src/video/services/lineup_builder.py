@@ -24,11 +24,39 @@ _INTRO_STYLE_PRIORITY = ["arms_crossed", "thumbs_up", "hand_up"]
 
 # Formation split definitions: (defenders, midfielders, attackers)
 # Matches the frontend FORMATION_LAYOUTS slot ordering.
+# Used as FALLBACK when Formation DB record is not available.
 FORMATION_SPLITS: dict[str, tuple[int, int, int]] = {
     "4-3-3": (4, 3, 3),
     "4-4-2": (4, 4, 2),
     "3-4-3": (3, 4, 3),
 }
+
+
+def _get_formation_splits(formation_code: str) -> tuple[int, int, int]:
+    """Get (n_defenders, n_midfielders, n_attackers) from DB or fallback.
+
+    Reads Formation.positions from DB to count players per line.
+    Falls back to FORMATION_SPLITS if DB record not found.
+    """
+    try:
+        from sport_configuration.models import Formation
+
+        formation = Formation.objects.filter(code=formation_code, is_active=True).first()
+        if formation and formation.positions:
+            counts: dict[str, int] = {}
+            for pos in formation.positions:
+                line = pos.get("line", "")
+                if line and line != "keeper":
+                    counts[line] = counts.get(line, 0) + 1
+            n_def = counts.get("defender", 0)
+            n_mid = counts.get("midfielder", 0)
+            n_att = counts.get("attacker", 0)
+            if n_def + n_mid + n_att > 0:
+                return (n_def, n_mid, n_att)
+    except Exception:
+        logger.debug("Failed to resolve formation %s from DB, using fallback", formation_code)
+
+    return FORMATION_SPLITS.get(formation_code, (4, 3, 3))
 
 
 def _find_best_intro_url(
@@ -43,60 +71,10 @@ def _find_best_intro_url(
     2. home variants in style priority order (fallback)
     3. Bare style keys (old format without kit prefix)
     4. Any remaining variant that has content
-
-    Args:
-        intro_variants: Dict of intro variants {key: value}
-        kit_type: Kit type to prefer (home, goalkeeper, etc.)
-        get_best_url_fn: Function to extract URL from variant value
-
-    Returns:
-        Best intro URL or None if none found
     """
+    from src.video.services._common import find_best_variant_url
 
-    def find_with_prefix(prefix: str) -> str | None:
-        # Try styled variants in priority order
-        for style in _INTRO_STYLE_PRIORITY:
-            key = f"{prefix}_{style}"
-            val = intro_variants.get(key)
-            if val:
-                url = get_best_url_fn(val)
-                if url:
-                    return url
-        # Fallback: any key starting with prefix
-        for key, val in intro_variants.items():
-            if key.startswith(prefix) and val:
-                url = get_best_url_fn(val)
-                if url:
-                    return url
-        return None
-
-    # Pass 1: kit_type variants
-    url = find_with_prefix(kit_type)
-    if url:
-        return url
-
-    # Pass 2: fallback to home
-    if kit_type != "home":
-        url = find_with_prefix("home")
-        if url:
-            return url
-
-    # Pass 3: bare style keys
-    for style in _INTRO_STYLE_PRIORITY:
-        val = intro_variants.get(style)
-        if val:
-            url = get_best_url_fn(val)
-            if url:
-                return url
-
-    # Pass 4: any remaining variant
-    for val in intro_variants.values():
-        if val:
-            url = get_best_url_fn(val)
-            if url:
-                return url
-
-    return None
+    return find_best_variant_url(intro_variants, kit_type, _INTRO_STYLE_PRIORITY, get_best_url_fn)
 
 
 @dataclass
@@ -139,6 +117,8 @@ class LineupData:
     opponent_logo_url: str | None
     sponsor_url: str | None
     field_background_url: str | None
+    brand_primary: str | None
+    brand_secondary: str | None
 
     # Players by line (grouped for animation)
     keepers: list[PlayerSegment]
@@ -270,13 +250,13 @@ class LineupSegmentBuilder:
         Returns:
             dict with segments[] and other config for LineupProcessor
         """
-        from src.video.services.lineup_scene_generator import reset_image_cache
+        from src.video.services._common import ImageCache
 
-        reset_image_cache()  # Fresh cache for this job
+        cache = ImageCache()
         try:
             self._load_render_mode()
             lineup_data = self._gather_lineup_data()
-            segments = self._build_segments(lineup_data)
+            segments = self._build_segments(lineup_data, cache=cache)
 
             return {
                 "segments": segments,
@@ -288,7 +268,7 @@ class LineupSegmentBuilder:
                 "activity_id": self.activity_id,
             }
         finally:
-            reset_image_cache()  # Free memory
+            cache.clear()
 
     def gather_lineup_data(self) -> LineupData:
         """Gather all required data from database.
@@ -303,263 +283,51 @@ class LineupSegmentBuilder:
         """Gather all required data from database."""
         from django.apps import apps
 
+        from src.video.services.brand_resolver import resolve_match_brand_assets
+
         # Use apps.get_model to avoid app_label issues
-        Activity = apps.get_model("activities", "Activity")
         Participation = apps.get_model("activities", "Participation")
-        BrandProfile = apps.get_model("branding", "BrandProfile")
-        BrandAsset = apps.get_model("branding", "BrandAsset")
 
-        # Get activity (match)
-        activity = Activity.objects.select_related(
-            "project__organisation",
-            "project__parent_project",
-            "period",
-            "opponent_project__parent_project",
-        ).get(id=self.activity_id)
+        # ── Brand + match context (shared resolution) ──
+        brand = resolve_match_brand_assets(self.activity_id)
+        activity = brand.activity
+        project = brand.project
+        organisation = brand.organisation
 
-        project = activity.project
-        organisation = project.organisation
-
-        # Resolve brand profiles (most specific first)
-        # - team brand (project)
-        # - club brand (parent_project)
-        # - organisation brand
-        brand_profiles: list = []
-
-        self._debug_trace.append(f"Activity: {self.activity_id}")
-        self._debug_trace.append(f"Project: {project.id} ({project.name})")
-        self._debug_trace.append(f"Parent: {project.parent_project_id}")
+        logo_url = brand.logo_url
+        sponsor_url = brand.sponsor_url
+        field_background_url = brand.field_background_url
+        opponent_logo_url = brand.opponent_logo_url
+        brand_primary = brand.brand_primary
+        brand_secondary = brand.brand_secondary
 
         logger.info(
-            "DEBUG: Resolving brand profiles for Activity %s (Project: %s, Parent: %s, Org: %s)",
-            self.activity_id,
-            project.id,
-            project.parent_project_id if project.parent_project else "None",
-            organisation.name if organisation else "None",
-        )
-
-        team_brand = BrandProfile.objects.filter(project=project, is_active=True).first()
-        if team_brand:
-            brand_profiles.append(team_brand)
-            msg = f"Found Team BrandProfile: {team_brand.id} (Project {project.id})"
-            self._debug_trace.append(msg)
-            logger.info("DEBUG: %s", msg)
-
-        club_project = project.parent_project or None
-        if club_project:
-            club_brand = BrandProfile.objects.filter(project=club_project, is_active=True).first()
-            if club_brand and club_brand not in brand_profiles:
-                brand_profiles.append(club_brand)
-                msg = f"Found Club BrandProfile: {club_brand.id} (Project {club_project.id})"
-                self._debug_trace.append(msg)
-                logger.info("DEBUG: %s", msg)
-
-        org_brand = BrandProfile.objects.filter(organisation=organisation, is_active=True).first()
-        if org_brand and org_brand not in brand_profiles:
-            brand_profiles.append(org_brand)
-            msg = f"Found Org BrandProfile: {org_brand.id} (Org {organisation.name})"
-            self._debug_trace.append(msg)
-            logger.info("DEBUG: %s", msg)
-
-        # Club+org profiles only (skip team) — used for logo resolution.
-        # Logo always inherits from club level; never from team profile.
-        club_org_profiles = [p for p in brand_profiles if p != team_brand]
-
-        def _resolve_asset_url(
-            asset_types: list[str],
-            *,
-            skip_team: bool = False,
-        ) -> str | None:
-            profiles = club_org_profiles if skip_team else brand_profiles
-            self._debug_trace.append(
-                f"Resolving {asset_types} (skip_team={skip_team}, " f"profiles={len(profiles)})..."
-            )
-            for profile in profiles:
-                # Iterate in priority order so e.g. logo (AI-processed)
-                # is preferred over logo_upload (raw upload).
-                asset = None
-                for at in asset_types:
-                    asset = (
-                        BrandAsset.objects.filter(
-                            profile=profile,
-                            asset_type=at,
-                            is_active=True,
-                        )
-                        .select_related("file")
-                        .first()
-                    )
-                    if asset:
-                        # Skip zero-byte / missing files (broken seed data).
-                        if asset.file and getattr(asset.file, "file_size", 0) in (None, 0):
-                            logger.warning(
-                                "DEBUG: Skipping 0-byte asset %s (type=%s, path=%s)",
-                                asset.id,
-                                at,
-                                asset.file.storage_path,
-                            )
-                            self._debug_trace.append(
-                                f"  Profile {profile.id}: Skipped 0-byte {at} "
-                                f"({asset.file.storage_path})"
-                            )
-                            asset = None
-                            continue
-                        break
-                if not asset:
-                    self._debug_trace.append(f"  Profile {profile.id}: No asset")
-                    logger.info("DEBUG: No asset %s found in profile %s", asset_types, profile.id)
-                    continue
-
-                logger.info(
-                    "DEBUG: Found asset type=%s in profile %s (ID: %s, asset_type=%s)",
-                    asset_types,
-                    profile.id,
-                    asset.id,
-                    asset.asset_type,
-                )
-                self._debug_trace.append(
-                    f"  Profile {profile.id}: Found asset {asset.id} (type={asset.asset_type})"
-                )
-
-                # Prefer the API-facing URL if it is persisted (often already presigned).
-                asset_url = getattr(asset, "url", None)
-                if asset_url:
-                    self._debug_trace.append(f"  Using asset.url: {str(asset_url)[:80]}")
-                    return asset_url
-
-                if asset.file:
-                    presigned = self._get_presigned_url(asset.file.storage_path)
-                    if presigned:
-                        self._debug_trace.append(
-                            f"  Generated presigned URL for {asset.file.storage_path}"
-                        )
-                        return presigned
-                    self._debug_trace.append(f"  Presign failed for {asset.file.storage_path}")
-
-            logger.warning(
-                "DEBUG: Could not resolve asset %s in any of %d profiles",
-                asset_types,
-                len(brand_profiles),
-            )
-            self._debug_trace.append("Resolution failed")
-            return None
-
-        # Logo: always use AI-processed transparent PNG.
-        # Never fall back to raw uploads — processed is required.
-        # Logo always inherits from club/org — skip team profile.
-        logo_url = _resolve_asset_url(
-            ["logo"],
-            skip_team=True,
-        )
-        # Sponsor: always use AI-processed transparent PNG (sponsor_logo).
-        sponsor_url = _resolve_asset_url(["sponsor_logo"])
-        field_background_url = _resolve_asset_url(["stadium_background"])
-
-        logger.info(
-            "DEBUG: Resolved brand assets — logo=%s, sponsor=%s, bg=%s",
+            "Resolved brand assets — logo=%s, sponsor=%s, bg=%s, opp=%s",
             logo_url[:120] if logo_url else None,
             sponsor_url[:120] if sponsor_url else None,
             field_background_url[:120] if field_background_url else None,
+            bool(opponent_logo_url),
         )
 
-        # Resolve opponent logo from opponent_project's brand profile
-        opponent_logo_url: str | None = None
-        if activity.opponent_project:
-            opp_project = activity.opponent_project
-            opp_club = opp_project.parent_project
-            opp_brand_profiles = []
-            # Logo inherits from club — skip opponent team profile.
-            if opp_club:
-                opp_club_brand = BrandProfile.objects.filter(
-                    project=opp_club, is_active=True
-                ).first()
-                if opp_club_brand:
-                    opp_brand_profiles.append(opp_club_brand)
-            # Opponent logo: only AI-processed transparent PNG.
-            opp_logo_priority = [
-                "logo",
-            ]
-            for opp_profile in opp_brand_profiles:
-                asset = None
-                for at in opp_logo_priority:
-                    asset = (
-                        BrandAsset.objects.filter(
-                            profile=opp_profile,
-                            asset_type=at,
-                            is_active=True,
-                        )
-                        .select_related("file")
-                        .first()
-                    )
-                    if asset:
-                        break
-                if asset:
-                    asset_url = getattr(asset, "url", None)
-                    if asset_url:
-                        opponent_logo_url = asset_url
-                        break
-                    if asset.file:
-                        presigned = self._get_presigned_url(asset.file.storage_path)
-                        if presigned:
-                            opponent_logo_url = presigned
-                            break
-            if opponent_logo_url:
-                logger.info("Resolved opponent logo from %s", opp_project.name)
-            else:
-                logger.info("No logo found for opponent %s", opp_project.name)
+        # ── Match context ──
+        # Lineup uses club name to avoid "Ajax Ajax 1" duplication
+        own_team_name = brand.own_club_name or brand.own_team_name
+        opponent_name = brand.opponent_club_name or brand.opponent_name or "Opponent"
+        match_date = brand.match_date
+        kickoff_time = brand.kickoff_time
+        is_home = brand.is_home
+        score_home = brand.score_home
+        score_away = brand.score_away
+        venue = brand.venue
+        season_name = brand.season_name
+        competition_name = brand.competition_name
 
-        # Get team/club names — use parent (club) name only to avoid
-        # duplication like "Ajax Ajax 1"
-        if project.parent_project:
-            own_team_name = project.parent_project.name
-        else:
-            own_team_name = project.name
-
-        # Get match data — prefer opponent_project FK, then metadata, then fallback
-        meta = activity.metadata or {}
-        if activity.opponent_project:
-            opp = activity.opponent_project
-            opponent_name = opp.parent_project.name if opp.parent_project else opp.name
-        else:
-            opponent_name = (
-                meta.get("teamreel", {}).get("vars", {}).get("away_team_name")
-                or meta.get("teamreel", {}).get("vars", {}).get("home_team_name")
-                or getattr(activity, "opponent", None)
-                or "Opponent"
-            )
-        match_date = activity.start_time.strftime("%d-%m-%Y") if activity.start_time else ""
-        kickoff_time = activity.start_time.strftime("%H:%M") if activity.start_time else None
-        is_home = meta.get("is_home", meta.get("venue", "Home") == "Home")
-        score_meta = meta.get("score", {})
-        score_home = score_meta.get("home") if isinstance(score_meta, dict) else None
-        score_away = score_meta.get("away") if isinstance(score_meta, dict) else None
-        # Venue: prefer the actual location field or teamreel match_location
-        # over metadata.venue which is just a generic "Home"/"Away" label.
-        raw_venue = (
-            getattr(activity, "location", None)
-            or meta.get("teamreel", {}).get("vars", {}).get("match_location")
-            or meta.get("teamreel", {}).get("match_context", {}).get("location")
-            or meta.get("teamreel", {}).get("match_context", {}).get("home_club_default_location")
-            or meta.get("venue")
-        )
-        venue = (
-            None
-            if raw_venue and raw_venue.strip().lower() in ("home", "away", "thuis", "uit", "")
-            else raw_venue
-        )
-
-        # Get season/competition names — period name often IS the competition
-        season_name = activity.period.name if activity.period else None
-        competition_name = meta.get("teamreel", {}).get("vars", {}).get("competition_name")
-        if not competition_name and activity.period:
-            # Period name is often the competition (e.g. "Eredivisie")
-            competition_name = activity.period.name
-
-        # DEBUG: Log all participations for this activity
+        # Log all participations for this activity
         all_participations = Participation.objects.filter(activity=activity).select_related(
             "member__user"
         )
-        logger.info(
-            "DEBUG: All participations for activity %s: count=%d, roles=%s",
+        logger.debug(
+            "All participations for activity %s: count=%d, roles=%s",
             self.activity_id,
             all_participations.count(),
             list(all_participations.values_list("role", "status")),
@@ -593,8 +361,8 @@ class LineupSegmentBuilder:
                 f"Filtered participations to {participations.count()} (selected members only)"
             )
 
-        logger.info(
-            "DEBUG: Filtered participations: count=%d",
+        logger.debug(
+            "Filtered participations: count=%d",
             participations.count(),
         )
 
@@ -606,10 +374,22 @@ class LineupSegmentBuilder:
         #      supplementation logic that tries to compare the two
         # Also enter this path when the selection consists entirely of guest players
         # (self.selected_member_ids may be empty after stripping __guest__ entries).
+        #
+        # EXCEPTION: when LineupSyncService has written proper slot/position data into
+        # Participation records, those are the authoritative source and we prefer them.
         has_role_selection = bool(self.selected_member_ids_by_role) and any(
             v for v in self.selected_member_ids_by_role.values()
         )
-        if has_role_selection:
+
+        # Check if Participations have synced slot data from LineupSyncService
+        first_p = participations.first()
+        has_synced_participations = (
+            first_p is not None
+            and isinstance(first_p.data, dict)
+            and "slot" in first_p.data
+        )
+
+        if has_role_selection and not has_synced_participations:
             real_count = len(self.selected_member_ids or [])
             total_count = sum(
                 len(v) for v in self.selected_member_ids_by_role.values() if isinstance(v, list)
@@ -630,26 +410,40 @@ class LineupSegmentBuilder:
                 activity=activity,
                 project=project,
                 organisation=organisation,
-                brand_profiles=brand_profiles,
                 logo_url=logo_url,
+                opponent_logo_url=opponent_logo_url,
                 sponsor_url=sponsor_url,
                 field_background_url=field_background_url,
+                brand_primary=brand_primary,
+                brand_secondary=brand_secondary,
+            )
+
+        if has_synced_participations:
+            logger.info(
+                "Using Participation path (synced by LineupSyncService) — "
+                "%d participations with slot data",
+                participations.count(),
+            )
+            self._debug_trace.append(
+                f"Using synced Participations: {participations.count()} records with slot data"
             )
 
         # Legacy fallback: no role-keyed IDs but participations exist
         if participations.count() == 0 and selected_user_ids:
-            logger.info(
-                "DEBUG: No Participation records match, building from ProjectMembership data"
+            logger.debug(
+                "No Participation records match, building from ProjectMembership data"
             )
             self._debug_trace.append("No Participations found, using ProjectMembership directly")
             return self._gather_lineup_from_memberships(
                 activity=activity,
                 project=project,
                 organisation=organisation,
-                brand_profiles=brand_profiles,
                 logo_url=logo_url,
+                opponent_logo_url=opponent_logo_url,
                 sponsor_url=sponsor_url,
                 field_background_url=field_background_url,
+                brand_primary=brand_primary,
+                brand_secondary=brand_secondary,
             )
 
         # Fail fast if there is no lineup data.
@@ -695,8 +489,8 @@ class LineupSegmentBuilder:
         midfielders: list[PlayerSegment] = []
         attackers: list[PlayerSegment] = []
 
-        logger.info(
-            "DEBUG: Processing %d participations, membership_by_user has %d entries",
+        logger.debug(
+            "Processing %d participations, membership_by_user has %d entries",
             len(list(participations)),
             len(membership_by_user),
         )
@@ -714,8 +508,8 @@ class LineupSegmentBuilder:
             member = p.member
             project_membership = membership_by_user.get(member.user_id) if member.user_id else None
 
-            logger.info(
-                "DEBUG: Player %s (user_id=%s) - project_membership=%s",
+            logger.debug(
+                "Player %s (user_id=%s) - project_membership=%s",
                 member,
                 member.user_id,
                 project_membership.id if project_membership else None,
@@ -726,8 +520,8 @@ class LineupSegmentBuilder:
                 if project_membership
                 else {}
             )
-            logger.info(
-                "DEBUG: Player %s - teamreel_assets keys=%s",
+            logger.debug(
+                "Player %s - teamreel_assets keys=%s",
                 member,
                 list(teamreel_assets.keys()) if teamreel_assets else None,
             )
@@ -752,8 +546,8 @@ class LineupSegmentBuilder:
                 find_best_intro_url_fn=_find_best_intro_url,
             )
 
-            logger.info(
-                "DEBUG: Player %s - kit_type=%s, kit_url=%s, intro_url=%s, closeup_url=%s",
+            logger.debug(
+                "Player %s - kit_type=%s, kit_url=%s, intro_url=%s, closeup_url=%s",
                 member,
                 kit_type,
                 kit_url[:80] if kit_url else None,
@@ -1028,6 +822,8 @@ class LineupSegmentBuilder:
             opponent_logo_url=opponent_logo_url,
             sponsor_url=sponsor_url,
             field_background_url=field_background_url,
+            brand_primary=brand_primary,
+            brand_secondary=brand_secondary,
             keepers=keepers,
             defenders=defenders,
             midfielders=midfielders,
@@ -1046,10 +842,12 @@ class LineupSegmentBuilder:
         activity,
         project,
         organisation,
-        brand_profiles: list,
         logo_url: str | None,
+        opponent_logo_url: str | None,
         sponsor_url: str | None,
         field_background_url: str | None,
+        brand_primary: str | None = None,
+        brand_secondary: str | None = None,
     ) -> LineupData:
         """Build LineupData directly from ProjectMembership records.
 
@@ -1098,80 +896,20 @@ class LineupSegmentBuilder:
 
         width, height, fps = self._get_resolution_settings()
 
-        # Get team/club names — use parent (club) name only to avoid
-        # duplication like "Ajax Ajax 1"
-        if project.parent_project:
-            own_team_name = project.parent_project.name
-        else:
-            own_team_name = project.name
+        # ── Match context ──
+        from src.video.services.match_context import resolve_match_context
 
-        # Get match data — prefer opponent_project FK, then metadata
-        meta = activity.metadata or {}
-        if activity.opponent_project:
-            opp = activity.opponent_project
-            opponent_name = opp.parent_project.name if opp.parent_project else opp.name
-        else:
-            opponent_name = (
-                meta.get("teamreel", {}).get("vars", {}).get("away_team_name")
-                or meta.get("teamreel", {}).get("vars", {}).get("home_team_name")
-                or "Opponent"
-            )
-        match_date = activity.start_time.strftime("%d-%m-%Y") if activity.start_time else ""
-        kickoff_time = activity.start_time.strftime("%H:%M") if activity.start_time else None
-        is_home = meta.get("is_home", meta.get("venue", "Home") == "Home")
-        score_meta = meta.get("score", {})
-        score_home = score_meta.get("home") if isinstance(score_meta, dict) else None
-        score_away = score_meta.get("away") if isinstance(score_meta, dict) else None
-        # Venue: prefer the actual location field or teamreel match_location
-        # over metadata.venue which is just a generic "Home"/"Away" label.
-        raw_venue = (
-            getattr(activity, "location", None)
-            or meta.get("teamreel", {}).get("vars", {}).get("match_location")
-            or meta.get("teamreel", {}).get("match_context", {}).get("location")
-            or meta.get("teamreel", {}).get("match_context", {}).get("home_club_default_location")
-            or meta.get("venue")
-        )
-        venue = (
-            None
-            if raw_venue and raw_venue.strip().lower() in ("home", "away", "thuis", "uit", "")
-            else raw_venue
-        )
-        season_name = activity.period.name if activity.period else None
-        competition_name = meta.get("teamreel", {}).get("vars", {}).get("competition_name")
-        if not competition_name and activity.period:
-            competition_name = activity.period.name
-
-        # Resolve opponent logo (reuse logic from _gather_lineup_data)
-        opponent_logo_url: str | None = None
-        if activity.opponent_project:
-            BrandProfile = apps.get_model("branding", "BrandProfile")
-            BrandAsset = apps.get_model("branding", "BrandAsset")
-            opp_project = activity.opponent_project
-            opp_club = getattr(opp_project, "parent_project", None)
-            # Logo: only club level, only processed
-            for bp_target in [opp_club] if opp_club else [opp_project]:
-                bp = BrandProfile.objects.filter(project=bp_target, is_active=True).first()
-                if not bp:
-                    continue
-                asset = (
-                    BrandAsset.objects.filter(
-                        profile=bp,
-                        asset_type="logo",
-                        is_active=True,
-                    )
-                    .select_related("file")
-                    .first()
-                )
-                if asset:
-                    asset_url = getattr(asset, "url", None)
-                    if asset_url:
-                        opponent_logo_url = asset_url
-                        break
-                    if asset.file:
-                        presigned = self._get_presigned_url(asset.file.storage_path)
-                        if presigned:
-                            opponent_logo_url = presigned
-                            break
+        ctx = resolve_match_context(activity)
+        own_team_name = ctx.own_club_name or ctx.own_team_name
+        opponent_name = ctx.opponent_club_name or ctx.opponent_name or "Opponent"
+        match_date = ctx.match_date
+        kickoff_time = ctx.kickoff_time
+        is_home = ctx.is_home
+        score_home = ctx.score_home
+        score_away = ctx.score_away
+        venue = ctx.venue
+        season_name = ctx.season_name
+        competition_name = ctx.competition_name
 
         # Build player segments from ProjectMembership metadata
         keepers: list[PlayerSegment] = []
@@ -1367,8 +1105,8 @@ class LineupSegmentBuilder:
             )
             keepers.append(guest_gk)
 
-        # Split field players by formation counts (matching frontend FORMATION_LAYOUTS)
-        n_def, n_mid, _n_att = FORMATION_SPLITS.get(self.formation, (4, 3, 3))
+        # Split field players by formation counts (from DB or fallback)
+        n_def, n_mid, _n_att = _get_formation_splits(self.formation)
         defenders: list[PlayerSegment] = []
         midfielders: list[PlayerSegment] = []
         attackers: list[PlayerSegment] = []
@@ -1418,6 +1156,8 @@ class LineupSegmentBuilder:
             opponent_logo_url=opponent_logo_url,
             sponsor_url=sponsor_url,
             field_background_url=field_background_url,
+            brand_primary=brand_primary,
+            brand_secondary=brand_secondary,
             keepers=keepers,
             defenders=defenders,
             midfielders=midfielders,
@@ -1434,7 +1174,7 @@ class LineupSegmentBuilder:
     # Default duration for field background
     FIELD_DURATION = 2.5
 
-    def _build_segments(self, data: LineupData) -> list[dict]:
+    def _build_segments(self, data: LineupData, *, cache: ImageCache | None = None) -> list[dict]:
         """Build the segments array for LineupProcessor.
 
         Video structure:
@@ -1493,9 +1233,10 @@ class LineupSegmentBuilder:
                     "No stadium_background BrandAsset — generating synthetic field background",
                     extra={"debug_trace": self._debug_trace},
                 )
+                from src.video.services._common import FALLBACK_BG_PORTRAIT
                 from src.video.services.header_generator import generate_field_background
 
-                background_url = generate_field_background(width=1080, height=1620)
+                background_url = generate_field_background(width=FALLBACK_BG_PORTRAIT[0], height=FALLBACK_BG_PORTRAIT[1])
                 data.field_background_url = background_url
 
             line_defs = [
@@ -1548,6 +1289,7 @@ class LineupSegmentBuilder:
                         header_url=header_url,
                         title=title,
                         players=scene_players,
+                        cache=cache,
                     )
 
                     # Add 1st Segment: Full Body Static
@@ -1680,6 +1422,7 @@ class LineupSegmentBuilder:
                             accumulated_closeups=list(accumulated_closeups),
                             featured_player=None,
                             prefix=f"closeups_{title.lower().replace(' ', '_')}",
+                            cache=cache,
                         )
                         segments.append(
                             {
@@ -1757,8 +1500,8 @@ class LineupSegmentBuilder:
             for player in players:
                 # Add player segments in sequence: fullbody → intro → closeup
                 # Each with name label
-                logger.info(
-                    "DEBUG: Adding segments for player %s: kit=%s, intro=%s, closeup=%s",
+                logger.debug(
+                    "Adding segments for player %s: kit=%s, intro=%s, closeup=%s",
                     player.member_name,
                     bool(player.kit_url),
                     bool(player.intro_url),
@@ -1822,36 +1565,14 @@ class LineupSegmentBuilder:
 
     def _get_presigned_url(self, storage_path: str) -> str | None:
         """Get presigned URL for a storage path."""
-        if not storage_path:
-            return None
+        from src.video.services.brand_resolver import get_presigned_url
 
-        # If it's already a full URL (startwith http), return as is.
-        if storage_path.startswith("http://") or storage_path.startswith("https://"):
-            return storage_path
-
-        try:
-            from files.utils import get_storage_backend
-
-            backend = get_storage_backend()
-            # S3StorageBackend uses get_url(path, signed=True, expiry_seconds=3600)
-            url = backend.get_url(storage_path, signed=True, expiry_seconds=3600)
-            if not url:
-                self._debug_trace.append(
-                    f"Backend {type(backend).__name__} returned None for {storage_path}"
-                )
-            return url
-        except Exception as e:  # noqa: BLE001
-            import traceback
-
-            msg = f"Presign Error ({type(e).__name__}): {e}"
-            self._debug_trace.append(msg)
-            logger.warning(
-                "Failed to get presigned URL for %s: %s\n%s",
-                storage_path,
-                e,
-                traceback.format_exc(),
+        url = get_presigned_url(storage_path)
+        if storage_path and not url:
+            self._debug_trace.append(
+                f"Presign returned None for {storage_path}"
             )
-            return None
+        return url
 
     def _pre_compose_intro_on_background(
         self, intro_url: str, background_url: str, width: int, height: int, fps: int, prefix: str

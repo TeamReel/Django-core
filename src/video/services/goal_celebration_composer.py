@@ -1,4 +1,4 @@
-"""Goal Celebration Video Composer.
+﻿"""Goal Celebration Video Composer.
 
 Creates a goal celebration announcement video with:
 - Field background (same as lineup)
@@ -11,7 +11,7 @@ Creates a goal celebration announcement video with:
 All assets are downloaded from S3 presigned URLs to a local temp dir.
 FFmpeg compositing produces the final video.
 
-Video structure (9:16 vertical, 1080×1920):
+Video structure (9:16 vertical, 1080Ã—1920):
   Phase 1: Header + score reveal (3s)
   Phase 2: Celebration video/fullbody with flickering score text (5s)
   Phase 3: Final hold with all info (2s)
@@ -21,12 +21,9 @@ from __future__ import annotations
 
 import logging
 import shutil
-import subprocess
 import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
-
-from PIL import Image
 
 from src.video.services._common import (
     CANVAS_FPS,
@@ -37,8 +34,11 @@ from src.video.services._common import (
     SPONSOR_MARGIN,
     SPONSOR_W,
     download_file,
+    ffmpeg_escape,
     get_ffmpeg_path,
-    resolve_brand_color,
+    prepare_background,
+    prepare_sponsor,
+    probe_duration,
     resolve_ffmpeg_font_path,
     run_ffmpeg,
 )
@@ -49,47 +49,24 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-# ── Video / canvas settings ──
+# â”€â”€ Video / canvas settings â”€â”€
 WIDTH = CANVAS_WIDTH
 HEIGHT = CANVAS_HEIGHT
 FPS = CANVAS_FPS
 
-# ── Scorer sizing ──
+# â”€â”€ Scorer sizing â”€â”€
 SCORER_SCALE = 0.55  # fraction of HEIGHT for fullbody
 CELEBRATION_SCALE = 0.60  # fraction of HEIGHT for celebration video
 
-# ── Score text ──
+# â”€â”€ Score text â”€â”€
 SCORE_FONTSIZE = 120
 SCORE_Y_PCT = 0.55  # vertical position of score text (% of HEIGHT)
 SCORER_NAME_FONTSIZE = 48
 SCORER_NAME_Y_OFFSET = 50  # px below score
 
-# ── Sponsor box (from _common) ──
-
-
-def _get_ffmpeg_path() -> str:
-    return get_ffmpeg_path()
-
-
-def _resolve_font_path() -> str:
-    return resolve_ffmpeg_font_path()
-
+# â”€â”€ Sponsor box (from _common) â”€â”€
 
 FONT_PATH = resolve_ffmpeg_font_path()
-
-
-_download_file = download_file
-
-
-_run_ffmpeg = run_ffmpeg
-
-
-_resolve_brand_color = resolve_brand_color
-
-
-def ffmpeg_escape(text: str) -> str:
-    """Escape text for FFmpeg drawtext filter."""
-    return text.replace("'", "").replace("\\", "\\\\").replace(":", "\\:")
 
 
 def compose_goal_celebration_video(
@@ -115,7 +92,7 @@ def compose_goal_celebration_video(
     if output_dir is None:
         output_dir = tmp_dir
 
-    # ── 1. Download brand assets ──
+    # â”€â”€ 1. Download brand assets â”€â”€
     logger.info("Downloading brand assets for goal celebration...")
     bg_path = asset_dir / "field_background.jpg"
     header_path = asset_dir / "header.png"
@@ -123,29 +100,26 @@ def compose_goal_celebration_video(
 
     if not data.field_background_url:
         logger.warning(
-            "No stadium_background BrandAsset — generating synthetic field background",
+            "No stadium_background BrandAsset â€” generating synthetic field background",
             extra={"activity_id": str(getattr(data, "activity_id", None))},
         )
         from src.video.services.header_generator import generate_field_background
 
+        from src.video.services._common import FALLBACK_BG_VIDEO
+
         data.field_background_url = generate_field_background(
-            width=WIDTH, height=HEIGHT - HEADER_HEIGHT
+            width=FALLBACK_BG_VIDEO[0], height=FALLBACK_BG_VIDEO[1]
         )
 
-    if not _download_file(data.field_background_url, bg_path):
-        raise ValueError("Failed to download field background image.")
+    bg_is_landscape = prepare_background(data.field_background_url, bg_path)
 
-    bg_check = Image.open(bg_path)
-    bg_is_landscape = bg_check.width > bg_check.height
-    bg_check.close()
+    # Resolve brand color from builder data
+    brand_primary_hex = data.brand_primary
 
-    # Resolve brand color
-    brand_primary_hex = _resolve_brand_color(data.activity_id)
+    # Generate header with "GOAL UPDATE" title (direct PIL, no S3 round-trip)
+    from src.video.services.header_generator import render_header_pil
 
-    # Generate header with "GOAL UPDATE" title
-    from src.video.services.header_generator import generate_header_image
-
-    header_url = generate_header_image(
+    header_img = render_header_pil(
         width=WIDTH,
         height=HEADER_HEIGHT,
         logo_url=data.logo_url,
@@ -161,39 +135,14 @@ def compose_goal_celebration_video(
         background_color=brand_primary_hex,
         title_text="GOAL UPDATE",
     )
-    if not _download_file(header_url, header_path):
-        from urllib.parse import urlparse
+    header_img.convert("RGB").save(str(header_path), "PNG")
 
-        parsed = urlparse(header_url)
-        if parsed.scheme == "file":
-            src = parsed.path
-            if src.startswith("/") and len(src) > 2 and src[2] == ":":
-                src = src[1:]
-            shutil.copy(src, header_path)
-        else:
-            raise ValueError("Failed to download generated header image.")
-
-    has_sponsor = False
-    if data.sponsor_url:
-        if _download_file(data.sponsor_url, sponsor_path):
-            try:
-                from src.generative.services.asset_pipeline import _strip_checkerboard
-
-                sp_img = Image.open(sponsor_path).convert("RGBA")
-                sp_img = _strip_checkerboard(sp_img)
-                bbox = sp_img.getchannel("A").getbbox()
-                if bbox:
-                    sp_img = sp_img.crop(bbox)
-                sp_img.save(str(sponsor_path), "PNG")
-                has_sponsor = True
-            except Exception:  # noqa: BLE001
-                has_sponsor = True
-                logger.warning("sponsor_bg_cleanup failed, using raw file")
+    has_sponsor = prepare_sponsor(data.sponsor_url, sponsor_path)
 
     if progress_callback:
         progress_callback(15)
 
-    # ── 2. Download scorer assets ──
+    # â”€â”€ 2. Download scorer assets â”€â”€
     logger.info("Downloading scorer assets...")
     scorer_celebration_path = None
     scorer_fullbody_path = None
@@ -208,19 +157,19 @@ def compose_goal_celebration_video(
         else:
             ext = ".mp4"
         dest = asset_dir / f"celebration{ext}"
-        if _download_file(data.scorer_celebration_url, dest):
+        if download_file(data.scorer_celebration_url, dest):
             scorer_celebration_path = dest
         else:
             logger.warning("Failed to download celebration video for %s", data.scorer_name)
 
     if data.scorer_kit_url:
         dest = asset_dir / "fullbody.png"
-        if _download_file(data.scorer_kit_url, dest):
+        if download_file(data.scorer_kit_url, dest):
             scorer_fullbody_path = dest
 
     if data.scorer_closeup_url:
         dest = asset_dir / "closeup.png"
-        _download_file(data.scorer_closeup_url, dest)
+        download_file(data.scorer_closeup_url, dest)
 
     if not scorer_celebration_path and not scorer_fullbody_path:
         raise ValueError(
@@ -231,7 +180,7 @@ def compose_goal_celebration_video(
     if progress_callback:
         progress_callback(30)
 
-    # ── 3. Compose the video ──
+    # â”€â”€ 3. Compose the video â”€â”€
     # Build score text
     score_text = f"{data.score_home} - {data.score_away}"
     jersey_text = ""
@@ -244,38 +193,14 @@ def compose_goal_celebration_video(
     # Phase 3: Final hold (2s)
     celebration_duration = 5.0  # default if using static image
     if scorer_celebration_path:
-        # Probe the video duration
-        try:
-            # Use ffprobe if available, otherwise use ffmpeg
-            ffprobe_path = _get_ffmpeg_path().replace("ffmpeg", "ffprobe").replace("\\:", ":")
-            result = subprocess.run(
-                [
-                    ffprobe_path,
-                    "-i",
-                    str(scorer_celebration_path),
-                    "-show_entries",
-                    "format=duration",
-                    "-v",
-                    "quiet",
-                    "-of",
-                    "csv=p=0",
-                ],
-                capture_output=True,
-                text=True,
-                timeout=30,
-                check=False,
-            )
-            if result.returncode == 0 and result.stdout.strip():
-                celebration_duration = max(4.0, float(result.stdout.strip()))
-        except Exception:  # noqa: BLE001
-            celebration_duration = 5.0
+        celebration_duration = max(4.0, probe_duration(scorer_celebration_path, default=5.0))
 
     phase1_dur = 3.0
     phase2_dur = celebration_duration
     phase3_dur = 2.0
     total_dur = phase1_dur + phase2_dur + phase3_dur
 
-    ffmpeg = _get_ffmpeg_path()
+    ffmpeg = get_ffmpeg_path()
     output_path = output_dir / "goal_celebration.mp4"
 
     # Build FFmpeg command with a single complex filter
@@ -298,11 +223,11 @@ def compose_goal_celebration_video(
         input_args += ["-loop", "1", "-i", str(sponsor_path)]
         sponsor_idx = 3
 
-    # ── Build filter complex ──
+    # â”€â”€ Build filter complex â”€â”€
 
     # Scale background to fill canvas
     if bg_is_landscape:
-        # Rotate landscape → portrait, then crop
+        # Rotate landscape â†’ portrait, then crop
         fc.append(
             f"[0:v]transpose=1,scale={WIDTH}:{HEIGHT}:force_original_aspect_ratio=increase,"
             f"crop={WIDTH}:{HEIGHT},setsar=1[bg]"
@@ -352,7 +277,7 @@ def compose_goal_celebration_video(
         fc.append(f"[{prev_label}][sp]overlay={sp_x}:{sp_y}[bg_sp]")
         prev_label = "bg_sp"
 
-    # ── Score text overlay (with flicker animation) ──
+    # â”€â”€ Score text overlay (with flicker animation) â”€â”€
     # Score appears at SCORE_Y_PCT, flickers for first 2 seconds, then stays solid
     score_y = int(HEIGHT * SCORE_Y_PCT)
     score_safe = ffmpeg_escape(score_text)
@@ -447,10 +372,11 @@ def compose_goal_celebration_video(
     if progress_callback:
         progress_callback(50)
 
-    _run_ffmpeg(cmd, "Goal celebration composition")
+    run_ffmpeg(cmd, "Goal celebration composition")
 
     if progress_callback:
         progress_callback(90)
 
     logger.info("Goal celebration video composed: %s (%.1fs)", output_path, total_dur)
     return output_path
+

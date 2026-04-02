@@ -65,16 +65,6 @@ class RVMProcessingCancelled(Exception):
     """Raised when RVM processing is cancelled."""
 
 
-def _get_ffmpeg_path() -> str:
-    """Find FFmpeg binary."""
-    return get_ffmpeg_path()
-
-
-def _get_ffprobe_path() -> str:
-    """Find ffprobe binary."""
-    return get_ffprobe_path()
-
-
 def _log_ffmpeg_version(ffmpeg: str) -> None:
     """Log FFmpeg version and libvpx support for debugging."""
     try:
@@ -159,7 +149,7 @@ def _preflight_vp9_alpha(ffmpeg: str) -> bool:
             return False
 
         # Check output pix_fmt
-        ffprobe = _get_ffprobe_path()
+        ffprobe = get_ffprobe_path()
         probe_result = subprocess.run(
             [
                 ffprobe,
@@ -254,7 +244,7 @@ def get_video_info(input_path: Path) -> tuple[int, int, float, int]:
     Returns:
         (width, height, fps, total_frames) tuple
     """
-    ffprobe = _get_ffprobe_path()
+    ffprobe = get_ffprobe_path()
     cmd = [
         ffprobe,
         "-v",
@@ -370,8 +360,8 @@ def process_video_rvm(
     # Ensure output directory exists
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    ffmpeg = _get_ffmpeg_path()
-    ffprobe = _get_ffprobe_path()
+    ffmpeg = get_ffmpeg_path()
+    ffprobe = get_ffprobe_path()
 
     logger.info(
         "rvm_start input=%s output=%s model=%s device=%s"

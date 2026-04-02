@@ -28,6 +28,7 @@ from src.video.serializers.job import (
     VideoJobDetailSerializer,
     VideoJobListSerializer,
 )
+from src.video.tasks._shared import build_extraction_metadata
 from src.video.views.job_content import ContentCreationMixin
 from src.video.views.job_processing import AssetProcessingMixin
 
@@ -325,15 +326,6 @@ class VideoJobViewSet(AssetProcessingMixin, ContentCreationMixin, viewsets.Model
             logger.info("No output_file on job – skipping MediaItem creation")
             return {"saved": False, "reason": "no_output_file"}
 
-        # Map job_type → content tab asset_type that the frontend recognises
-        JOB_TYPE_TO_ASSET_TYPE = {
-            "lineup": "lineup",
-            "goal_celebration": "goal",
-            "match_intro": "match_intro",
-            "then_vs_now": "then_vs_now",
-            "compose": "compose",
-        }
-
         try:
             Activity = apps.get_model("activities", "Activity")
             MediaItem = apps.get_model("medialib", "MediaItem")
@@ -358,48 +350,10 @@ class VideoJobViewSet(AssetProcessingMixin, ContentCreationMixin, viewsets.Model
             if not project:
                 return {"saved": False, "reason": "no_project", "activity_id": str(activity_id)}
 
-            asset_type = JOB_TYPE_TO_ASSET_TYPE.get(job.job_type, job.job_type)
-
-            # ── Build rich extraction_metadata (same pattern as views_asset.py) ──
-            extraction_meta: dict[str, Any] = {
-                "source": "video_job_approved",
-                "job_id": str(job.id),
-                "job_type": job.job_type,
-                "asset_type": asset_type,
-            }
-
-            # Project context (club/team)
-            if project:
-                extraction_meta["project_id"] = project.id
-                extraction_meta["project_name"] = project.name
-                if project.parent_project:
-                    extraction_meta["club_name"] = project.parent_project.name
-                    extraction_meta["team_name"] = project.name
-                else:
-                    extraction_meta["club_name"] = project.name
-
-            # Organisation context
-            org = getattr(project, "organisation", None)
-            if org:
-                extraction_meta["organisation_id"] = str(org.id)
-                extraction_meta["organisation_name"] = org.name
-
-            # Activity/match context
-            extraction_meta["activity_id"] = str(activity.id)
-            extraction_meta["activity_title"] = activity.title
-
-            # Sport type from project
-            if hasattr(project, "sport") and project.sport:
-                extraction_meta["sport_type"] = project.sport.name
-
-            # Goal-specific context from job config
-            config = job.config or {}
-            if config.get("score_home") is not None:
-                extraction_meta["score_home"] = config["score_home"]
-            if config.get("score_away") is not None:
-                extraction_meta["score_away"] = config["score_away"]
-            if config.get("scorer_member_id"):
-                extraction_meta["scorer_member_id"] = config["scorer_member_id"]
+            extraction_meta = build_extraction_metadata(
+                job, activity, project, source="video_job_approved",
+            )
+            asset_type = extraction_meta["asset_type"]
 
             file_asset = job.output_file
             mime_type = getattr(file_asset, "mime_type", "video/mp4") or "video/mp4"

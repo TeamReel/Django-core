@@ -10,50 +10,9 @@ from django.utils import timezone
 from src.video.models import VideoJob
 from src.video.models.job import JobStatus
 from src.video.services.processors.compose import ComposeProcessor
+from src.video.tasks._shared import transition_workflow_on_completion
 
 logger = logging.getLogger(__name__)
-
-
-def _transition_workflow_on_completion(job: VideoJob) -> None:
-    """Transition workflow to ready_for_review state on job completion.
-
-    Args:
-        job: Completed VideoJob instance
-    """
-    if not job.workflow_instance:
-        return
-
-    try:
-        # Import workflow engine service
-        from src.workflows.services.engine import WorkflowEngine
-
-        engine = WorkflowEngine()
-
-        # Transition workflow to ready_for_review state
-        engine.execute_transition(
-            instance=job.workflow_instance,
-            action="processing_complete",
-            user=job.created_by,
-            comment=f"Video processing completed for job {job.id}",
-        )
-
-        logger.info(
-            "Workflow transitioned on job completion",
-            extra={
-                "job_id": str(job.id),
-                "workflow_id": str(job.workflow_instance.id),
-            },
-        )
-    except Exception as exc:
-        # Log error but don't fail the job
-        logger.warning(
-            "Failed to transition workflow on job completion",
-            extra={
-                "job_id": str(job.id),
-                "error": str(exc),
-            },
-            exc_info=True,
-        )
 
 
 @shared_task(
@@ -121,7 +80,7 @@ def compose_video(self, job_id: str) -> str | None:
         )
 
         # Transition workflow if present
-        _transition_workflow_on_completion(job)
+        transition_workflow_on_completion(job)
 
         logger.info(
             "Video composition completed",

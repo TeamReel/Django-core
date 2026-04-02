@@ -28,15 +28,12 @@ Config Schema:
 from __future__ import annotations
 
 import logging
-import mimetypes
 import os
 import shutil
 from pathlib import Path
 from urllib.parse import urlparse
 
 import requests
-from django.utils import timezone
-from files.models import FileAsset
 from files.utils import get_storage_backend
 
 from src.video.models.job import JobStatus
@@ -68,104 +65,36 @@ class LineupProcessor(BaseVideoProcessor):
 
     output_extension = "mp4"
 
-    def execute(self):
-        """Execute the lineup video processing."""
-        self._ensure_temp_dir()
-        logger.info(
-            "lineup_processing_started",
-            extra={"job_id": str(self.job.id), "job_type": self.job.job_type},
-        )
+    def _get_storage_prefix(self) -> str | None:
+        return "lineup"
 
-        self.job.status = JobStatus.PROCESSING
-        self.job.started_at = timezone.now()
-        self.job.save(update_fields=["status", "started_at", "updated_at"])
+    def _process(self) -> str:
+        """Execute lineup video processing — new composer or legacy segments."""
+        config = self.job.config or {}
+        segments = config.get("segments", [])
 
-        try:
-            config = self.job.config or {}
-            segments = config.get("segments", [])
+        # ── New composer path ──
+        # When the job was created via the fast path (no segments), use
+        # the formation-based lineup composer that produces the full video
+        # directly (field background, header, badge transitions, etc.).
+        if not segments and config.get("activity_id"):
+            return self._compose_lineup_video(config)
 
-            # ── New composer path ──
-            # When the job was created via the fast path (no segments), use
-            # the formation-based lineup composer that produces the full video
-            # directly (field background, header, badge transitions, etc.).
-            if not segments and config.get("activity_id"):
-                output_path = self._compose_lineup_video(config)
-                # Skip the old segment-based pipeline entirely — jump to upload.
-                output_file = self._upload_output(output_path)
-
-                self.job.output_file = output_file
-                self.job.status = JobStatus.COMPLETED
-                self.job.completed_at = timezone.now()
-                self.job.progress_percent = 100
-                self.job.save(
-                    update_fields=[
-                        "output_file",
-                        "status",
-                        "completed_at",
-                        "progress_percent",
-                        "updated_at",
-                    ]
-                )
-                logger.info("lineup_compose_completed", extra={"job_id": str(self.job.id)})
-                return output_file
-
-            if not segments:
-                raise ValueError(
-                    "No segments provided in config and no activity_id for composer. "
-                    "Either provide segments[] or activity_id + selected_member_ids."
-                )
-
-            # ── Legacy segment-based pipeline ──
-            # Download and prepare all segments
-            prepared_segments = self._prepare_segments(segments)
-
-            if not prepared_segments:
-                raise ValueError("No valid segments after preparation")
-
-            # Concatenate all segments
-            output_path = str(self.temp_dir / f"output.{self.output_extension}")
-            self._concatenate_segments(prepared_segments, output_path)
-
-            # Upload output
-            output_file = self._upload_output(output_path)
-
-            self.job.output_file = output_file
-            self.job.status = JobStatus.COMPLETED
-            self.job.completed_at = timezone.now()
-            self.job.progress_percent = 100
-            self.job.save(
-                update_fields=[
-                    "output_file",
-                    "status",
-                    "completed_at",
-                    "progress_percent",
-                    "updated_at",
-                ]
+        if not segments:
+            raise ValueError(
+                "No segments provided in config and no activity_id for composer. "
+                "Either provide segments[] or activity_id + selected_member_ids."
             )
 
-            logger.info("lineup_processing_completed", extra={"job_id": str(self.job.id)})
-            return output_file
+        # ── Legacy segment-based pipeline ──
+        prepared_segments = self._prepare_segments(segments)
 
-        except JobCancelledError:
-            self.job.refresh_from_db()
-            if self.job.status != JobStatus.CANCELLED:
-                self.job.status = JobStatus.CANCELLED
-            self.job.completed_at = timezone.now()
-            self.job.save(update_fields=["status", "completed_at", "updated_at"])
-            logger.info("lineup_processing_cancelled", extra={"job_id": str(self.job.id)})
-            raise
+        if not prepared_segments:
+            raise ValueError("No valid segments after preparation")
 
-        except Exception as e:
-            logger.exception(
-                "lineup_processing_failed",
-                extra={"job_id": str(self.job.id), "error": str(e)},
-            )
-            self.job.status = JobStatus.FAILED
-            self.job.error_message = str(e)[:4000]
-            self.job.save(update_fields=["status", "error_message", "updated_at"])
-            raise
-        finally:
-            self._cleanup()
+        output_path = str(self.temp_dir / f"output.{self.output_extension}")
+        self._concatenate_segments(prepared_segments, output_path)
+        return output_path
 
     def _compose_lineup_video(self, config: dict) -> str:
         """Use the formation-based lineup composer to generate the full video.
@@ -268,38 +197,6 @@ class LineupProcessor(BaseVideoProcessor):
         )
 
         return str(output_path)
-
-    def _upload_output(self, output_path: str) -> FileAsset:
-        """Upload output to S3 under match/lineup/ path when match context is available."""
-        config = self.job.config or {}
-        match_id = config.get("match_id") or config.get("activity_id")
-
-        backend = get_storage_backend()
-        file_name = os.path.basename(output_path)
-        org_id = self.job.project.organisation_id
-
-        if match_id:
-            # Save under match/lineup/ hierarchy
-            storage_path = f"matches/{org_id}/{match_id}/lineup/{self.job.id}/{file_name}"
-        else:
-            # Fallback to standard video_outputs path
-            storage_path = f"video_outputs/{org_id}/{self.job.id}/{file_name}"
-
-        with open(output_path, "rb") as file_obj:
-            saved_path = backend.save(storage_path, file_obj)
-
-        file_size = os.path.getsize(output_path)
-        mime_type = mimetypes.guess_type(file_name)[0] or "application/octet-stream"
-
-        return FileAsset.objects.create(
-            organization_id=org_id,
-            uploaded_by=self.job.created_by,
-            original_name=file_name,
-            storage_path=saved_path,
-            file_size=file_size,
-            mime_type=mime_type,
-            is_public=False,
-        )
 
     def _get_video_dimensions(self, path: str) -> tuple[int, int] | None:
         """Get video dimensions using ffprobe."""

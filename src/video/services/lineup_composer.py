@@ -1,7 +1,7 @@
-"""Lineup Video Composer — Production port of local_lineup_test/build_lineup.py.
+﻿"""Lineup Video Composer â€” Production port of local_lineup_test/build_lineup.py.
 
 Creates a formation-based lineup announcement video with:
-- Per-phase player reveals (keeper → defense → midfield → attack)
+- Per-phase player reveals (keeper â†’ defense â†’ midfield â†’ attack)
 - Slide-up fullbody animation
 - Intro video overlays (WebM with alpha)
 - Crossfade transition from fullbody to closeup badge
@@ -33,11 +33,20 @@ from src.video.services._common import (
     SPONSOR_BOX_H,
     SPONSOR_MARGIN,
     SPONSOR_PAD,
+    WATERMARK_MARGIN,
+    WATERMARK_OPACITY,
+    WATERMARK_PATH,
     download_file,
+    ffmpeg_escape,
     get_ffmpeg_path,
-    resolve_brand_color,
     resolve_ffmpeg_font_path,
     run_ffmpeg,
+)
+from src.video.services.formation_layout import (
+    Y_POS_COMPOSER,
+    clamp01,
+    get_x_positions_for_group,
+    get_y_stagger_offsets,
 )
 
 if TYPE_CHECKING:
@@ -46,20 +55,17 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-# ── Aliases for backward compat ──
-_get_ffmpeg_path = get_ffmpeg_path
-
-# ── Video / canvas settings ──
+# â”€â”€ Video / canvas settings â”€â”€
 WIDTH = CANVAS_WIDTH
 HEIGHT = CANVAS_HEIGHT
 FPS = CANVAS_FPS
 
-# ── Player sizing ──
+# â”€â”€ Player sizing â”€â”€
 PLAYER_SCALE_FULLBODY = 0.28  # fraction of HEIGHT
 PLAYER_SCALE_CLOSEUP = 0.11  # 11% of HEIGHT
-PLAYER_SCALE_SOLO = 0.45  # fraction of HEIGHT — solo "per player" mode
+PLAYER_SCALE_SOLO = 0.45  # fraction of HEIGHT â€” solo "per player" mode
 
-# ── Badge style ──
+# â”€â”€ Badge style â”€â”€
 BADGE_CUT_FRACTION = 0.25
 BADGE_SHIFT_PX = 28
 BADGE_FILL_COLOR = "#90EE90"
@@ -69,7 +75,7 @@ BADGE_ZOOM_INSIDE = 1.25
 BADGE_BODY_OFFSET_INSIDE = -60
 BADGE_HEAD_FRAC = 0.45
 
-# ── Badge name label ──
+# â”€â”€ Badge name label â”€â”€
 BADGE_LABEL_FONTSIZE = 36
 BADGE_LABEL_H = 52
 BADGE_LABEL_GAP = 4
@@ -77,44 +83,24 @@ BADGE_LABEL_EXTRA_W = 60
 BADGE_LABEL_BG = "white"
 BADGE_LABEL_TEXT_COLOR = "black"
 
-# ── Sponsor box (from _common) ──
-
-# ── Watermark ──
-WATERMARK_PATH = Path(__file__).resolve().parent.parent / "assets" / "watermark.png"
-WATERMARK_OPACITY = 0.25  # 25% opacity
-WATERMARK_MARGIN = 30  # px from edge
-
-# ── Closeup vertical shifts (per role) ──
+# â”€â”€ Closeup vertical shifts (per role) â”€â”€
 CLOSEUP_SHIFT_DEFENDER_PCT = 0.03
 CLOSEUP_SHIFT_MIDFIELDER_PCT = 0.04
 CLOSEUP_SHIFT_ATTACKER_PCT = -0.02
 KEEPER_CLOSEUP_FIELD_Y_SHIFT_PCT = 0.06
 
-# ── Row-4 stagger ──
-ROW4_STAGGER_PCT = 0.015
+# â”€â”€ Row-4 stagger â”€â”€
 CLOSEUP_ROW4_STAGGER_PCT = 0.02
 
-# ── Formation Y positions (%) ──
-Y_POS = {
-    "coach": 70,
-    "keeper": 97,
-    "defender": 80,
-    "midfielder": 57,
-    "attacker": 40,
-}
+# â”€â”€ Formation Y positions (from formation_layout) â”€â”€
+COMPOSER_X_MARGIN = 0.15
 
-
-_resolve_font_path = resolve_ffmpeg_font_path
 FONT_PATH = resolve_ffmpeg_font_path()
 
 
-# ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Helper functions (ported from build_lineup.py)
-# ─────────────────────────────────────────────────────────────────
-
-
-_download_file = download_file
-_resolve_brand_color = resolve_brand_color
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def _generate_circle_mask(size: int, dest: Path) -> None:
@@ -137,33 +123,6 @@ def _generate_circle_border(size: int, dest: Path, border_width: int = 6) -> Non
     img.save(str(dest))
 
 
-def get_x_positions(count: int) -> list[float]:
-    if count == 1:
-        return [0.5]
-    if count == 4:
-        return [0.11, 0.36, 0.64, 0.89]
-    margin = 0.15
-    effective = 1.0 - 2 * margin
-    step = effective / (count - 1)
-    return [margin + step * i for i in range(count)]
-
-
-def get_x_positions_for_group(count: int, role: str, formation: str) -> list[float]:
-    if formation == "4-4-2" and role == "attacker" and count == 2:
-        return [0.33, 0.67]
-    return get_x_positions(count)
-
-
-def get_y_stagger_offsets(count: int, amount: float = ROW4_STAGGER_PCT) -> list[float]:
-    if count == 4:
-        return [-amount, amount, amount, -amount]
-    return [0.0] * count
-
-
-def clamp01(v: float) -> float:
-    return max(0.0, min(1.0, v))
-
-
 def closeup_y_for_role(role: str, fullbody_y: float) -> float:
     shifts = {
         "keeper": KEEPER_CLOSEUP_FIELD_Y_SHIFT_PCT,
@@ -176,10 +135,6 @@ def closeup_y_for_role(role: str, fullbody_y: float) -> float:
 
 def fullbody_scale_for_role(role: str) -> float:
     return 0.34 if role == "coach" else PLAYER_SCALE_FULLBODY
-
-
-def ffmpeg_escape(text: str) -> str:
-    return text.replace("'", "").replace("\\", "\\\\").replace(":", "\\:")
 
 
 def surname_only(name: str) -> str:
@@ -258,9 +213,9 @@ def role_from_group(name: str) -> str:
     return name[:-1] if name.endswith("s") else name
 
 
-# ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Badge generator (FFmpeg filter_complex fragment)
-# ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def _badge_filter(
@@ -443,7 +398,7 @@ def _render_badge_body_png(
         filters.append("[cvb]copy,format=rgba[out]")
 
     cmd = [
-        _get_ffmpeg_path(),
+        get_ffmpeg_path(),
         "-y",
         "-threads",
         "1",
@@ -473,12 +428,12 @@ def _render_badge_body_png(
         "rgba",
         str(out_path),
     ]
-    _run_ffmpeg(cmd, f"Render badge body: {src_path.name}")
+    run_ffmpeg(cmd, f"Render badge body: {src_path.name}")
 
 
-# ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Asset downloader
-# ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 @dataclass
@@ -505,7 +460,7 @@ def _download_player_assets(
 
         if p.kit_url:
             dest = asset_dir / f"{prefix}_fullbody.png"
-            if _download_file(p.kit_url, dest):
+            if download_file(p.kit_url, dest):
                 fullbody = dest
             else:
                 logger.warning(
@@ -514,7 +469,7 @@ def _download_player_assets(
 
         if p.closeup_url:
             dest = asset_dir / f"{prefix}_closeup.png"
-            if _download_file(p.closeup_url, dest):
+            if download_file(p.closeup_url, dest):
                 closeup = dest
             else:
                 logger.warning(
@@ -530,7 +485,7 @@ def _download_player_assets(
             else:
                 ext = ".mp4"
             dest = asset_dir / f"{prefix}_intro{ext}"
-            if _download_file(p.intro_url, dest):
+            if download_file(p.intro_url, dest):
                 intro = dest
             else:
                 logger.warning(
@@ -542,7 +497,7 @@ def _download_player_assets(
             from src.video.services.header_generator import generate_guest_silhouette
 
             logger.info(
-                "Generating guest silhouette for %s (%s) — no visual assets available",
+                "Generating guest silhouette for %s (%s) â€” no visual assets available",
                 p.member_name,
                 role,
             )
@@ -563,9 +518,9 @@ def _download_player_assets(
     return result
 
 
-# ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Phase composer (one line of the formation)
-# ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def _get_animation_expr(
@@ -591,7 +546,7 @@ def _get_animation_expr(
     if animation_style == "appear":
         return (f"'{ty}'", tx, "")
     elif animation_style == "slide_in":
-        # Slide from edges; centre players (x ≈ 0.5) slide from bottom instead
+        # Slide from edges; centre players (x â‰ˆ 0.5) slide from bottom instead
         is_center = abs(active_x - 0.5) < 0.01
         if is_center:
             ye = f"'{ty} + (main_h - {ty}) * (1 - min(t/{anim_dur}, 1))'"
@@ -645,12 +600,9 @@ def _get_label_animation_expr(
     elif animation_style == "fade":
         return (target_x, f"'{target_y}'", f"'min(t/{anim_dur},1)'")
     else:
-        # Default: slide_up — label slides up with the player
+        # Default: slide_up â€” label slides up with the player
         ys = f"{ty_t} + (h - {ty_t}) * (1 - min(t/{anim_dur}, 1))"
         return (target_x, f"'({ys}) + {fh} + 10'", "1")
-
-
-_run_ffmpeg = run_ffmpeg
 
 
 def _compose_phase(
@@ -682,8 +634,8 @@ def _compose_phase(
             Defaults to closeup_ys if not provided.
     """
     role = role_from_group(group_name)
-    active_y = Y_POS.get(role, 50) / 100.0
-    active_xs = get_x_positions_for_group(len(active_players), role, formation)
+    active_y = Y_POS_COMPOSER.get(role, 0.50)
+    active_xs = get_x_positions_for_group(len(active_players), role, formation, margin=COMPOSER_X_MARGIN)
     y_offsets = get_y_stagger_offsets(len(active_players))
     active_ys = [clamp01(active_y + off) for off in y_offsets]
 
@@ -704,7 +656,7 @@ def _compose_phase(
     if circle_size % 2 != 0:
         circle_size += 1
 
-    # ── Common inputs ──
+    # â”€â”€ Common inputs â”€â”€
     input_args: list[str] = ["-loop", "1", "-i", str(bg_path)]
     input_args += ["-loop", "1", "-i", str(header_path)]
     input_args += ["-loop", "1", "-i", str(mask_path)]
@@ -724,7 +676,7 @@ def _compose_phase(
             raise ValueError("Persistent player missing badge_body/path")
         input_args += ["-loop", "1", "-i", str(badge_path)]
 
-    # ── Base filter chain ──
+    # â”€â”€ Base filter chain â”€â”€
     fc: list[str] = []
     fc.append(f"color=c=white:s={WIDTH}x{HEIGHT}:r={FPS}[base]")
     fc.append(f"[1:v]scale={WIDTH}:-1[header]")
@@ -788,10 +740,10 @@ def _compose_phase(
     is_coach = role == "coach"
     scale_full = PLAYER_SCALE_SOLO if solo_mode else fullbody_scale_for_role(role)
 
-    # ── Part 1: Fullbody slide-up (3 s) ──
+    # â”€â”€ Part 1: Fullbody slide-up (3 s) â”€â”€
     part1 = tmp_dir / f"phase_{phase_idx}_1_full.mp4"
     cmd1 = [
-        _get_ffmpeg_path(),
+        get_ffmpeg_path(),
         "-y",
         "-threads",
         "1",
@@ -808,7 +760,7 @@ def _compose_phase(
         if not path:
             raise ValueError(
                 f"Phase {phase_idx} player {i} ({p.name}) has no fullbody or closeup asset. "
-                f"Cannot compose lineup — all players must have visual assets."
+                f"Cannot compose lineup â€” all players must have visual assets."
             )
         inp = actual_inp1
         actual_inp1 += 1
@@ -850,12 +802,12 @@ def _compose_phase(
         "veryfast",
         str(part1),
     ]
-    _run_ffmpeg(cmd1, f"Phase {phase_idx} Part 1 (Fullbody)")
+    run_ffmpeg(cmd1, f"Phase {phase_idx} Part 1 (Fullbody)")
 
-    # ── Part 2: Intros (variable) ──
+    # â”€â”€ Part 2: Intros (variable) â”€â”€
     part2 = tmp_dir / f"phase_{phase_idx}_2_intro.mp4"
     cmd2 = [
-        _get_ffmpeg_path(),
+        get_ffmpeg_path(),
         "-y",
         "-threads",
         "1",
@@ -876,7 +828,7 @@ def _compose_phase(
             inp = actual_inp2
             actual_inp2 += 1
             cmd2 += ["-i", str(p.intro)]
-            # Intro videos can be VP9 WebM with alpha — keep alpha through the chain.
+            # Intro videos can be VP9 WebM with alpha â€” keep alpha through the chain.
             f2 += f"[{inp}:v]scale=-1:{fh},format=rgba[act{i}];"
             f2 += f"[bg][act{i}]overlay=(W*{active_xs[i]}-w/2):{oy}:eof_action=pass[bg_tmp{i}];"
         else:
@@ -885,7 +837,7 @@ def _compose_phase(
                 raise ValueError(
                     f"Phase {phase_idx} player {i} ({p.name}) has no"
                     " intro, fullbody, or closeup asset. "
-                    f"Cannot compose intro phase — all players"
+                    f"Cannot compose intro phase â€” all players"
                     f" must have visual assets."
                 )
             inp = actual_inp2
@@ -916,15 +868,15 @@ def _compose_phase(
         "veryfast",
         str(part2),
     ]
-    _run_ffmpeg(cmd2, f"Phase {phase_idx} Part 2 (Intro)")
+    run_ffmpeg(cmd2, f"Phase {phase_idx} Part 2 (Intro)")
 
     if is_coach:
         return [part1, part2]
 
-    # ── Part 3: Transition fullbody→closeup (1 s) ──
+    # â”€â”€ Part 3: Transition fullbodyâ†’closeup (1 s) â”€â”€
     part3 = tmp_dir / f"phase_{phase_idx}_3_trans.mp4"
     cmd3 = [
-        _get_ffmpeg_path(),
+        get_ffmpeg_path(),
         "-y",
         "-threads",
         "1",
@@ -949,7 +901,7 @@ def _compose_phase(
         if not path_full or not path_close:
             raise ValueError(
                 f"Phase {phase_idx} player {i} ({p.name}) has no fullbody/closeup pair. "
-                f"Cannot compose transition phase — all players must have visual assets."
+                f"Cannot compose transition phase â€” all players must have visual assets."
             )
         idx_full = actual_inp3
         idx_close = actual_inp3 + 1
@@ -1031,7 +983,7 @@ def _compose_phase(
 
         # Fullbody overlay: static at active position, fades out
         f3 += f"[bg][pf_fade{i}]overlay=(W*{active_xs[i]}-w/2):(H*{active_ys[i]}-h)[bg_step1_{i}];"
-        # Closeup overlay: animate from active position → badge position
+        # Closeup overlay: animate from active position â†’ badge position
         start_bx = active_xs[i]
         start_by = active_ys[i]
         end_bx = badge_xs[i]
@@ -1060,7 +1012,7 @@ def _compose_phase(
         ly = f"({HEIGHT}*{badge_ys[i]}-{cutoff_h}+{BADGE_LABEL_GAP})"
         # Use drawtext with large boxborderw for consistent label background
         # Fixed-width drawbox (matches persistent + hold labels) then
-        # drawtext with alpha fade — box appears instantly, text fades in.
+        # drawtext with alpha fade â€” box appears instantly, text fades in.
         f3 += (
             f"[bg_step3_{i}]"
             f"drawbox=x={lx}:y={ly}:w={label_w}:h={BADGE_LABEL_H}:"
@@ -1086,14 +1038,14 @@ def _compose_phase(
         "veryfast",
         str(part3),
     ]
-    _run_ffmpeg(cmd3, f"Phase {phase_idx} Part 3 (Transition)")
+    run_ffmpeg(cmd3, f"Phase {phase_idx} Part 3 (Transition)")
 
     return [part1, part2, part3]
 
 
-# ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Final hold frame
-# ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def _compose_hold(
@@ -1145,7 +1097,7 @@ def _compose_hold(
         last_bg = "bg_sponsor"
 
     cmd = [
-        _get_ffmpeg_path(),
+        get_ffmpeg_path(),
         "-y",
         "-threads",
         "1",
@@ -1221,13 +1173,13 @@ def _compose_hold(
         "veryfast",
         str(hold_out),
     ]
-    _run_ffmpeg(cmd, "Hold Frame")
+    run_ffmpeg(cmd, "Hold Frame")
     return hold_out
 
 
-# ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Main composer entry point
-# ─────────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def compose_lineup_video(
@@ -1246,7 +1198,7 @@ def compose_lineup_video(
         formation: Formation string (4-3-3, 4-4-2, 3-4-3)
         closeup_style: Badge style (popout / inside)
         animation_style: Player reveal animation (slide_up, appear, slide_in, zoom, fade)
-        intro_style: Intro mode — 'per_line' (group by line) or 'per_player' (one by one)
+        intro_style: Intro mode â€” 'per_line' (group by line) or 'per_player' (one by one)
         output_dir: Where to write the final MP4. Uses tempfile if None.
         progress_callback: Optional fn(percent: int) for progress updates.
 
@@ -1267,84 +1219,33 @@ def compose_lineup_video(
     if output_dir is None:
         output_dir = tmp_dir
 
-    # ── 1. Download brand assets ──
+    # â”€â”€ 1. Download brand assets â”€â”€
     logger.info("Downloading brand assets...")
-    bg_path = asset_dir / "field_background.jpg"
-    header_path = asset_dir / "header.png"
-    sponsor_path = asset_dir / "sponsor.png"
 
     if not lineup_data.field_background_url:
         logger.warning(
-            "No stadium_background BrandAsset found — generating synthetic field background",
+            "No stadium_background BrandAsset found â€” generating synthetic field background",
             extra={"activity_id": str(getattr(lineup_data, "activity_id", None))},
         )
         from src.video.services.header_generator import generate_field_background
 
-        fallback_url = generate_field_background(width=WIDTH, height=HEIGHT - HEADER_HEIGHT)
-        lineup_data.field_background_url = fallback_url
+        from src.video.services._common import FALLBACK_BG_VIDEO
 
-    if not _download_file(lineup_data.field_background_url, bg_path):
-        raise ValueError("Failed to download field background image.")
+        lineup_data.field_background_url = generate_field_background(
+            width=FALLBACK_BG_VIDEO[0], height=FALLBACK_BG_VIDEO[1]
+        )
 
-    # Check if background is landscape (raw upload) or portrait (AI-generated)
-    # Only apply 90° rotation if landscape — portrait backgrounds are already correct
-    _bg_check = Image.open(bg_path)
-    bg_is_landscape = _bg_check.width > _bg_check.height
-    _bg_check.close()
+    from src.video.services._common import prepare_lineup_frame
 
-    # Resolve brand primary color for header
-    brand_primary_hex = _resolve_brand_color(lineup_data.activity_id)
-
-    # Generate header using the production header_generator
-    from src.video.services.header_generator import generate_header_image
-
-    header_url = generate_header_image(
-        width=WIDTH,
-        height=HEADER_HEIGHT,
-        logo_url=lineup_data.logo_url,
-        opponent_logo_url=lineup_data.opponent_logo_url,
-        sponsor_url=lineup_data.sponsor_url,
-        match_date=lineup_data.match_date or "",
-        own_team_name=lineup_data.own_team_name,
-        opponent_name=lineup_data.opponent_name,
-        is_home=lineup_data.is_home,
-        score_home=lineup_data.score_home,
-        score_away=lineup_data.score_away,
-        kickoff_time=lineup_data.kickoff_time,
-        coach_name=lineup_data.coach_name,
-        competition_name=lineup_data.competition_name,
-        venue=lineup_data.venue,
-        background_color=brand_primary_hex,
+    frame = prepare_lineup_frame(
+        lineup_data,
+        asset_dir,
+        brand_primary_hex=lineup_data.brand_primary,
     )
-    if not _download_file(header_url, header_path):
-        # header_url may be a file:// URL
-        from urllib.parse import urlparse
-
-        parsed = urlparse(header_url)
-        if parsed.scheme == "file":
-            src = parsed.path
-            if src.startswith("/") and len(src) > 2 and src[2] == ":":
-                src = src[1:]
-            shutil.copy(src, header_path)
-        else:
-            raise ValueError("Failed to download generated header image.")
-
-    if lineup_data.sponsor_url:
-        _download_file(lineup_data.sponsor_url, sponsor_path)
-        # Safety net: ensure any remaining background is transparent
-        try:
-            from src.generative.services.asset_pipeline import _strip_checkerboard
-
-            sp_img = Image.open(sponsor_path).convert("RGBA")
-            sp_img = _strip_checkerboard(sp_img)
-            bbox = sp_img.getchannel("A").getbbox()
-            if bbox:
-                sp_img = sp_img.crop(bbox)
-            sp_img.save(str(sponsor_path), "PNG")
-        except Exception:  # noqa: BLE001
-            logger.warning("sponsor_bg_cleanup failed, using raw file")
-    else:
-        sponsor_path = None
+    bg_path = frame.bg_path
+    bg_is_landscape = frame.bg_is_landscape
+    header_path = frame.header_path
+    sponsor_path = frame.sponsor_path
 
     # Generate circle mask & border
     circle_size = int(HEIGHT * PLAYER_SCALE_CLOSEUP)
@@ -1361,7 +1262,7 @@ def compose_lineup_video(
     if progress_callback:
         progress_callback(10)
 
-    # ── 2. Pre-validate player assets (log guests, no longer fail) ──
+    # â”€â”€ 2. Pre-validate player assets (log guests, no longer fail) â”€â”€
     guest_count = 0
     for phase_name, segment_list in [
         ("keeper", lineup_data.keepers),
@@ -1373,7 +1274,7 @@ def compose_lineup_video(
             if not seg.kit_url and not seg.closeup_url:
                 guest_count += 1
                 logger.info(
-                    "Guest player: %s (%s) — will use silhouette placeholder",
+                    "Guest player: %s (%s) â€” will use silhouette placeholder",
                     seg.member_name,
                     phase_name,
                 )
@@ -1383,7 +1284,7 @@ def compose_lineup_video(
             guest_count,
         )
 
-    # ── 3. Download player assets ──
+    # â”€â”€ 3. Download player assets â”€â”€
     logger.info("Downloading player assets...")
     keepers = _download_player_assets(lineup_data.keepers, "keeper", asset_dir)
     field_players = (
@@ -1406,7 +1307,7 @@ def compose_lineup_video(
         midfielders = field_players[4:7]
         attackers = field_players[7:10]
 
-    # ── 3b. Validate we have enough players for the formation (fail fast) ──
+    # â”€â”€ 3b. Validate we have enough players for the formation (fail fast) â”€â”€
     formation_requirements = {
         "4-4-2": {"defenders": 4, "midfielders": 4, "attackers": 2},
         "3-4-3": {"defenders": 3, "midfielders": 4, "attackers": 3},
@@ -1417,14 +1318,14 @@ def compose_lineup_video(
 
     if not keepers:
         raise ValueError(
-            "Cannot generate lineup video — no goalkeeper resolved. "
+            "Cannot generate lineup video â€” no goalkeeper resolved. "
             "Select a goalkeeper and ensure they have goalkeeper fullbody/closeup assets."
         )
 
     if len(field_players) < required_field:
         resolved_names = ", ".join([p.name for p in field_players]) if field_players else "(none)"
         raise ValueError(
-            "Cannot generate lineup video — not enough field players resolved for formation "
+            "Cannot generate lineup video â€” not enough field players resolved for formation "
             f"{formation}. Required {required_field}, got {len(field_players)}. "
             "This usually means the Activity has no usable "
             "lineup/participation data for the selected members, "
@@ -1438,7 +1339,7 @@ def compose_lineup_video(
         or len(attackers) != req["attackers"]
     ):
         raise ValueError(
-            "Cannot generate lineup video — formation slicing produced incomplete groups. "
+            "Cannot generate lineup video â€” formation slicing produced incomplete groups. "
             f"Expected D/M/A="
             f"{req['defenders']}/{req['midfielders']}/"
             f"{req['attackers']} for {formation} "
@@ -1456,7 +1357,7 @@ def compose_lineup_video(
     if progress_callback:
         progress_callback(20)
 
-    # ── 4. Compose phases ──
+    # â”€â”€ 4. Compose phases â”€â”€
     phases = [
         ("keeper", keepers),
         ("defenders", defenders),
@@ -1468,7 +1369,7 @@ def compose_lineup_video(
     all_segments: list[Path] = []
 
     if intro_style == "per_player":
-        # ── Per-player mode: introduce each player solo, centred & large ──
+        # â”€â”€ Per-player mode: introduce each player solo, centred & large â”€â”€
         solo_items: list[tuple[str, _LocalPlayer, int]] = []
         for group_name, group in phases:
             for gi, p in enumerate(group):
@@ -1490,9 +1391,9 @@ def compose_lineup_video(
 
             # Compute badge target position (formation spot, not centre)
             role = role_from_group(group_name)
-            ay = Y_POS.get(role, 50) / 100.0
+            ay = Y_POS_COMPOSER.get(role, 0.50)
             full_group = [p for gn, g in phases if gn == group_name for p in g]
-            axs = get_x_positions_for_group(len(full_group), role, formation)
+            axs = get_x_positions_for_group(len(full_group), role, formation, margin=COMPOSER_X_MARGIN)
             cu_base = closeup_y_for_role(role, ay)
             cu_offsets = get_y_stagger_offsets(len(full_group), CLOSEUP_ROW4_STAGGER_PCT)
             cu_ys = [clamp01(cu_base + off) for off in cu_offsets]
@@ -1520,7 +1421,7 @@ def compose_lineup_video(
                 all_segments.extend(segs)
             else:
                 raise ValueError(
-                    f"Cannot generate lineup video — solo phase"
+                    f"Cannot generate lineup video â€” solo phase"
                     f" for '{player.name}' produced no output."
                 )
 
@@ -1550,11 +1451,11 @@ def compose_lineup_video(
                 progress_callback(pct)
 
     else:
-        # ── Per-line mode (default): introduce players per positional group ──
+        # â”€â”€ Per-line mode (default): introduce players per positional group â”€â”€
         for idx, (name, group) in enumerate(phases):
             if not group:
                 raise ValueError(
-                    f"Cannot generate lineup video — phase"
+                    f"Cannot generate lineup video â€” phase"
                     f" '{name}' has 0 players. "
                     "Fix the lineup selection / participation"
                     " data so all formation lines are populated."
@@ -1599,7 +1500,7 @@ def compose_lineup_video(
                 all_segments.extend(segs)
             else:
                 raise ValueError(
-                    f"Cannot generate lineup video — phase"
+                    f"Cannot generate lineup video â€” phase"
                     f" '{name}' produced no output. "
                     "This indicates missing input assets or"
                     " an FFmpeg composition failure"
@@ -1611,8 +1512,8 @@ def compose_lineup_video(
                 continue
 
             role = role_from_group(name)
-            ay = Y_POS.get(role, 50) / 100.0
-            axs = get_x_positions_for_group(len(group), role, formation)
+            ay = Y_POS_COMPOSER.get(role, 0.50)
+            axs = get_x_positions_for_group(len(group), role, formation, margin=COMPOSER_X_MARGIN)
             cu_base = closeup_y_for_role(role, ay)
             cu_offsets = get_y_stagger_offsets(len(group), CLOSEUP_ROW4_STAGGER_PCT)
             cu_ys = [clamp01(cu_base + off) for off in cu_offsets]
@@ -1642,7 +1543,7 @@ def compose_lineup_video(
                 pct = 20 + int((idx + 1) / len(phases) * 60)
                 progress_callback(pct)
 
-    # ── 5. Final hold ──
+    # â”€â”€ 5. Final hold â”€â”€
     logger.info("Composing final hold frame...")
     hold = _compose_hold(
         persistent_players,
@@ -1664,7 +1565,7 @@ def compose_lineup_video(
     if progress_callback:
         progress_callback(85)
 
-    # ── 6. Concatenate ──
+    # â”€â”€ 6. Concatenate â”€â”€
     logger.info("Concatenating %d segments...", len(all_segments))
     concat_list = tmp_dir / "concat.txt"
     with open(concat_list, "w", encoding="utf-8") as f:
@@ -1672,9 +1573,9 @@ def compose_lineup_video(
             f.write(f"file '{seg.absolute()}'\n")
 
     output_file = output_dir / "lineup_video.mp4"
-    _run_ffmpeg(
+    run_ffmpeg(
         [
-            _get_ffmpeg_path(),
+            get_ffmpeg_path(),
             "-y",
             "-threads",
             "1",
@@ -1692,13 +1593,13 @@ def compose_lineup_video(
         "Final Concat",
     )
 
-    # ── 7. Watermark overlay ──
+    # â”€â”€ 7. Watermark overlay â”€â”€
     if WATERMARK_PATH.exists():
         logger.info("Adding watermark overlay...")
         watermarked = output_dir / "lineup_video_wm.mp4"
-        _run_ffmpeg(
+        run_ffmpeg(
             [
-                _get_ffmpeg_path(),
+                get_ffmpeg_path(),
                 "-y",
                 "-threads",
                 "1",
@@ -1734,3 +1635,4 @@ def compose_lineup_video(
 
     logger.info("Lineup video composed: %s", output_file)
     return output_file
+

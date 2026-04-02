@@ -15,31 +15,18 @@ LineupProcessor.
 
 from __future__ import annotations
 
-import io
 import logging
-import tempfile
-import uuid as uuid_module
 from dataclasses import dataclass
-from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
 from src.video.services._common import (
-    download_image_cached,
+    ImageCache,
     get_pil_font,
+    upload_image_to_storage,
 )
 
 logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# In-memory image cache (cleared per-job via reset_image_cache)
-# ---------------------------------------------------------------------------
-_image_cache: dict[str, Image.Image | None] = {}
-
-
-def reset_image_cache() -> None:
-    """Clear the download cache. Call at start/end of a lineup build job."""
-    _image_cache.clear()
 
 
 @dataclass(frozen=True)
@@ -68,41 +55,6 @@ class FeaturedPlayer:
     kit_url: str
 
 
-def _upload_and_get_url(img: Image.Image, prefix: str = "lineup_scene") -> str:
-    """Upload image to storage and return presigned URL.
-
-    Falls back to local file path if storage upload fails.
-    """
-    try:
-        from files.utils import get_storage_backend
-
-        img_bytes = io.BytesIO()
-        img.save(img_bytes, "PNG")
-        img_bytes.seek(0)
-
-        storage_path = f"generated/lineup/{prefix}/{uuid_module.uuid4().hex}.png"
-        backend = get_storage_backend()
-        backend.save(storage_path, img_bytes)
-        return backend.get_url(storage_path, signed=True, expiry_seconds=3600)
-
-    except Exception as exc:  # noqa: BLE001
-        logger.warning("Failed to upload %s image to storage: %s", prefix, exc)
-        temp_dir = Path(tempfile.gettempdir()) / "lineup_scenes"
-        temp_dir.mkdir(exist_ok=True)
-        output_path = temp_dir / f"{prefix}_{uuid_module.uuid4().hex}.png"
-        img.save(str(output_path), "PNG")
-        return f"file://{output_path}"
-
-
-def _download_image(url: str) -> Image.Image | None:
-    """Download an image from url, using in-memory cache to avoid repeated S3 round-trips."""
-    return download_image_cached(url, _image_cache)
-
-
-def _get_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
-    return get_pil_font(size, bold=bold)
-
-
 def generate_line_scene_image(
     *,
     width: int,
@@ -111,14 +63,16 @@ def generate_line_scene_image(
     header_url: str | None,
     title: str | None,
     players: list[ScenePlayer],
+    cache: ImageCache | None = None,
 ) -> str:
     """Generate a single lineup scene frame.
 
     Coordinates:
     - x_pct/y_pct are 0..100 percentages within the *field area* (below the header).
     """
+    _cache = cache or ImageCache()
 
-    bg_img = _download_image(background_url)
+    bg_img = _cache.get(background_url)
     if bg_img is None:
         bg_img = Image.new("RGB", (width, height), "#228B22")
 
@@ -129,7 +83,7 @@ def generate_line_scene_image(
 
     header_h = 0
     if header_url:
-        header_img = _download_image(header_url)
+        header_img = _cache.get(header_url)
         if header_img is not None:
             header_img = header_img.convert("RGBA")
             # Keep header height as-is, but fit to width
@@ -143,7 +97,7 @@ def generate_line_scene_image(
     field_height = max(1, height - field_top)
 
     if title:
-        font = _get_font(52, bold=True)
+        font = get_pil_font(52, bold=True)
         bbox = draw.textbbox((0, 0), title, font=font)
         tw = bbox[2] - bbox[0]
         x = (width - tw) // 2
@@ -155,10 +109,10 @@ def generate_line_scene_image(
     # Sizing heuristic: more players => smaller cutouts
     # Keep within 18-26% of field height
     max_h = int(field_height * (0.26 if len(players) <= 1 else 0.20 if len(players) <= 3 else 0.18))
-    name_font = _get_font(30, bold=True)
+    name_font = get_pil_font(30, bold=True)
 
     for p in players:
-        kit = _download_image(p.kit_url)
+        kit = _cache.get(p.kit_url)
         if kit is None:
             continue
 
@@ -197,7 +151,7 @@ def generate_line_scene_image(
 
         draw.text((tx, ty), name, font=name_font, fill=(255, 255, 255, 255))
 
-    return _upload_and_get_url(
+    return upload_image_to_storage(
         bg_img, prefix=f"scene_{(title or 'line').lower().replace(' ', '_')}"
     )
 
@@ -218,10 +172,13 @@ def _render_closeups(
     field_height: int,
     width: int,
     height: int,
+    _cache: ImageCache | None = None,
 ) -> None:
     """Render accumulated closeup thumbnails at their field positions."""
     if not closeups:
         return
+    if _cache is None:
+        _cache = ImageCache()
 
     thumb_h = max(60, int(field_height * _CLOSEUP_SIZE_PCT))
     thumb_w = int(thumb_h * 0.75)
@@ -233,7 +190,7 @@ def _render_closeups(
     name_font_base = 22
 
     for cu in closeups:
-        img = _download_image(cu.image_url)
+        img = _cache.get(cu.image_url)
         if img is None:
             continue
         img = img.convert("RGBA")
@@ -264,14 +221,14 @@ def _render_closeups(
         if name:
             # Fit font size so the name stays inside the fixed label width.
             fs = name_font_base
-            name_font = _get_font(fs, bold=True)
+            name_font = get_pil_font(fs, bold=True)
             nb = draw.textbbox((0, 0), name, font=name_font)
             nw = nb[2] - nb[0]
             nh = nb[3] - nb[1]
             max_w = max(1, fixed_label_w - 2 * pad)
             while nw > max_w and fs > 16:
                 fs -= 1
-                name_font = _get_font(fs, bold=True)
+                name_font = get_pil_font(fs, bold=True)
                 nb = draw.textbbox((0, 0), name, font=name_font)
                 nw = nb[2] - nb[0]
                 nh = nb[3] - nb[1]
@@ -298,9 +255,12 @@ def _render_featured_player(
     field_height: int,
     width: int,
     height: int,
+    _cache: ImageCache | None = None,
 ) -> None:
     """Render a single large full-body image prominently in the field area."""
-    kit_img = _download_image(player.kit_url)
+    if _cache is None:
+        _cache = ImageCache()
+    kit_img = _cache.get(player.kit_url)
     if kit_img is None:
         return
     kit_img = kit_img.convert("RGBA")
@@ -326,14 +286,14 @@ def _render_featured_player(
         ty = paste_y + kit_img.height + 10
 
         fs = 38
-        name_font = _get_font(fs, bold=True)
+        name_font = get_pil_font(fs, bold=True)
         nb = draw.textbbox((0, 0), name, font=name_font)
         nw = nb[2] - nb[0]
         nh = nb[3] - nb[1]
         max_w = max(1, fixed_label_w - 2 * pad)
         while nw > max_w and fs > 24:
             fs -= 1
-            name_font = _get_font(fs, bold=True)
+            name_font = get_pil_font(fs, bold=True)
             nb = draw.textbbox((0, 0), name, font=name_font)
             nw = nb[2] - nb[0]
             nh = nb[3] - nb[1]
@@ -358,6 +318,7 @@ def generate_composite_scene(
     accumulated_closeups: list[CloseupOverlay] | None = None,
     featured_player: FeaturedPlayer | None = None,
     prefix: str = "composite",
+    cache: ImageCache | None = None,
 ) -> str:
     """Generate a composite scene with accumulated closeups and optional featured player.
 
@@ -368,7 +329,9 @@ def generate_composite_scene(
 
     Returns presigned URL to uploaded PNG.
     """
-    bg_img = _download_image(background_url)
+    _cache = cache or ImageCache()
+
+    bg_img = _cache.get(background_url)
     if bg_img is None:
         bg_img = Image.new("RGB", (width, height), "#228B22")
 
@@ -380,7 +343,7 @@ def generate_composite_scene(
     # Header
     header_h = 0
     if header_url:
-        header_img = _download_image(header_url)
+        header_img = _cache.get(header_url)
         if header_img is not None:
             header_img = header_img.convert("RGBA")
             header_h = header_img.height
@@ -394,7 +357,7 @@ def generate_composite_scene(
 
     # Line title
     if title:
-        font = _get_font(52, bold=True)
+        font = get_pil_font(52, bold=True)
         bbox = draw.textbbox((0, 0), title, font=font)
         tw = bbox[2] - bbox[0]
         x = (width - tw) // 2
@@ -404,13 +367,15 @@ def generate_composite_scene(
 
     # Accumulated closeups (persist from previous lines)
     _render_closeups(
-        bg_img, draw, accumulated_closeups or [], field_top, field_height, width, height
+        bg_img, draw, accumulated_closeups or [], field_top, field_height, width, height,
+        _cache=_cache,
     )
 
     # Featured full body player (large, centered)
     if featured_player:
         _render_featured_player(
-            bg_img, draw, featured_player, field_top, field_height, width, height
+            bg_img, draw, featured_player, field_top, field_height, width, height,
+            _cache=_cache,
         )
 
-    return _upload_and_get_url(bg_img, prefix=prefix)
+    return upload_image_to_storage(bg_img, prefix=prefix)

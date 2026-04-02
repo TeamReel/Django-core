@@ -13,11 +13,22 @@ Functions:
     run_ffmpeg()       — run FFmpeg subprocess with error handling
     resolve_ffmpeg_font_path() — find FFmpeg-safe font path (drawtext filter)
     get_pil_font()     — find PIL ImageFont with fallback chain
-    resolve_brand_color()    — look up brand token from activity
+    hex_to_rgb()       — convert hex color to (R, G, B)
+    hex_to_rgba()      — convert hex color to (R, G, B, A)
+    ffmpeg_escape()    — escape text for FFmpeg drawtext filter
+
+    prepare_sponsor()   — download sponsor logo, strip checkerboard, save to disk
+    prepare_sponsor_pil() — same, returns PIL Image instead of saving to disk
+    prepare_lineup_frame() — download bg + render header + prep sponsor (shared)
+
+Classes:
+    FrameAssets        — dataclass with paths to frame setup assets
+    ImageCache         — per-job image download cache (replaces module-level dicts)
 
 Constants:
     CANVAS_WIDTH, CANVAS_HEIGHT, CANVAS_FPS, HEADER_HEIGHT
     SPONSOR_W, SPONSOR_MARGIN, SPONSOR_PAD, SPONSOR_BOX_H
+    WATERMARK_PATH, WATERMARK_OPACITY, WATERMARK_MARGIN
 """
 
 from __future__ import annotations
@@ -26,6 +37,9 @@ import io
 import logging
 import shutil
 import subprocess
+import tempfile
+import uuid as uuid_module
+from dataclasses import dataclass
 from pathlib import Path
 
 import requests
@@ -41,11 +55,109 @@ CANVAS_HEIGHT = 1920
 CANVAS_FPS = 30
 HEADER_HEIGHT = 300
 
+# ── Fallback field background dimensions ───────────────────────────────────
+FALLBACK_BG_PORTRAIT = (CANVAS_WIDTH, 1620)  # For static flyers / builders
+FALLBACK_BG_LANDSCAPE = (1920, 1080)  # For landscape flyers only
+FALLBACK_BG_VIDEO = (CANVAS_WIDTH, CANVAS_HEIGHT - HEADER_HEIGHT)  # For video composers
+
+# ── Default brand colors ───────────────────────────────────────────────────
+DEFAULT_PRIMARY_COLOR = "#D2122E"
+DEFAULT_SECONDARY_COLOR = "#FFFFFF"
+
 # ── Sponsor box ────────────────────────────────────────────────────────────
 SPONSOR_W = 220
 SPONSOR_MARGIN = 36
 SPONSOR_PAD = 16
 SPONSOR_BOX_H = 120
+
+# ── Watermark ──────────────────────────────────────────────────────────────
+WATERMARK_PATH = Path(__file__).resolve().parent.parent / "assets" / "watermark.png"
+WATERMARK_OPACITY = 0.25  # 25% opacity
+WATERMARK_MARGIN = 30  # px from edge
+
+
+# ── Variant URL resolver ─────────────────────────────────────────────────────
+
+
+def find_best_variant_url(
+    variants: dict,
+    kit_type: str,
+    style_priority: list[str],
+    get_best_url_fn: callable,
+) -> str | None:
+    """Find the best asset URL from a variants dict by kit and style priority.
+
+    Generic implementation used by both intro and celebration lookups.
+    Priority order:
+    1. kit_type variants in style priority order
+    2. home variants in style priority order (fallback)
+    3. Bare style keys (old format without kit prefix)
+    4. Any remaining variant that has content
+    """
+
+    def _find_with_prefix(prefix: str) -> str | None:
+        for style in style_priority:
+            key = f"{prefix}_{style}"
+            val = variants.get(key)
+            if val:
+                url = get_best_url_fn(val)
+                if url:
+                    return url
+        for key, val in variants.items():
+            if key.startswith(prefix) and val:
+                url = get_best_url_fn(val)
+                if url:
+                    return url
+        return None
+
+    url = _find_with_prefix(kit_type)
+    if url:
+        return url
+
+    if kit_type != "home":
+        url = _find_with_prefix("home")
+        if url:
+            return url
+
+    for style in style_priority:
+        val = variants.get(style)
+        if val:
+            url = get_best_url_fn(val)
+            if url:
+                return url
+
+    for val in variants.values():
+        if val:
+            url = get_best_url_fn(val)
+            if url:
+                return url
+
+    return None
+
+
+# ── Color helpers ────────────────────────────────────────────────────────────
+
+
+def hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
+    """Convert hex color string to (R, G, B) tuple."""
+    h = hex_color.lstrip("#")
+    if len(h) == 3:
+        h = "".join(c * 2 for c in h)
+    return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+
+
+def hex_to_rgba(hex_color: str) -> tuple[int, int, int, int]:
+    """Convert hex color string to (R, G, B, A) tuple with full opacity."""
+    r, g, b = hex_to_rgb(hex_color)
+    return (r, g, b, 255)
+
+
+# ── FFmpeg helpers ───────────────────────────────────────────────────────────
+
+
+def ffmpeg_escape(text: str) -> str:
+    """Escape text for FFmpeg drawtext filter."""
+    return text.replace("'", "").replace("\\", "\\\\").replace(":", "\\:")
 
 
 # ── FFmpeg / FFprobe path resolution ───────────────────────────────────────
@@ -184,6 +296,25 @@ def download_image_bytes(url: str, timeout: int = 30) -> bytes | None:
         return None
 
 
+class ImageCache:
+    """Per-job image download cache.
+
+    Each job creates its own instance, avoiding module-level mutable state
+    that is unsafe with concurrent Celery workers.
+    """
+
+    def __init__(self) -> None:
+        self._store: dict[str, Image.Image | None] = {}
+
+    def get(self, url: str) -> Image.Image | None:
+        """Download *url* as PIL Image, returning a cached copy on repeat calls."""
+        return download_image_cached(url, self._store)
+
+    def clear(self) -> None:
+        """Drop all cached images (call at end of job to free memory)."""
+        self._store.clear()
+
+
 # ── FFmpeg subprocess runner ───────────────────────────────────────────────
 
 
@@ -280,46 +411,237 @@ def get_pil_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
     return ImageFont.load_default()
 
 
-# ── Brand helpers ──────────────────────────────────────────────────────────
+# ── Storage upload ─────────────────────────────────────────────────────────
 
 
-def resolve_brand_color(activity_id: str, color_key: str = "primary_color") -> str | None:
-    """Look up a brand color token from the project's BrandProfile.
+def upload_generated_image(
+    data: Image.Image | bytes | Path,
+    path_prefix: str = "generated",
+    *,
+    activity_id: str | None = None,
+) -> str:
+    """Upload a generated image to storage and return a presigned URL.
 
-    Returns hex color string (e.g., "#D2122E") or None if not found.
-    Searches: project → parent project → organisation.
+    Supports PIL Images, raw bytes, and file paths.
+    Falls back to a local temp file path if storage upload fails.
     """
     try:
-        from django.apps import apps
+        from files.utils import get_storage_backend
 
-        Activity = apps.get_model("activities", "Activity")
-        BrandProfile = apps.get_model("branding", "BrandProfile")
+        subfolder = f"{activity_id}/" if activity_id else ""
+        storage_path = f"{path_prefix}/{subfolder}{uuid_module.uuid4().hex}.png"
+        backend = get_storage_backend()
 
-        activity = Activity.objects.select_related("project__parent_project").get(id=activity_id)
-        project = activity.project
+        if isinstance(data, Image.Image):
+            buf = io.BytesIO()
+            data.save(buf, "PNG")
+            buf.seek(0)
+            backend.save(storage_path, buf)
+        elif isinstance(data, bytes):
+            backend.save(storage_path, io.BytesIO(data))
+        elif isinstance(data, Path):
+            with open(data, "rb") as f:
+                backend.save(storage_path, f)
+        else:
+            raise TypeError(f"Unsupported data type: {type(data)}")
 
-        for proj in [project, project.parent_project]:
-            if not proj:
-                continue
-            brand = BrandProfile.objects.filter(project=proj, is_active=True).first()
-            if brand:
-                tokens = brand.get_tokens()
-                value = tokens.get(color_key) or tokens.get("primary")
-                if value:
-                    return value
+        url = backend.get_url(storage_path, signed=True, expiry_seconds=3600)
+        logger.info("Uploaded image to S3: %s", storage_path)
+        return url
 
-        org = getattr(project, "organisation", None)
-        if org:
-            brand = BrandProfile.objects.filter(organisation=org, is_active=True).first()
-            if brand:
-                tokens = brand.get_tokens()
-                value = tokens.get(color_key) or tokens.get("primary")
-                if value:
-                    return value
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Failed to upload %s image to storage: %s", path_prefix, exc)
+        if isinstance(data, Path):
+            return f"file://{data}"
+        temp_dir = Path(tempfile.gettempdir()) / "generated_images"
+        temp_dir.mkdir(exist_ok=True)
+        output_path = temp_dir / f"{path_prefix.replace('/', '_')}_{uuid_module.uuid4().hex}.png"
+        if isinstance(data, Image.Image):
+            data.save(str(output_path), "PNG")
+        elif isinstance(data, bytes):
+            output_path.write_bytes(data)
+        return f"file://{output_path}"
 
-        return None
-    except Exception:  # noqa: BLE001
-        logger.warning(
-            "Failed to resolve brand color for activity %s", activity_id, exc_info=True
+
+def upload_image_to_storage(img: Image.Image, prefix: str = "generated") -> str:
+    """Upload a PIL Image to storage and return a presigned URL.
+
+    Falls back to a local temp file path if storage upload fails.
+    """
+    try:
+        from files.utils import get_storage_backend
+
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, "PNG")
+        img_bytes.seek(0)
+
+        storage_path = f"generated/lineup/{prefix}/{uuid_module.uuid4().hex}.png"
+        backend = get_storage_backend()
+        backend.save(storage_path, img_bytes)
+        return backend.get_url(storage_path, signed=True, expiry_seconds=3600)
+
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Failed to upload %s image to storage: %s", prefix, exc)
+        temp_dir = Path(tempfile.gettempdir()) / "lineup_scenes"
+        temp_dir.mkdir(exist_ok=True)
+        output_path = temp_dir / f"{prefix}_{uuid_module.uuid4().hex}.png"
+        img.save(str(output_path), "PNG")
+        return f"file://{output_path}"
+
+
+# ── Composer helpers ────────────────────────────────────────────────────────
+
+
+def probe_duration(video_path: Path, default: float = 5.0) -> float:
+    """Get video duration in seconds using ffprobe.
+
+    Returns *default* if probing fails.
+    """
+    ffprobe = get_ffprobe_path()
+    try:
+        result = subprocess.run(  # noqa: S603
+            [
+                ffprobe,
+                "-v",
+                "quiet",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "default=noprint_wrappers=1:nokey=1",
+                str(video_path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
+        if result.returncode == 0 and result.stdout.strip():
+            return float(result.stdout.strip())
+        return default
+    except Exception:
+        logger.warning("Failed to probe duration for %s", video_path, exc_info=True)
+        return default
+
+
+def prepare_background(url: str, dest: Path, timeout: int = 60) -> bool:
+    """Download a background image and return whether it is landscape.
+
+    Returns True if the image is landscape (width > height), False otherwise.
+    Raises ValueError if the download fails.
+    """
+    if not download_file(url, dest, timeout=timeout):
+        raise ValueError("Failed to download background image.")
+    img = Image.open(dest)
+    is_landscape = img.width > img.height
+    img.close()
+    return is_landscape
+
+
+def prepare_sponsor_pil(url: str) -> Image.Image | None:
+    """Download a sponsor logo, strip checkerboard bg, and autocrop.
+
+    Returns a cleaned PIL Image (RGBA), or None if unavailable.
+    """
+    if not url:
         return None
+    try:
+        resp = requests.get(url, timeout=30)
+        resp.raise_for_status()
+        img = Image.open(io.BytesIO(resp.content)).convert("RGBA")
+    except Exception:  # noqa: BLE001
+        logger.warning("Failed to download sponsor image: %s", url[:120])
+        return None
+    try:
+        from src.generative.services.asset_pipeline import _strip_checkerboard
+
+        img = _strip_checkerboard(img)
+        bbox = img.getchannel("A").getbbox()
+        if bbox:
+            img = img.crop(bbox)
+    except Exception:  # noqa: BLE001
+        logger.warning("sponsor_bg_cleanup failed, using raw image")
+    return img
+
+
+def prepare_sponsor(url: str, dest: Path) -> bool:
+    """Download a sponsor logo, strip checkerboard bg, and autocrop.
+
+    Returns True if a usable sponsor image was saved, False otherwise.
+    """
+    img = prepare_sponsor_pil(url)
+    if img is None:
+        return False
+    img.save(str(dest), "PNG")
+    return True
+
+
+
+@dataclass
+class FrameAssets:
+    """Shared frame setup result for lineup video and flyer."""
+
+    bg_path: Path
+    bg_is_landscape: bool
+    header_path: Path
+    sponsor_path: Path | None
+
+
+def prepare_lineup_frame(
+    data: "LineupData",
+    asset_dir: Path,
+    *,
+    brand_primary_hex: str,
+    header_width: int = CANVAS_WIDTH,
+    header_height: int = HEADER_HEIGHT,
+) -> FrameAssets:
+    """Download background, render header, and prep sponsor for lineup content.
+
+    Shared by lineup_composer (video) and lineup_flyer_generator (static PNG).
+    Callers should set ``data.field_background_url`` to a fallback URL
+    *before* calling this function if the field may be ``None``.
+
+    Returns:
+        FrameAssets with paths to the downloaded/rendered assets on disk.
+    """
+    bg_path = asset_dir / "field_background.jpg"
+    header_path = asset_dir / "header.png"
+    sponsor_path: Path | None = asset_dir / "sponsor.png"
+
+    # 1. Background
+    bg_is_landscape = prepare_background(data.field_background_url, bg_path)
+
+    # 2. Header
+    from src.video.services.header_generator import render_header_pil
+
+    header_img = render_header_pil(
+        width=header_width,
+        height=header_height,
+        logo_url=data.logo_url,
+        opponent_logo_url=data.opponent_logo_url,
+        sponsor_url=data.sponsor_url,
+        match_date=data.match_date or "",
+        own_team_name=data.own_team_name,
+        opponent_name=data.opponent_name,
+        is_home=data.is_home,
+        kickoff_time=data.kickoff_time,
+        competition_name=data.competition_name,
+        venue=data.venue,
+        background_color=brand_primary_hex,
+    )
+    header_img.convert("RGB").save(str(header_path), "PNG")
+
+    # 3. Sponsor
+    if data.sponsor_url:
+        if not prepare_sponsor(data.sponsor_url, sponsor_path):
+            sponsor_path = None
+    else:
+        sponsor_path = None
+
+    return FrameAssets(
+        bg_path=bg_path,
+        bg_is_landscape=bg_is_landscape,
+        header_path=header_path,
+        sponsor_path=sponsor_path,
+    )
+
+
+# ── Brand helpers ──────────────────────────────────────────────────────────

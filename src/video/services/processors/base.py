@@ -44,7 +44,12 @@ class BaseVideoProcessor(ABC):
         """Build FFmpeg command arguments."""
 
     def execute(self) -> FileAsset:
-        """Download → Process → Upload → Cleanup."""
+        """Template method: setup → _process → upload → cleanup.
+
+        Subclasses override ``_process()`` to implement custom processing
+        logic.  The lifecycle (status transitions, error handling, cleanup)
+        is handled here.
+        """
         self._ensure_temp_dir()
         logger.info(
             "Video processing started",
@@ -58,25 +63,8 @@ class BaseVideoProcessor(ABC):
         self._publish_video_progress(0)
 
         try:
-            logger.info("Downloading source file", extra={"job_id": str(self.job.id)})
-            input_path = self._download_source()
-            output_path = str(self.temp_dir / f"output.{self.output_extension}")
+            output_path = self._process()
 
-            def progress_callback(percent: int) -> None:
-                self.job.progress_percent = percent
-                self.job.save(update_fields=["progress_percent", "updated_at"])
-                # B64: publish progress event (throttled to every 10%)
-                if percent % 10 == 0:
-                    self._publish_video_progress(percent)
-
-            command = self.build_command(input_path, output_path)
-            logger.info(
-                "Executing FFmpeg command",
-                extra={"job_id": str(self.job.id), "command": " ".join(command)},
-            )
-            self._run_ffmpeg(command, progress_callback)
-
-            logger.info("Uploading output file", extra={"job_id": str(self.job.id)})
             output_file = self._upload_output(output_path)
             self.job.output_file = output_file
             self.job.status = JobStatus.COMPLETED
@@ -101,16 +89,62 @@ class BaseVideoProcessor(ABC):
             )
 
             return output_file
+
         except JobCancelledError:
-            # Preserve CANCELLED status and mark completion time.
             self.job.refresh_from_db()
             if self.job.status != JobStatus.CANCELLED:
                 self.job.status = JobStatus.CANCELLED
             self.job.completed_at = timezone.now()
             self.job.save(update_fields=["status", "completed_at", "updated_at"])
             raise
+
+        except Exception as exc:
+            logger.exception(
+                "Video processing failed",
+                extra={"job_id": str(self.job.id), "error": str(exc)},
+            )
+            self.job.status = JobStatus.FAILED
+            self.job.error_message = str(exc)[:4000]
+            self.job.completed_at = timezone.now()
+            self.job.save(
+                update_fields=["status", "error_message", "completed_at", "updated_at"]
+            )
+            raise
+
         finally:
             self._cleanup()
+
+    def _process(self) -> str:
+        """Process the video and return the path to the output file.
+
+        Override in subclasses for custom processing logic.
+        Default implementation uses ``build_command()`` + ``_run_ffmpeg()``.
+        """
+        logger.info("Downloading source file", extra={"job_id": str(self.job.id)})
+        input_path = self._download_source()
+        output_path = str(self.temp_dir / f"output.{self.output_extension}")
+
+        def progress_callback(percent: int) -> None:
+            self.job.progress_percent = percent
+            self.job.save(update_fields=["progress_percent", "updated_at"])
+            if percent % 10 == 0:
+                self._publish_video_progress(percent)
+
+        command = self.build_command(input_path, output_path)
+        logger.info(
+            "Executing FFmpeg command",
+            extra={"job_id": str(self.job.id), "command": " ".join(command)},
+        )
+        self._run_ffmpeg(command, progress_callback)
+        return output_path
+
+    def _get_storage_prefix(self) -> str | None:
+        """Return a subfolder name for match-aware storage paths.
+
+        Override to store output under ``matches/{org}/{match_id}/{prefix}/…``
+        instead of the default ``video_outputs/`` path.
+        """
+        return None
 
     def _ensure_temp_dir(self) -> None:
         self.temp_dir.mkdir(parents=True, exist_ok=True)
@@ -131,11 +165,26 @@ class BaseVideoProcessor(ABC):
         return str(local_path)
 
     def _upload_output(self, output_path: str) -> FileAsset:
-        """Upload output file to storage and create FileAsset record."""
+        """Upload output file to storage and create FileAsset record.
+
+        Uses ``_get_storage_prefix()`` to determine match-aware paths.
+        """
         backend = get_storage_backend()
         file_name = os.path.basename(output_path)
         org_id = self.job.project.organisation_id
-        storage_path = f"video_outputs/{org_id}/{self.job.id}/{file_name}"
+
+        prefix = self._get_storage_prefix()
+        if prefix:
+            config = self.job.config or {}
+            match_id = config.get("match_id") or config.get("activity_id")
+            if match_id:
+                storage_path = (
+                    f"matches/{org_id}/{match_id}/{prefix}/{self.job.id}/{file_name}"
+                )
+            else:
+                storage_path = f"video_outputs/{org_id}/{self.job.id}/{file_name}"
+        else:
+            storage_path = f"video_outputs/{org_id}/{self.job.id}/{file_name}"
 
         with open(output_path, "rb") as file_obj:
             saved_path = backend.save(storage_path, file_obj)

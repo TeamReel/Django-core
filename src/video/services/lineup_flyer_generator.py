@@ -22,8 +22,17 @@ from PIL import Image, ImageDraw, ImageFont
 from src.video.services._common import (
     CANVAS_HEIGHT,
     CANVAS_WIDTH,
+    DEFAULT_PRIMARY_COLOR,
+    DEFAULT_SECONDARY_COLOR,
     HEADER_HEIGHT,
-    download_image_cached,
+    ImageCache,
+    SPONSOR_BOX_H,
+    SPONSOR_MARGIN,
+    SPONSOR_PAD,
+    SPONSOR_W,
+    WATERMARK_MARGIN,
+    WATERMARK_OPACITY,
+    WATERMARK_PATH,
     get_ffmpeg_path,
     get_pil_font,
 )
@@ -49,59 +58,15 @@ LABEL_HEIGHT = 44
 LABEL_GAP = 10  # px between player bottom and label top
 LABEL_EXTRA_W = 70  # extra width around text
 
-# ── Sponsor sizing ─────────────────────────────────────────────────────────
-SPONSOR_W = 220
-SPONSOR_PAD = 15
-SPONSOR_MARGIN = 20
-SPONSOR_BOX_H = 100
-
-# ── Watermark ──────────────────────────────────────────────────────────────
-WATERMARK_PATH = Path(__file__).resolve().parent.parent / "assets" / "watermark.png"
-WATERMARK_OPACITY = 0.25  # 25% opacity
-WATERMARK_MARGIN = 30  # px from edge
-
 # ── Y positions (0-1 fraction of HEIGHT) per role ──────────────────────────
 # Positions account for 300px header at top — all players below header.
-Y_POS = {
-    "keeper": 0.90,
-    "defender": 0.72,
-    "midfielder": 0.53,
-    "attacker": 0.36,
-}
-
-# ── Flyer Y adjustment (fine-tuning within field area) ──────────────────────
-FLYER_Y_ADJUST = {
-    "keeper": 0.0,
-    "defender": 0.0,
-    "midfielder": 0.0,
-    "attacker": 0.0,
-}
+from src.video.services.formation_layout import (
+    Y_POS_FLYER,
+    compute_group_positions,
+)
 
 # ── Header dimensions ─────────────────────────────────────────────────────
 HEADER_WIDTH = CANVAS_WIDTH
-
-
-# ── Image download cache ──────────────────────────────────────────────────
-_image_cache: dict[str, Image.Image | None] = {}
-
-
-def _reset_cache() -> None:
-    _image_cache.clear()
-
-
-def _download_image(url: str) -> Image.Image | None:
-    """Download an image from URL with caching."""
-    return download_image_cached(url, _image_cache)
-
-
-def _get_font(size: int, bold: bool = True) -> ImageFont.FreeTypeFont:
-    """Get a font, trying bold first then regular, with multiple fallbacks."""
-    return get_pil_font(size, bold=bold)
-
-
-def _get_ffmpeg_path() -> str:
-    """Find FFmpeg binary."""
-    return get_ffmpeg_path()
 
 
 # ── Label helpers ──────────────────────────────────────────────────────────
@@ -120,7 +85,7 @@ def _surname_label(name: str) -> str:
 
 def _measure_label(text: str, font_size: int) -> tuple[int, int]:
     """Measure rendered label text dimensions."""
-    font = _get_font(font_size, bold=True)
+    font = get_pil_font(font_size, bold=True)
     img = Image.new("RGBA", (8, 8), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     left, top, right, bottom = draw.textbbox(
@@ -141,7 +106,7 @@ def _render_label_png(
     """Render a name label as a transparent RGBA image."""
     img = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
-    font = _get_font(font_size, bold=True)
+    font = get_pil_font(font_size, bold=True)
     left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
     tw, th = right - left, bottom - top
     x = (width - tw) // 2
@@ -155,108 +120,6 @@ def _render_label_png(
         stroke_fill=LABEL_STROKE_COLOR,
     )
     return img
-
-
-# ── Formation helpers ──────────────────────────────────────────────────────
-
-
-def _get_x_positions(count: int, role: str) -> list[float]:
-    """Get evenly-spaced x positions (0-1) for a group of players."""
-    if count == 0:
-        return []
-    if count == 1:
-        return [0.5]
-
-    # Edge margins depend on line size
-    if count <= 2:
-        margin = 0.30
-    elif count <= 3:
-        margin = 0.18
-    else:
-        margin = 0.12
-
-    return [margin + i * (1 - 2 * margin) / max(count - 1, 1) for i in range(count)]
-
-
-def _apply_formation_tweaks(
-    formation: str,
-    group_name: str,
-    idx: int,
-    x: float,
-    y: float,
-) -> tuple[float, float]:
-    """Per-formation position tweaks (copied from local prototype)."""
-
-    def _clamp(v: float) -> float:
-        return max(0.0, min(1.0, v))
-
-    if formation == "4-3-3":
-        if group_name == "keeper":
-            y += 0.015
-        if group_name == "defenders":
-            if idx in (0, 3):
-                y -= 0.015
-            if idx == 1:
-                x -= 0.03
-                y += 0.015
-            elif idx == 2:
-                x += 0.03
-                y += 0.015
-        if group_name == "midfielders":
-            if idx == 0:
-                x += 0.075
-                y -= 0.015
-            elif idx == 2:
-                x -= 0.075
-                y -= 0.015
-            if idx == 1:
-                y += 0.015
-        if group_name == "attackers":
-            y -= 0.025
-            if idx == 0:
-                x -= 0.020
-            elif idx == 2:
-                x += 0.020
-            if idx == 1:
-                y -= 0.010
-
-    elif formation == "4-4-2":
-        if group_name == "midfielders":
-            if idx in (0, 3):
-                y -= 0.02
-            if idx in (1, 2):
-                y += 0.015
-        if group_name == "defenders":
-            if idx == 1:
-                x -= 0.03
-                y += 0.030
-            elif idx == 2:
-                x += 0.03
-                y += 0.030
-        if group_name == "attackers":
-            y -= 0.025
-
-    elif formation == "3-4-3":
-        if group_name == "keeper":
-            x += 0.015
-        if group_name == "defenders":
-            if idx == 0:
-                x += 0.05
-            elif idx == 2:
-                x -= 0.05
-            elif idx == 1:
-                x += (0.5 - x) * 0.35
-                y -= 0.020
-                x += 0.020
-        if group_name == "attackers":
-            if idx == 0:
-                x += 0.05
-            elif idx == 2:
-                x -= 0.05
-            elif idx == 1:
-                y -= 0.015
-
-    return _clamp(x), _clamp(y)
 
 
 # ── Alpha bounding box helper ─────────────────────────────────────────────
@@ -276,8 +139,8 @@ def _get_alpha_bbox(img: Image.Image) -> tuple[int, int, int, int] | None:
 def generate_lineup_flyer(
     data: LineupData,
     formation: str = "4-3-3",
-    brand_primary_hex: str = "#D2122E",
-    brand_secondary_hex: str = "#FFFFFF",
+    brand_primary_hex: str = DEFAULT_PRIMARY_COLOR,
+    brand_secondary_hex: str = DEFAULT_SECONDARY_COLOR,
     closeup_style: str = "popout",
 ) -> str:
     """Generate a lineup flyer PNG and upload to S3.
@@ -292,7 +155,7 @@ def generate_lineup_flyer(
     Returns:
         Presigned URL to the generated PNG on S3.
     """
-    _reset_cache()
+    cache = ImageCache()
     tmp_dir = Path(tempfile.mkdtemp(prefix="lineup_flyer_"))
 
     try:
@@ -302,9 +165,10 @@ def generate_lineup_flyer(
             brand_primary_hex=brand_primary_hex,
             tmp_dir=tmp_dir,
             closeup_style=closeup_style,
+            cache=cache,
         )
     finally:
-        _reset_cache()
+        cache.clear()
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
@@ -332,58 +196,40 @@ def _compose_flyer(
     brand_primary_hex: str,
     tmp_dir: Path,
     closeup_style: str = "popout",
+    cache: ImageCache | None = None,
 ) -> str:
     """Core compositor: download assets, render with PIL, composite with FFmpeg."""
+    _cache = cache or ImageCache()
 
     is_badge = closeup_style == "badge"
     full_h = int(HEIGHT * FLYER_SCALE)
 
-    # ── 1. Download background ─────────────────────────────────────────────
-    bg_img = _download_image(data.field_background_url) if data.field_background_url else None
-    if bg_img is None:
-        bg_img = Image.new("RGB", (1920, 1080), "#228B22")
-    bg_w, bg_h = bg_img.size
-    bg_is_landscape = bg_w > bg_h  # only rotate if background is landscape
-    bg_path = tmp_dir / "background.jpg"
-    bg_img.convert("RGB").save(str(bg_path), "JPEG", quality=95)
+    # ── 1-3. Shared frame setup (bg + header + sponsor) ────────────────────
+    if not data.field_background_url:
+        from src.video.services.header_generator import generate_field_background
 
-    # ── 2. Generate header (shared with lineup video) ────────────────────
-    from src.video.services.header_generator import render_header_pil
+        from src.video.services._common import FALLBACK_BG_LANDSCAPE
 
-    header_img = render_header_pil(
-        width=HEADER_WIDTH,
-        height=HEADER_HEIGHT,
-        logo_url=data.logo_url,
-        opponent_logo_url=data.opponent_logo_url,
-        sponsor_url=data.sponsor_url,
-        match_date=data.match_date or "",
-        own_team_name=data.own_team_name,
-        opponent_name=data.opponent_name,
-        is_home=data.is_home,
-        kickoff_time=data.kickoff_time,
-        competition_name=data.competition_name,
-        venue=data.venue,
-        background_color=brand_primary_hex,
+        data.field_background_url = generate_field_background(width=FALLBACK_BG_LANDSCAPE[0], height=FALLBACK_BG_LANDSCAPE[1])
+
+    from src.video.services._common import prepare_lineup_frame
+
+    frame = prepare_lineup_frame(
+        data,
+        tmp_dir,
+        brand_primary_hex=brand_primary_hex,
     )
-    header_path = tmp_dir / "header.png"
-    # Flatten RGBA → RGB so no alpha artifacts appear.
-    header_img.convert("RGB").save(str(header_path), "PNG")
+    bg_path = frame.bg_path
+    bg_is_landscape = frame.bg_is_landscape
+    header_path = frame.header_path
 
-    # ── 3. Download sponsor logo ───────────────────────────────────────────
-    sponsor_img = _download_image(data.sponsor_url) if data.sponsor_url else None
-    if sponsor_img is None:
-        # Create transparent placeholder
-        sponsor_img = Image.new("RGBA", (SPONSOR_W, 80), (0, 0, 0, 0))
+    # Flyer always needs a sponsor file for FFmpeg (transparent placeholder if none)
+    if frame.sponsor_path is not None:
+        sponsor_path = frame.sponsor_path
     else:
-        # Safety net: ensure any remaining background is transparent
-        from src.generative.services.asset_pipeline import _strip_checkerboard
-
-        sponsor_img = _strip_checkerboard(sponsor_img.convert("RGBA"))
-        bbox = sponsor_img.getchannel("A").getbbox()
-        if bbox:
-            sponsor_img = sponsor_img.crop(bbox)
-    sponsor_path = tmp_dir / "sponsor.png"
-    sponsor_img.convert("RGBA").save(str(sponsor_path), "PNG")
+        sponsor_img = Image.new("RGBA", (SPONSOR_W, 80), (0, 0, 0, 0))
+        sponsor_path = tmp_dir / "sponsor.png"
+        sponsor_img.save(str(sponsor_path), "PNG")
 
     # ── 4. Split players into formation lines ──────────────────────────────
     keepers = data.keepers[:1]
@@ -411,17 +257,10 @@ def _compose_flyer(
 
     render_players: list[RenderPlayer] = []
 
-    role_map = {
-        "keeper": "keeper",
-        "defenders": "defender",
-        "midfielders": "midfielder",
-        "attackers": "attacker",
-    }
-
     for group_name, group in phases:
-        role = role_map.get(group_name, "midfielder")
-        base_y = Y_POS.get(role, 0.5) + FLYER_Y_ADJUST.get(role, 0.0)
-        xs = _get_x_positions(len(group), role)
+        positions = compute_group_positions(
+            group_name, len(group), formation, Y_POS_FLYER,
+        )
 
         for idx, player in enumerate(group):
             # Download player image — badge uses closeup, popout uses kit
@@ -432,7 +271,7 @@ def _compose_flyer(
 
             player_img = None
             if img_url:
-                player_img = _download_image(img_url)
+                player_img = _cache.get(img_url)
 
             # Guest player: generate silhouette placeholder
             if player_img is None:
@@ -453,19 +292,11 @@ def _compose_flyer(
             p_path = tmp_dir / f"player_{len(render_players)}.png"
             player_img.convert("RGBA").save(str(p_path), "PNG")
 
-            x_t, y_t = _apply_formation_tweaks(
-                formation,
-                group_name,
-                idx,
-                xs[idx],
-                base_y,
-            )
-
             render_players.append(
                 RenderPlayer(
                     path=p_path,
-                    x=x_t,
-                    y=y_t,
+                    x=positions[idx].x,
+                    y=positions[idx].y,
                     name=player.member_name,
                 )
             )
@@ -588,7 +419,7 @@ def _compose_flyer(
         label_paths.append(lp)
 
     # ── 8. Build FFmpeg filter_complex ─────────────────────────────────────
-    ffmpeg = _get_ffmpeg_path()
+    ffmpeg = get_ffmpeg_path()
     out_path = tmp_dir / "flyer_output.png"
 
     cmd = [ffmpeg, "-y"]
@@ -703,21 +534,11 @@ def _adaptive_fontsize(text: str) -> int:
 
 def _upload_flyer(file_path: Path, activity_id: str) -> str:
     """Upload generated flyer to S3 and return presigned URL."""
-    try:
-        from files.utils import get_storage_backend
+    from src.video.services._common import upload_generated_image
 
-        storage_path = f"generated/lineup/flyers/{activity_id}/{uuid_module.uuid4().hex}.png"
-        backend = get_storage_backend()
-        with open(file_path, "rb") as f:
-            backend.save(storage_path, f)
-        url = backend.get_url(storage_path, signed=True, expiry_seconds=3600)
-        logger.info("Uploaded lineup flyer to S3: %s", storage_path)
-        return url
-
-    except Exception as exc:
-        logger.warning("Failed to upload flyer to S3: %s", exc)
-        # Fallback: return local file path (dev only)
-        return f"file://{file_path}"
+    return upload_generated_image(
+        file_path, "generated/lineup/flyers", activity_id=activity_id
+    )
 
 
 # ── Convenience function ──────────────────────────────────────────────────
@@ -768,11 +589,11 @@ def build_lineup_flyer(
     if background_url:
         lineup_data.field_background_url = background_url
 
-    # 2. Resolve brand colors (from DB or defaults)
+    # 2. Resolve brand colors (already resolved by builder via BrandResolver)
     if not brand_primary_hex:
-        brand_primary_hex = _resolve_brand_color(activity_id, "primary") or "#D2122E"
+        brand_primary_hex = lineup_data.brand_primary or DEFAULT_PRIMARY_COLOR
     if not brand_secondary_hex:
-        brand_secondary_hex = _resolve_brand_color(activity_id, "secondary") or "#FFFFFF"
+        brand_secondary_hex = lineup_data.brand_secondary or DEFAULT_SECONDARY_COLOR
 
     # 3. Generate
     return generate_lineup_flyer(
@@ -784,36 +605,4 @@ def build_lineup_flyer(
     )
 
 
-def _resolve_brand_color(activity_id: str, color_key: str) -> str | None:
-    """Look up brand color from the project's BrandProfile."""
-    try:
-        from django.apps import apps
 
-        Activity = apps.get_model("activities", "Activity")
-        BrandProfile = apps.get_model("branding", "BrandProfile")
-
-        activity = Activity.objects.select_related("project__parent_project").get(id=activity_id)
-        project = activity.project
-
-        # Try team brand first, then club brand
-        for proj in [project, project.parent_project]:
-            if not proj:
-                continue
-            brand = BrandProfile.objects.filter(project=proj, is_active=True).first()
-            if brand:
-                tokens = brand.get_tokens()  # {key: value} dict from DesignToken rows
-                value = tokens.get(f"{color_key}_color") or tokens.get(color_key)
-                if value:
-                    return value
-        # Fallback: check organisation-level brand
-        org = getattr(project, "organisation", None)
-        if org:
-            brand = BrandProfile.objects.filter(organisation=org, is_active=True).first()
-            if brand:
-                tokens = brand.get_tokens()
-                value = tokens.get(f"{color_key}_color") or tokens.get(color_key)
-                if value:
-                    return value
-        return None
-    except Exception:  # noqa: BLE001
-        return None

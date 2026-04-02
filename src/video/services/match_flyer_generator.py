@@ -18,14 +18,24 @@ from dataclasses import dataclass
 
 from PIL import Image, ImageDraw, ImageFilter
 
-from src.video.services._common import download_image
+from src.video.services._common import (
+    CANVAS_HEIGHT,
+    CANVAS_WIDTH,
+    HEADER_HEIGHT,
+    download_image,
+    get_pil_font,
+    hex_to_rgb,
+    prepare_sponsor_pil,
+)
+from src.video.services.header_generator import (
+    draw_centered_text,
+)
 
 logger = logging.getLogger(__name__)
 
 # ── Output dimensions (portrait 9:16) ──────────────────────────────────────
-WIDTH = 1080
-HEIGHT = 1920
-HEADER_HEIGHT = 300
+WIDTH = CANVAS_WIDTH
+HEIGHT = CANVAS_HEIGHT
 
 
 @dataclass
@@ -71,82 +81,23 @@ class MatchFlyerData:
 # ── Helpers ────────────────────────────────────────────────────────────────
 
 
-def _hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
-    """Convert hex to (R, G, B)."""
-    h = hex_color.lstrip("#")
-    if len(h) == 3:
-        h = "".join(c * 2 for c in h)
-    return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-
-
-def _download_image(url: str) -> Image.Image | None:
-    """Download an image from URL."""
-    return download_image(url)
-
-
 def _upload_flyer(img: Image.Image, activity_id: str) -> dict:
     """Upload flyer PNG to S3 and return info dict."""
-    try:
-        from files.utils import get_storage_backend
+    from src.video.services._common import upload_generated_image
 
-        img_bytes = io.BytesIO()
-        img.convert("RGB").save(img_bytes, "PNG", optimize=True)
-        img_bytes.seek(0)
-        file_size = img_bytes.getbuffer().nbytes
+    img_rgb = img.convert("RGB")
+    buf = io.BytesIO()
+    img_rgb.save(buf, "PNG", optimize=True)
+    file_size = buf.getbuffer().nbytes
 
-        storage_path = f"generated/match/flyers/{activity_id}/{uuid_module.uuid4().hex}.png"
-        backend = get_storage_backend()
-        backend.save(storage_path, img_bytes)
-        url = backend.get_url(storage_path, signed=True, expiry_seconds=3600)
-        logger.info("Uploaded match flyer to S3: %s", storage_path)
-        return {
-            "presigned_url": url,
-            "storage_path": storage_path,
-            "file_size_bytes": file_size,
-        }
-    except Exception as exc:
-        logger.warning("Failed to upload match flyer to S3: %s", exc)
-        return {"presigned_url": None, "storage_path": None, "file_size_bytes": 0}
-
-
-def _get_font(size: int, bold: bool = False):
-    """Get a font, with fallback."""
-    from src.video.services.header_generator import get_font
-
-    return get_font(size, bold=bold)
-
-
-def _draw_centered(
-    draw: ImageDraw.ImageDraw,
-    text: str,
-    cx: int,
-    cy: int,
-    font,
-    fill,
-    stroke_fill=None,
-    stroke_width: int = 0,
-    max_width: int | None = None,
-):
-    """Draw text centered at (cx, cy), optionally capping width."""
-    from src.video.services.header_generator import _draw_centered_text
-
-    _draw_centered_text(
-        draw,
-        text,
-        cx,
-        cy,
-        font,
-        fill,
-        stroke_fill=stroke_fill,
-        stroke_width=stroke_width,
+    url = upload_generated_image(
+        img_rgb, "generated/match/flyers", activity_id=activity_id
     )
-
-
-def _clean_logo(img: Image.Image) -> Image.Image:
-    """Strip checkerboard and crop to alpha bbox."""
-    from src.video.services.header_generator import _clean_logo_alpha
-
-    return _clean_logo_alpha(img)
+    return {
+        "presigned_url": url if not url.startswith("file://") else None,
+        "storage_path": None,
+        "file_size_bytes": file_size,
+    }
 
 
 # ── Name helpers ───────────────────────────────────────────────────────────
@@ -191,7 +142,7 @@ def _draw_team_block(
 
     Returns the new y cursor position after the block.
     """
-    _draw_centered(
+    draw_centered_text(
         draw,
         club_name.upper(),
         cx,
@@ -203,7 +154,7 @@ def _draw_team_block(
     )
     y += int(club_font.size * 1.1) if hasattr(club_font, "size") else 60
     if team_name:
-        _draw_centered(
+        draw_centered_text(
             draw,
             team_name,
             cx,
@@ -249,9 +200,8 @@ def _render_header_bar(canvas: Image.Image, data: MatchFlyerData) -> Image.Image
 
 def _draw_sponsor_bar(canvas: Image.Image, data: MatchFlyerData, footer_h: int = 0) -> Image.Image:
     """Overlay sponsor logo above the footer area of the flyer (no background)."""
-    sponsor_img = _download_image(data.sponsor_url)
+    sponsor_img = prepare_sponsor_pil(data.sponsor_url)
     if sponsor_img:
-        sponsor_img = _clean_logo(sponsor_img)
         sponsor_img.thumbnail((440, 140), Image.Resampling.LANCZOS)
         # Paste directly — no pill background, just the logo with alpha
         margin = 24
@@ -277,15 +227,15 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
     - Clean match details block
     - Subtle field background with heavy brand color overlay
     """
-    primary_rgb = _hex_to_rgb(data.brand_primary)
-    secondary_rgb = _hex_to_rgb(data.brand_secondary)
+    primary_rgb = hex_to_rgb(data.brand_primary)
+    secondary_rgb = hex_to_rgb(data.brand_secondary)
 
     # Darker and lighter shades of primary
     dark_primary = tuple(max(0, c - 60) for c in primary_rgb)
     light_primary = tuple(min(255, c + 40) for c in primary_rgb)
 
     # -- Background: brand gradient feel --
-    bg_img = _download_image(data.field_background_url)
+    bg_img = download_image(data.field_background_url)
     if bg_img:
         bg_img = bg_img.convert("RGB").resize((WIDTH, HEIGHT), Image.Resampling.LANCZOS)
         # Heavy brand color overlay
@@ -330,9 +280,9 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
 
     # -- "MATCH DAY" subtitle below header --
     subtitle_y = HEADER_HEIGHT + 60
-    subtitle_font = _get_font(28, bold=False)
+    subtitle_font = get_pil_font(28, bold=False)
     if data.competition_name:
-        _draw_centered(
+        draw_centered_text(
             draw,
             data.competition_name.upper(),
             cx,
@@ -352,8 +302,8 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
         fill=(*secondary_rgb, 255),
     )
 
-    club_font = _get_font(72, bold=True)
-    sub_font = _get_font(28, bold=False)
+    club_font = get_pil_font(72, bold=True)
+    sub_font = get_pil_font(28, bold=False)
 
     # Home club + team
     home_y = int(HEIGHT * 0.28)
@@ -378,8 +328,8 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
             [cx - offset, vs_y - offset, cx + offset, vs_y + offset],
             fill=(*secondary_rgb,) if offset < circle_r - 3 else (*primary_rgb,),
         )
-    vs_font = _get_font(56, bold=True)
-    _draw_centered(
+    vs_font = get_pil_font(56, bold=True)
+    draw_centered_text(
         draw,
         "VS",
         cx,
@@ -411,7 +361,7 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
         date_str = data.match_date
         if data.kickoff_time:
             date_str += f"  •  {data.kickoff_time}"
-        date_font = _get_font(52, bold=True)
+        date_font = get_pil_font(52, bold=True)
 
         # Background pill for date
         try:
@@ -427,7 +377,7 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
         canvas = canvas_rgba.convert("RGB")
         draw = ImageDraw.Draw(canvas)
 
-        _draw_centered(
+        draw_centered_text(
             draw,
             date_str,
             cx,
@@ -439,8 +389,8 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
 
     # Venue
     if data.venue:
-        venue_font = _get_font(32, bold=False)
-        _draw_centered(
+        venue_font = get_pil_font(32, bold=False)
+        draw_centered_text(
             draw,
             f"📍 {data.venue}",
             cx,
@@ -452,8 +402,8 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
 
     # Season (if different from competition)
     if data.season_name and data.season_name != data.competition_name:
-        season_font = _get_font(24, bold=False)
-        _draw_centered(
+        season_font = get_pil_font(24, bold=False)
+        draw_centered_text(
             draw,
             data.season_name,
             cx,
@@ -524,8 +474,8 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
     Brand colour *shades* (dark/mid/light) are derived from design tokens and
     used for the gradient bands, info panel background, and subtle edge accents.
     """
-    primary_rgb = _hex_to_rgb(data.brand_primary)
-    secondary_rgb = _hex_to_rgb(data.brand_secondary)
+    primary_rgb = hex_to_rgb(data.brand_primary)
+    secondary_rgb = hex_to_rgb(data.brand_secondary)
     dark_primary = tuple(max(0, c - 70) for c in primary_rgb)
     darker_primary = tuple(max(0, c - 120) for c in primary_rgb)
 
@@ -540,7 +490,7 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
 
     # -- Optional background image behind the action photo --
     if data.field_background_url:
-        bg_img = _download_image(data.field_background_url)
+        bg_img = download_image(data.field_background_url)
         if bg_img:
             bg_img = bg_img.convert("RGB").resize((WIDTH, photo_zone_h), Image.Resampling.LANCZOS)
             # Blend with canvas colour so the photo still pops
@@ -552,7 +502,7 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
     loaded_photos: list[Image.Image] = []
     if data.action_photo_urls:
         for url in data.action_photo_urls:
-            img = _download_image(url)
+            img = download_image(url)
             if img:
                 loaded_photos.append(img.convert("RGBA"))
             if len(loaded_photos) >= 3:
@@ -629,7 +579,7 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
         canvas = canvas_rgba.convert("RGB")
     else:
         # Fallback: field background or solid with diagonal brand stripes
-        bg_img = _download_image(data.field_background_url)
+        bg_img = download_image(data.field_background_url)
         if bg_img:
             bg_img = bg_img.convert("RGB").resize((WIDTH, photo_zone_h), Image.Resampling.LANCZOS)
             color_overlay = Image.new("RGB", (WIDTH, photo_zone_h), dark_primary)
@@ -664,8 +614,8 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
 
         # "No photo" hint
         draw_tmp = ImageDraw.Draw(canvas)
-        hint_font = _get_font(28, bold=False)
-        _draw_centered(
+        hint_font = get_pil_font(28, bold=False)
+        draw_centered_text(
             draw_tmp,
             "Geen actiefoto beschikbaar",
             WIDTH // 2,
@@ -720,8 +670,8 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
     left_cx = WIDTH // 4  # center of left half
     right_cx = WIDTH * 3 // 4  # center of right half
 
-    club_font = _get_font(52, bold=True)
-    sub_font = _get_font(24, bold=False)
+    club_font = get_pil_font(52, bold=True)
+    sub_font = get_pil_font(24, bold=False)
 
     row_top = info_top + 25
 
@@ -738,7 +688,7 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
     )
 
     # VS badge (center)
-    vs_font = _get_font(30, bold=True)
+    vs_font = get_pil_font(30, bold=True)
     vs_y = row_top + 10
     vs_badge = Image.new("RGBA", (70, 40), (*primary_rgb, 220))
     vs_badge_draw = ImageDraw.Draw(vs_badge)
@@ -747,7 +697,7 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
     canvas_rgba.paste(vs_badge, (cx - 35, vs_y - 8), vs_badge)
     canvas = canvas_rgba.convert("RGB")
     draw = ImageDraw.Draw(canvas)
-    _draw_centered(draw, "VS", cx, vs_y + 8, vs_font, fill=(*secondary_rgb,))
+    draw_centered_text(draw, "VS", cx, vs_y + 8, vs_font, fill=(*secondary_rgb,))
 
     # Away club + team (right side)
     _draw_team_block(
@@ -785,8 +735,8 @@ def _render_stadium_ai(data: MatchFlyerData) -> Image.Image:
     """
     from django.conf import settings
 
-    primary_rgb = _hex_to_rgb(data.brand_primary)
-    secondary_rgb = _hex_to_rgb(data.brand_secondary)
+    primary_rgb = hex_to_rgb(data.brand_primary)
+    secondary_rgb = hex_to_rgb(data.brand_secondary)
 
     api_key = getattr(settings, "GOOGLE_API_KEY", None)
     ai_bg = None
@@ -835,7 +785,7 @@ def _render_stadium_ai(data: MatchFlyerData) -> Image.Image:
 
     # Fallback: use field_background_url or solid dark bg
     if ai_bg is None:
-        ai_bg = _download_image(data.field_background_url)
+        ai_bg = download_image(data.field_background_url)
         if ai_bg:
             ai_bg = ai_bg.convert("RGB").resize((WIDTH, HEIGHT), Image.Resampling.LANCZOS)
         else:
@@ -855,8 +805,8 @@ def _render_stadium_ai(data: MatchFlyerData) -> Image.Image:
     # -- Competition name below header --
     if data.competition_name:
         comp_y = HEADER_HEIGHT + 50
-        comp_font = _get_font(28, bold=False)
-        _draw_centered(
+        comp_font = get_pil_font(28, bold=False)
+        draw_centered_text(
             draw,
             data.competition_name.upper(),
             cx,
@@ -868,8 +818,8 @@ def _render_stadium_ai(data: MatchFlyerData) -> Image.Image:
     # -- Club + team names (centered, stacked with VS — no logos in body) --
     home_club, home_team, away_club, away_team = _resolve_display_names(data)
 
-    club_font = _get_font(68, bold=True)
-    sub_font = _get_font(26, bold=False)
+    club_font = get_pil_font(68, bold=True)
+    sub_font = get_pil_font(26, bold=False)
 
     home_y = int(HEIGHT * 0.31)
     _draw_team_block(
@@ -887,8 +837,8 @@ def _render_stadium_ai(data: MatchFlyerData) -> Image.Image:
 
     # VS
     vs_y = int(HEIGHT * 0.43)
-    vs_font = _get_font(60, bold=True)
-    _draw_centered(
+    vs_font = get_pil_font(60, bold=True)
+    draw_centered_text(
         draw,
         "VS",
         cx,
@@ -933,14 +883,14 @@ def _render_stadium_ai(data: MatchFlyerData) -> Image.Image:
         date_str = data.match_date
         if data.kickoff_time:
             date_str += f"  •  {data.kickoff_time}"
-        date_font = _get_font(48, bold=True)
-        _draw_centered(draw, date_str, cx, y_cursor, date_font, fill=(255, 255, 255))
+        date_font = get_pil_font(48, bold=True)
+        draw_centered_text(draw, date_str, cx, y_cursor, date_font, fill=(255, 255, 255))
         y_cursor += 70
 
     # Venue
     if data.venue:
-        venue_font = _get_font(32, bold=False)
-        _draw_centered(
+        venue_font = get_pil_font(32, bold=False)
+        draw_centered_text(
             draw,
             f"📍 {data.venue}",
             cx,
@@ -952,8 +902,8 @@ def _render_stadium_ai(data: MatchFlyerData) -> Image.Image:
 
     # Season
     if data.season_name and data.season_name != data.competition_name:
-        season_font = _get_font(24, bold=False)
-        _draw_centered(
+        season_font = get_pil_font(24, bold=False)
+        draw_centered_text(
             draw,
             data.season_name,
             cx,
@@ -981,8 +931,8 @@ def _render_summary(data: MatchFlyerData) -> Image.Image:
     - Compact info panel (clubs + VS replacement = score)
     - Sponsor overlay
     """
-    primary_rgb = _hex_to_rgb(data.brand_primary)
-    secondary_rgb = _hex_to_rgb(data.brand_secondary)
+    primary_rgb = hex_to_rgb(data.brand_primary)
+    secondary_rgb = hex_to_rgb(data.brand_secondary)
     dark_primary = tuple(max(0, c - 70) for c in primary_rgb)
     darker_primary = tuple(max(0, c - 120) for c in primary_rgb)
     light_primary = tuple(min(255, c + 80) for c in primary_rgb)
@@ -998,7 +948,7 @@ def _render_summary(data: MatchFlyerData) -> Image.Image:
 
     # -- Background image --
     if data.field_background_url:
-        bg_img = _download_image(data.field_background_url)
+        bg_img = download_image(data.field_background_url)
         if bg_img:
             bg_img = bg_img.convert("RGB").resize((WIDTH, content_h), Image.Resampling.LANCZOS)
             color_layer = Image.new("RGB", (WIDTH, content_h), darker_primary)
@@ -1007,7 +957,7 @@ def _render_summary(data: MatchFlyerData) -> Image.Image:
 
     # -- Action photo as background if available --
     if data.action_photo_urls:
-        photo_img = _download_image(data.action_photo_urls[0])
+        photo_img = download_image(data.action_photo_urls[0])
         if photo_img:
             photo_img = photo_img.convert("RGBA")
             scale = max(WIDTH / photo_img.width, content_h / photo_img.height)
@@ -1033,35 +983,35 @@ def _render_summary(data: MatchFlyerData) -> Image.Image:
     home_club, home_team, away_club, away_team = _resolve_display_names(data)
 
     # Club names above score
-    club_font = _get_font(42, bold=True)
+    club_font = get_pil_font(42, bold=True)
     score_area_top = PHOTO_TOP + int(content_h * 0.08)
 
-    _draw_centered(
+    draw_centered_text(
         draw, home_club.upper(), WIDTH // 4, score_area_top, club_font, fill=(255, 255, 255)
     )
-    _draw_centered(
+    draw_centered_text(
         draw, away_club.upper(), WIDTH * 3 // 4, score_area_top, club_font, fill=(255, 255, 255)
     )
 
     # Team names (smaller)
-    sub_font = _get_font(22, bold=False)
+    sub_font = get_pil_font(22, bold=False)
     if home_team and home_team != home_club:
-        _draw_centered(
+        draw_centered_text(
             draw, home_team, WIDTH // 4, score_area_top + 55, sub_font, fill=(200, 200, 200)
         )
     if away_team and away_team != away_club:
-        _draw_centered(
+        draw_centered_text(
             draw, away_team, WIDTH * 3 // 4, score_area_top + 55, sub_font, fill=(200, 200, 200)
         )
 
     # Large score
-    score_font = _get_font(160, bold=True)
+    score_font = get_pil_font(160, bold=True)
     score_y = score_area_top + 100
     score_text = f"{score_home}  -  {score_away}"
-    _draw_centered(draw, score_text, cx, score_y, score_font, fill=(255, 255, 255))
+    draw_centered_text(draw, score_text, cx, score_y, score_font, fill=(255, 255, 255))
 
     # "EINDSTAND" badge below score
-    badge_font = _get_font(24, bold=True)
+    badge_font = get_pil_font(24, bold=True)
     badge_y = score_y + 180
     badge_w, badge_h = 220, 38
     badge = Image.new("RGBA", (badge_w, badge_h), (*primary_rgb, 230))
@@ -1069,19 +1019,19 @@ def _render_summary(data: MatchFlyerData) -> Image.Image:
     canvas_rgba.paste(badge, (cx - badge_w // 2, badge_y), badge)
     canvas = canvas_rgba.convert("RGB")
     draw = ImageDraw.Draw(canvas)
-    _draw_centered(draw, "EINDSTAND", cx, badge_y + 8, badge_font, fill=(255, 255, 255))
+    draw_centered_text(draw, "EINDSTAND", cx, badge_y + 8, badge_font, fill=(255, 255, 255))
 
     # -- Goal scorers --
     if data.goal_scorers:
-        scorer_font = _get_font(28, bold=False)
+        scorer_font = get_pil_font(28, bold=False)
         y = badge_y + 60
 
         # Section title
-        _draw_centered(draw, "DOELPUNTEN", cx, y, _get_font(18, bold=True), fill=(*light_primary,))
+        draw_centered_text(draw, "DOELPUNTEN", cx, y, get_pil_font(18, bold=True), fill=(*light_primary,))
         y += 40
 
         for scorer in data.goal_scorers[:8]:  # max 8 scorers
-            _draw_centered(draw, f"⚽  {scorer}", cx, y, scorer_font, fill=(255, 255, 255))
+            draw_centered_text(draw, f"⚽  {scorer}", cx, y, scorer_font, fill=(255, 255, 255))
             y += 42
 
     # -- Header bar (logos + EINDSTAND) --
@@ -1133,8 +1083,8 @@ def _render_summary(data: MatchFlyerData) -> Image.Image:
     footer_cx = WIDTH // 2
     footer_y = footer_top + 30
     if data.competition_name:
-        comp_font = _get_font(26, bold=True)
-        _draw_centered(
+        comp_font = get_pil_font(26, bold=True)
+        draw_centered_text(
             draw, data.competition_name, footer_cx, footer_y, comp_font, fill=(255, 255, 255)
         )
         footer_y += 40
@@ -1142,8 +1092,8 @@ def _render_summary(data: MatchFlyerData) -> Image.Image:
         date_str = data.match_date
         if data.venue:
             date_str += f"  •  {data.venue}"
-        date_font = _get_font(20, bold=False)
-        _draw_centered(draw, date_str, footer_cx, footer_y, date_font, fill=(180, 180, 180))
+        date_font = get_pil_font(20, bold=False)
+        draw_centered_text(draw, date_str, footer_cx, footer_y, date_font, fill=(180, 180, 180))
 
     # -- Sponsor --
     canvas = _draw_sponsor_bar(canvas, data, footer_h=BAND_H + FOOTER_H)
@@ -1219,167 +1169,13 @@ def build_match_flyer(
     """
     from django.apps import apps
 
-    Activity = apps.get_model("activities", "Activity")
-    BrandProfile = apps.get_model("branding", "BrandProfile")
+    from src.video.services.brand_resolver import get_presigned_url, resolve_match_brand_assets
 
-    activity = Activity.objects.select_related(
-        "project__parent_project",
-        "opponent_project__parent_project",
-        "period",
-    ).get(id=activity_id)
+    # ── Brand + match context (shared resolution) ──
+    brand = resolve_match_brand_assets(activity_id)
 
-    project = activity.project
-    meta = activity.metadata or {}
-
-    # -- Match info (same pattern as goal celebration builder) --
-    match_date = activity.start_time.strftime("%d-%m-%Y") if activity.start_time else ""
-    kickoff_time = activity.start_time.strftime("%H:%M") if activity.start_time else None
-
-    own_team_name = project.name or ""
-    opponent_name = activity.opponent_project.name if activity.opponent_project else ""
-    is_home = meta.get("is_home", meta.get("venue", "Home") == "Home")
-
-    # Resolve club names from parent project (club → team hierarchy)
-    club_project = getattr(project, "parent_project", None)
-    own_club_name = club_project.name if club_project else None
-
-    opponent_project = activity.opponent_project
-    opp_club_project = (
-        getattr(opponent_project, "parent_project", None) if opponent_project else None
-    )
-    opponent_club_name = opp_club_project.name if opp_club_project else None
-
-    # Venue: prefer location field + teamreel metadata
-    raw_venue = (
-        getattr(activity, "location", None)
-        or meta.get("teamreel", {}).get("vars", {}).get("match_location")
-        or meta.get("teamreel", {}).get("match_context", {}).get("location")
-        or meta.get("teamreel", {}).get("match_context", {}).get("home_club_default_location")
-        or meta.get("venue")
-    )
-    venue = (
-        None
-        if raw_venue and raw_venue.strip().lower() in ("home", "away", "thuis", "uit", "")
-        else raw_venue
-    )
-
-    season_name = activity.period.name if activity.period else None
-    competition_name = meta.get("teamreel", {}).get("vars", {}).get("competition_name")
-    if not competition_name:
-        competition_name = meta.get("competition_name")
-    if not competition_name and activity.period:
-        competition_name = activity.period.name
-
-    # -- Brand assets (logos, sponsor, background) --
-    BrandAsset = apps.get_model("branding", "BrandAsset")
-
-    organisation = project.organisation if hasattr(project, "organisation") else None
-
-    # Collect brand profiles in priority order: team → club → org
-    brand_profiles: list = []
-    team_brand = BrandProfile.objects.filter(project=project, is_active=True).first()
-    if team_brand:
-        brand_profiles.append(team_brand)
-    club_project = project.parent_project if hasattr(project, "parent_project") else None
-    if club_project:
-        club_brand = BrandProfile.objects.filter(project=club_project, is_active=True).first()
-        if club_brand and club_brand not in brand_profiles:
-            brand_profiles.append(club_brand)
-    if organisation:
-        org_brand = BrandProfile.objects.filter(organisation=organisation, is_active=True).first()
-        if org_brand and org_brand not in brand_profiles:
-            brand_profiles.append(org_brand)
-
-    # Club/org profiles (skip team brand — for logo we want the club logo)
-    club_org_profiles = [p for p in brand_profiles if p != team_brand]
-
-    def _resolve_asset_url(asset_types: list[str], *, skip_team: bool = False) -> str | None:
-        profiles = club_org_profiles if skip_team else brand_profiles
-        for profile in profiles:
-            for at in asset_types:
-                asset = (
-                    BrandAsset.objects.filter(profile=profile, asset_type=at, is_active=True)
-                    .select_related("file")
-                    .first()
-                )
-                if not asset:
-                    continue
-                if asset.file and getattr(asset.file, "file_size", 0) in (None, 0):
-                    continue
-                url = getattr(asset, "url", None)
-                if url:
-                    return url
-                if asset.file:
-                    return _get_presigned_url(asset.file.storage_path)
-        return None
-
-    def _get_presigned_url(storage_path: str) -> str | None:
-        try:
-            from files.utils import get_storage_backend
-
-            backend = get_storage_backend()
-            return backend.get_url(storage_path, signed=True, expiry_seconds=3600)
-        except Exception:  # noqa: BLE001
-            return None
-
-    logo_url = _resolve_asset_url(["logo"], skip_team=True)
-    sponsor_url = _resolve_asset_url(["sponsor_logo"])
-    field_background_url = background_url or _resolve_asset_url(["stadium_background"])
-
-    # Opponent logo
-    opponent_logo_url: str | None = None
-    if activity.opponent_project:
-        opp_club = getattr(activity.opponent_project, "parent_project", None)
-        if opp_club:
-            opp_brand = BrandProfile.objects.filter(project=opp_club, is_active=True).first()
-            if opp_brand:
-                asset = (
-                    BrandAsset.objects.filter(profile=opp_brand, asset_type="logo", is_active=True)
-                    .select_related("file")
-                    .first()
-                )
-                if asset:
-                    opponent_logo_url = getattr(asset, "url", None)
-                    if not opponent_logo_url and asset.file:
-                        opponent_logo_url = _get_presigned_url(asset.file.storage_path)
-
-    # -- Brand colours (priority: club brand → team brand → org brand) --
-    brand_primary = "#333333"  # neutral dark default (not red)
-    brand_secondary = "#FFFFFF"
-
-    # Search club (parent_project) first, then team, then org
-    brand_search_projects = []
-    parent = getattr(project, "parent_project", None)
-    if parent:
-        brand_search_projects.append(parent)
-    brand_search_projects.append(project)
-
-    found_colors = False
-    for proj in brand_search_projects:
-        if not proj:
-            continue
-        brand = BrandProfile.objects.filter(project=proj, is_active=True).first()
-        if brand:
-            tokens = brand.get_tokens()
-            if tokens.get("primary_color"):
-                brand_primary = tokens["primary_color"]
-                found_colors = True
-            if tokens.get("secondary_color"):
-                brand_secondary = tokens["secondary_color"]
-            if found_colors:
-                break
-
-    if not found_colors:
-        # Fallback: org-level brand
-        org = getattr(project, "organisation", None)
-        if org:
-            brand = BrandProfile.objects.filter(organisation=org, is_active=True).first()
-            if brand:
-                tokens = brand.get_tokens()
-                if tokens.get("primary_color"):
-                    brand_primary = tokens["primary_color"]
-                if tokens.get("secondary_color"):
-                    brand_secondary = tokens["secondary_color"]
+    project = brand.project
+    field_background_url = background_url or brand.field_background_url
 
     # -- Gather action photo URLs for the "action" variant --
     action_photo_urls: list[str] = []
@@ -1404,7 +1200,7 @@ def build_match_flyer(
                     url = val.get("processed")  # processed only
                 if url:
                     if not url.startswith("http"):
-                        url = _get_presigned_url(url)
+                        url = get_presigned_url(url)
                     if url:
                         return url
             # Second pass: any processed photo (fallback when style not found)
@@ -1415,7 +1211,7 @@ def build_match_flyer(
                         url = val.get("processed")
                     if url:
                         if not url.startswith("http"):
-                            url = _get_presigned_url(url)
+                            url = get_presigned_url(url)
                         if url:
                             return url
             return None
@@ -1446,7 +1242,7 @@ def build_match_flyer(
                         url = val.get("processed")  # processed only
                     if url:
                         if not url.startswith("http"):
-                            url = _get_presigned_url(url)
+                            url = get_presigned_url(url)
                         if url:
                             action_photo_urls.append(url)
                             if len(action_photo_urls) >= need:
@@ -1462,7 +1258,7 @@ def build_match_flyer(
                             url = val.get("processed")
                         if url:
                             if not url.startswith("http"):
-                                url = _get_presigned_url(url)
+                                url = get_presigned_url(url)
                             if url:
                                 action_photo_urls.append(url)
                                 if len(action_photo_urls) >= need:
@@ -1481,7 +1277,7 @@ def build_match_flyer(
                         url = val.get("processed")  # processed only
                     if url:
                         if not url.startswith("http"):
-                            url = _get_presigned_url(url)
+                            url = get_presigned_url(url)
                         if url:
                             action_photo_urls.append(url)
                             break  # One photo per member is enough
@@ -1490,24 +1286,24 @@ def build_match_flyer(
 
     flyer_data = MatchFlyerData(
         activity_id=str(activity_id),
-        match_date=match_date,
-        kickoff_time=kickoff_time,
-        own_team_name=own_team_name,
-        opponent_name=opponent_name,
-        is_home=is_home,
-        venue=venue,
-        season_name=season_name,
-        competition_name=competition_name,
-        logo_url=logo_url,
-        opponent_logo_url=opponent_logo_url,
-        sponsor_url=sponsor_url,
+        match_date=brand.match_date,
+        kickoff_time=brand.kickoff_time,
+        own_team_name=brand.own_team_name,
+        opponent_name=brand.opponent_name,
+        is_home=brand.is_home,
+        venue=brand.venue,
+        season_name=brand.season_name,
+        competition_name=brand.competition_name,
+        logo_url=brand.logo_url,
+        opponent_logo_url=brand.opponent_logo_url,
+        sponsor_url=brand.sponsor_url,
         field_background_url=field_background_url,
-        brand_primary=brand_primary,
-        brand_secondary=brand_secondary,
+        brand_primary=brand.brand_primary,
+        brand_secondary=brand.brand_secondary,
         action_photo_urls=action_photo_urls or None,
         photo_layout=photo_layout,
-        own_club_name=own_club_name,
-        opponent_club_name=opponent_club_name,
+        own_club_name=brand.own_club_name,
+        opponent_club_name=brand.opponent_club_name,
         score_home=score_home,
         score_away=score_away,
         goal_scorers=goal_scorers,

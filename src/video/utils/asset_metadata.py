@@ -215,6 +215,68 @@ def get_best_variant(
     return None
 
 
+def check_member_kit_readiness(metadata: dict | None, kit_type: str) -> dict[str, bool]:
+    """Check if a member has processed assets for a given kit_type.
+
+    Args:
+        metadata: The ProjectMembership.metadata dict (or None).
+        kit_type: ``'goalkeeper'``, ``'home'``, ``'away'``, etc.
+
+    Returns:
+        ``{ready: bool, has_fullbody: bool, has_closeup: bool, has_intro: bool}``
+    """
+    result = {"ready": False, "has_fullbody": False, "has_closeup": False, "has_intro": False}
+
+    teamreel_assets = (metadata or {}).get("teamreel_assets", {})
+    if not teamreel_assets:
+        return result
+
+    # Determine role key from kit_type
+    role_key = "keeper" if kit_type == "goalkeeper" else "player"
+    roles = teamreel_assets.get("roles", {})
+    role_data = roles.get(role_key, {})
+
+    # Check new roles.{role} structure
+    if role_data:
+        fb = (role_data.get("images") or {}).get("fullbody", {}).get(kit_type, {})
+        result["has_fullbody"] = _has_processed_variant(fb)
+
+        cl = (role_data.get("images") or {}).get("closeup", {}).get(kit_type, {})
+        result["has_closeup"] = _has_processed_variant(cl)
+
+        intro = (role_data.get("videos") or {}).get("intro", {}).get(kit_type, {})
+        result["has_intro"] = _has_processed_variant(intro)
+
+    # Fallback: legacy flat structure
+    if not result["has_fullbody"]:
+        fb_legacy = teamreel_assets.get("images", {}).get("fullbody", {}).get(kit_type)
+        if fb_legacy:
+            result["has_fullbody"] = True
+
+    result["ready"] = result["has_fullbody"]
+    return result
+
+
+def _has_processed_variant(kit_data: dict | str | None) -> bool:
+    """Check if a kit slot has any processed variant."""
+    if not kit_data:
+        return False
+    if isinstance(kit_data, str):
+        return bool(kit_data)
+    if isinstance(kit_data, dict):
+        # Check 'default' variant first, then any variant
+        default = kit_data.get("default")
+        if default:
+            if isinstance(default, dict):
+                return bool(default.get("processed") or default.get("raw"))
+            return bool(default)
+        return any(
+            v for v in kit_data.values()
+            if v and (isinstance(v, str) or (isinstance(v, dict) and (v.get("processed") or v.get("raw"))))
+        )
+    return False
+
+
 def resolve_lineup_member_assets(
     teamreel_assets: dict,
     functional_role: str,

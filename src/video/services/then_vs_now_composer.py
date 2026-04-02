@@ -30,12 +30,16 @@ from src.video.services._common import (
     CANVAS_FPS,
     CANVAS_HEIGHT,
     CANVAS_WIDTH,
+    DEFAULT_PRIMARY_COLOR,
     HEADER_HEIGHT,
     SPONSOR_BOX_H,
     SPONSOR_MARGIN,
     SPONSOR_PAD,
     download_file,
     get_ffmpeg_path,
+    prepare_background,
+    prepare_sponsor,
+    probe_duration,
     resolve_ffmpeg_font_path,
 )
 
@@ -94,154 +98,28 @@ class MemberPhotoComposite:
     transparent_video_url: str  # RVM-processed transparent video (MOV/MP4 with alpha)
 
 
-def _get_ffmpeg_path() -> str:
-    """Find FFmpeg binary (delegates to _common)."""
-    return get_ffmpeg_path()
-
-
-def _resolve_font_path() -> str:
-    """Find FFmpeg-safe font path (delegates to _common)."""
-    return resolve_ffmpeg_font_path()
-
-
-def _download_file(url: str, dest: Path, timeout: int = 120) -> bool:
-    """Download a file from URL to dest."""
-    return download_file(url, dest, timeout=timeout)
-
-
-def _probe_duration(video_path: Path) -> float:
-    """Get video duration in seconds using ffprobe."""
-    ffmpeg = _get_ffmpeg_path()
-    # Only replace the binary name, not the entire path
-    # e.g. /usr/local/ffmpeg/bin/ffmpeg -> /usr/local/ffmpeg/bin/ffprobe
-    ffmpeg_path = Path(ffmpeg)
-    ffprobe = str(ffmpeg_path.parent / "ffprobe")
-    try:
-        result = subprocess.run(  # noqa: S603
-            [
-                ffprobe,
-                "-v",
-                "quiet",
-                "-show_entries",
-                "format=duration",
-                "-of",
-                "default=noprint_wrappers=1:nokey=1",
-                str(video_path),
-            ],
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-        return float(result.stdout.strip())
-    except Exception:
-        logger.warning("Failed to probe duration for %s", video_path, exc_info=True)
-        return 5.0  # Default 5 seconds
-
-
-def _render_header(
+def _render_then_vs_now_header(
     logo_url: str | None,
     team_name: str,
     season_name: str | None,
     brand_color: str | None,
     asset_dir: Path,
 ) -> Path:
-    """Render the Then vs Now header image using PIL.
+    """Render ThenVsNow header via the shared render_header_pil."""
+    from src.video.services.header_generator import render_header_pil
 
-    Layout: [Club Logo] [THEN VS NOW / Team / Season] [Club Logo]
-    """
-    from src.video.services.header_generator import (
-        _clean_logo_alpha,
-        _draw_centered_text,
-        _hex_to_rgba,
-        download_image,
-        get_font,
+    header_img = render_header_pil(
+        width=WIDTH,
+        height=HEADER_HEIGHT,
+        logo_url=logo_url,
+        opponent_logo_url=logo_url,  # same club logo on both sides
+        title_text="THEN VS NOW",
+        own_team_name=team_name,
+        competition_name=season_name,
+        background_color=brand_color,
     )
-
-    white = (255, 255, 255, 255)
-    black = (0, 0, 0, 255)
-    brand = _hex_to_rgba(brand_color) if brand_color else (210, 18, 46, 255)
-
-    img = Image.new("RGBA", (WIDTH, HEADER_HEIGHT), white)
-    draw = ImageDraw.Draw(img)
-
-    # Panel boundaries: left 25%, center 50%, right 25%
-    x_left_end = int(WIDTH * 0.25)
-    x_right_start = int(WIDTH * 0.75)
-    panel_w = x_left_end
-
-    # Draw 3 panels
-    draw.rectangle([(0, 0), (x_left_end, HEADER_HEIGHT)], fill=white)
-    draw.rectangle([(x_left_end, 0), (x_right_start, HEADER_HEIGHT)], fill=brand)
-    draw.rectangle([(x_right_start, 0), (WIDTH, HEADER_HEIGHT)], fill=white)
-
-    # Fonts (scaled relative to header height)
-    scale = HEADER_HEIGHT / 300.0
-    fonts = {
-        "xl": get_font(int(72 * scale), bold=True),
-        "lg": get_font(int(36 * scale), bold=True),
-        "sm": get_font(int(28 * scale), bold=True),
-    }
-
-    cx = WIDTH // 2
-
-    # Title: "THEN VS NOW"
-    _draw_centered_text(
-        draw,
-        "THEN VS NOW",
-        cx,
-        int(HEADER_HEIGHT * 0.25),
-        fonts["xl"],
-        white,
-        black,
-        stroke_width=4,
-    )
-
-    # Team name
-    if team_name:
-        _draw_centered_text(
-            draw,
-            team_name.upper(),
-            cx,
-            int(HEADER_HEIGHT * 0.55),
-            fonts["lg"],
-            white,
-        )
-
-    # Season name
-    if season_name:
-        _draw_centered_text(
-            draw,
-            season_name.upper(),
-            cx,
-            int(HEADER_HEIGHT * 0.78),
-            fonts["sm"],
-            white,
-        )
-
-    # Club logo on BOTH sides
-    if logo_url:
-        logo_img = download_image(logo_url)
-        if logo_img:
-            logo_img = _clean_logo_alpha(logo_img)
-            padding = int(panel_w * 0.10)
-            max_logo_w = panel_w - 2 * padding
-            max_logo_h = HEADER_HEIGHT - 2 * padding
-
-            logo_img.thumbnail((max_logo_w, max_logo_h), Image.Resampling.LANCZOS)
-
-            # Left panel
-            lx = (panel_w - logo_img.width) // 2
-            ly = (HEADER_HEIGHT - logo_img.height) // 2
-            img.paste(logo_img, (lx, ly), logo_img)
-
-            # Right panel (same logo)
-            rx = x_right_start + (panel_w - logo_img.width) // 2
-            img.paste(logo_img, (rx, ly), logo_img)
-
-    # Save as RGB (no alpha for FFmpeg)
     header_path = asset_dir / "header.png"
-    img = img.convert("RGB")
-    img.save(str(header_path), "PNG")
+    header_img.convert("RGB").save(str(header_path), "PNG")
     return header_path
 
 
@@ -285,8 +163,8 @@ def compose_then_vs_now_video(
         ValueError: If required assets are missing.
         RuntimeError: If FFmpeg compositing fails.
     """
-    font_path = _resolve_font_path()
-    ffmpeg = _get_ffmpeg_path()
+    font_path = resolve_ffmpeg_font_path()
+    ffmpeg = get_ffmpeg_path()
 
     tmp_dir = Path(tempfile.mkdtemp(prefix="then_vs_now_"))
     asset_dir = tmp_dir / "assets"
@@ -299,29 +177,23 @@ def compose_then_vs_now_video(
 
     # ── 1. Download background ──
     bg_path = asset_dir / "background.jpg"
-    if not _download_file(background_url, bg_path):
-        raise ValueError("Failed to download background image.")
-
-    # Check orientation
-    bg_img = Image.open(bg_path)
-    bg_is_landscape = bg_img.width > bg_img.height
-    bg_img.close()
+    bg_is_landscape = prepare_background(background_url, bg_path)
 
     # ── 2. Render header ──
-    header_path = _render_header(logo_url, team_name, season_name, brand_color, asset_dir)
+    header_path = _render_then_vs_now_header(logo_url, team_name, season_name, brand_color, asset_dir)
 
     # ── 2b. Download sponsor logo (optional) ──
     sponsor_path: Path | None = None
     if sponsor_url:
         _sp = asset_dir / "sponsor.png"
-        if _download_file(sponsor_url, _sp):
+        if prepare_sponsor(sponsor_url, _sp):
             sponsor_path = _sp
 
     # ── 3. Download all member videos ──
     member_paths: list[tuple[MemberClip, Path]] = []
     for i, member in enumerate(members):
         video_path = asset_dir / f"member_{i}.mp4"
-        if _download_file(member.video_url, video_path):
+        if download_file(member.video_url, video_path, timeout=120):
             member_paths.append((member, video_path))
         else:
             logger.warning("Skipping member %s: failed to download video", member.name)
@@ -342,7 +214,7 @@ def compose_then_vs_now_video(
     max_member_dur = 0.0
     member_durations: list[float] = []
     for _member, vpath in member_paths:
-        dur = _probe_duration(vpath)
+        dur = probe_duration(vpath)
         member_durations.append(dur)
         slowed = dur * SLOWMO_FACTOR + FREEZE_SECONDS
         max_member_dur = max(max_member_dur, slowed)
@@ -402,7 +274,7 @@ def compose_then_vs_now_video(
     result = subprocess.run(bg_cmd, capture_output=True, text=True, timeout=300)  # noqa: S603
     if result.returncode != 0:
         raise RuntimeError(f"Failed to render background video: {result.stderr[-2000:]}")
-    bg_actual_dur = _probe_duration(bg_video_path)
+    bg_actual_dur = probe_duration(bg_video_path)
     logger.info("Background video rendered: %.1fs", bg_actual_dur)
 
     # ── 4. Compose clips per member ──
@@ -475,7 +347,7 @@ def compose_then_vs_now_video(
         name_y = HEADER_HEIGHT + CONTENT_HEIGHT - 10
         label_h = 80
         # Brand color for the name box (default red if not provided)
-        brand_hex = (brand_color or "#D2122E").lstrip("#")
+        brand_hex = (brand_color or DEFAULT_PRIMARY_COLOR).lstrip("#")
         fc_video.append(
             f"[main]drawbox=x=0:y={name_y - 10}:w=iw:h={label_h}"
             f":color=0x{brand_hex}@0.85:t=fill[main_nb]"
@@ -545,7 +417,7 @@ def compose_then_vs_now_video(
             logger.error("FFmpeg failed for member %s: %s", member.name, result.stderr[-2000:])
             continue
 
-        actual_dur = _probe_duration(video_clip_path)
+        actual_dur = probe_duration(video_clip_path)
         logger.info(
             "Member %d/%d %s: clip=%.1fs (expected %.1fs)",
             idx + 1,
@@ -572,7 +444,7 @@ def compose_then_vs_now_video(
         shutil.copy2(str(clip_paths[0]), str(joined_output))
     else:
         # Probe durations for xfade offset calculation
-        durations = [_probe_duration(p) for p in clip_paths]
+        durations = [probe_duration(p) for p in clip_paths]
         logger.info(
             "Clip durations for xfade: %s",
             [f"{d:.1f}s" for d in durations],
@@ -661,7 +533,7 @@ def compose_then_vs_now_video(
                 raise RuntimeError(f"FFmpeg concat failed: {result.stderr[-2000:]}")
 
     # Smooth ending: fade out during the last second.
-    total_dur = _probe_duration(joined_output)
+    total_dur = probe_duration(joined_output)
     fade_start = max(0.0, total_dur - 1.0)
     fade_cmd = [
         ffmpeg,
@@ -728,8 +600,8 @@ def compose_cover_video(
     Returns:
         Path to the composed MP4 file.
     """
-    font_path = _resolve_font_path()
-    ffmpeg = _get_ffmpeg_path()
+    font_path = resolve_ffmpeg_font_path()
+    ffmpeg = get_ffmpeg_path()
 
     tmp_dir = Path(tempfile.mkdtemp(prefix="cover_"))
     asset_dir = tmp_dir / "assets"
@@ -741,13 +613,13 @@ def compose_cover_video(
         output_dir = tmp_dir
 
     # ── 1. Render header ──
-    header_path = _render_header(logo_url, team_name, season_name, brand_color, asset_dir)
+    header_path = _render_then_vs_now_header(logo_url, team_name, season_name, brand_color, asset_dir)
 
     # ── 2. Download all member videos ──
     member_paths: list[tuple[MemberClip, Path]] = []
     for i, member in enumerate(members):
         video_path = asset_dir / f"member_{i}.mp4"
-        if _download_file(member.video_url, video_path):
+        if download_file(member.video_url, video_path, timeout=120):
             member_paths.append((member, video_path))
         else:
             logger.warning("Cover: failed to download video for %s", member.name)
@@ -765,7 +637,7 @@ def compose_cover_video(
     max_member_dur = 0.0
     member_durations: list[float] = []
     for _member, vpath in member_paths:
-        dur = _probe_duration(vpath)
+        dur = probe_duration(vpath)
         member_durations.append(dur)
         slowed = dur * SLOWMO_FACTOR + FREEZE_SECONDS
         max_member_dur = max(max_member_dur, slowed)
@@ -850,7 +722,7 @@ def compose_cover_video(
         fc.append(f"[bg][vid]overlay=0:{HEADER_HEIGHT}" f":eof_action=repeat:shortest=0[main]")
 
         # Semi-transparent name label at bottom of frame
-        brand_hex = (brand_color or "#D2122E").lstrip("#")
+        brand_hex = (brand_color or DEFAULT_PRIMARY_COLOR).lstrip("#")
         cover_label_h = 90
         cover_name_y = HEIGHT - cover_label_h
 
@@ -914,7 +786,7 @@ def compose_cover_video(
 
         shutil.copy2(str(clip_paths[0]), str(joined_output))
     else:
-        durations = [_probe_duration(p) for p in clip_paths]
+        durations = [probe_duration(p) for p in clip_paths]
         logger.info("Cover clip durations: %s", [f"{d:.1f}s" for d in durations])
 
         input_args: list[str] = []
@@ -993,7 +865,7 @@ def compose_cover_video(
                 raise RuntimeError(f"FFmpeg concat failed: {result.stderr[-2000:]}")
 
     # Smooth ending: fade out last second
-    total_dur = _probe_duration(joined_output)
+    total_dur = probe_duration(joined_output)
     fade_start = max(0.0, total_dur - 1.0)
     fade_cmd = [
         ffmpeg,
@@ -1270,9 +1142,8 @@ def _crop_composite_upper_body(image_bytes: bytes) -> bytes:
     cropped = img.crop((0, 0, img.width, crop_h))
 
     # Resize back to 9:16 portrait format to maintain MiniMax input requirements
-    # Target: 1080x1920 → after crop we need to scale back
-    target_w = 1080
-    target_h = 1920
+    target_w = WIDTH
+    target_h = HEIGHT
 
     # Create new canvas at target size with background
     result = Image.new("RGB", (target_w, target_h), (0, 0, 0))
@@ -1432,7 +1303,7 @@ def _ffmpeg_overlay_on_background(
     4. Name label bar with brand color
     5. Sponsor logo (optional)
     """
-    ffmpeg = _get_ffmpeg_path()
+    ffmpeg = get_ffmpeg_path()
 
     # Pre-render the background frame with header, name, and sponsor (PIL)
     # This avoids complex FFmpeg filter chains
@@ -1464,7 +1335,7 @@ def _ffmpeg_overlay_on_background(
     # Name label bar at bottom of content area
     content_bottom = HEADER_HEIGHT + CONTENT_HEIGHT
     draw = ImageDraw.Draw(bg)
-    brand_hex = (brand_color or "#D2122E").lstrip("#")
+    brand_hex = (brand_color or DEFAULT_PRIMARY_COLOR).lstrip("#")
     brand_rgba = _hex_to_rgba(f"#{brand_hex}") if brand_color else (210, 18, 46, 255)
     label_y = content_bottom - NAME_LABEL_H - 10
     label_box_h = 80
@@ -1509,7 +1380,7 @@ def _ffmpeg_overlay_on_background(
     bg.save(str(bg_frame_path), "PNG")
 
     # Use ffprobe to get transparent video duration
-    dur = _probe_duration(transparent_video)
+    dur = probe_duration(transparent_video)
     if dur <= 0:
         dur = PHOTO_CLIP_DURATION
 
@@ -1598,7 +1469,7 @@ def compose_photo_composite_video(
     Returns:
         Path to the composed MP4 file.
     """
-    ffmpeg = _get_ffmpeg_path()
+    ffmpeg = get_ffmpeg_path()
 
     tmp_dir = Path(tempfile.mkdtemp(prefix="photo_composite_"))
     asset_dir = tmp_dir / "assets"
@@ -1611,17 +1482,17 @@ def compose_photo_composite_video(
 
     # ── 1. Download background ──
     bg_path = asset_dir / "background.jpg"
-    if not _download_file(background_url, bg_path):
+    if not download_file(background_url, bg_path, timeout=120):
         raise ValueError("Failed to download background image.")
 
     # ── 2. Render header ──
-    header_path = _render_header(logo_url, team_name, season_name, brand_color, asset_dir)
+    header_path = _render_then_vs_now_header(logo_url, team_name, season_name, brand_color, asset_dir)
 
     # ── 2b. Download sponsor logo (optional) ──
     sponsor_path: Path | None = None
     if sponsor_url:
         _sp = asset_dir / "sponsor.png"
-        if _download_file(sponsor_url, _sp):
+        if prepare_sponsor(sponsor_url, _sp):
             sponsor_path = _sp
 
     # ── 3. Process each member: download transparent video → FFmpeg overlay ──
@@ -1640,7 +1511,7 @@ def compose_photo_composite_video(
         # Try .mov first (ProRes 4444 with alpha), fall back to .mp4
         ext = ".mov" if member.transparent_video_url.endswith(".mov") else ".mp4"
         transparent_path = clips_dir / f"m{idx}_transparent{ext}"
-        if not _download_file(member.transparent_video_url, transparent_path):
+        if not download_file(member.transparent_video_url, transparent_path, timeout=120):
             logger.warning("Skipping %s: failed to download transparent video", member.name)
             continue
 
@@ -1682,7 +1553,7 @@ def compose_photo_composite_video(
 
         shutil.copy2(str(clip_paths[0]), str(joined_output))
     else:
-        durations = [_probe_duration(p) for p in clip_paths]
+        durations = [probe_duration(p) for p in clip_paths]
         logger.info(
             "Photo composite clip durations for xfade: %s",
             [f"{d:.1f}s" for d in durations],
@@ -1769,7 +1640,7 @@ def compose_photo_composite_video(
                 raise RuntimeError(f"FFmpeg concat failed: {result.stderr[-2000:]}")
 
     # Smooth ending: fade out during the last second.
-    total_dur = _probe_duration(joined_output)
+    total_dur = probe_duration(joined_output)
     fade_start = max(0.0, total_dur - 1.0)
     fade_cmd = [
         ffmpeg,
