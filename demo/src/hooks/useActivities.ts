@@ -25,6 +25,7 @@ export interface Activity {
   period?: {
     id: string;
     name: string;
+    parent_period?: { id: string; name: string } | null;
   };
   opponent_project?: {
     id: string;

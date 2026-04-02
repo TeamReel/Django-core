@@ -6,6 +6,7 @@ import { Calendar, Clock, MapPin, Check, AlertTriangle, Zap } from 'lucide-react
 import { useWizard } from '../../Wizard';
 import { useMatchWizard } from '../MatchWizardContext';
 import { CONTENT_TYPES, LINEUP_REQUIRED_SUBTYPES } from '../types';
+import { useSquadReadiness } from '../../../hooks/useSquadReadiness';
 import styles from '../MatchWizardV2.module.css';
 
 export interface ReviewStepProps {
@@ -23,6 +24,12 @@ export function ReviewStep({ onGenerate, saveError }: ReviewStepProps) {
     totalPositions,
   } = useMatchWizard();
 
+  const projectId = selectedMatch?.project?.id
+    ? String(selectedMatch.project.id)
+    : undefined;
+
+  const { data: readiness } = useSquadReadiness(projectId);
+
   if (!selectedMatch || !pendingContent) {
     return <div className="text-center p-32 text-muted">Geen content geselecteerd</div>;
   }
@@ -35,6 +42,11 @@ export function ReviewStep({ onGenerate, saveError }: ReviewStepProps) {
   const Icon = ct.icon;
   const needsLineup = LINEUP_REQUIRED_SUBTYPES.has(ct.subtype);
   const matchDate = new Date(selectedMatch.start_time);
+
+  const missingCount = readiness
+    ? readiness.total_members - readiness.ready_members
+    : 0;
+  const showReadinessWarning = needsLineup && readiness && missingCount > 0;
 
   const handleConfirm = async () => {
     setSubmitting(true);
@@ -119,6 +131,14 @@ export function ReviewStep({ onGenerate, saveError }: ReviewStepProps) {
 
       {/* Actions */}
       <div className={styles.stepActions}>
+        {showReadinessWarning && (
+          <div className={styles.warnBannerCompact}>
+            <AlertTriangle size={16} className={styles.warnIcon} />
+            <span className="fs-13 flex-1">
+              {missingCount} {missingCount === 1 ? 'speler mist' : 'spelers missen'} een foto — {missingCount === 1 ? 'deze krijgt' : 'deze krijgen'} een silhouet
+            </span>
+          </div>
+        )}
         {saveError && (
           <div className={styles.errorBannerCompact}>
             <AlertTriangle size={16} className={styles.errorIcon} />

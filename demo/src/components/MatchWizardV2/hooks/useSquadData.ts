@@ -4,6 +4,7 @@
 import { useCallback } from 'react';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { getFormations } from '@/utils/masterData';
 import { useMatchWizard } from '../MatchWizardContext';
 import type { SquadMember } from '../types';
 
@@ -35,14 +36,29 @@ export function useSquadData(): UseSquadDataReturn {
     const pid = selectedMatch.project?.id;
     if (!pid) return;
 
+    const seasonId = selectedMatch.period?.parent_period?.id;
+
     setSquadLoading(true);
     setSquadError(null);
 
     try {
-      const members = await api.listAll<SquadMember>(
-        `/projects/${encodeURIComponent(String(pid))}/members/`,
-        { pageSize: 100 },
-      );
+      const fetchMembers = (withSeason: boolean) =>
+        api.listAll<SquadMember>(
+          `/projects/${encodeURIComponent(String(pid))}/members/`,
+          {
+            pageSize: 100,
+            ...(withSeason && seasonId ? { params: { period: seasonId } } : {}),
+          },
+        );
+
+      let members: SquadMember[] = [];
+      if (seasonId) {
+        members = await fetchMembers(true);
+        // Fallback: if season roster is empty, load all members
+        if (members.length === 0) members = await fetchMembers(false);
+      } else {
+        members = await fetchMembers(false);
+      }
 
       // Group by role
       const groups: Record<string, SquadMember[]> = { goalkeeper: [], player: [] };
@@ -103,12 +119,18 @@ export function useSquadData(): UseSquadDataReturn {
       const matchId = selectedMatch.slug || selectedMatch.id;
       const existingMetadata = selectedMatch.metadata || {};
 
+      // Resolve formation UUID from cached formations
+      const formations = await getFormations();
+      const formationCode = lineupFormation || '4-3-3';
+      const formationRecord = formations.find((f) => f.code === formationCode);
+
       await api.patch(`/activities/${encodeURIComponent(String(matchId))}/`, {
         metadata: {
           ...existingMetadata,
           formation: lineupSlots,
           lineup: {
-            formation: lineupFormation || '4-3-3',
+            formation: formationCode,
+            ...(formationRecord ? { formation_id: formationRecord.id } : {}),
             goalkeeper: lineupSlots.goalkeeper,
             player: lineupSlots.player,
           },
@@ -119,7 +141,7 @@ export function useSquadData(): UseSquadDataReturn {
       logger.error('Failed to save lineup', err);
       return false;
     }
-  }, [selectedMatch, lineupSlots]);
+  }, [selectedMatch, lineupSlots, lineupFormation]);
 
   return {
     fetchSquad,

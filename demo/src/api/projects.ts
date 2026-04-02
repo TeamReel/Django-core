@@ -15,6 +15,7 @@ import type {
   ProjectDetail,
   ProjectMembership,
   ProjectInvite,
+  SquadReadinessResponse,
 } from '../types/api';
 
 /* ------------------------------------------------------------------ */
@@ -108,6 +109,14 @@ export const projectsApi = {
   /** Remove a member from a project. */
   removeMember(projectId: number | string, membershipId: number | string, opts?: MutateOptions) {
     return api.delete(`/projects/${projectId}/members/${membershipId}/`, opts);
+  },
+
+  /** Get squad readiness (per-member asset completeness). */
+  squadReadiness(projectId: number | string, kitType?: string, signal?: AbortSignal) {
+    return api.get<SquadReadinessResponse>(
+      `/projects/${projectId}/members/squad-readiness/`,
+      { signal, params: kitType ? { kit_type: kitType } : undefined },
+    );
   },
 
   /* ───── Functional roles ─────────────────────────────────── */

@@ -108,3 +108,28 @@ export interface ProjectMembershipPromotion {
   expires_at: string;
   resolved_at: string | null;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Squad Readiness                                                    */
+/* ------------------------------------------------------------------ */
+
+/** Single member readiness from squad-readiness endpoint. */
+export interface SquadMemberReadiness {
+  id: string;
+  name: string;
+  functional_role: 'player' | 'keeper';
+  shirt_number: string | null;
+  has_fullbody: boolean;
+  has_closeup: boolean;
+  has_intro: boolean;
+  ready: boolean;
+}
+
+/** Response from GET /projects/{id}/members/squad-readiness/ */
+export interface SquadReadinessResponse {
+  total_members: number;
+  ready_members: number;
+  readiness_percent: number;
+  kit_type: string;
+  members: SquadMemberReadiness[];
+}

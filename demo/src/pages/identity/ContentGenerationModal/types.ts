@@ -99,6 +99,7 @@ export interface Participation {
     position?: string;
     is_captain?: boolean;
     functional_role?: string;
+    asset_warning?: string;
   };
   metadata?: {
     team_role?: string;

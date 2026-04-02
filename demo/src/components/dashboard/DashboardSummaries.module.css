@@ -456,3 +456,48 @@
     color: var(--app-text);
   }
 }
+
+/* ── Squad readiness ─────────────────────────────────────────────── */
+.readinessInline {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--app-muted-text);
+}
+
+.squadReadinessSummary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  margin-bottom: var(--space-4);
+  background: var(--app-bg);
+  border-radius: var(--radius-lg);
+}
+
+.squadReadinessLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--app-text);
+}
+
+.squadReadinessSub {
+  font-size: var(--text-xs);
+  color: var(--app-muted-text);
+  margin-top: var(--space-1);
+  text-transform: capitalize;
+}
+
+.squadReadinessIcons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.readyIcon {
+  color: var(--color-green-500, #22c55e);
+}
+
+.notReadyIcon {
+  color: var(--color-red-400, #f87171);
+}

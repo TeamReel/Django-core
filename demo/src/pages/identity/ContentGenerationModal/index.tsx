@@ -24,6 +24,7 @@ import styles from './index.module.css';
 export type { ContentTemplate, FormationPosition } from './types';
 export { CONTENT_TYPES, FORMATION_LAYOUTS } from './constants';
 export { groupParticipationsByRole } from './utils';
+export { useFormations, getFormationLayouts } from '../content-generation';
 
 export default function ContentGenerationModal(props: ContentGenerationModalProps) {
   const { isOpen, onClose, matchData, contentTypeLabel, organisationSport, homeLogoUrl, awayLogoUrl } = props;

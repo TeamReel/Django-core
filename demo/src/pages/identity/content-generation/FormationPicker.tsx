@@ -1,5 +1,6 @@
 import React from 'react';
-import { FORMATION_LAYOUTS, FormationPosition } from './types';
+import { useFormations } from './useFormations';
+import type { FormationPosition } from './types';
 import styles from './FormationPicker.module.css';
 
 interface FormationPickerProps {
@@ -10,18 +11,20 @@ interface FormationPickerProps {
 
 /**
  * Formation selector grid with mini field visualizations for each formation.
- * Used in lineup video/flyer generation flows.
+ * Uses formation data from API (with hardcoded fallback).
  */
 export function FormationPicker({
   selectedFormation,
   onSelectFormation,
   label = 'Formatie',
 }: FormationPickerProps) {
+  const { formations } = useFormations();
+
   return (
     <div>
       <label className={styles.label}>{label}</label>
       <div className={styles.grid}>
-        {Object.entries(FORMATION_LAYOUTS).map(([code, layout]) => {
+        {Object.entries(formations).map(([code, layout]) => {
           const isSelected = selectedFormation === code;
           return (
             <button

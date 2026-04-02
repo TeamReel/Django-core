@@ -4,7 +4,8 @@
  * keeps Match Summary inline (small enough).
  * Uses shared BackgroundSelector to eliminate 3× copy-paste.
  */
-import React from 'react';
+import React, { useMemo } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import type { ContentTemplate, Participation } from './types';
 import { BackgroundSelector, type BackgroundItem } from './BackgroundSelector';
 import { ConfirmStepFlyer } from './ConfirmStepFlyer';
@@ -20,6 +21,7 @@ interface ConfirmStepProps {
     title?: string;
     project?: { id: string; name: string };
     opponent_project?: { id: string; name: string } | null;
+    participations?: unknown[];
     start_time?: string;
   } | null;
   seasonSquad: Record<string, Participation[]>;
@@ -73,6 +75,19 @@ export function ConfirmStep({
   selectedBackgroundUrl, setSelectedBackgroundUrl, appBackgrounds,
   homeTeamName, awayTeamName, homeLogoUrl, awayLogoUrl,
 }: ConfirmStepProps) {
+  // Count participants with missing kit asset warnings
+  const kitWarningCount = useMemo(() => {
+    const participations = matchData?.participations;
+    if (!participations) return 0;
+    return participations.filter((p) => {
+      const rec = p as Record<string, unknown> | null;
+      const data = rec?.data as Record<string, unknown> | undefined;
+      return !!data?.asset_warning;
+    }).length;
+  }, [matchData?.participations]);
+
+  const isLineupSubtype = selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer';
+
   return (
     <div className="flex-col flex-center py-32 px-16">
       {/* Icon */}
@@ -111,6 +126,16 @@ export function ConfirmStep({
               {new Date(matchData.start_time).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Kit asset warning for lineup content types */}
+      {isLineupSubtype && kitWarningCount > 0 && (
+        <div className="w-full max-w-480 mt-12 p-12 rounded-8 border flex-row gap-8 items-center" style={{ borderColor: 'var(--color-warning)', backgroundColor: 'var(--color-warning-bg, rgba(255,171,0,0.08))' }}>
+          <AlertTriangle size={16} style={{ color: 'var(--color-warning)', flexShrink: 0 }} />
+          <span className="fs-13 text-primary">
+            {kitWarningCount} {kitWarningCount === 1 ? 'speler mist' : 'spelers missen'} de juiste tenue-assets. De video kan placeholder silhouetten bevatten.
+          </span>
         </div>
       )}
 

@@ -1,7 +1,8 @@
 import React from 'react';
 import { FormationPicker } from '../content-generation';
 import type { ContentTemplate, Participation, FormationPosition } from './types';
-import { ASSET_TYPE_LABELS, FORMATION_LAYOUTS } from './constants';
+import { ASSET_TYPE_LABELS } from './constants';
+import { useFormations } from '../content-generation';
 import { memberHasRequiredAssets, getMissingAssets, getMemberName, renderRoleLabel } from './utils';
 import styles from './MembersStep.module.css';
 
@@ -47,6 +48,8 @@ export function MembersStep({
 }: MembersStepProps) {
   // All lineup-related subtypes that should see formation / style / background options
   const LINEUP_SUBTYPES = new Set(['lineup', 'lineup_flyer', 'walkon', 'poster', 'match_intro']);
+
+  const { formations } = useFormations();
   const subtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
   const isLineupType = LINEUP_SUBTYPES.has(subtype);
 
@@ -242,7 +245,7 @@ export function MembersStep({
                   positionLabel = 'Keeper';
                 } else if (role === 'player') {
                   const slotNumber = idx + 2;
-                  const formationLayout = FORMATION_LAYOUTS[lineupFormation];
+                  const formationLayout = formations[lineupFormation];
                   const positionData = formationLayout?.positions.find(p => p.slot === slotNumber);
                   positionLabel = positionData ? positionData.label : 'Speler';
                 } else if (role === 'coach') {

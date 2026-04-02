@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ContentTemplate, Participation, FormationPosition } from './types';
-import { ASSET_TYPE_LABELS, FORMATION_LAYOUTS } from './constants';
+import { ASSET_TYPE_LABELS } from './constants';
+import { useFormations } from '../content-generation';
 import { memberHasRequiredAssets, getMissingAssets, getMemberName } from './utils';
 import styles from './LineupSquadStep.module.css';
 
@@ -19,7 +20,8 @@ export function LineupSquadStep({
   setSelectedMembers,
   lineupFormation,
 }: LineupSquadStepProps) {
-  const formationLayout = FORMATION_LAYOUTS[lineupFormation] || FORMATION_LAYOUTS['4-3-3'];
+  const { formations } = useFormations();
+  const formationLayout = formations[lineupFormation] || formations['4-3-3'];
 
   // Separate pools: GK dropdown only shows goalkeepers
   // Player slots show ALL non-goalkeeper members

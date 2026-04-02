@@ -35,12 +35,24 @@ export interface Sport {
   icon?: string;
 }
 
+export interface FormationPosition {
+  slot: number;
+  position: string;
+  x: number;
+  y: number;
+  line?: string;
+  label?: string;
+}
+
 export interface Formation {
-  id: number;
+  id: string;
+  code: string;
   name: string;
-  slug: string;
-  sport?: number;
-  positions?: string[];
+  positions: FormationPosition[];
+  sport_name?: string;
+  is_default?: boolean;
+  is_active?: boolean;
+  display_order?: number;
 }
 
 export interface TemplateType {

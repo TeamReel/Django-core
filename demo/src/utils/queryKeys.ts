@@ -26,6 +26,8 @@ export const queryKeys = {
     all: ['members'] as const,
     byProject: (projectId: string) =>
       ['members', 'project', projectId] as const,
+    squadReadiness: (projectId: string, kitType?: string) =>
+      ['members', 'squadReadiness', projectId, kitType] as const,
   },
 
   // Generative requests

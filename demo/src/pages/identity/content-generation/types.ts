@@ -18,6 +18,9 @@ export {
   getMemberName,
 } from './contentGenHelpers';
 
+export { useFormations, getFormationLayouts } from './useFormations';
+export type { FormationLayoutMap } from './useFormations';
+
 // Generated output data - single variant
 export interface GeneratedVariant {
   variant_index: number;
@@ -127,6 +130,8 @@ export interface FormationPosition {
   x: number;  // percentage from left
   y: number;  // percentage from top (0 = attacking end)
   label: string;
+  line?: string;
+  position?: string;
 }
 
 // Step type for the modal wizard

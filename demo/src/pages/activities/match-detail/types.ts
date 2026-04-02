@@ -30,6 +30,7 @@ export type Participation = {
     is_captain?: boolean;
     team_name?: string;
     team_id?: string;
+    asset_warning?: string;
   };
 };
 

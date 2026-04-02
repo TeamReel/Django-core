@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { api } from '@/api';
 import { periodPathKey } from '../../utils/periodPath';
-import { FORMATION_LAYOUTS } from '../identity/ContentGenerationModal';
+import { getFormationLayouts } from '../identity/content-generation';
 import type { Period, SeasonProject as Project } from '../../types/season';
 import type { MatchDetail, OrgMember, SeasonSquadParticipation, ProjectMember } from './matchDetailTypes';
 import { logger } from '@/utils/logger';
@@ -338,7 +338,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
   useEffect(() => {
     const saved = match?.metadata?.lineup;
     if (saved) {
-      if (saved.formation && FORMATION_LAYOUTS[saved.formation]) setLineupFormation(saved.formation);
+      if (saved.formation && getFormationLayouts()[saved.formation]) setLineupFormation(saved.formation);
       if (saved.goalkeeper || saved.player) setLineupSlots({ goalkeeper: saved.goalkeeper || [], player: saved.player || [] });
       if (saved.bench) setLineupBenchStatus(saved.bench);
     } else if (match?.metadata?.formation) {

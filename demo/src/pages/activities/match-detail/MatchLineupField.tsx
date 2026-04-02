@@ -1,6 +1,6 @@
 import React from "react";
 import { UserPlus, X } from "lucide-react";
-import { FORMATION_LAYOUTS } from "../../identity/content-generation";
+import { useFormations } from "../../identity/content-generation";
 import {
   type SquadMember, getSquadMemberName, getUserKey,
   sortByName, hasKeeperAsset, hasPlayerAsset,
@@ -36,8 +36,9 @@ export function FieldVisualization({
   lineupSaveSuccess,
   saveLineup,
 }: FieldVisualizationProps) {
+  const { formations } = useFormations();
   const formationLayout =
-    FORMATION_LAYOUTS[lineupFormation] || FORMATION_LAYOUTS["4-3-3"];
+    formations[lineupFormation] || formations["4-3-3"];
 
   // ── Guest players (extracted hook) ──
   const {
